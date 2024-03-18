@@ -37,12 +37,12 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '21'
-      - name: Debug SSH connection
-        run: |
-          echo "Checking SSH connection..."
-          GIT_SSH_COMMAND="ssh -vvv" git ls-remote git@github.com:DevEdward666/RestieHardware.git
+      - name: SSH Setup and Authenticate
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
       - name: Install dependencies
-        run: npm install RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
+        run: npm ci RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
 
   
       - name: Build Ionic React app

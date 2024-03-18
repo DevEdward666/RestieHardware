@@ -40,9 +40,7 @@ jobs:
         with:
           node-version: '21'
       - name: Install dependencies
-        run: |
-          npm install # Install dependencies from the repository root
-          npm install RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
+        run: npm install RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
 
       - name: Debug SSH connection
         run: |

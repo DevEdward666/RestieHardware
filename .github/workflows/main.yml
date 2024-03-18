@@ -39,11 +39,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '21'
-
-      - name: Install dependencies
-        run: npm i RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
-
-  
       - name: Build Ionic React app
         run: npm run build RestieHardware/restie
         # - name: Deploy to Hosting Service

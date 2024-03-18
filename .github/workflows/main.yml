@@ -40,6 +40,10 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '21'
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.4.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
       - name: Install dependencies
         run: npm install RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
 

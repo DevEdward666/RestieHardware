@@ -41,7 +41,8 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
-  
+      - name: Add passphrase to SSH agent
+        run: echo "${{ secrets.SSH_PASSPHRASE }}" | ssh-add -
       - name: Debug SSH Agent
         run: |
           ssh-add -l

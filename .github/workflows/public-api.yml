@@ -41,5 +41,5 @@ jobs:
         run: npm install RestieHardware/RestieHardware
       - name: Build Ionic React app
         run: npm run build RestieHardware/RestieHardware/restie
-      - name: Deploy to Hosting Service
-        # Add your deployment commands here, such as deploying to Firebase, Netlify, GitHub Pages, or any other hosting service.
+      # - name: Deploy to Hosting Service
+      #   # Add your deployment commands here, such as deploying to Firebase, Netlify, GitHub Pages, or any other hosting service.

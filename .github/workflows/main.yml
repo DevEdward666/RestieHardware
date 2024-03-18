@@ -12,9 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET
+        env:
+          GIT_SSH_COMMAND: 'ssh -v'
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
+          token: ${{ secrets.PAT_TOKEN }}
       - name: Restore dependencies
         run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
       - name: Build

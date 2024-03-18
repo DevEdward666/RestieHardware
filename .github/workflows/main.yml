@@ -12,12 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET
-        env:
-          GIT_SSH_COMMAND: 'ssh -v'
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
-          token: ${{ secrets.PAT_TOKEN }}
       - name: Restore dependencies
         run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
       - name: Build
@@ -40,17 +37,14 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '21'
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.4.1
-        with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
-      - name: Install dependencies
-        run: npm install RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
-
       - name: Debug SSH connection
         run: |
           echo "Checking SSH connection..."
           GIT_SSH_COMMAND="ssh -vvv" git ls-remote git@github.com:RestieHardware/restie.git
+      - name: Install dependencies
+        run: npm install RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
+
+  
       - name: Build Ionic React app
         run: npm run build RestieHardware/restie
         # - name: Deploy to Hosting Service

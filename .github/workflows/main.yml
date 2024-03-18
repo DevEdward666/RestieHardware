@@ -41,6 +41,10 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
+  
+      - name: Debug SSH Agent
+        run: |
+          ssh-add -l
       - name: Install dependencies
         run: npm ci RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
 

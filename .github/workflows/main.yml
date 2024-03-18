@@ -1,4 +1,4 @@
-name: .NET and Ionic React Deployment
+name: .NET
 
 on:
   push:
@@ -8,37 +8,23 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 8.0.x
-      - name: Restore dependencies
-        run: dotnet restore RestieHardware/RestieAPI/RestieAPI/RestieAPI.csproj
-      - name: Build
-        run: dotnet build RestieHardware/RestieAPI/RestieAPI/RestieAPI.csproj --no-restore
-      - name: Publish
-        run: dotnet publish RestieHardware/RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieHardware/RestieAPI/RestieAPI/restieapi
-      - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v3
-        with:
-          name: restieapi
-          path: RestieHardware/RestieAPI/RestieAPI/restieapi
 
-  deploy-ionic-react:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '21'
-      - name: Install dependencies
-        run: npm install RestieHardware/RestieHardware
-      - name: Build Ionic React app
-        run: npm run build RestieHardware/RestieHardware/restie
-      # - name: Deploy to Hosting Service
-      #   # Add your deployment commands here, such as deploying to Firebase, Netlify, GitHub Pages, or any other hosting service.
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore Restie/RestieAPI/RestieAPI.csproj
+    - name: Build
+      run: dotnet build Restie/RestieAPI/RestieAPI.csproj --no-restore
+    - name: Publish
+      run: dotnet publish Restie/RestieAPI/RestieAPI.csproj -c Release -o Restie/RestieAPI/RestieAPI/restieapi
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v3
+      with:
+        name: restieapi
+        path: Restie/RestieAPI/RestieAPI/restieapi

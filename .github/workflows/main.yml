@@ -16,7 +16,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
       - name: Restore dependencies
-        run: dotnet restore Restie/RestieAPI/RestieAPI.csproj
+        run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
       - name: Build
         run: dotnet build RestieAPI/RestieAPI/RestieAPI.csproj --no-restore
       - name: Publish
@@ -28,7 +28,7 @@ jobs:
           path: RestieAPI/RestieAPI/restieapi
 
   deploy-ionic-react:
-    needs: build-dotnet
+    # needs: build-dotnet
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository

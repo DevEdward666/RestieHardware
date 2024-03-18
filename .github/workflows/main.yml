@@ -41,8 +41,8 @@ jobs:
           node-version: '21'
           token: ${{ secrets.PAT_TOKEN }}
       - name: Install dependencies
-        run: npm install RestieAPI/RestieHardware
+        run: npm install RestieHardware/restie
       - name: Build Ionic React app
-        run: npm run build RestieAPI/RestieHardware/restie
+        run: npm run build RestieHardware/restie
         # - name: Deploy to Hosting Service
         # Add your deployment commands here, such as deploying to Firebase, Netlify, GitHub Pages, or any other hosting service.

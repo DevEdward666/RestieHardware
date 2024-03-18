@@ -17,7 +17,6 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
-          token: ${{ secrets.PAT_TOKEN }}
       - name: Restore dependencies
         run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
       - name: Build
@@ -40,8 +39,9 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '21'
+          token: ${{ secrets.PAT_TOKEN }}
       - name: Install dependencies
-        run: npm install RestieAPI/RestieHardware
+        run: npm install RestieAPI/RestieHardware/restie
       - name: Build Ionic React app
         run: npm run build RestieAPI/RestieHardware/restie
         # - name: Deploy to Hosting Service

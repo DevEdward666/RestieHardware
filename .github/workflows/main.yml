@@ -41,7 +41,7 @@ jobs:
           node-version: '21'
 
       - name: Install dependencies
-        run: npm ci RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
+        run: npm i RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
 
   
       - name: Build Ionic React app

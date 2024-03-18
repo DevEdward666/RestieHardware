@@ -40,7 +40,7 @@ jobs:
       - name: Debug SSH connection
         run: |
           echo "Checking SSH connection..."
-          GIT_SSH_COMMAND="ssh -vvv" git ls-remote git@github.com:RestieHardware/restie.git
+          GIT_SSH_COMMAND="ssh -vvv" git ls-remote git@github.com:DevEdward666/RestieHardware.git
       - name: Install dependencies
         run: npm install RestieHardware/restie # Install dependencies from the RestieHardware/restie repository
 

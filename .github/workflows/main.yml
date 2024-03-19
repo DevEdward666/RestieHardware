@@ -38,7 +38,7 @@ jobs:
 
     - name: Build Docker image
       run: docker build . -t ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
-      working-directory: ./RestieAPI/RestieAPI
+      working-directory: ./RestieAPI
 
     - name: Push Docker image to Docker Hub
       run: docker push  ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
@@ -47,6 +47,7 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   deploy-ionic-react:
     runs-on: ubuntu-latest
+    needs: build-docker-image
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2

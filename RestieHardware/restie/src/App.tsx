@@ -40,7 +40,7 @@ const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonTabs>
-        <IonRouterOutlet onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+        <IonRouterOutlet>
           <Route exact path="/tab1">
             <Tab1 />
           </Route>

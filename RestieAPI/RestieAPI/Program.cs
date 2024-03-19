@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using RestieAPI;
 
 namespace RestieAPI
 {
@@ -15,8 +14,7 @@ namespace RestieAPI
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-
-                    webBuilder.UseStartup<Startup>(); // Use Startup class here
+                    webBuilder.UseStartup<Startup>();
                 });
     }
 }

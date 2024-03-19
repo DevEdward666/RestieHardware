@@ -41,7 +41,6 @@ jobs:
           node-version: '21'
           cache: 'npm'
       - name: Build Ionic React app
-      - run: npm ci RestieHardware/restie
       - run: npm run build --if-present RestieHardware/restie
         # - name: Deploy to Hosting Service
         # Add your deployment commands here, such as deploying to Firebase, Netlify, GitHub Pages, or any other hosting service.

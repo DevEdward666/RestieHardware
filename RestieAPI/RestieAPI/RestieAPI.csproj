@@ -7,7 +7,7 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <UserSecretsId>de3efb7d-ee2d-432d-b34f-daff7a87a544</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "dgSpecHash": "8hMUe+olcGAYXVtXE4Pb4kDO5WL1l0nOCFWzBDXA1TXnrA8tep1MjRjh5C6mnQnx1tn62VcPvxjdZyzV/nruSw==",
-  "success": false,
+  "dgSpecHash": "Pk+DJN1wyLqDPDCi7vMuYlMTX8sCNwYI9vZz8JDwHu5KhBKwBU7fuxOPWG34kBy13F1gQUQtMQ++vhskgbUGqA==",
+  "success": true,
   "projectFilePath": "C:\\Users\\Edward\\Documents\\Restie\\RestieAPI\\RestieAPI\\RestieAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Edward\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.3\\microsoft.aspnetcore.authentication.jwtbearer.8.0.3.nupkg.sha512",
@@ -15,6 +15,7 @@
     "C:\\Users\\Edward\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\7.1.2\\microsoft.identitymodel.protocols.openidconnect.7.1.2.nupkg.sha512",
     "C:\\Users\\Edward\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.1.2\\microsoft.identitymodel.tokens.7.1.2.nupkg.sha512",
     "C:\\Users\\Edward\\.nuget\\packages\\microsoft.openapi\\1.2.3\\microsoft.openapi.1.2.3.nupkg.sha512",
+    "C:\\Users\\Edward\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.19.5\\microsoft.visualstudio.azure.containers.tools.targets.1.19.5.nupkg.sha512",
     "C:\\Users\\Edward\\.nuget\\packages\\npgsql\\8.0.2\\npgsql.8.0.2.nupkg.sha512",
     "C:\\Users\\Edward\\.nuget\\packages\\swashbuckle.aspnetcore\\6.4.0\\swashbuckle.aspnetcore.6.4.0.nupkg.sha512",
     "C:\\Users\\Edward\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.4.0\\swashbuckle.aspnetcore.swagger.6.4.0.nupkg.sha512",
@@ -22,15 +23,5 @@
     "C:\\Users\\Edward\\.nuget\\packages\\swashbuckle.aspnetcore.swaggerui\\6.4.0\\swashbuckle.aspnetcore.swaggerui.6.4.0.nupkg.sha512",
     "C:\\Users\\Edward\\.nuget\\packages\\system.identitymodel.tokens.jwt\\7.1.2\\system.identitymodel.tokens.jwt.7.1.2.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1100",
-      "level": "Error",
-      "message": "Unable to resolve 'Microsoft.VisualStudio.Azure.Containers.Tools.Targets (>= 1.19.5)' for 'net8.0'. PackageSourceMapping is enabled, the following source(s) were not considered: Microsoft Visual Studio Offline Packages, nuget.org.",
-      "libraryId": "Microsoft.VisualStudio.Azure.Containers.Tools.Targets",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    }
-  ]
+  "logs": []
 }

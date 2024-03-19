@@ -911,6 +911,7 @@
   "projectFileDependencyGroups": {
     "net8.0": [
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 8.0.3",
+      "Microsoft.VisualStudio.Azure.Containers.Tools.Targets >= 1.19.5",
       "Npgsql >= 8.0.2",
       "Swashbuckle.AspNetCore >= 6.4.0"
     ]
@@ -921,11 +922,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Edward\\source\\repos\\Restie\\RestieAPI\\RestieAPI\\RestieAPI.csproj",
+      "projectUniqueName": "C:\\Users\\Edward\\Documents\\Restie\\RestieAPI\\RestieAPI\\RestieAPI.csproj",
       "projectName": "RestieAPI",
-      "projectPath": "C:\\Users\\Edward\\source\\repos\\Restie\\RestieAPI\\RestieAPI\\RestieAPI.csproj",
+      "projectPath": "C:\\Users\\Edward\\Documents\\Restie\\RestieAPI\\RestieAPI\\RestieAPI.csproj",
       "packagesPath": "C:\\Users\\Edward\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Edward\\source\\repos\\Restie\\RestieAPI\\RestieAPI\\obj\\",
+      "outputPath": "C:\\Users\\Edward\\Documents\\Restie\\RestieAPI\\RestieAPI\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Edward\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -958,6 +959,10 @@
             "target": "Package",
             "version": "[8.0.3, )"
           },
+          "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
+            "target": "Package",
+            "version": "[1.19.5, )"
+          },
           "Npgsql": {
             "target": "Package",
             "version": "[8.0.2, )"
@@ -989,5 +994,16 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Unable to resolve 'Microsoft.VisualStudio.Azure.Containers.Tools.Targets (>= 1.19.5)' for 'net8.0'. PackageSourceMapping is enabled, the following source(s) were not considered: Microsoft Visual Studio Offline Packages, nuget.org.",
+      "libraryId": "Microsoft.VisualStudio.Azure.Containers.Tools.Targets",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
 }

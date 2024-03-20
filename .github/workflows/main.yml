@@ -79,9 +79,6 @@ jobs:
           curl -L https://fly.io/install.sh | sh
           export FLYCTL_INSTALL="/home/runner/.fly"
           export PATH="$FLYCTL_INSTALL/bin:$PATH"
-          
-      - name: Display Installed Flyctl Version
-        run: flyctl --version  # Just for verification
       
       - name: Deploy .NET API to Fly.io
         run: | 

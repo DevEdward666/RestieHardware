@@ -5,7 +5,7 @@ on:
     branches: [ "master" ]
   # pull_request:
   #   branches: [ "master" ]
-
+  workflow_dispatch:
 jobs:
   build-dotnet:
     runs-on: ubuntu-latest
@@ -74,11 +74,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
         
-      - name: Install Flyctl
+      - name: Install Flyctl and Set PATH
         run: |
           curl -L https://fly.io/install.sh | sh
-          export FLYCTL_INSTALL="/home/runner/.fly"
-          export PATH="$FLYCTL_INSTALL/bin:$PATH"
+          echo "export PATH=\"$HOME/.fly/bin:$PATH\"" >> $HOME/.bashrc
+          source $HOME/.bashrc
       
       - name: Deploy .NET API to Fly.io
         run: | 

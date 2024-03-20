@@ -1,0 +1,25 @@
+.home-page-container{
+    .home-page-header{
+        display: flex;
+        flex-direction: column;
+    }
+    .home-page-content{
+        --background: linear-gradient(180deg, #0F0526, #125B8C);
+        .home-spinner{
+            text-align: center;
+            color: white;
+        }
+    }
+    .home-toolbar-logo-container{
+        display: flex;
+        flex-direction: row;
+        justify-self: center;
+        align-items: center;
+        text-align: center;
+        .home-toolbar-logo{
+            height: 100px;
+            width: 100%;
+            margin: 10px;
+        }
+    }
+}

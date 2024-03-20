@@ -58,6 +58,9 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '21.5.0' # Change the version according to your project
+      - name: Determine Environment File
+        run: |
+          echo "::set-env name=ENV_FILE::$(if [ ${{ github.event_name }} == 'push' ]; then echo 'environment.prod.ts'; else echo 'environment.dev.ts'; fi)"
       - name: Build Ionic React app
         run: |
           cd RestieHardware/restie
@@ -65,3 +68,16 @@ jobs:
           npm run build
         # - name: Deploy to Hosting Service
         # Add your deployment commands here, such as deploying to Firebase, Netlify, GitHub Pages, or any other hosting service.
+  deploy-web-api:
+    runs-on: ubuntu-latest
+    needs: build-docker-image
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Install Flyctl
+        run: |
+          curl -L https://github.com/superfly/flyctl/releases/download/v0.0.0/flyctl-$(uname -s)-$(uname -m) -o flyctl
+          sudo mv flyctl /usr/local/bin/
+          sudo chmod +x /usr/local/bin/flyctl
+      - name: Deploy .NET API to Fly.io
+        run: flyctl deploy -a restieapi

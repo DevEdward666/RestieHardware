@@ -73,11 +73,19 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+        
       - name: Install Flyctl
         run: |
           curl -L https://fly.io/install.sh | sh
-          sudo mv flyctl /usr/local/bin/
+          sudo mv /home/runner/.fly/bin/flyctl /usr/local/bin/
+          
+      - name: Display Installed Flyctl Version
+        run: flyctl --version  # Just for verification
+      
       - name: Deploy .NET API to Fly.io
         run: | 
           cd RestieAPI
           /usr/local/bin/flyctl deploy -a restieapi
+  
+      - name: Display Deployment Status
+        run: flyctl status  # Just for verification

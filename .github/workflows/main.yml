@@ -77,7 +77,8 @@ jobs:
       - name: Install Flyctl
         run: |
           curl -L https://fly.io/install.sh | sh
-          sudo mv /home/runner/.fly/bin/flyctl /usr/local/bin/
+          export FLYCTL_INSTALL="/home/runner/.fly"
+          export PATH="$FLYCTL_INSTALL/bin:$PATH"
           
       - name: Display Installed Flyctl Version
         run: flyctl --version  # Just for verification
@@ -85,7 +86,7 @@ jobs:
       - name: Deploy .NET API to Fly.io
         run: | 
           cd RestieAPI
-          /usr/local/bin/flyctl deploy -a restieapi
+          flyctl deploy -a restieapi
   
       - name: Display Deployment Status
         run: flyctl status  # Just for verification

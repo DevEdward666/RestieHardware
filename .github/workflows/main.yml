@@ -81,9 +81,7 @@ jobs:
           source $HOME/.bashrc
       
       - name: Deploy .NET API to Fly.io
-        run: | 
-          cd RestieAPI
-          flyctl deploy -a restieapi
+        run: flyctl deploy -a restieapi
   
       - name: Display Deployment Status
         run: flyctl status  # Just for verification

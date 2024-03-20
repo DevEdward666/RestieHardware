@@ -1,0 +1,87 @@
+name: .NET and Ionic React Deployment
+
+on:
+  push:
+    branches: [ "master" ]
+  # pull_request:
+  #   branches: [ "master" ]
+  workflow_dispatch:
+jobs:
+  build-dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore dependencies
+        run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
+      - name: Build
+        run: dotnet build RestieAPI/RestieAPI/RestieAPI.csproj --no-restore
+      - name: Publish
+        run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieAPI/RestieAPI/restieapi
+      - name: Upload artifact for deployment
+        uses: actions/upload-artifact@v3
+        with:
+          name: restieapi
+          path: RestieAPI/RestieAPI/restieapi
+          
+  build-docker-image:
+    runs-on: ubuntu-latest
+    needs: build-dotnet
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build Docker image
+      run: docker build . -t ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
+      working-directory: ./RestieAPI
+
+    - name: Push Docker image to Docker Hub
+      run: |
+        echo ${{ secrets.DOCKER_ACCESSTOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        docker push ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  deploy-ionic-react:
+    runs-on: ubuntu-latest
+    needs: build-docker-image
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '21.5.0' # Change the version according to your project
+      - name: Determine Environment File
+        run: |
+          echo "ENV_FILE=$(if [ ${{ github.event_name }} == 'push' ]; then echo 'environment.prod.ts'; else echo 'environment.dev.ts'; fi)" >> $GITHUB_ENV
+      - name: Build Ionic React app
+        run: |
+          cd RestieHardware/restie
+          npm install
+          npm run build
+  deploy-web-api:
+    runs-on: ubuntu-latest
+    needs: build-docker-image
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        
+      - name: Install Flyctl and Set PATH
+        run: |
+          curl -L https://fly.io/install.sh | sh
+          echo "export PATH=\"$HOME/.fly/bin:$PATH\"" >> $HOME/.bashrc
+          source $HOME/.bashrc
+      
+      - name: Deploy .NET API to Fly.io
+        run: /home/runner/.fly/bin/flyctl deploy -a restieapi
+  
+      - name: Display Deployment Status
+        run: flyctl status  # Just for verification

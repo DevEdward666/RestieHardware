@@ -2,7 +2,55 @@
 http://ionicframework.com/docs/theming/ */
 
 /** Ionic CSS Variables **/
+@font-face {
+  font-family: "Gotham-Medium";
+  font-style: normal;
+  font-weight: 100;
+  src: url("../assets/fonts/Gotham-Medium.otf");
+}
+
+@font-face {
+  font-family: "Gotham-Black";
+  src: url("../assets/fonts/Gotham-Black.otf");
+}
+
+@font-face {
+  font-family: "Gotham-Bold";
+  src: url("../assets/fonts/Gotham-Bold.otf");
+}
+
+@font-face {
+  font-family: "Gotham-Ultra";
+  src: url("../assets/fonts/Gotham-Ultra.otf");
+}
+
+@font-face {
+  font-family: "Gotham-Thin";
+  src: url("../assets/fonts/Gotham-Thin.otf");
+}
+
+@font-face {
+  font-family: "Gotham-Light";
+  src: url("../assets/fonts/Gotham-Light.otf");
+}
+
+@font-face {
+  font-family: "Gotham-Book";
+  src: url("../assets/fonts/Gotham-Book.otf");
+}
+
+@font-face {
+  font-family: "Gotham-XLight";
+  src: url("../assets/fonts/Gotham-XLight.otf");
+}
+ion-toolbar {
+ --backround:#051926;
+}
+ion-content{
+  --background: linear-gradient(180deg, #0F0526, #125B8C);
+}
 :root {
+  --ion-font-family: "Gotham-Light";
   /** primary **/
   --ion-color-primary: #222428;
   --ion-color-primary-rgb: 34, 36, 40;
@@ -20,7 +68,7 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-secondary-tint: #50c8ff;
 
   /** tertiary **/
-  --ion-color-tertiary: #5260ff;
+  --ion-color-tertiary: #051926;
   --ion-color-tertiary-rgb: 82, 96, 255;
   --ion-color-tertiary-contrast: #ffffff;
   --ion-color-tertiary-contrast-rgb: 255, 255, 255;

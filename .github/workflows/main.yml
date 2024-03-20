@@ -54,6 +54,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
@@ -80,4 +81,6 @@ jobs:
           sudo mv flyctl /usr/local/bin/
           sudo chmod +x /usr/local/bin/flyctl
       - name: Deploy .NET API to Fly.io
-        run: flyctl deploy -a restieapi
+        run: | 
+          cd RestieAPI
+          flyctl deploy -a restieapi

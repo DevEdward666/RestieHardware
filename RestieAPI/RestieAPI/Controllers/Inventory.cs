@@ -9,7 +9,7 @@ using RestieAPI.Service.Repo;
 
 namespace RestieAPI.Controllers
 {
-    [Authorize]
+   
     [ApiController]
     [Route("api/[controller]/")]
     public class Inventory : ControllerBase
@@ -21,12 +21,26 @@ namespace RestieAPI.Controllers
             this.configuration = configuration;
             _inventoryRepo = new InventoryRepo(configuration);
         }
-        [HttpPost]
-        public ActionResult<InventoryItemModel> GetInventory(InventoryRequestModel.GetAllInventory getAllInventory)
+        [HttpPost("fetchInventory/{pageNumber}")]
+        public ActionResult<InventoryItemModel> FetchInventory( int pageNumber, [FromBody]InventoryRequestModel.GetAllInventory getAllInventory)
         {
-            return Ok(_inventoryRepo.GetInventory(getAllInventory));
-        }
+            int itemsPerPage = getAllInventory.limit; // Or any desired number of items per page
+            int offset = (pageNumber - 1) * itemsPerPage;
 
+            getAllInventory.offset = offset;
+            getAllInventory.limit = itemsPerPage;
+            return Ok(_inventoryRepo.fetchInventory(getAllInventory));
+        }
+        [HttpPost("searchInventory/{pageNumber}")]
+        public ActionResult<InventoryItemModel> SearchInventory(int pageNumber, [FromBody] InventoryRequestModel.GetAllInventory getAllInventory)
+        {
+            int itemsPerPage = getAllInventory.limit; // Or any desired number of items per page
+            int offset = (pageNumber - 1) * itemsPerPage;
+
+            getAllInventory.offset = offset;
+            getAllInventory.limit = itemsPerPage;
+            return Ok(_inventoryRepo.searchInventory(getAllInventory));
+        }
         [HttpPost("AddInventory")]
         public ActionResult<PostInventoryResponse> PostInventory(InventoryRequestModel.PostInventory postInventory)
         {

@@ -18,16 +18,19 @@ namespace RestieAPI.Service.Repo
         }
 
 
-
-
-        public InventoryItemModel GetInventory(InventoryRequestModel.GetAllInventory getAllInventory)
+        public InventoryItemModel fetchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
         {
-            var sql = @"SELECT * FROM Inventory ORDER BY code Limit @offset;";
+          
+
+            var sql = @"SELECT * FROM Inventory ORDER BY code LIMIT @limit OFFSET @offset;";
 
             var parameters = new Dictionary<string, object>
             {
+                { "@limit", getAllInventory.limit },
                 { "@offset", getAllInventory.offset },
+                { "@searchTerm", getAllInventory.searchTerm }
             };
+
             var results = new List<InventoryItems>();
             using (var reader = _databaseService.ExecuteQuery(sql, parameters))
             {
@@ -50,11 +53,60 @@ namespace RestieAPI.Service.Repo
                     results.Add(inventoryItem);
                 }
             }
+
             return new InventoryItemModel
             {
                 result = results
             };
         }
+
+        public InventoryItemModel searchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
+        {
+           
+
+            var sql = @"SELECT * FROM Inventory 
+                        WHERE LOWER(code) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
+                              LOWER(item) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
+                              LOWER(category) LIKE CONCAT('%', LOWER(@searchTerm), '%') 
+                        ORDER BY code 
+                        LIMIT @limit;";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@limit", getAllInventory.limit },
+                { "@searchTerm", getAllInventory.searchTerm }
+            };
+
+            var results = new List<InventoryItems>();
+            using (var reader = _databaseService.ExecuteQuery(sql, parameters))
+            {
+                while (reader.Read())
+                {
+                    var inventoryItem = new InventoryItems
+                    {
+                        code = reader.GetString(reader.GetOrdinal("code")),
+                        item = reader.GetString(reader.GetOrdinal("item")),
+                        category = reader.GetString(reader.GetOrdinal("category")),
+                        qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                        reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                        cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                        price = reader.GetFloat(reader.GetOrdinal("price")),
+                        status = reader.GetString(reader.GetOrdinal("status")),
+                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                        updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                    };
+
+                    results.Add(inventoryItem);
+                }
+            }
+
+            return new InventoryItemModel
+            {
+                result = results
+            };
+        }
+
+
 
         public PostInventoryResponse PostInventory(InventoryRequestModel.PostInventory postInventory)
         {

@@ -26,7 +26,7 @@ namespace RestieAPI.Service.Repo
                 { "@password", authuser.password },
             };
             var results = new List<GetAuthuser>();
-            using (var reader = _databaseService.ExecuteQuery(sql, parameters))
+            using (var reader = _databaseService.ExecuteQuery(sql, parameters).reader)
             {
 
                 while (reader.Read())

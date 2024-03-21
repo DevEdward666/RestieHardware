@@ -21,6 +21,20 @@
             public float cost { get; set; }
             public float price { get; set; }
             public long createdat { get; set; }
+          
+
+        }
+
+        public class AddToCart
+        {
+            public string cartid { get; set; }
+            public string code { get; set; }
+            public string item { get; set; }
+            public long onhandqty { get; set; }
+            public long qty { get; set; }
+            public float price { get; set; }
+            public long createdat { get; set; }
+            public string status { get; set; }
 
         }
     }

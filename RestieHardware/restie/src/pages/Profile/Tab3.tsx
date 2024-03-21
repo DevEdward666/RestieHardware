@@ -30,11 +30,6 @@ const Tab3: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size="large">Profile</IonTitle>
-          </IonToolbar>
-        </IonHeader>
         {/* <ExploreContainer name="Tab 2 page" /> */}
       </IonContent>
     </IonPage>

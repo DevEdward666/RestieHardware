@@ -1,0 +1,107 @@
+.selected-item-main-content{
+    --background: white !important;
+    .selected-item-container{
+        display: flex;
+        flex-direction: column;
+        height: 50%;
+        .swiper-container{
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            height: 100%;
+            .swiper-component{
+                height: 100%;
+                width: 100%;
+            }
+        }
+    }
+    .selected-item-information-container{
+        display: flex;
+        flex-direction: row;
+        gap: 16px;
+        justify-content: space-between;
+        align-items: center;
+        .selected-item-price-qty-container{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .selected-item-current-price{
+            font-family: "Gotham-Light";
+            color: #FF3737;
+            font-size: 24px;
+        }
+        .selected-item-current-qty{
+            font-family: "Gotham-Light";
+            color: #B8B8B8;
+            font-size: 12px;
+        }
+        .selected-item-added-qty-container{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            .selected-item-added-qty-input{
+                color: black;
+                display: flex;
+                text-align: center;
+                flex-direction: column;
+                justify-content: center;
+                width: 30px;
+            }
+        }
+    }
+    
+}
+.selected-item-information-details-content{
+    padding: 10px;
+    .selected-item-information-details-content-category-brand{
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        .selected-item-name-brand{
+            font-family: "Gotham-Light";
+            font-size: 16px;
+        }
+        .selected-item-name-category{
+            font-family: "Gotham-Light";
+            font-size: 16px;
+        }
+    }
+    .selected-item-name{
+        font-family: "Gotham-Medium";
+        font-size: 16px;
+    }
+    .selected-item-break-line{
+        --min-height: 24px;
+        --padding-start: 1px;
+    }
+}
+.button-container {
+    position: absolute;
+    bottom: 0;
+    padding: 10px;
+    right: 0;
+}
+ion-input.qty {
+    width: 50px;
+    text-align: center;
+    --background: #fff;
+    --color: #888c90;
+    --placeholder-color: #888c90;
+    --placeholder-opacity: 0.5;
+  
+    --padding-bottom: 0;
+    --padding-end: 10px;
+    --padding-start: 10px;
+    --padding-top: 0;
+    min-height: 48px !important;
+    border: 2px solid #9fa3a6 !important;
+    border-radius: 10px;
+    --border-radius:10px;
+    --border-color: black;
+    --border-style: solid;
+    --border-width: 5px;
+  }
+  

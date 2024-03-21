@@ -1,8 +1,12 @@
-﻿namespace RestieAPI.Models.Response
+﻿using Npgsql;
+
+namespace RestieAPI.Models.Response
 {
     public class InventoryItemModel
     {
         public List<InventoryItems> result { get; set; }
+        public Boolean success {  get; set; }
+        public int statusCode { get; set; }
     }
 
     public class InventoryItems

@@ -20,59 +20,44 @@ import {
   getAllInventory,
   searchInventory,
 } from "../../Service/API/Inventory/InventoryApi";
+import { RootStore, useTypedDispatch } from "../../Service/Store";
+import {
+  getInventory,
+  searchInventoryList,
+} from "../../Service/Actions/Inventory/InventoryActions";
+import { useSelector } from "react-redux";
 
 const queryClient = new QueryClient();
 const Tab1: React.FC = () => {
+  const list_of_items = useSelector(
+    (store: RootStore) => store.InventoryReducer.list_of_items
+  );
+
+  const dispatch = useTypedDispatch();
+  const [isFetching, setFetching] = useState<boolean>(false);
   const [fetchList, setFetchList] = useState<SearchInventoryModel>({
     page: 1,
     offset: 0, // Assuming offset starts from 0
     limit: 10,
     searchTerm: "",
   });
-
-  const { data, isError, isLoading, isFetching, refetch } = useQuery(
-    ["inventorys", fetchList],
-    async () => {
-      console.log(fetchList);
-      if (fetchList.searchTerm.length <= 0) {
-        setFetchList({
-          page: 1,
-          offset: 0,
-          limit: 10,
-          searchTerm: "",
-        });
-        return await getAllInventory(fetchList);
-      } else {
-        return await searchInventory(fetchList);
-      }
-    },
-    {
-      refetchOnWindowFocus: false,
-    }
-  );
-
-  const fetchInventory = async () => {
-    await refetch();
-  };
-
   useEffect(() => {
-    fetchInventory();
-  }, [fetchList]);
-
-  const mutation = useMutation(
-    async () => {
+    const getInventoryInitialize = async () => {
       if (fetchList.searchTerm.length <= 0) {
-        await getAllInventory(fetchList);
+        dispatch(
+          getInventory({
+            page: 1,
+            offset: 0,
+            limit: 10,
+            searchTerm: "",
+          })
+        );
       } else {
-        await searchInventory(fetchList);
+        const res = await dispatch(searchInventoryList(fetchList));
       }
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries("inventorys");
-      },
-    }
-  );
+    };
+    getInventoryInitialize();
+  }, [dispatch, fetchList]);
 
   const handleSearch = (ev: Event) => {
     let query = "";
@@ -89,7 +74,7 @@ const Tab1: React.FC = () => {
   return (
     <IonPage className="home-page-container">
       <IonHeader className="home-page-header">
-        <IonToolbar mode="ios" color="tertiary">
+        <IonToolbar mode={"md"} color="tertiary">
           <IonButtons slot="start">
             <IonMenuButton autoHide={false}></IonMenuButton>
           </IonButtons>
@@ -113,15 +98,10 @@ const Tab1: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen className="home-page-content">
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size="large">Home</IonTitle>
-          </IonToolbar>
-        </IonHeader>
         <div className="home-spinner">
           {isFetching && <IonSpinner color="light" name="lines"></IonSpinner>}
         </div>
-        <ExploreContainer data={data} />
+        <ExploreContainer data={list_of_items} />
       </IonContent>
     </IonPage>
   );

@@ -37,7 +37,6 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y dotnet-runtime-3.1  # Install .NET runtime if not already installed
-          sudo systemctl stop RestieEC2 || true  # Stop the existing service if running
           sudo rm -rf /var/www/restieapi/*  # Remove existing files
           scp -r ./RestieAPI/RestieAPI/restieapi/* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/var/www/restieapi/  # Copy your application files
-          sudo systemctl start RestieEC2  # Start your application service
+

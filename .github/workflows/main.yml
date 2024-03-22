@@ -79,7 +79,9 @@ jobs:
           curl -L https://fly.io/install.sh | sh
           echo "export PATH=\"$HOME/.fly/bin:$PATH\"" >> $HOME/.bashrc
           source $HOME/.bashrc
-      
+      - name: Login to flyctl
+        run: |
+          flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
       - name: Deploy .NET API to Fly.io
         run: /home/runner/.fly/bin/flyctl deploy -a restieapi
   

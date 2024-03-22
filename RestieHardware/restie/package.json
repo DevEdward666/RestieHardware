@@ -32,7 +32,8 @@
     "react-router-dom": "^5.3.4",
     "redux": "^5.0.1",
     "redux-thunk": "^3.1.0",
-    "swiper": "^11.0.7"
+    "swiper": "^11.0.7",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@capacitor/cli": "5.7.3",
@@ -42,6 +43,7 @@
     "@testing-library/user-event": "^14.4.3",
     "@types/react": "^18.2.65",
     "@types/react-dom": "^18.0.10",
+    "@types/uuid": "^9.0.8",
     "@vitejs/plugin-legacy": "^5.0.0",
     "@vitejs/plugin-react": "^4.0.1",
     "cypress": "^13.5.0",

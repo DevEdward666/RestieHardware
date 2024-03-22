@@ -23,3 +23,16 @@
         }
     }
 }
+.tab-cart-content{
+    --background: white;
+}
+.tab-cart-total{
+    font-family: 'Gotham-Medium';
+    font-size: 24px;
+}
+.tab-cart-footer{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+}

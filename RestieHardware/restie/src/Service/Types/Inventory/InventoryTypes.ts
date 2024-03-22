@@ -1,6 +1,7 @@
 import {
   Addtocart,
   InventoryModel,
+  SelectedItemToCart,
 } from "../../../Models/Request/Inventory/InventoryModel";
 
 export type LIST_OF_ITEMS = {
@@ -9,16 +10,16 @@ export type LIST_OF_ITEMS = {
 };
 export type SELECTED_ITEM = {
   type: "SELECTED_ITEM";
-  selected_item: InventoryModel;
+  selected_item: SelectedItemToCart;
 };
 export type ADD_TO_CART = {
   type: "ADD_TO_CART";
-  add_to_cart: Addtocart;
+  add_to_cart: Addtocart[];
 };
 export type LIST_OF_PRODUCT_TYPE = LIST_OF_ITEMS | SELECTED_ITEM | ADD_TO_CART;
 
 export interface InventoryTypesModel {
   list_of_items: InventoryModel[];
-  selected_item: InventoryModel;
-  add_to_cart: Addtocart;
+  selected_item: SelectedItemToCart;
+  add_to_cart: Addtocart[];
 }

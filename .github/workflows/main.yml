@@ -81,7 +81,7 @@ jobs:
           source $HOME/.bashrc
       - name: Login to flyctl
         run: |
-          flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
+         /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
       - name: Deploy .NET API to Fly.io
         run: /home/runner/.fly/bin/flyctl deploy -a restieapi
   

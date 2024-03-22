@@ -34,15 +34,10 @@ jobs:
           path: RestieAPI/RestieAPI/restieapi
 
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}  # Replace with your EC2 instance's public IP or hostname
-          username: ${{ secrets.EC2_USERNAME }}  # Replace with your EC2 instance's username
-          key: ${{ secrets.SSH_PRIVATE_KEY }}  # Add your SSH private key as a secret
-          script: |
-            sudo apt update
-            sudo apt install -y dotnet-runtime-3.1  # Install .NET runtime if not already installed
-            sudo systemctl stop your-app-service-name || true  # Stop the existing service if running
-            sudo rm -rf /var/www/your-app-name/*  # Remove existing files
-            scp -r ./RestieAPI/RestieAPI/restieapi/* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/var/www/your-app-name/  # Copy your application files
-            sudo systemctl start your-app-service-name  # Start your application service
+        run: |
+          sudo apt update
+          sudo apt install -y dotnet-runtime-3.1  # Install .NET runtime if not already installed
+          sudo systemctl stop RestieEC2 || true  # Stop the existing service if running
+          sudo rm -rf /var/www/restieapi/*  # Remove existing files
+          scp -r ./RestieAPI/RestieAPI/restieapi/* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/var/www/restieapi/  # Copy your application files
+          sudo systemctl start RestieEC2  # Start your application service

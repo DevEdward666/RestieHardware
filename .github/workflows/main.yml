@@ -86,6 +86,3 @@ jobs:
         run: |
           cd RestieAPI
           /home/runner/.fly/bin/flyctl deploy -a restieapi
-  
-      - name: Display Deployment Status
-        run: flyctl status  # Just for verification

@@ -1,0 +1,48 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+      
+      - name: Restore dependencies
+        run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
+      
+      - name: Build
+        run: dotnet build RestieAPI/RestieAPI/RestieAPI.csproj --no-restore
+      
+      - name: Publish
+        run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieAPI/RestieAPI/restieapi
+      
+      - name: Upload artifact for deployment
+        uses: actions/upload-artifact@v3
+        with:
+          name: restieapi
+          path: RestieAPI/RestieAPI/restieapi
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}  # Replace with your EC2 instance's public IP or hostname
+          username: ${{ secrets.EC2_USERNAME }}  # Replace with your EC2 instance's username
+          key: ${{ secrets.SSH_PRIVATE_KEY }}  # Add your SSH private key as a secret
+          script: |
+            sudo apt update
+            sudo apt install -y dotnet-runtime-3.1  # Install .NET runtime if not already installed
+            sudo systemctl stop your-app-service-name || true  # Stop the existing service if running
+            sudo rm -rf /var/www/your-app-name/*  # Remove existing files
+            scp -r ./RestieAPI/RestieAPI/restieapi/* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/var/www/your-app-name/  # Copy your application files
+            sudo systemctl start your-app-service-name  # Start your application service

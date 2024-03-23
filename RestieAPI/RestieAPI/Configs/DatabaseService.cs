@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Xml;
 using Microsoft.Extensions.Configuration;
 using RestieAPI.Models.Response;
+using RestieAPI.Models.Request;
 
 namespace RestieAPI.Configs
 {

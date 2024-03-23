@@ -1,0 +1,195 @@
+import {
+  IonCard,
+  IonCardContent,
+  IonButton,
+  IonIcon,
+  IonInput,
+  IonItemSliding,
+  IonList,
+  IonItemOption,
+  IonItemOptions,
+  IonItem,
+  IonFooter,
+  IonTitle,
+  IonToolbar,
+  IonContent,
+} from "@ionic/react";
+import { removeCircle, addCircle } from "ionicons/icons";
+import { useSelector } from "react-redux";
+import {
+  SelectedItemToCart,
+  Addtocart,
+} from "../../Models/Request/Inventory/InventoryModel";
+import { addToCartAction } from "../../Service/Actions/Inventory/InventoryActions";
+import { RootStore, useTypedDispatch } from "../../Service/Store";
+import stock from "../../assets/images/stock.png";
+import "./CartComponent.css";
+const CartComponent: React.FC = () => {
+  const selectedItemselector =
+    useSelector((store: RootStore) => store.InventoryReducer.add_to_cart) || [];
+  const dispatch = useTypedDispatch();
+
+  const addItem = (
+    qtyChange: number,
+    selectedItem: SelectedItemToCart,
+    cartItems: Addtocart[],
+    cartId: string,
+    qtyAdded?: number
+  ) => {
+    // Find existing item index
+    const existingItemIndex = cartItems.findIndex(
+      (item) => item.code === selectedItem.code
+    );
+    const existingOrder = cartItems.findIndex(
+      (item) => item.orderid !== "" || item.orderid !== undefined
+    );
+    if (existingItemIndex !== -1) {
+      // If item already exists, update its quantity
+      const updatedCartItems = cartItems.map((item, index) => {
+        if (index === existingItemIndex) {
+          if (qtyAdded !== undefined) {
+            return { ...item, qty: qtyAdded };
+          } else {
+            return { ...item, qty: item.qty + qtyChange };
+          }
+        }
+        return item;
+      });
+      return updatedCartItems;
+    } else {
+      // If item doesn't exist, add it to the cart
+      const newItem: Addtocart = {
+        ...selectedItem,
+        qty: qtyChange,
+        cartid: cartId,
+        createdAt: new Date().getTime(),
+        status: "pending",
+      };
+      if (existingOrder > -1) {
+        newItem.orderid = String(cartItems[existingOrder]?.orderid);
+      }
+      return [...cartItems, newItem];
+    }
+  };
+  const handleRemoveItem = async (
+    codeToRemove: string,
+    cartItems: Addtocart[]
+  ) => {
+    // Filter out the item with the provided code
+    const updatedCartItems = cartItems.filter(
+      (item) => item.code !== codeToRemove
+    );
+    await dispatch(addToCartAction(updatedCartItems));
+  };
+  const handleQty = async (
+    selectedItem: SelectedItemToCart,
+    isAdd?: boolean,
+    qtyAdded?: number
+  ) => {
+    let change = isAdd ? (qtyAdded !== undefined ? qtyAdded : 1) : -1;
+    const addeditems = addItem(
+      change,
+      selectedItem,
+      selectedItemselector,
+      selectedItemselector[0].cartid,
+      qtyAdded
+    );
+    await dispatch(addToCartAction(addeditems));
+  };
+  console.log(selectedItemselector);
+  const CardList = () => {
+    return (
+      <div>
+        {Array.isArray(selectedItemselector) &&
+        selectedItemselector.length > 0 ? (
+          selectedItemselector?.map((card) => (
+            <IonItemSliding key={card.code}>
+              <IonItem className="main-cart-item-card">
+                <IonCard className="main-cart-card-container">
+                  <div className="main-cart-card-add-item-img">
+                    <img alt={card.item} src={stock} />
+                  </div>
+                  <div className="main-cart-card-add-item-container">
+                    <IonCardContent className="main-cart-card-main-content">
+                      <div className="main-cart-card-content">
+                        <div className="main-cart-card-title">{card.item}</div>
+                        <div className="main-cart-card-price">
+                          <span>&#8369;</span>
+                          {card.price.toFixed(2)}
+                        </div>
+                      </div>
+                      <div className="main-cart-item-added-qty-container">
+                        <IonButton
+                          size="large"
+                          fill="clear"
+                          onClick={() => handleQty(card, false)}
+                        >
+                          <IonIcon
+                            color="danger"
+                            slot="icon-only"
+                            icon={removeCircle}
+                          />
+                        </IonButton>
+
+                        <IonInput
+                          class="main-cart-qty"
+                          type="number"
+                          value={card.qty}
+                          debounce={1500}
+                          onIonInput={(ev) =>
+                            handleQty(
+                              card,
+                              true,
+                              parseInt(ev.target.value?.toString()!)
+                            )
+                          }
+                        ></IonInput>
+
+                        <IonButton
+                          size="large"
+                          fill="clear"
+                          onClick={() => handleQty(card, true)}
+                        >
+                          <IonIcon
+                            color="secondary"
+                            slot="icon-only"
+                            icon={addCircle}
+                          />
+                        </IonButton>
+                      </div>
+                      <div className="main-cart-card-qty">
+                        {card?.onhandqty} pcs
+                      </div>
+                    </IonCardContent>
+                  </div>
+                </IonCard>
+              </IonItem>
+              <IonItemOptions>
+                <IonItemOption
+                  color="danger"
+                  onClick={() =>
+                    handleRemoveItem(card.code, selectedItemselector)
+                  }
+                >
+                  Delete
+                </IonItemOption>
+              </IonItemOptions>
+            </IonItemSliding>
+          ))
+        ) : (
+          <p>No items in the cart.</p>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <IonContent>
+        <CardList />
+      </IonContent>
+    </>
+  );
+};
+
+export default CartComponent;

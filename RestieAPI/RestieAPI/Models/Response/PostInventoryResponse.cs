@@ -1,8 +1,8 @@
 ﻿namespace RestieAPI.Models.Response
 {
-    public class PostInventoryResponse
+    public class PostResponse
     {
         public int status { get; set; }
-        public string ErrorMessage { get; set; }
+        public string Message { get; set; }
     }
 }

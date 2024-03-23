@@ -19,4 +19,24 @@ export interface Addtocart {
   price: number;
   createdAt: number;
   status: string;
+  orderid?: string;
+  paidthru?: string;
+  paidcash?: number;
+  createdby?: string;
+}
+export interface SelectedItemToCart {
+  code: string;
+  item: string;
+  onhandqty: number;
+  price: number;
+  qty?: number;
+}
+export interface PostdOrderList {
+  userid: string;
+  limit: number;
+  offset: number;
+}
+export interface PostSelectedOrder {
+  userid: string;
+  orderid: string;
 }

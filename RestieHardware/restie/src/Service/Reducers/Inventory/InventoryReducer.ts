@@ -8,25 +8,11 @@ const defaultState: InventoryTypesModel = {
   selected_item: {
     code: "",
     item: "",
-    category: "",
-    qty: 0,
-    reorderqty: 0,
-    cost: "",
-    price: 0,
-    status: "",
-    createdat: 0,
-    updatedAt: 0,
-  },
-  add_to_cart: {
-    cartid: "",
-    code: "",
-    item: "",
-    qty: 0,
-    price: 0,
-    createdAt: 0,
-    status: "",
     onhandqty: 0,
+    price: 0,
   },
+  add_to_cart: [],
+  order_list: [],
 };
 
 const InventoryReducer = (
@@ -50,6 +36,12 @@ const InventoryReducer = (
       return {
         ...state,
         add_to_cart: action.add_to_cart,
+      };
+    }
+    case "ORDER_LIST": {
+      return {
+        ...state,
+        order_list: action.order_list,
       };
     }
     default:

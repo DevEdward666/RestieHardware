@@ -24,15 +24,32 @@
           
 
         }
+        public class GetUserOrder
+        {
+            public string userid { get; set; }
+            public Int32 limit { get; set; }
+            public Int32 offset { get; set; }
 
+        }
+        public class GetSelectedOrder 
+        {
+            public string userid { get; set; }
+            public string orderid { get; set; }
+
+        }
         public class AddToCart
         {
+            public string orderid { get; set; }
             public string cartid { get; set; }
             public string code { get; set; }
             public string item { get; set; }
             public long onhandqty { get; set; }
             public long qty { get; set; }
             public float price { get; set; }
+            public float total { get; set; }
+            public string? paidthru { get; set; }
+            public float? paidcash { get; set; }
+            public string? createdby { get; set; }
             public long createdat { get; set; }
             public string status { get; set; }
 

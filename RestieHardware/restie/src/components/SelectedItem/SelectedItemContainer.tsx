@@ -29,16 +29,88 @@ import "@ionic/react/css/ionic-swiper.css";
 import sample from "../../assets/images/Sample.png";
 import { addCircle, removeCircle, arrowBack } from "ionicons/icons";
 import { addToCartAction } from "../../Service/Actions/Inventory/InventoryActions";
+import { v4 as uuidv4 } from "uuid";
+import {
+  SelectedItemToCart,
+  Addtocart,
+} from "../../Models/Request/Inventory/InventoryModel";
 const SelectedItemContainer: React.FC = () => {
+  const [getcartid, setCartId] = useState<string>("");
   const [addedQty, setAddedQty] = useState<number>(1);
   const dispatch = useTypedDispatch();
   const selectedItem = useSelector(
     (store: RootStore) => store.InventoryReducer.selected_item
   );
+
+  const selectedItemselector = useSelector(
+    (store: RootStore) => store.InventoryReducer.add_to_cart
+  );
   const router = useIonRouter();
   useEffect(() => {
     console.log(selectedItem);
+    console.log("selectedItemselector", selectedItemselector);
   }, [selectedItem]);
+
+  const handleAddToCart = useCallback(async () => {
+    let cartid = localStorage.getItem("cartid");
+
+    if (!cartid) {
+      // Generate a new cartid if it doesn't exist
+      cartid = uuidv4();
+      localStorage.setItem("cartid", cartid);
+    }
+
+    const addeditems = addItem(
+      addedQty,
+      selectedItem,
+      selectedItemselector,
+      cartid
+    );
+    await dispatch(addToCartAction(addeditems));
+  }, [dispatch, selectedItemselector, selectedItem, addedQty]);
+
+  const addItem = (
+    qtyChange: number,
+    selectedItem: SelectedItemToCart,
+    cartItems: Addtocart[] | undefined,
+    cartId: string
+  ) => {
+    // Ensure cartItems is initialized as an array if it's not provided
+    if (!Array.isArray(cartItems)) {
+      cartItems = [];
+    }
+
+    // Find existing item index
+    const existingItemIndex = cartItems.findIndex(
+      (item) => item.code === selectedItem.code
+    );
+    const existingOrder = cartItems.findIndex(
+      (item) => item.orderid !== "" || item.orderid !== undefined
+    );
+    if (existingItemIndex !== -1) {
+      // If item already exists, update its quantity
+      const updatedCartItems = cartItems.map((item, index) => {
+        if (index === existingItemIndex) {
+          return { ...item, qty: item.qty + qtyChange };
+        }
+        return item;
+      });
+      return updatedCartItems;
+    } else {
+      // If item doesn't exist, add it to the cart
+      const newItem: Addtocart = {
+        ...selectedItem,
+        qty: qtyChange,
+        cartid: cartId,
+        createdAt: new Date().getTime(),
+        status: "pending",
+      };
+      if (existingOrder > -1) {
+        newItem.orderid = String(cartItems[existingOrder]?.orderid);
+      }
+      return [...cartItems, newItem];
+    }
+  };
   const handleQty = (isAdd: boolean) => {
     if (isAdd) {
       setAddedQty((prevQty) => prevQty + 1);
@@ -46,23 +118,6 @@ const SelectedItemContainer: React.FC = () => {
       setAddedQty((prevQty) => (prevQty > 0 ? prevQty - 1 : 0));
     }
   };
-  const handleAddToCart = useCallback(async () => {
-    const res = await dispatch(
-      addToCartAction({
-        cartid: "95d85cf5-fc9a-4a0e-b54d-48aead385847",
-        code: selectedItem.code,
-        item: selectedItem.item,
-        onhandqty: selectedItem.qty,
-        qty: addedQty,
-        price: selectedItem.price,
-        createdAt: new Date().getTime(),
-        status: "pending",
-      })
-    );
-    if (res && res.status === 1) {
-      alert("added to cart");
-    }
-  }, [dispatch]);
   return (
     <IonContent className="selected-item-main-content">
       <IonHeader className="home-page-header">
@@ -112,7 +167,13 @@ const SelectedItemContainer: React.FC = () => {
                 ></IonIcon>
               </IonButton>
 
-              <IonInput class="qty" type="number" value={addedQty}></IonInput>
+              <IonInput
+                class="qty"
+                type="number"
+                disabled
+                value={addedQty}
+                onIonInput={(ev) => handleQty(true)}
+              ></IonInput>
               <IonButton fill="clear" onClick={() => handleQty(true)}>
                 <IonIcon
                   color="secondary"
@@ -137,7 +198,6 @@ const SelectedItemContainer: React.FC = () => {
       </div>
       <div className="button-container">
         <IonButton color={"light"} onClick={() => handleAddToCart()}>
-          {" "}
           Add to Cart
         </IonButton>
       </div>

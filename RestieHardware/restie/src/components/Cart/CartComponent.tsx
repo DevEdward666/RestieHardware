@@ -40,7 +40,9 @@ const CartComponent: React.FC = () => {
     const existingItemIndex = cartItems.findIndex(
       (item) => item.code === selectedItem.code
     );
-
+    const existingOrder = cartItems.findIndex(
+      (item) => item.orderid !== "" || item.orderid !== undefined
+    );
     if (existingItemIndex !== -1) {
       // If item already exists, update its quantity
       const updatedCartItems = cartItems.map((item, index) => {
@@ -56,13 +58,16 @@ const CartComponent: React.FC = () => {
       return updatedCartItems;
     } else {
       // If item doesn't exist, add it to the cart
-      const newItem = {
+      const newItem: Addtocart = {
         ...selectedItem,
         qty: qtyChange,
         cartid: cartId,
         createdAt: new Date().getTime(),
         status: "pending",
       };
+      if (existingOrder > -1) {
+        newItem.orderid = String(cartItems[existingOrder]?.orderid);
+      }
       return [...cartItems, newItem];
     }
   };
@@ -91,7 +96,7 @@ const CartComponent: React.FC = () => {
     );
     await dispatch(addToCartAction(addeditems));
   };
-
+  console.log(selectedItemselector);
   const CardList = () => {
     return (
       <div>

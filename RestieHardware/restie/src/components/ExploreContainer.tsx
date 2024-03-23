@@ -74,10 +74,15 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
     }
 
     let existingItemIndex = -1;
+    let existingOrder = -1;
     if (cartItems.length > 0) {
       existingItemIndex = cartItems.findIndex(
         (item) => item.code === selectedItem.code
       );
+      existingOrder = cartItems.findIndex((item) => {
+        console.log(item.orderid);
+        return item.orderid !== "" || item.orderid !== null;
+      });
     }
 
     if (existingItemIndex !== -1) {
@@ -95,7 +100,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
       return updatedCartItems;
     } else {
       // If item doesn't exist, add it to the cart
-      const newItem = {
+      const newItem: Addtocart = {
         cartid: cartId,
         code: selectedItem.code,
         item: selectedItem.item,
@@ -105,6 +110,9 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
         createdAt: new Date().getTime(),
         status: "pending",
       };
+      if (existingOrder > -1) {
+        newItem.orderid = String(cartItems[existingOrder]?.orderid);
+      }
       return [...cartItems, newItem];
     }
   };

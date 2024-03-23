@@ -50,11 +50,21 @@ namespace RestieAPI.Controllers
         public ActionResult<PostResponse> AddtoCart(InventoryRequestModel.AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.AddtoCart(addToCart));
+        }       
+        [HttpPost("UpdateCart")]
+        public ActionResult<PostResponse> UpdateCart(InventoryRequestModel.AddToCart[] addToCart)
+        {
+            return Ok(_inventoryRepo.UpdateCart(addToCart));
         }     
         [HttpPost("userOrders")]
         public ActionResult<PostResponse> GetOrder(InventoryRequestModel.GetUserOrder getUserOrder)
         {
             return Ok(_inventoryRepo.getOrder(getUserOrder));
+        }   
+        [HttpPost("getSelectedOrder")]
+        public ActionResult<PostResponse> GetselectOrder(InventoryRequestModel.GetSelectedOrder getSelectedOrder)
+        {
+            return Ok(_inventoryRepo.selectOrder(getSelectedOrder));
         }
 
     }

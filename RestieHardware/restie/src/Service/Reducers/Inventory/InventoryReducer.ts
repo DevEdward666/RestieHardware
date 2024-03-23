@@ -12,6 +12,7 @@ const defaultState: InventoryTypesModel = {
     price: 0,
   },
   add_to_cart: [],
+  order_list: [],
 };
 
 const InventoryReducer = (
@@ -35,6 +36,12 @@ const InventoryReducer = (
       return {
         ...state,
         add_to_cart: action.add_to_cart,
+      };
+    }
+    case "ORDER_LIST": {
+      return {
+        ...state,
+        order_list: action.order_list,
       };
     }
     default:

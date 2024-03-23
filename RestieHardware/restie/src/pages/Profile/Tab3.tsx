@@ -11,10 +11,11 @@ import {
 import ExploreContainer from "../../components/ExploreContainer";
 import "./Tab3.css";
 import restielogo from "../../assets/images/Icon@3.png";
+import ProfileListButtons from "../../components/Profile/ProfileListButtons/ProfileListButtons";
 const Tab3: React.FC = () => {
   return (
-    <IonPage className="home-page-container">
-      <IonHeader className="home-page-header">
+    <IonPage className="profile-page-container">
+      <IonHeader className="profile-page-header">
         <IonToolbar mode="ios" color="tertiary">
           <IonButtons slot="start">
             <IonMenuButton autoHide={false}></IonMenuButton>
@@ -24,13 +25,15 @@ const Tab3: React.FC = () => {
         <IonToolbar
           mode="ios"
           color="tertiary"
-          className="home-toolbar-logo-container"
+          className="profile-toolbar-logo-container"
         >
-          <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
+          <IonImg src={restielogo} className="profile-toolbar-logo"></IonImg>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-        {/* <ExploreContainer name="Tab 2 page" /> */}
+        <div className="profile-page-button-container">
+          <ProfileListButtons />
+        </div>
       </IonContent>
     </IonPage>
   );

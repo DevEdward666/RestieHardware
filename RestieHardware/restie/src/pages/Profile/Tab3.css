@@ -1,25 +1,34 @@
-.home-page-container{
-    .home-page-header{
+.profile-page-container{
+    display: flex;
+    .profile-page-header{
         display: flex;
         flex-direction: column;
     }
-    .home-page-content{
+    .profile-page-content{
         --background: linear-gradient(180deg, #0F0526, #125B8C);
-        .home-spinner{
+        .profile-spinner{
             text-align: center;
             color: white;
         }
     }
-    .home-toolbar-logo-container{
+    .profile-toolbar-logo-container{
         display: flex;
         flex-direction: row;
         justify-self: center;
         align-items: center;
         text-align: center;
-        .home-toolbar-logo{
+        .profile-toolbar-logo{
             height: 100px;
             width: 100%;
             margin: 10px;
         }
     }
+ 
 }
+
+    .profile-page-button-container{
+        display: flex;
+        flex: 1;
+        height: 100%;
+        padding: 10px;
+    }

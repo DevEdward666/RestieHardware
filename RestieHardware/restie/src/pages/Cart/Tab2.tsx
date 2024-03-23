@@ -20,14 +20,19 @@ import { useSelector } from "react-redux";
 import { RootStore, useTypedDispatch } from "../../Service/Store";
 import { useEffect, useState } from "react";
 import { card, removeCircle } from "ionicons/icons";
-import { saveOrder } from "../../Service/Actions/Inventory/InventoryActions";
+import {
+  saveOrder,
+  updateOrder,
+} from "../../Service/Actions/Inventory/InventoryActions";
 import { ResponseModel } from "../../Models/Response/Commons/Commons";
+import { updateCartOrder } from "../../Service/API/Inventory/InventoryApi";
 
 const Tab2: React.FC = () => {
   const dispatch = useTypedDispatch();
   const selectedItemselector =
     useSelector((store: RootStore) => store.InventoryReducer.add_to_cart) || [];
   const [getTotal, setTotal] = useState<number>(0);
+  const [existingOrder, setExistingOrder] = useState<boolean>(false);
   useEffect(() => {
     const getTotal = () => {
       let totalPrice = 0; // Initialize total price
@@ -42,6 +47,13 @@ const Tab2: React.FC = () => {
       }
 
       setTotal(totalPrice); // Set the total price
+      const existingOrder = selectedItemselector.findIndex(
+        (item) => item.orderid !== "" || item.orderid !== undefined
+      );
+      console.log(existingOrder);
+      if (existingOrder > -1) {
+        setExistingOrder(true);
+      }
     };
 
     getTotal(); // Calculate total when selectedItemselector changes
@@ -54,7 +66,11 @@ const Tab2: React.FC = () => {
   };
   const handleSaveOrder = async () => {
     const date = new Date().getTime();
-    await dispatch(saveOrder(selectedItemselector, date));
+    if (existingOrder) {
+      await dispatch(updateOrder(selectedItemselector, date));
+    } else {
+      await dispatch(saveOrder(selectedItemselector, date));
+    }
   };
   return (
     <IonPage className="home-page-container">
@@ -84,7 +100,7 @@ const Tab2: React.FC = () => {
               {formattedNumber(getTotal)}
             </IonText>
             <IonButton color="medium" onClick={() => handleSaveOrder()}>
-              Save Order
+              {existingOrder ? "Update Order" : "Save Order"}
             </IonButton>
           </div>
         </IonToolbar>

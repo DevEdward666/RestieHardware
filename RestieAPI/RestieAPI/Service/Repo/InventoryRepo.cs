@@ -4,6 +4,7 @@ using RestieAPI.Configs;
 using RestieAPI.Models.Request;
 using RestieAPI.Models.Response;
 using System.Collections.Generic;
+using System.Data;
 using static RestieAPI.Models.Request.InventoryRequestModel;
 
 namespace RestieAPI.Service.Repo
@@ -374,6 +375,74 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
+        public PostResponse UpdateCart(InventoryRequestModel.AddToCart[] addToCartItems)
+        {
+            var insertSql = @"SELECT update_or_insert_cart (@code, @item, @qty, @price, @total, @createdat, @status, @cartid);";
+
+
+            var updateSql = @"UPDATE inventory AS i
+                                SET qty = i.qty + COALESCE((@qty - c.qty), @qty)
+                                FROM (
+                                    SELECT SUM(qty) as qty
+                                    FROM cart
+                                    WHERE code = @code AND status = 'pending' AND cartid = @cartid
+                                ) AS c
+                                WHERE i.code = @code;";
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        foreach (var addToCart in addToCartItems)
+                        {
+                            using (var insertCommand = new NpgsqlCommand(insertSql, connection))
+                            {
+                                insertCommand.CommandType = CommandType.Text;
+                                insertCommand.Parameters.AddWithValue("@cartid", addToCart.cartid);
+                                insertCommand.Parameters.AddWithValue("@code", addToCart.code);
+                                insertCommand.Parameters.AddWithValue("@item", addToCart.item);
+                                insertCommand.Parameters.AddWithValue("@qty", addToCart.qty);
+                                insertCommand.Parameters.AddWithValue("@price", addToCart.price);
+                                insertCommand.Parameters.AddWithValue("@total", addToCart.qty * addToCart.price);
+                                insertCommand.Parameters.AddWithValue("@createdat", addToCart.createdat);
+                                insertCommand.Parameters.AddWithValue("@status", addToCart.status);
+                                insertCommand.ExecuteNonQuery();
+                            }
+                        }
+                        foreach (var addToCart in addToCartItems)
+                        {
+                            using (var updateCommand = new NpgsqlCommand(updateSql, connection))
+                            {
+                                updateCommand.Parameters.AddWithValue("@qty", addToCart.qty);
+                                updateCommand.Parameters.AddWithValue("@code", addToCart.code);
+                                updateCommand.Parameters.AddWithValue("@cartid", addToCart.cartid); // Assuming cartid is the same for all items
+                                updateCommand.ExecuteNonQuery();
+                            }
+                        }
+
+                        transaction.Commit();
+                        return new PostResponse
+                        {
+                            status = 200,
+                            Message = "Order successfully saved"
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        return new PostResponse
+                        {
+                            status = 500,
+                            Message = ex.Message
+                        };
+                    }
+                }
+            }
+        }
+
         public OrderResponseModel getOrder(InventoryRequestModel.GetUserOrder getUserOrder)
         {
             var sql = @"select * from orders where userid=@userid ORDER BY createdat LIMIT @limit OFFSET @offset;";
@@ -451,6 +520,89 @@ namespace RestieAPI.Service.Repo
             }
 
           
+        }
+        public SelectedOrderResponseModel selectOrder(InventoryRequestModel.GetSelectedOrder getUserOrder)
+        {
+            var sql = @"SELECT ct.*,ors.createdby, ors.orderid,ors.total,ors.status
+                        FROM orders AS ors
+                        JOIN cart AS ct ON ors.cartid = ct.cartid
+                        WHERE ors.userid = @userid and ors.orderid = @orderid;
+                        ";
+
+                var parameters = new Dictionary<string, object>
+                {
+                    { "@userid", getUserOrder.userid },
+                    { "@orderid", getUserOrder.orderid },
+                };
+
+
+            var results = new List<SelectedOrderResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var orderResponse = new SelectedOrderResponse
+                                    {
+                                        orderid = reader.GetString(reader.GetOrdinal("orderid")),
+                                        cartid = reader.GetString(reader.GetOrdinal("cartid")),
+                                        total = reader.GetFloat(reader.GetOrdinal("total")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        createdby = reader.GetString(reader.GetOrdinal("createdby")),
+                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                        status = reader.GetString(reader.GetOrdinal("status")),
+                                        qty = reader.GetInt16(reader.GetOrdinal("qty")),
+                                        price = reader.GetFloat(reader.GetOrdinal("price")),
+
+                                    };
+
+                                    results.Add(orderResponse);
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new SelectedOrderResponseModel
+                        {
+                            result = results,
+                            statusCode = 200,
+                            success = true,
+
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new SelectedOrderResponseModel
+                        {
+                            result = [],
+                            statusCode = 500,
+                            success = false,
+
+                        };
+                        throw;
+                    }
+                }
+            }
+
+
         }
         //public PostResponse PostInventory(InventoryRequestModel.PostInventory postInventory)
         //{

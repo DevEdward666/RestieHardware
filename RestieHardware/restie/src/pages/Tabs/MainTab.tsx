@@ -18,24 +18,24 @@ const MainTab: React.FC = () => {
     <>
       <IonTabs>
         <IonRouterOutlet>
-          <Route exact={true} path="/home" render={() => <Tab1 />} />
-          <Route exact={true} path="/cart" render={() => <Tab2 />} />
-          <Route exact={true} path="/profile" render={() => <Tab3 />} />
+          <Route exact={true} path="/home/main" render={() => <Tab1 />} />
+          <Route exact={true} path="/home/cart" render={() => <Tab2 />} />
+          <Route exact={true} path="/home/profile" render={() => <Tab3 />} />
           <Route exact={true} path="/">
-            <Redirect to="/home" />
+            <Redirect to="/home/main" />
           </Route>
         </IonRouterOutlet>
 
         <IonTabBar slot="bottom" color="tertiary" mode="md">
-          <IonTabButton tab="home" href="/home">
+          <IonTabButton tab="home" href="/home/main">
             <IonIcon aria-hidden="true" icon={home} />
             <IonLabel>Home</IonLabel>
           </IonTabButton>
-          <IonTabButton tab="cart" href="/cart">
+          <IonTabButton tab="cart" href="/home/cart">
             <IonIcon aria-hidden="true" icon={cart} />
             <IonLabel>Cart</IonLabel>
           </IonTabButton>
-          <IonTabButton tab="profile" href="/profile">
+          <IonTabButton tab="profile" href="/home/profile">
             <IonIcon aria-hidden="true" icon={person} />
             <IonLabel>Profile</IonLabel>
           </IonTabButton>

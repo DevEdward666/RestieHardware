@@ -7,6 +7,7 @@ import {
 } from "../../../Models/Request/Inventory/InventoryModel";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 import { ResponseModel } from "../../../Models/Response/Commons/Commons";
+import { GetCustomerInformation } from "../../../Models/Response/Customer/GetCustomerModel";
 import {
   GetListOrder,
   SelectedOrder,
@@ -36,7 +37,6 @@ export const searchInventory = async (payload: SearchInventoryModel) => {
 };
 
 export const addToCart = async (payload: Addtocart[]) => {
-  console.log("order", payload);
   const response: ResponseModel = await post(
     `${baseUrl}api/Inventory/AddToCart`,
     {
@@ -69,9 +69,31 @@ export const ListOrder = async (payload: PostdOrderList) => {
   );
   return response.result;
 };
+export const userOrderInfo = async (payload: PostSelectedOrder) => {
+  const response = await post(
+    `${baseUrl}api/Inventory/userOrderInfo`,
+    {
+      "Content-Type": "application/json",
+    },
+    JSON.stringify(payload)
+  );
+  return response.result;
+};
 export const SelectedListOrder = async (payload: PostSelectedOrder) => {
   const response = await post(
     `${baseUrl}api/Inventory/getSelectedOrder`,
+    {
+      "Content-Type": "application/json",
+    },
+    JSON.stringify(payload)
+  );
+  console.log("order", response);
+  return response.result;
+};
+
+export const InsertCustomerInfo = async (payload: GetCustomerInformation) => {
+  const response = await post(
+    `${baseUrl}api/Inventory/PostCustoemrInfo`,
     {
       "Content-Type": "application/json",
     },

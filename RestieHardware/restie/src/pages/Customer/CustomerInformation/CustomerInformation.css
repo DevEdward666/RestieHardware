@@ -1,0 +1,42 @@
+.customer-info-page-container{
+    display: flex;
+    .customer-info-page-header{
+        display: flex;
+        flex-direction: column;
+    }
+    .customer-info-page-content{
+        --background: linear-gradient(180deg, #0F0526, #125B8C);
+        .customer-info-spinner{
+            text-align: center;
+            color: white;
+        }
+    }
+    .customer-info-toolbar-logo-container{
+        display: flex;
+        flex-direction: row;
+        justify-self: center;
+        align-items: center;
+        text-align: center;
+        .customer-info-toolbar-logo{
+            height: 100px;
+            width: 100%;
+            margin: 10px;
+        }
+    }
+ 
+}
+.customer-toolbar-logo-container{
+    display: flex;
+    flex-direction: row;
+    justify-self: center;
+    align-items: center;
+    text-align: center;
+    .customer-toolbar-logo{
+        height: 100px;
+        width: 100%;
+        margin: 10px;
+    }
+}
+.customer-info-content{
+    --background:white;
+}

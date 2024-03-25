@@ -1,0 +1,51 @@
+.customer-information-main-content{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+
+    .customer-information-list-container{
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 10px;
+        min-height: 250px;
+        .customer-information-list{
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            /* Body - 16/Regular */
+            font-family: Gotham-Book;
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: 24px; /* 150% */
+            justify-content: space-between;
+            border-radius: 15px;
+            .customer-button-order{
+                font-family: Gotham-Book;
+                font-size: 16px;
+                --color:white;
+            }
+            .customer-button-text{
+                padding-left: 10px;
+                color: white;
+            }
+            .customer-info-item{
+                display: flex;
+                flex-direction: row;
+                --padding-end: 0px;
+                --padding-start: 0px;
+                --inner-padding-end: 0px;
+                --inner-padding-bottom: 0;
+                
+                .info-text{
+                    flex: 0.5;
+                }
+                .info-input{
+                    flex: 1;
+                }
+            }
+        }
+    }
+}

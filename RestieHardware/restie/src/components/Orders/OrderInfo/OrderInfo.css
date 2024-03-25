@@ -1,0 +1,151 @@
+.order-list-info-container{
+    padding-bottom: 20px;
+}
+.order-list-info-card-container{
+    display: flex;
+    flex-direction: column;
+    .order-list-info-card-add-item-container{
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+    .order-list-info-card-main-content{
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        webkit-padding-start: 0px;
+        padding-inline-start: 0px;
+        -webkit-padding-end: 0px;
+        padding-inline-end: 0px;
+        justify-content: space-between;
+        align-items: center;
+        .order-list-info-card-content{
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            gap: 8px;
+          
+           
+            .order-list-info-card-title-details{
+                display: flex;
+                font-family: "Gotham-Medium";
+                font-size: 14px;
+                flex-direction: row;
+                gap: 5px;
+                .order-list-info-card-title{
+                    font-family: "Gotham-Medium";
+                    font-size: 14px;
+                }
+            }
+            .order-list-info-card-category-details{
+                display: flex;
+                font-family: "Gotham-Light";
+                font-size: 14px;
+                flex-direction: row;
+                gap: 5px;
+                .order-list-info-card-category{
+                    font-family: "Gotham-Light";
+                    font-size: 14px;
+                }
+            }
+            .order-list-info-card-price-details{
+                display: flex;
+                font-family: "Gotham-Light";
+                font-size: 16px;
+                flex-direction: row;
+                color: #f02b2b;
+                font-weight: bolder;
+                gap: 5px;
+                .order-list-info-card-price{
+                    font-family: "Gotham-Light";
+                    font-size: 14px;
+                }
+            }
+        }
+     
+    }
+
+}
+.order-list-info-footer-details{
+    display: flex;
+    font-size: 16px;
+    flex-direction: row;
+    font-weight: bolder;
+    gap: 5px;
+    justify-content: space-between;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    .order-list-info-footer{
+        font-family: "Gotham-Medium";
+        font-size: 16px;
+    }
+    .order-list-info-footer-info{
+        font-family: "Gotham-Light";
+        color: #f02b2b;
+        font-size: 16px;
+    }
+}
+
+.order-list-info-footer-total-details{
+    display: flex;
+    font-size: 24px;
+    flex-direction: row;
+    font-weight: bolder;
+    gap: 5px;
+    justify-content: space-between;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 25px;
+    .order-list-info-footer-total{
+        font-family: "Gotham-Medium";
+        font-size: 24px;
+    }
+    .order-list-info-footer-total-info{
+        font-family: "Gotham-Light";
+        color: #f02b2b;
+        font-size: 24px;
+    }
+}
+.order-list-info-card-qty{
+               
+    text-align: end;
+    font-family: "Gotham-Medium";
+    font-size: 24px;
+    color: #f02b2b;
+}
+
+.order-list-info-customer-details{
+    display: flex;
+    font-size: 16px;
+    flex-direction: row;
+    font-weight: bolder;
+    gap: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    .order-list-info-customer{
+        font-family: "Gotham-Medium";
+        font-size: 16px;
+    }
+    .order-list-info-customer-info{
+        font-family: "Gotham-Light";
+        color: #125B8C;
+        font-size: 16px;
+    }
+}
+.order-list-info-main-container{
+    padding-top: 20px;
+}
+.breakline{
+    padding: 15px;
+}
+.pending{
+    color:#ffa807
+}
+.approved{
+    color:#1bf01b
+}
+.cancelled{
+    color:#f02b2b
+}

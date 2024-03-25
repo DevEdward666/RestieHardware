@@ -1,0 +1,27 @@
+.payment-options-page-container{
+    display: flex;
+    .profile-page-header{
+        display: flex;
+        flex-direction: column;
+    }
+    .payment-options-page-content{
+        --background: linear-gradient(180deg, #0F0526, #125B8C);
+        .payment-options-spinner{
+            text-align: center;
+            color: white;
+        }
+    }
+    .payment-options-toolbar-logo-container{
+        display: flex;
+        flex-direction: row;
+        justify-self: center;
+        align-items: center;
+        text-align: center;
+        .payment-options-toolbar-logo{
+            height: 100px;
+            width: 100%;
+            margin: 10px;
+        }
+    }
+ 
+}

@@ -23,6 +23,8 @@ export interface Addtocart {
   paidthru?: string;
   paidcash?: number;
   createdby?: string;
+  userid?: string;
+  type?: string;
 }
 export interface SelectedItemToCart {
   code: string;

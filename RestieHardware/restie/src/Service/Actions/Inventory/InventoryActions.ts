@@ -3,15 +3,18 @@ import {
   ADD_TO_CART,
   LIST_OF_ITEMS,
   ORDER_LIST,
+  ORDER_LIST_INFO,
   SELECTED_ITEM,
 } from "../../Types/Inventory/InventoryTypes";
 import {
+  InsertCustomerInfo,
   ListOrder,
   SelectedListOrder,
   addToCart,
   getAllInventory,
   searchInventory,
   updateCartOrder,
+  userOrderInfo,
 } from "../../API/Inventory/InventoryApi";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 import {
@@ -23,7 +26,11 @@ import {
 } from "../../../Models/Request/Inventory/InventoryModel";
 import { ResponseModel } from "../../../Models/Response/Commons/Commons";
 import { v4 as uuidv4 } from "uuid";
-import { GetListOrder } from "../../../Models/Response/Inventory/GetInventoryModel";
+import {
+  GetListOrder,
+  GetListOrderInfo,
+} from "../../../Models/Response/Inventory/GetInventoryModel";
+import { GetCustomerInformation } from "../../../Models/Response/Customer/GetCustomerModel";
 export const getInventory =
   (payload: SearchInventoryModel) =>
   async (dispatch: Dispatch<LIST_OF_ITEMS>) => {
@@ -93,17 +100,54 @@ export const saveOrder =
         status: "pending",
       }));
 
-      const res: ResponseModel = await addToCart(updatedPayload);
-      if (res.status === 200) {
-        localStorage.removeItem("cartid");
-        dispatch({
-          type: "ADD_TO_CART",
-          add_to_cart: [], // Assuming you want to clear the cart after saving the order
-        });
-        alert(res.message);
-      }
+      // const res: ResponseModel = await addToCart(updatedPayload);
+      // if (res.status === 200) {
+      //   localStorage.removeItem("cartid");
+      //   dispatch({
+      //     type: "ADD_TO_CART",
+      //     add_to_cart: [], // Assuming you want to clear the cart after saving the order
+      //   });
+      //   alert(res.message);
+      // }
     } catch (error: any) {
       console.log(error);
+    }
+  };
+export const PostOrder =
+  (
+    payload: Addtocart[],
+    customer_payload: GetCustomerInformation,
+    createdat: number,
+    method: string
+  ) =>
+  async (dispatch: Dispatch<ADD_TO_CART>) => {
+    try {
+      const customerAdded: ResponseModel = await InsertCustomerInfo(
+        customer_payload
+      );
+      const orderid = uuidv4();
+      const updatedPayload = payload.map((val) => ({
+        ...val,
+        orderId: orderid,
+        createdAt: createdat,
+        createdby: "Admin",
+        paidcash: 0.0,
+        paidthru: method,
+        status: "pending",
+        userid: customer_payload?.customerid,
+        type: customer_payload.ordertype,
+      }));
+
+      const res: ResponseModel = await addToCart(updatedPayload);
+      localStorage.removeItem("cartid");
+      dispatch({
+        type: "ADD_TO_CART",
+        add_to_cart: [], // Assuming you want to clear the cart after saving the order
+      });
+      return true;
+    } catch (error: any) {
+      console.log(error);
+      return true;
     }
   };
 export const updateOrder =
@@ -135,11 +179,24 @@ export const getOrderList =
       console.log(error);
     }
   };
+export const getOrderInfo =
+  (payload: PostSelectedOrder) =>
+  async (dispatch: Dispatch<ORDER_LIST_INFO>) => {
+    try {
+      const res: GetListOrderInfo[] = await userOrderInfo(payload);
+      dispatch({
+        type: "ORDER_LIST_INFO",
+        order_list_info: res,
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
 export const selectedOrder =
   (payload: PostSelectedOrder) => async (dispatch: Dispatch<ADD_TO_CART>) => {
     try {
       const res: Addtocart[] = await SelectedListOrder(payload);
-      console.log("selectedOrder", res);
       dispatch({
         type: "ADD_TO_CART",
         add_to_cart: res,

@@ -44,10 +44,14 @@ http://ionicframework.com/docs/theming/ */
   src: url("../assets/fonts/Gotham-XLight.otf");
 }
 ion-toolbar {
- --backround:#051926;
+ /* --backround:#051926; */
+ --backround:white;
+
 }
 ion-content{
-  --background: linear-gradient(180deg, #0F0526, #125B8C);
+  /* --background: linear-gradient(180deg, #0F0526, #125B8C); */
+  --background: linear-gradient(180deg, white, white);
+
 }
 :root {
   --ion-font-family: "Gotham-Light";

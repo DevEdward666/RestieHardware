@@ -1,0 +1,27 @@
+.order-list-page-container{
+    display: flex;
+    .profile-page-header{
+        display: flex;
+        flex-direction: column;
+    }
+    .order-list-page-content{
+        --background: linear-gradient(180deg, #0F0526, #125B8C);
+        .order-list-spinner{
+            text-align: center;
+            color: white;
+        }
+    }
+    .order-list-toolbar-logo-container{
+        display: flex;
+        flex-direction: row;
+        justify-self: center;
+        align-items: center;
+        text-align: center;
+        .order-list-toolbar-logo{
+            height: 100px;
+            width: 100%;
+            margin: 10px;
+        }
+    }
+ 
+}

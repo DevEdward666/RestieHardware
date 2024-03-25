@@ -1,18 +1,12 @@
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootStore, useTypedDispatch } from "../../Service/Store";
+import { useIonRouter, IonCard, IonCardContent } from "@ionic/react";
+import { useSelector } from "react-redux";
+import { PostSelectedOrder } from "../../../Models/Request/Inventory/InventoryModel";
 import {
-  IonCard,
-  IonCardContent,
-  IonButton,
-  IonIcon,
-  IonInput,
-  useIonRouter,
-} from "@ionic/react";
-import { card, removeCircle, addCircle, push } from "ionicons/icons";
+  getOrderInfo,
+  selectedOrder,
+} from "../../../Service/Actions/Inventory/InventoryActions";
+import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import "./OrderListComponent.css";
-import { selectedOrder } from "../../Service/Actions/Inventory/InventoryActions";
-import { PostSelectedOrder } from "../../Models/Request/Inventory/InventoryModel";
 const OrderListComponent = () => {
   const order_list = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list
@@ -34,13 +28,23 @@ const OrderListComponent = () => {
 
     return formattedDate;
   };
-  const handleSelectOrder = (orderid: string) => {
+  const handleSelectOrder = (orderid: string, status: string) => {
+    const statusList = {
+      pending: "pending",
+      approved: "approved",
+      cancelled: "cancelled",
+    };
     const payload: PostSelectedOrder = {
       orderid: orderid,
-      userid: "4105df30-717a-4170-af97-5dd8dacd03a2",
+      userid: "",
     };
-    dispatch(selectedOrder(payload));
-    router.push("/home/cart");
+    if (status.toLowerCase() === statusList.pending.toLowerCase()) {
+      dispatch(getOrderInfo(payload));
+      router.push("/orderInfo");
+    } else {
+      dispatch(selectedOrder(payload));
+      router.push("/orderInfo");
+    }
   };
   return (
     <div>
@@ -49,7 +53,7 @@ const OrderListComponent = () => {
           <IonCard
             className="order-list-card-container"
             key={orders.orderid}
-            onClick={() => handleSelectOrder(orders.orderid)}
+            onClick={() => handleSelectOrder(orders.orderid, orders.status)}
           >
             <div className="order-list-card-add-item-container">
               <IonCardContent className="order-list-card-main-content">

@@ -1,0 +1,156 @@
+.payment-info-container{
+    padding-bottom: 20px;
+}
+.payment-info-card-container{
+    display: flex;
+    flex-direction: column;
+    .payment-info-card-add-item-container{
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+    .payment-info-card-main-content{
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        webkit-padding-start: 0px;
+        padding-inline-start: 0px;
+        -webkit-padding-end: 0px;
+        padding-inline-end: 0px;
+        justify-content: space-between;
+        .payment-info-card-content{
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            gap: 8px;
+            margin-top: 14px; 
+            margin-bottom: 0px;
+           
+            .payment-info-card-title-details{
+                display: flex;
+                font-family: "Gotham-Black";
+                font-size: 24px;
+                flex-direction: row;
+                gap: 5px;
+                align-items: center;
+                .payment-info-card-title{
+                    font-family: "Gotham-Black";
+                    font-size: 24px;
+                }
+            }
+            .payment-info-card-category-details{
+                display: flex;
+                font-family: "Gotham-Light";
+                font-size: 14px;
+                flex-direction: row;
+                gap: 5px;
+                .payment-info-card-category{
+                    font-family: "Gotham-Light";
+                    font-size: 14px;
+                }
+            }
+            .payment-info-card-price-details{
+                display: flex;
+                font-family: "Gotham-Light";
+                font-size: 16px;
+                flex-direction: row;
+                color: #f02b2b;
+                font-weight: bolder;
+                gap: 5px;
+                .payment-info-card-price{
+                    font-family: "Gotham-Light";
+                    font-size: 14px;
+                }
+            }
+        }
+     
+    }
+
+}
+.payment-info-footer-details{
+    display: flex;
+    font-size: 16px;
+    flex-direction: row;
+    font-weight: bolder;
+    gap: 5px;
+    justify-content: space-between;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    .payment-info-footer{
+        font-family: "Gotham-Medium";
+        font-size: 16px;
+    }
+    .payment-info-footer-info{
+        font-family: "Gotham-Light";
+        color: #f02b2b;
+        font-size: 16px;
+    }
+}
+
+.payment-info-footer-total-details{
+    display: flex;
+    font-size: 16px;
+    flex-direction: row;
+    font-weight: bolder;
+    gap: 5px;
+    justify-content: space-between;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 25px;
+    .payment-info-footer-total{
+        font-family: "Gotham-Medium";
+        font-size: 16px;
+    }
+    .payment-info-footer-total-info{
+        font-family: "Gotham-Light";
+        color: #f02b2b;
+        font-size: 16px;
+    }
+}
+.payment-info-card-qty{
+               
+    text-align: end;
+    font-family: "Gotham-Medium";
+    font-size: 24px;
+    color: #f02b2b;
+}
+
+.payment-info-customer-details{
+    display: flex;
+    font-size: 16px;
+    flex-direction: row;
+    font-weight: bolder;
+    gap: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    .payment-info-customer{
+        font-family: "Gotham-Medium";
+        font-size: 16px;
+    }
+    .payment-info-customer-info{
+        font-family: "Gotham-Light";
+        color: #125B8C;
+        font-size: 16px;
+    }
+}
+.payment-info-icon-img{
+    width: 81px;
+    height: 66px;
+}
+.payment-info-main-container{
+    padding-top: 20px;
+}
+.breakline{
+    padding: 15px;
+}
+.pending{
+    color:#ffa807
+}
+.approved{
+    color:#1bf01b
+}
+.cancelled{
+    color:#f02b2b
+}

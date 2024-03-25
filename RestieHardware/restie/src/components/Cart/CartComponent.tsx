@@ -96,7 +96,6 @@ const CartComponent: React.FC = () => {
     );
     await dispatch(addToCartAction(addeditems));
   };
-  console.log(selectedItemselector);
   const CardList = () => {
     return (
       <div>

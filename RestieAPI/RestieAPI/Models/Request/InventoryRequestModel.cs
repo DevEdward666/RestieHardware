@@ -24,6 +24,16 @@
           
 
         }
+        public class PostCustomerInfo
+        {
+            public string customerid { get; set; }
+            public string name { get; set; }
+            public string contactno { get; set; }
+            public string address { get; set; }
+            public long createdat { get; set; }
+
+
+        }
         public class GetUserOrder
         {
             public string userid { get; set; }
@@ -51,7 +61,10 @@
             public float? paidcash { get; set; }
             public string? createdby { get; set; }
             public long createdat { get; set; }
+            public long? updateat { get; set; }
+            public string? userid { get; set; }
             public string status { get; set; }
+            public string? type { get; set; }
 
         }
     }

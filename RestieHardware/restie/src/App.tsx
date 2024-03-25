@@ -20,7 +20,10 @@ import "@ionic/react/css/text-transformation.css";
 import SelectedItemPage from "./pages/SelectedItem/SelectedItemPage";
 import MainTab from "./pages/Tabs/MainTab";
 import "./theme/variables.css";
-import OrderListPage from "./pages/Profile/OrderList/OrderListPage";
+import OrderListPage from "./pages/Orders/Orderlist/OrderListPage";
+import OrderInfoPage from "./pages/Orders/Orderinfo/OrderInfo";
+import CustomerInformationPage from "./pages/Customer/CustomerInformation/CustomerInformationPage";
+import PaymentOptionsPage from "./pages/Payment/PaymentsOptions/PaymentOptionsPage";
 
 setupIonicReact();
 
@@ -30,6 +33,14 @@ const App: React.FC = () => {
       <Route path="/" render={() => <MainTab />} />
       <Route path="/selectedItem" render={() => <SelectedItemPage />} />
       <Route path="/orders" render={() => <OrderListPage />} />
+
+      <Route
+        path="/customerInformation"
+        render={() => <CustomerInformationPage />}
+      />
+      <Route path="/paymentoptions" render={() => <PaymentOptionsPage />} />
+
+      <Route path="/orderInfo" render={() => <OrderInfoPage />} />
       <Route path="/home/cart" render={() => <MainTab />} />
     </IonApp>
   );

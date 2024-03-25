@@ -4,7 +4,7 @@
         flex-direction: column;
     }
     .home-page-content{
-        --background: linear-gradient(180deg, #0F0526, #125B8C);
+        /* --background: linear-gradient(180deg, #0F0526, #125B8C); */
         .home-spinner{
             text-align: center;
             color: white;

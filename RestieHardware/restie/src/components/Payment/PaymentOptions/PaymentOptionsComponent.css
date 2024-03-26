@@ -18,6 +18,27 @@
         -webkit-padding-end: 0px;
         padding-inline-end: 0px;
         justify-content: space-between;
+        .payment-info-card-content-draft{
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            gap: 8px;
+            margin-top: 14px; 
+            margin-bottom: 0px;
+           
+            .payment-info-card-draft-details{
+                display: flex;
+                font-family: "Gotham-Medium";
+                font-size: 24px;
+                flex-direction: row;
+                gap: 5px;
+                align-items: center;
+                .payment-info-card-draft{
+                    font-family: "Gotham-Medium";
+                    font-size: 24px;
+                }
+            }
+        }
         .payment-info-card-content{
             display: flex;
             flex-direction: column;
@@ -136,8 +157,13 @@
     }
 }
 .payment-info-icon-img{
-    width: 81px;
-    height: 66px;
+    width: 61px;
+    height: 46px;
+}
+.payment-info-cash{
+    padding:20px;
+    display: flex;
+    flex-direction: column;
 }
 .payment-info-main-container{
     padding-top: 20px;

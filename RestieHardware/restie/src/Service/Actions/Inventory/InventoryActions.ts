@@ -7,10 +7,13 @@ import {
   SELECTED_ITEM,
 } from "../../Types/Inventory/InventoryTypes";
 import {
+  ApprovedOrderAndPay,
   InsertCustomerInfo,
   ListOrder,
+  SavedAndPayOrder,
   SelectedListOrder,
   addToCart,
+  deleteCart,
   getAllInventory,
   searchInventory,
   updateCartOrder,
@@ -89,7 +92,10 @@ export const saveOrder =
   (payload: Addtocart[], createdat: number) =>
   async (dispatch: Dispatch<ADD_TO_CART>) => {
     try {
-      const orderid = uuidv4();
+      let orderid = "";
+      if (payload[0]?.orderid !== "") {
+        orderid = payload[0]?.orderid!;
+      }
       const updatedPayload = payload.map((val) => ({
         ...val,
         orderId: orderid,
@@ -113,41 +119,121 @@ export const saveOrder =
       console.log(error);
     }
   };
+const checkPayload = (
+  payload: Addtocart[],
+  orderid: string,
+  createdat: number,
+  method: string,
+  customer_payload: GetCustomerInformation,
+  customerCash?: number
+) => {
+  const paymentMethod = { cash: "Cash", pending: "Pending" };
+  const updatedPayload = payload.map((val) => ({
+    ...val,
+    orderid: orderid,
+    createdAt: createdat,
+    createdby: "Admin",
+    paidcash:
+      method.toLowerCase() === paymentMethod.cash.toLowerCase()
+        ? customerCash
+        : 0.0,
+    paidthru: method,
+    status:
+      method.toLowerCase() === paymentMethod.cash.toLowerCase()
+        ? "approved"
+        : "pending",
+    userid: customer_payload?.customerid,
+    type: customer_payload.ordertype,
+    updateat: payload[0]?.orderid !== "" ? new Date().getTime() : null,
+  }));
+  return updatedPayload;
+};
 export const PostOrder =
   (
     payload: Addtocart[],
     customer_payload: GetCustomerInformation,
     createdat: number,
-    method: string
+    method: string,
+    customerCash?: number
   ) =>
   async (dispatch: Dispatch<ADD_TO_CART>) => {
+    let res: ResponseModel = {
+      result: {
+        cartid: "",
+        orderid: "",
+      },
+      status: 0,
+      message: "",
+    };
     try {
-      const customerAdded: ResponseModel = await InsertCustomerInfo(
-        customer_payload
+      if (customer_payload.newUser) {
+        await InsertCustomerInfo(customer_payload);
+      }
+      const paymentMethod = { cash: "Cash", pending: "Pending" };
+      let orderid = "";
+      if (payload[0]?.orderid) {
+        orderid = payload[0]?.orderid!;
+      }
+      const updatePayload = checkPayload(
+        payload,
+        orderid,
+        createdat,
+        method,
+        customer_payload,
+        customerCash
       );
-      const orderid = uuidv4();
-      const updatedPayload = payload.map((val) => ({
-        ...val,
-        orderId: orderid,
-        createdAt: createdat,
-        createdby: "Admin",
-        paidcash: 0.0,
-        paidthru: method,
-        status: "pending",
-        userid: customer_payload?.customerid,
-        type: customer_payload.ordertype,
-      }));
-
-      const res: ResponseModel = await addToCart(updatedPayload);
+      if (method.toLowerCase() === paymentMethod.cash.toLowerCase()) {
+        if (payload[0]?.orderid) {
+          await deleteCart(updatePayload);
+          await addToCart(updatePayload);
+          const UserOrderInfopayload: PostSelectedOrder = {
+            orderid: orderid,
+            userid: "",
+            cartid: payload[0].cartid,
+          };
+          const resOrderInfo: GetListOrderInfo[] = await userOrderInfo(
+            UserOrderInfopayload
+          );
+          payload = [];
+          resOrderInfo.map((val) => {
+            const newItem: Addtocart = {
+              onhandqty: val.onhandqty,
+              orderid: val.orderid,
+              cartid: val.cartid,
+              code: val.code,
+              item: val.item,
+              qty: val.qty,
+              price: val.price,
+              createdAt: val.createdat,
+              status: val.status,
+            };
+            payload.push(newItem);
+          });
+          const updatedPayload = checkPayload(
+            payload,
+            orderid,
+            createdat,
+            method,
+            customer_payload,
+            customerCash
+          );
+          res = await ApprovedOrderAndPay(updatedPayload);
+        } else {
+          res = await SavedAndPayOrder(updatePayload);
+        }
+      } else if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
+        await deleteCart(updatePayload);
+        res = await addToCart(updatePayload);
+      }
       localStorage.removeItem("cartid");
       dispatch({
         type: "ADD_TO_CART",
         add_to_cart: [], // Assuming you want to clear the cart after saving the order
       });
-      return true;
+      return res;
     } catch (error: any) {
       console.log(error);
-      return true;
+      return res;
     }
   };
 export const updateOrder =

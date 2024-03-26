@@ -86,8 +86,10 @@
         font-size: 16px;
     }
 }
-
-.order-list-info-footer-total-details{
+.order-list-info-footer-total-main{
+    display: flex;
+    flex-direction: column;
+    .order-list-info-footer-total-details{
     display: flex;
     font-size: 24px;
     flex-direction: row;
@@ -96,14 +98,27 @@
     justify-content: space-between;
     padding-left: 15px;
     padding-right: 15px;
-    padding-top: 25px;
+    padding-top: 5px;
     .order-list-info-footer-total{
         font-family: "Gotham-Medium";
         font-size: 24px;
     }
     .order-list-info-footer-total-info{
-        font-family: "Gotham-Light";
+        font-family: "Gotham-Black";
         color: #f02b2b;
+        font-size: 24px;
+    }
+}}
+.order-list-info-footer-approved-details{
+    display: flex;
+    font-size: 24px;
+    flex-direction: row;
+    font-weight: bolder;
+    gap: 5px;
+    justify-content: space-between;
+    padding-right: 5px;
+    .order-list-info-footer-approved{
+        font-family: "Gotham-Medium";
         font-size: 24px;
     }
 }
@@ -135,7 +150,10 @@
     }
 }
 .order-list-info-main-container{
-    padding-top: 20px;
+    padding-top: 5px;
+}
+.order-info-close{
+    padding:10px ;
 }
 .breakline{
     padding: 15px;

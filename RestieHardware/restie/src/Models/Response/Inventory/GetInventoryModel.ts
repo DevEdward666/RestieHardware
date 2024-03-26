@@ -18,7 +18,7 @@ export interface GetListOrderInfo {
   item: string;
   price: number;
   qty: number;
-
+  onhandqty?: number;
   name: string;
   address: string;
   contactno: number;

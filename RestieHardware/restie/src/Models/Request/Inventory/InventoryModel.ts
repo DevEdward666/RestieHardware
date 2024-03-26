@@ -14,7 +14,7 @@ export interface Addtocart {
   cartid: string;
   code: string;
   item: string;
-  onhandqty: number;
+  onhandqty?: number;
   qty: number;
   price: number;
   createdAt: number;
@@ -29,7 +29,7 @@ export interface Addtocart {
 export interface SelectedItemToCart {
   code: string;
   item: string;
-  onhandqty: number;
+  onhandqty?: number;
   price: number;
   qty?: number;
 }
@@ -39,6 +39,7 @@ export interface PostdOrderList {
   offset: number;
 }
 export interface PostSelectedOrder {
-  userid: string;
   orderid: string;
+  userid?: string;
+  cartid?: string;
 }

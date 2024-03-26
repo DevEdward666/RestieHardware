@@ -21,9 +21,9 @@ const OrderInfoPage = () => {
     <IonPage className="order-info-page-container">
       <IonHeader className="order-info-page-header">
         <IonToolbar mode="ios" color="tertiary">
-          <IonButtons slot="start" onClick={() => router.goBack()}>
+          {/* <IonButtons slot="start" onClick={() => router.goBack()}>
             <IonIcon slot="icon-only" icon={arrowBack}></IonIcon>
-          </IonButtons>
+          </IonButtons> */}
           <IonTitle>Order Summary</IonTitle>
         </IonToolbar>
       </IonHeader>

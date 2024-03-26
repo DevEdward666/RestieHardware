@@ -13,11 +13,12 @@ import {
 } from "../../../Models/Request/Inventory/InventoryModel";
 import {
   addToCartAction,
+  getInventory,
   selectedOrder,
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import "./OrderInfo.css";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import breakline from "../../../assets/images/breakline.png";
 const OrderInfoComponent = () => {
   const order_list_info = useSelector(
@@ -90,7 +91,17 @@ const OrderInfoComponent = () => {
     router.push("/home/cart");
   };
 
-  console.log(order_list_info);
+  const handleClose = useCallback(() => {
+    dispatch(
+      getInventory({
+        page: 1,
+        offset: 0,
+        limit: 10,
+        searchTerm: "",
+      })
+    );
+    router.push("/home/profile");
+  }, [dispatch]);
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
@@ -247,7 +258,7 @@ const OrderInfoComponent = () => {
         className="order-info-close"
         expand="block"
         color="tertiary"
-        onClick={() => router.push("/home/profile")}
+        onClick={() => handleClose()}
       >
         Close
       </IonButton>

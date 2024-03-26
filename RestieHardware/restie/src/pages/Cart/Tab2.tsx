@@ -52,7 +52,6 @@ const Tab2: React.FC = () => {
       const existingOrder = selectedItemselector.findIndex(
         (item) => item.orderid !== "" || item.orderid !== undefined
       );
-      console.log(existingOrder);
       if (existingOrder > -1) {
         setExistingOrder(true);
       }
@@ -70,9 +69,11 @@ const Tab2: React.FC = () => {
     const date = new Date().getTime();
     if (existingOrder) {
       await dispatch(saveOrder(selectedItemselector, date));
+
       router.push("/customerInformation");
     }
   };
+  console.log(selectedItemselector);
   return (
     <IonPage className="home-page-container">
       <IonHeader className="home-page-header">
@@ -100,7 +101,7 @@ const Tab2: React.FC = () => {
               Total - <span>&#8369;</span>
               {formattedNumber(getTotal)}
             </IonText>
-            {existingOrder ? (
+            {selectedItemselector.length > 0 ? (
               <IonButton color="medium" onClick={() => handleSaveOrder()}>
                 Proceed
               </IonButton>

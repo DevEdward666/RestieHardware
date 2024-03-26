@@ -15,9 +15,24 @@ namespace RestieAPI.Models.Response
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string? message { get; set; }
-    }    public class OrderInfoResponseModel
+    }   
+    public class OrderInfoResponseModel
     {
         public List<OrderInfoResponse> result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string? message { get; set; }
+    }
+    public class CustomerInfoResponseModel
+    {
+        public List<CustomerResponse> result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string? message { get; set; }
+    }   
+    public class GetCustomerInfoResponseModel
+    {
+        public CustomerResponse result { get; set; }
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string? message { get; set; }
@@ -62,6 +77,7 @@ namespace RestieAPI.Models.Response
         public string item { get; set; }
         public string category { get; set; }
         public long qty { get; set; }
+        public long onhandqty { get; set; }
         public float cost { get; set; }
         public float price { get; set; }
         public float total { get; set; }
@@ -90,6 +106,13 @@ namespace RestieAPI.Models.Response
         public long createdat { get; set; }
         public string status { get; set; }
     }
-
+    public class CustomerResponse
+    {
+        public string customerid { get; set; }
+        public string name { get; set; }
+        public string address { get; set; }
+        public string contactno { get; set; }
+        public long createdat { get; set; }
+    }
 
 }

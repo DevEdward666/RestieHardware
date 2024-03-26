@@ -60,6 +60,21 @@ namespace RestieAPI.Controllers
         public ActionResult<PostResponse> SaveCartUpdateInventory(InventoryRequestModel.AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.SavetoCartandUpdateInventory(addToCart));
+        }     
+        [HttpPost("UpdatedOrderAndCart")]
+        public ActionResult<PostResponse> updatedOrderAndCart(InventoryRequestModel.AddToCart[] addToCart)
+        {
+            return Ok(_inventoryRepo.updatedOrderAndCart(addToCart));
+        }      
+        [HttpPost("ApprovedOrderAndPay")]
+        public ActionResult<PostResponse> ApprovedOrderAndpay(InventoryRequestModel.AddToCart[] addToCart)
+        {
+            return Ok(_inventoryRepo.ApprovedOrderAndpay(addToCart));
+        }     
+        [HttpPost("deleteCart")]
+        public ActionResult<PostResponse> deleteCart(InventoryRequestModel.AddToCart[] addToCart)
+        {
+            return Ok(_inventoryRepo.deleteCart(addToCart));
         }
         [HttpPost("userOrders")]
         public ActionResult<PostResponse> GetOrder(InventoryRequestModel.GetUserOrder getUserOrder)
@@ -80,6 +95,18 @@ namespace RestieAPI.Controllers
         public ActionResult<PostResponse> PostCustoemrInfo(InventoryRequestModel.PostCustomerInfo postCustomerInfo)
         {
             return Ok(_inventoryRepo.AddCustomerInfo(postCustomerInfo));
+        }
+
+        [HttpGet("GetCustomers")]
+        public ActionResult<PostResponse> getCustomers()
+        {
+            return Ok(_inventoryRepo.getCustomers());
+        }
+
+        [HttpPost("GetCustomerInfo")]
+        public ActionResult<PostResponse> getCustomerInfo(InventoryRequestModel.GetCustomer getCustomer)
+        {
+            return Ok(_inventoryRepo.getCustomerInfo(getCustomer));
         }
 
     }

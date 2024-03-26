@@ -7,6 +7,7 @@ import {
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import "./OrderListComponent.css";
+import { useCallback } from "react";
 const OrderListComponent = () => {
   const order_list = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list
@@ -28,24 +29,28 @@ const OrderListComponent = () => {
 
     return formattedDate;
   };
-  const handleSelectOrder = (orderid: string, status: string) => {
-    const statusList = {
-      pending: "pending",
-      approved: "approved",
-      cancelled: "cancelled",
-    };
-    const payload: PostSelectedOrder = {
-      orderid: orderid,
-      userid: "",
-    };
-    if (status.toLowerCase() === statusList.pending.toLowerCase()) {
-      dispatch(getOrderInfo(payload));
-      router.push("/orderInfo");
-    } else {
-      dispatch(selectedOrder(payload));
-      router.push("/orderInfo");
-    }
-  };
+  const handleSelectOrder = useCallback(
+    (orderid: string, status: string, cartid: string) => {
+      const statusList = {
+        pending: "pending",
+        approved: "approved",
+        cancelled: "cancelled",
+      };
+      const payload: PostSelectedOrder = {
+        orderid: orderid,
+        userid: "",
+        cartid: cartid,
+      };
+      if (status.toLowerCase() === statusList.pending.toLowerCase()) {
+        dispatch(getOrderInfo(payload));
+        router.push("/orderInfo");
+      } else {
+        dispatch(getOrderInfo(payload));
+        router.push("/orderInfo");
+      }
+    },
+    [dispatch]
+  );
   return (
     <div>
       {Array.isArray(order_list) && order_list.length > 0 ? (
@@ -53,7 +58,9 @@ const OrderListComponent = () => {
           <IonCard
             className="order-list-card-container"
             key={orders.orderid}
-            onClick={() => handleSelectOrder(orders.orderid, orders.status)}
+            onClick={() =>
+              handleSelectOrder(orders.orderid, orders.status, orders.cartid)
+            }
           >
             <div className="order-list-card-add-item-container">
               <IonCardContent className="order-list-card-main-content">
@@ -81,7 +88,10 @@ const OrderListComponent = () => {
                       .trim()
                       .toLowerCase()}`}
                   >
-                    Status: {orders?.status.toUpperCase()}
+                    Status:{" "}
+                    {orders?.status.toLowerCase() === "approved"
+                      ? "Completed".toUpperCase()
+                      : orders?.status.toUpperCase()}
                   </div>
                 </div>
               </IonCardContent>

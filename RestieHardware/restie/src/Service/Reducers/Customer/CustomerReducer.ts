@@ -11,6 +11,13 @@ const defaultState: CustomerTypesModel = {
     ordertype: "",
     customerid: "",
   },
+  customers: [],
+  get_customer: {
+    customerid: "",
+    name: "",
+    address: "",
+    contactno: 0,
+  },
 };
 
 const CustomerReducer = (
@@ -22,6 +29,18 @@ const CustomerReducer = (
       return {
         ...state,
         customer_information: action.customer_information,
+      };
+    }
+    case "CUSTOMERS": {
+      return {
+        ...state,
+        customers: action.customers,
+      };
+    }
+    case "GET_CUSTOMER": {
+      return {
+        ...state,
+        get_customer: action.get_customer,
       };
     }
 

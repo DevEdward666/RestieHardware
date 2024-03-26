@@ -11,7 +11,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import "./ExploreContainer.css";
 import stock from "../assets/images/stock.png";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { RootStore, useTypedDispatch } from "../Service/Store";
 import {
   addToCartAction,
@@ -41,7 +41,14 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
   const selectedItemselector = useSelector(
     (store: RootStore) => store.InventoryReducer.add_to_cart
   );
-
+  useEffect(() => {
+    const checkCartId = () => {
+      if (selectedItemselector.length <= 0) {
+        localStorage.removeItem("cartid");
+      }
+    };
+    checkCartId();
+  }, [selectedItemselector]);
   const handleSelectedItem = useCallback((payload: SelectedItemToCart) => {
     payload.qty = 1;
     dispatch(selectedItem(payload));
@@ -50,10 +57,12 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
   const handleAddToCart = async (selectedItem: SelectedItemToCart) => {
     let cartid = localStorage.getItem("cartid");
 
-    if (!cartid) {
+    if (!cartid && selectedItemselector[0]?.cartid === undefined) {
       // Generate a new cartid if it doesn't exist
       cartid = uuidv4();
       localStorage.setItem("cartid", cartid);
+    } else {
+      cartid = selectedItemselector[0]?.cartid;
     }
 
     const addeditems = addItem(
@@ -80,7 +89,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
         (item) => item.code === selectedItem.code
       );
       existingOrder = cartItems.findIndex((item) => {
-        console.log(item.orderid);
+        console.log(cartItems);
         return item.orderid !== "" || item.orderid !== null;
       });
     }
@@ -105,14 +114,15 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
         code: selectedItem.code,
         item: selectedItem.item,
         onhandqty: selectedItem.onhandqty,
+        orderid: "",
         qty: 1,
         price: selectedItem.price,
         createdAt: new Date().getTime(),
         status: "pending",
       };
-      if (existingOrder > -1) {
-        newItem.orderid = String(cartItems[existingOrder]?.orderid);
-      }
+      // if (existingOrder > -1) {
+      //   newItem.orderid = String(cartItems[existingOrder]?.orderid);
+      // }
       return [...cartItems, newItem];
     }
   };

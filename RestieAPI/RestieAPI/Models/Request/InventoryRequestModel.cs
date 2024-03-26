@@ -41,9 +41,15 @@
             public Int32 offset { get; set; }
 
         }
+        public class GetCustomer
+        {
+            public string customerid { get; set; }
+
+        }
         public class GetSelectedOrder 
         {
             public string userid { get; set; }
+            public string? cartid { get; set; }
             public string orderid { get; set; }
 
         }

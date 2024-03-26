@@ -13,6 +13,7 @@ import {
   IonTitle,
   IonToolbar,
   IonContent,
+  IonToast,
 } from "@ionic/react";
 import { removeCircle, addCircle } from "ionicons/icons";
 import { useSelector } from "react-redux";
@@ -20,15 +21,24 @@ import {
   SelectedItemToCart,
   Addtocart,
 } from "../../Models/Request/Inventory/InventoryModel";
-import { addToCartAction } from "../../Service/Actions/Inventory/InventoryActions";
+import {
+  addToCartAction,
+  selectedItem,
+} from "../../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../../Service/Store";
 import stock from "../../assets/images/stock.png";
 import "./CartComponent.css";
+import { useEffect, useState } from "react";
 const CartComponent: React.FC = () => {
   const selectedItemselector =
     useSelector((store: RootStore) => store.InventoryReducer.add_to_cart) || [];
   const dispatch = useTypedDispatch();
-
+  const [getItem, setItem] = useState<SelectedItemToCart>();
+  const [getOnhand, setOnhand] = useState<number>(0);
+  const [isOpenToast, setIsOpenToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+  });
   const addItem = (
     qtyChange: number,
     selectedItem: SelectedItemToCart,
@@ -84,9 +94,36 @@ const CartComponent: React.FC = () => {
   const handleQty = async (
     selectedItem: SelectedItemToCart,
     isAdd?: boolean,
-    qtyAdded?: number
+    qtyAdded?: number,
+    onhand?: number
   ) => {
-    let change = isAdd ? (qtyAdded !== undefined ? qtyAdded : 1) : -1;
+    setOnhand(onhand!);
+    let change = 0;
+    if (qtyAdded !== undefined && qtyAdded! > onhand!) {
+      setIsOpenToast({
+        toastMessage: "Not enough stocks",
+        isOpen: true,
+      });
+      qtyAdded = 1;
+    }
+
+    change = isAdd ? (qtyAdded !== undefined ? qtyAdded : 1) : -1;
+    let totalchange = change + selectedItem.qty!;
+    if (totalchange > onhand!) {
+      setIsOpenToast({
+        toastMessage: "Not enough stocks",
+        isOpen: true,
+      });
+      qtyAdded = 1;
+    }
+    if (totalchange <= 0) {
+      setIsOpenToast({
+        toastMessage: "Quantity too low",
+        isOpen: true,
+      });
+      qtyAdded = 1;
+    }
+    console.log(totalchange);
     const addeditems = addItem(
       change,
       selectedItem,
@@ -96,6 +133,7 @@ const CartComponent: React.FC = () => {
     );
     await dispatch(addToCartAction(addeditems));
   };
+
   const CardList = () => {
     return (
       <div>
@@ -121,7 +159,9 @@ const CartComponent: React.FC = () => {
                         <IonButton
                           size="large"
                           fill="clear"
-                          onClick={() => handleQty(card, false)}
+                          onClick={() =>
+                            handleQty(card, false, undefined, card?.onhandqty)
+                          }
                         >
                           <IonIcon
                             color="danger"
@@ -139,7 +179,8 @@ const CartComponent: React.FC = () => {
                             handleQty(
                               card,
                               true,
-                              parseInt(ev.target.value?.toString()!)
+                              parseInt(ev.target.value?.toString()!),
+                              card?.onhandqty
                             )
                           }
                         ></IonInput>
@@ -147,7 +188,9 @@ const CartComponent: React.FC = () => {
                         <IonButton
                           size="large"
                           fill="clear"
-                          onClick={() => handleQty(card, true)}
+                          onClick={() =>
+                            handleQty(card, true, undefined, card?.onhandqty)
+                          }
                         >
                           <IonIcon
                             color="secondary"
@@ -186,6 +229,14 @@ const CartComponent: React.FC = () => {
     <>
       <IonContent>
         <CardList />
+        <IonToast
+          isOpen={isOpenToast?.isOpen}
+          message={isOpenToast.toastMessage}
+          duration={3000}
+          onDidDismiss={() =>
+            setIsOpenToast({ toastMessage: "", isOpen: false })
+          }
+        ></IonToast>
       </IonContent>
     </>
   );

@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 using static RestieAPI.Providers.JwtAuthManager;
+using static RestieAPI.Models.Response.UserResponseModel;
 
 namespace RestieAPI.Providers
 {
@@ -56,6 +57,31 @@ namespace RestieAPI.Providers
             }
         }
 
+        //public JwtAuthResult GenerateTokens(string username, Claim[] claims, DateTime now)
+        //{
+        //    var shouldAddAudienceClaim = string.IsNullOrWhiteSpace(claims?.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Aud)?.Value);
+        //    var jwtToken = new JwtSecurityToken(
+        //        _jwtTokenConfig.Issuer,
+        //        shouldAddAudienceClaim ? _jwtTokenConfig.Audience : string.Empty,
+        //        claims,
+        //        expires: now.AddYears(_jwtTokenConfig.AccessTokenExpiration),
+        //        signingCredentials: new SigningCredentials(new SymmetricSecurityKey(_secret), SecurityAlgorithms.HmacSha256Signature));
+        //    var accessToken = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+
+        //    var refreshToken = new RefreshToken
+        //    {
+        //        UserName = username,
+        //        TokenString = GenerateRefreshTokenString(),
+        //        ExpireAt = now.AddMinutes(_jwtTokenConfig.RefreshTokenExpiration)
+        //    };
+        //    _usersRefreshTokens.AddOrUpdate(refreshToken.TokenString, refreshToken, (s, t) => refreshToken);
+
+        //    return new JwtAuthResult
+        //    {
+        //        AccessToken = accessToken,
+        //        RefreshToken = refreshToken
+        //    };
+        //}
         public JwtAuthResult GenerateTokens(string username, Claim[] claims, DateTime now)
         {
             var shouldAddAudienceClaim = string.IsNullOrWhiteSpace(claims?.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Aud)?.Value);
@@ -63,7 +89,7 @@ namespace RestieAPI.Providers
                 _jwtTokenConfig.Issuer,
                 shouldAddAudienceClaim ? _jwtTokenConfig.Audience : string.Empty,
                 claims,
-                expires: now.AddMinutes(_jwtTokenConfig.AccessTokenExpiration),
+                expires: now.AddYears(_jwtTokenConfig.AccessTokenExpiration),
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey(_secret), SecurityAlgorithms.HmacSha256Signature));
             var accessToken = new JwtSecurityTokenHandler().WriteToken(jwtToken);
 
@@ -74,14 +100,19 @@ namespace RestieAPI.Providers
                 ExpireAt = now.AddMinutes(_jwtTokenConfig.RefreshTokenExpiration)
             };
             _usersRefreshTokens.AddOrUpdate(refreshToken.TokenString, refreshToken, (s, t) => refreshToken);
-
+            var loginUserInfo = new LoginInfo 
+            {
+                user_name = username,
+                name = claims[0].Value.ToString(),
+                role = claims[1].Value.ToString(),
+            };
             return new JwtAuthResult
             {
+                loginInfo = loginUserInfo,
                 AccessToken = accessToken,
                 RefreshToken = refreshToken
             };
         }
-
         public JwtAuthResult Refresh(string refreshToken, string accessToken, DateTime now)
         {
             var (principal, jwtToken) = DecodeJwtToken(accessToken);
@@ -136,14 +167,27 @@ namespace RestieAPI.Providers
 
         public class JwtAuthResult
         {
+            [JsonPropertyName("loginInfo")]
+            public LoginInfo loginInfo { get; set; }
+
             [JsonPropertyName("accessToken")]
             public string AccessToken { get; set; }
 
             [JsonPropertyName("refreshToken")]
             public RefreshToken RefreshToken { get; set; }
-        }
 
-        public class RefreshToken
+
+        }
+        public class LoginInfo
+        {
+            [JsonPropertyName("user_name")]
+            public string user_name { get; set; }
+            [JsonPropertyName("name")]
+            public string? name { get; set; }
+            [JsonPropertyName("role")]
+            public string? role { get; set; }
+        }
+            public class RefreshToken
         {
             [JsonPropertyName("username")]
             public string UserName { get; set; }    // can be used for usage tracking

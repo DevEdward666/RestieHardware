@@ -14,6 +14,7 @@ import {
   PostdOrderList,
 } from "../../../Models/Request/Inventory/InventoryModel";
 import { getOrderList } from "../../../Service/Actions/Inventory/InventoryActions";
+import { LogoutUser } from "../../../Service/API/Login/LoginAPI";
 const ProfileListButtons: React.FC = () => {
   const router = useIonRouter();
   const dispatch = useTypedDispatch();
@@ -26,6 +27,10 @@ const ProfileListButtons: React.FC = () => {
     dispatch(getOrderList(payload));
     router.push("/orders");
   };
+  const handleLogout = async () => {
+    await LogoutUser();
+    router.push("/login");
+  };
   return (
     <IonContent>
       <div className="profile-list-button-main-content">
@@ -35,6 +40,15 @@ const ProfileListButtons: React.FC = () => {
             onClick={() => handleOrderListClick()}
           >
             <IonText className="profile-button-text">Order List</IonText>
+            <IonButton fill="clear" className="profile-button-order">
+              <IonIcon icon={chevronForwardOutline}></IonIcon>
+            </IonButton>
+          </div>
+          <div
+            className="profile-list-button-list"
+            onClick={() => handleLogout()}
+          >
+            <IonText className="profile-button-text">Logout</IonText>
             <IonButton fill="clear" className="profile-button-order">
               <IonIcon icon={chevronForwardOutline}></IonIcon>
             </IonButton>

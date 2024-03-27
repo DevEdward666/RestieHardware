@@ -34,36 +34,80 @@ namespace RestieAPI.Controllers
             _jwtAuthManager = jwtAuthManager;
         }
 
+        [HttpGet("api/user/userinfo")]
+        [Authorize]
+        public ActionResult<LoginInfo> GetUserInfo()
+        {
+            try
+            {
+                // Retrieve claims from the current user's identity
+                var user = HttpContext.User;
+                if (user == null)
+                {
+                    return Unauthorized();
+                }
+
+                // Extract specific claims (name, role, username)
+                var nameClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+                var roleClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+                var usernameClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData)?.Value;
+
+                // Return the claims as UserInfo object
+                var userInfo = new LoginInfo
+                {
+                    name = nameClaim,
+                    role = roleClaim,
+                    username = usernameClaim
+                };
+
+                return Ok(userInfo);
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions if any
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+    
 
         [HttpPost]
         [Route("api/user/login")]
         public ActionResult login(Authuser cred)
         {
 
-            GetAuthuser user = _userRepo.authenticateUser(cred);
+            List<GetAuthuser> user = _userRepo.authenticateUser(cred);
 
-            int userLength = user.totalUser;
+            int userLength = user.Count;
 
             if (userLength > 0)
             {
 
-                var claims = new Claim[user.totalUser + 1];
+                var claims = new Claim[user.Count +1];
 
 
 
-                for (int i = 0; i < user.totalUser; i++)
+                for (int i = 0; i < user.Count; i++)
                 {
-                    claims[i] = new Claim(ClaimTypes.Role, user.username);
+                    claims[i] = new Claim(ClaimTypes.Email, user[i].username);
+                    claims[i] = new Claim(ClaimTypes.Role, user[i].role);
+                    claims[i] = new Claim(ClaimTypes.Name, user[i].name);
                 }
 
-                claims[user.totalUser] = new Claim(ClaimTypes.Name, user.username);
+                claims[user.Count] = new Claim(ClaimTypes.Email, user[userLength - 1].username);
+                claims[user.Count] = new Claim(ClaimTypes.Name, user[userLength - 1].name);
+                claims[user.Count] = new Claim(ClaimTypes.Role, user[userLength - 1].role);
 
-                var jwtResult = _jwtAuthManager.GenerateTokens(user.username, claims, DateTime.Now);
+                var jwtResult = _jwtAuthManager.GenerateTokens(user[userLength - 1].username, claims, DateTime.Now);
                 //var jwtResult = _jwtAuthManager.GenerateTokens(user[userLength - 1].username, claims, DateTime.Now);
-
+                var loginUserInfo = new LoginInfo
+                {
+                    username = jwtResult.loginInfo.user_name,
+                    name = jwtResult.loginInfo.name,
+                    role = jwtResult.loginInfo.role,
+                };
                 return Ok(new userAuth
                 {
-                    
+                        loginInfo = loginUserInfo,
                         AccessToken = jwtResult.AccessToken,
                         RefreshToken = jwtResult.RefreshToken.TokenString
                     
@@ -77,8 +121,8 @@ namespace RestieAPI.Controllers
         }
      
 
-        [HttpGet]
-        [Route("api/user/logout")]
+        [HttpGet("api/user/logout")]
+        [Authorize]
         public ActionResult logout()
         {
             var userName = User.Identity.Name;

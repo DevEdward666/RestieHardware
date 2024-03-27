@@ -31,7 +31,7 @@ export const GetAllCustomers = () => async (dispatch: Dispatch<CUSTOMERS>) => {
     const res = await GetCustomers();
     dispatch({
       type: "CUSTOMERS",
-      customers: res,
+      customers: res.$values,
     });
     // return res;
   } catch (error: any) {

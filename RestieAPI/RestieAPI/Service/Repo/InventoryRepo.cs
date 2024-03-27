@@ -95,11 +95,6 @@ namespace RestieAPI.Service.Repo
                     }
                 }
             }
-
-            return new InventoryItemModel
-            {
-                result = results
-            };
         }
         public InventoryItemModel searchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
         {
@@ -920,6 +915,11 @@ namespace RestieAPI.Service.Repo
                         tran.Commit();
                         return new PostResponse
                         {
+                            result = new SaveOrderResponse
+                            {
+                                orderid = addToCartItems[0].orderid.ToString(),
+                                cartid = addToCartItems[0].cartid
+                            },
                             status = 200,
                             Message = "Order successfully saved"
                         };

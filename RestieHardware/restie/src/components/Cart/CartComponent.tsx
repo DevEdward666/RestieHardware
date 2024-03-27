@@ -123,7 +123,6 @@ const CartComponent: React.FC = () => {
       });
       qtyAdded = 1;
     }
-    console.log(totalchange);
     const addeditems = addItem(
       change,
       selectedItem,

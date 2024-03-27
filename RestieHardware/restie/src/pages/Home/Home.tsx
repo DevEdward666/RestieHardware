@@ -70,7 +70,6 @@ const Tab1: React.FC = () => {
       searchTerm: query,
     });
   };
-
   return (
     <IonPage className="home-page-container">
       <IonHeader className="home-page-header">

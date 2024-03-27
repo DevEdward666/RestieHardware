@@ -89,7 +89,6 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
         (item) => item.code === selectedItem.code
       );
       existingOrder = cartItems.findIndex((item) => {
-        console.log(cartItems);
         return item.orderid !== "" || item.orderid !== null;
       });
     }
@@ -165,7 +164,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
   };
   return (
     <div className="container">
-      {data?.result?.map((res: InventoryModel) => (
+      {data?.map((res: InventoryModel) => (
         <div key={res.code}>
           <CardList
             code={res.code}

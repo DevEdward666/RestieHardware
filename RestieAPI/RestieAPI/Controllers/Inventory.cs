@@ -21,6 +21,7 @@ namespace RestieAPI.Controllers
             this.configuration = configuration;
             _inventoryRepo = new InventoryRepo(configuration);
         }
+       
         [HttpPost("fetchInventory/{pageNumber}")]
         public ActionResult<InventoryItemModel> FetchInventory( int pageNumber, [FromBody]InventoryRequestModel.GetAllInventory getAllInventory)
         {
@@ -41,68 +42,79 @@ namespace RestieAPI.Controllers
             getAllInventory.limit = itemsPerPage;
             return Ok(_inventoryRepo.searchInventory(getAllInventory));
         }
+        [Authorize]
         [HttpPost("AddInventory")]
         public ActionResult<PostResponse> PostInventory(InventoryRequestModel.PostInventory postInventory)
         {
             return Ok(_inventoryRepo.PostInventory(postInventory));
         }
+        [Authorize]
         [HttpPost("AddToCart")]
         public ActionResult<PostResponse> AddtoCart(InventoryRequestModel.AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.AddToCart(addToCart));
-        }       
+        }
+        [Authorize]
         [HttpPost("UpdateCart")]
         public ActionResult<PostResponse> UpdateCart(InventoryRequestModel.AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.updateCart(addToCart));
         }
+        [Authorize]
         [HttpPost("SaveOrder")]
         public ActionResult<PostResponse> SaveCartUpdateInventory(InventoryRequestModel.AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.SavetoCartandUpdateInventory(addToCart));
-        }     
+        }
+        [Authorize]
         [HttpPost("UpdatedOrderAndCart")]
         public ActionResult<PostResponse> updatedOrderAndCart(InventoryRequestModel.AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.updatedOrderAndCart(addToCart));
-        }      
+        }
+        [Authorize]
         [HttpPost("ApprovedOrderAndPay")]
         public ActionResult<PostResponse> ApprovedOrderAndpay(InventoryRequestModel.AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.ApprovedOrderAndpay(addToCart));
-        }     
+        }
+        [Authorize]
         [HttpPost("deleteCart")]
         public ActionResult<PostResponse> deleteCart(InventoryRequestModel.AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.deleteCart(addToCart));
         }
+        [Authorize]
         [HttpPost("userOrders")]
         public ActionResult<PostResponse> GetOrder(InventoryRequestModel.GetUserOrder getUserOrder)
         {
             return Ok(_inventoryRepo.getOrder(getUserOrder));
-        }     
+        }
+        [Authorize]
         [HttpPost("userOrderInfo")]
         public ActionResult<PostResponse> GetOrderInfo(InventoryRequestModel.GetSelectedOrder getUserOrder)
         {
             return Ok(_inventoryRepo.getOrderInfo(getUserOrder));
-        }   
+        }
+        [Authorize]
         [HttpPost("getSelectedOrder")]
         public ActionResult<PostResponse> GetselectOrder(InventoryRequestModel.GetSelectedOrder getSelectedOrder)
         {
             return Ok(_inventoryRepo.selectOrder(getSelectedOrder));
-        }   
+        }
+        [Authorize]
         [HttpPost("PostCustoemrInfo")]
         public ActionResult<PostResponse> PostCustoemrInfo(InventoryRequestModel.PostCustomerInfo postCustomerInfo)
         {
             return Ok(_inventoryRepo.AddCustomerInfo(postCustomerInfo));
         }
-
+        [Authorize]
         [HttpGet("GetCustomers")]
         public ActionResult<PostResponse> getCustomers()
         {
             return Ok(_inventoryRepo.getCustomers());
         }
-
+        [Authorize]
         [HttpPost("GetCustomerInfo")]
         public ActionResult<PostResponse> getCustomerInfo(InventoryRequestModel.GetCustomer getCustomer)
         {

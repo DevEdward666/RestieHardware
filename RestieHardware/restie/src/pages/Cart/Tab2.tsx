@@ -27,6 +27,7 @@ import {
 } from "../../Service/Actions/Inventory/InventoryActions";
 import { ResponseModel } from "../../Models/Response/Commons/Commons";
 import { updateCartOrder } from "../../Service/API/Inventory/InventoryApi";
+import { GetLoginUser } from "../../Service/Actions/Login/LoginActions";
 
 const Tab2: React.FC = () => {
   const dispatch = useTypedDispatch();
@@ -65,15 +66,25 @@ const Tab2: React.FC = () => {
       maximumFractionDigits: 2,
     });
   };
-  const handleSaveOrder = async () => {
-    const date = new Date().getTime();
-    if (existingOrder) {
-      await dispatch(saveOrder(selectedItemselector, date));
 
-      router.push("/customerInformation");
+  const handleSaveOrder = async () => {
+    try {
+      const res = await dispatch(GetLoginUser());
+      console.log(res);
+      if (res?.name.length! <= 0 || res === undefined) {
+        router.push("/login");
+      } else {
+        const date = new Date().getTime();
+        if (existingOrder) {
+          await dispatch(saveOrder(selectedItemselector, date));
+
+          router.push("/customerInformation");
+        }
+      }
+    } catch (error) {
+      console.log("User Not logged in");
     }
   };
-  console.log(selectedItemselector);
   return (
     <IonPage className="home-page-container">
       <IonHeader className="home-page-header">

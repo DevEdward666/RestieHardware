@@ -5,6 +5,7 @@ import {
   IonTabButton,
   IonIcon,
   IonLabel,
+  useIonRouter,
 } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import { home, cart, person } from "ionicons/icons";
@@ -12,6 +13,9 @@ import { Route, Redirect } from "react-router";
 import Tab2 from "../Cart/Tab2";
 import Tab1 from "../Home/Home";
 import Tab3 from "../Profile/Tab3";
+import { useEffect } from "react";
+import { useTypedDispatch } from "../../Service/Store";
+import { GetLoginUser } from "../../Service/Actions/Login/LoginActions";
 
 const MainTab: React.FC = () => {
   return (

@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using RestieAPI.Configs;
 using RestieAPI.Services;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace RestieAPI
 {
@@ -18,6 +19,7 @@ namespace RestieAPI
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
+          
             services.AddCors(options =>
             {
                 options.AddPolicy(name: MyAllowSpecificOrigins,
@@ -27,7 +29,11 @@ namespace RestieAPI
                                   });
             });
             services.InstallServicesInAssembly(Configuration);
-            services.AddControllers();
+            services.AddControllers()
+               .AddJsonOptions(options =>
+               {
+                   options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+               });
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
             {

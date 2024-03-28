@@ -43,3 +43,17 @@ export interface SelectedOrder {
   paidcash: number;
   createdby: string;
 }
+export interface GetDeliveryInfo {
+  deliveryid: string;
+  deliveredby: string;
+  deliverydate: number;
+  path: string;
+}
+export interface FileResponse {
+  contentType: string;
+  enableRangeProcessing: boolean;
+  entityTag: string;
+  fileContents: string;
+  fileDownloadName: string;
+  lastModified: number;
+}

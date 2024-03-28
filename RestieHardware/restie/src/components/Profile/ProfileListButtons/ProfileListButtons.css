@@ -20,7 +20,7 @@
             line-height: 24px; /* 150% */
             align-items: center;
             justify-content: space-between;
-            border-radius: 15px;
+            border-radius: 20px;
             .profile-button-order{
                 font-family: Gotham-Book;
                 font-size: 16px;
@@ -29,6 +29,39 @@
             .profile-button-text{
                 padding-left: 10px;
                 color: white;
+            }
+        }
+        .profile-list-button-list-logout-container{
+            bottom: 0;
+            position: absolute;
+            width: 100%;
+        
+            .profile-list-button-list-logout{
+                display: flex;
+                flex-direction: row;
+                background-color: white;
+                text-align: center;
+                /* Body - 16/Regular */
+                font-family: Gotham-Book;
+                font-size: 16px;
+                font-style: normal;
+                font-weight: 400;
+                line-height: 24px; /* 150% */
+                align-items: center;
+                justify-content: space-between;
+                border-radius: 20px;
+                border-color: #125B8C;    
+                border-style: solid;
+                border-width: 2px;
+                .profile-button-order{
+                    font-family: Gotham-Book;
+                    font-size: 16px;
+                    --color:#125B8C;
+                }
+                .profile-button-text{
+                    padding-left: 10px;
+                    color: #125B8C;
+                }
             }
         }
     }

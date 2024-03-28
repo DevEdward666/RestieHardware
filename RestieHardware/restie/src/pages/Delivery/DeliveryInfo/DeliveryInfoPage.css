@@ -1,0 +1,42 @@
+.delivery-info-page-container{
+    display: flex;
+    .delivery-info-page-header{
+        display: flex;
+        flex-direction: column;
+    }
+    .delivery-info-page-content{
+        --background: linear-gradient(180deg, #0F0526, #125B8C);
+        .delivery-info-spinner{
+            text-align: center;
+            color: white;
+        }
+    }
+    .delivery-info-toolbar-logo-container{
+        display: flex;
+        flex-direction: row;
+        justify-self: center;
+        align-items: center;
+        text-align: center;
+        .delivery-info-toolbar-logo{
+            height: 100px;
+            width: 100%;
+            margin: 10px;
+        }
+    }
+ 
+}
+.delivery-toolbar-logo-container{
+    display: flex;
+    flex-direction: row;
+    justify-self: center;
+    align-items: center;
+    text-align: center;
+    .delivery-toolbar-logo{
+        height: 100px;
+        width: 100%;
+        margin: 10px;
+    }
+}
+.delivery-info-content{
+    --background:white;
+}

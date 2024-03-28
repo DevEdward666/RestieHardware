@@ -42,6 +42,13 @@ namespace RestieAPI.Models.Response
         public List<SelectedOrderResponse> result { get; set; }
         public Boolean success { get; set; }
         public int statusCode { get; set; }
+    }   
+    public class DeliveryResponseModel
+    {
+        public DeliveryResponse result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string message { get; set; }
     }
     public class InventoryItems
     {
@@ -114,5 +121,11 @@ namespace RestieAPI.Models.Response
         public string contactno { get; set; }
         public long createdat { get; set; }
     }
-
+    public class DeliveryResponse
+    {
+        public string deliveryid { get; set; }
+        public string path { get; set; }
+        public string deliveredby { get; set; }
+        public long deliverydate { get; set; }
+    }
 }

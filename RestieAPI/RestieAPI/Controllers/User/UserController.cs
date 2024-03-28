@@ -48,6 +48,7 @@ namespace RestieAPI.Controllers
                 }
 
                 // Extract specific claims (name, role, username)
+                var idClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
                 var nameClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
                 var roleClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
                 var usernameClaim = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.UserData)?.Value;
@@ -55,6 +56,7 @@ namespace RestieAPI.Controllers
                 // Return the claims as UserInfo object
                 var userInfo = new LoginInfo
                 {
+                    id = idClaim,
                     name = nameClaim,
                     role = roleClaim,
                     username = usernameClaim
@@ -88,19 +90,22 @@ namespace RestieAPI.Controllers
 
                 for (int i = 0; i < user.Count; i++)
                 {
+                    claims[i] = new Claim(ClaimTypes.NameIdentifier, user[i].id);
                     claims[i] = new Claim(ClaimTypes.Email, user[i].username);
                     claims[i] = new Claim(ClaimTypes.Role, user[i].role);
                     claims[i] = new Claim(ClaimTypes.Name, user[i].name);
                 }
+                var lastUser = user[userLength - 1];  // Store the last user in a variable
+                claims[user.Count] = new Claim(ClaimTypes.NameIdentifier, lastUser.id);
+                claims[user.Count] = new Claim(ClaimTypes.Email, lastUser.username);
+                claims[user.Count] = new Claim(ClaimTypes.Name, lastUser.name);
+                claims[user.Count] = new Claim(ClaimTypes.Role, lastUser.role);
 
-                claims[user.Count] = new Claim(ClaimTypes.Email, user[userLength - 1].username);
-                claims[user.Count] = new Claim(ClaimTypes.Name, user[userLength - 1].name);
-                claims[user.Count] = new Claim(ClaimTypes.Role, user[userLength - 1].role);
-
-                var jwtResult = _jwtAuthManager.GenerateTokens(user[userLength - 1].username, claims, DateTime.Now);
-                //var jwtResult = _jwtAuthManager.GenerateTokens(user[userLength - 1].username, claims, DateTime.Now);
+                var jwtResult = _jwtAuthManager.GenerateTokens(lastUser.username, lastUser.id, claims, DateTime.Now);
+                //var jwtResult = _jwtAuthManager.GenerateTokens(lastUser.username, claims, DateTime.Now);
                 var loginUserInfo = new LoginInfo
                 {
+                    id = jwtResult.loginInfo.id,
                     username = jwtResult.loginInfo.user_name,
                     name = jwtResult.loginInfo.name,
                     role = jwtResult.loginInfo.role,

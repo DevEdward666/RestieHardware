@@ -5,25 +5,41 @@ import {
   IonItem,
   IonImg,
   IonButton,
+  IonText,
 } from "@ionic/react";
 import { useSelector } from "react-redux";
 import {
   Addtocart,
+  GetDeliveryImagePath,
+  PostDeliveryInfoModel,
   PostSelectedOrder,
 } from "../../../Models/Request/Inventory/InventoryModel";
 import {
   addToCartAction,
+  getDelivery,
   getInventory,
   selectedOrder,
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import "./OrderInfo.css";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import breakline from "../../../assets/images/breakline.png";
+import { GetDeliveryImage } from "../../../Service/API/Inventory/InventoryApi";
+import { FileResponse } from "../../../Models/Response/Inventory/GetInventoryModel";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/autoplay";
+import "swiper/css/keyboard";
+import "swiper/css/pagination";
+import "swiper/css/scrollbar";
+import "swiper/css/zoom";
+import "@ionic/react/css/ionic-swiper.css";
 const OrderInfoComponent = () => {
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
   );
+  const [getFile, setFile] = useState<FileResponse>();
   const [getDiscount, setDiscount] = useState<number>(0.0);
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
@@ -102,6 +118,22 @@ const OrderInfoComponent = () => {
     );
     router.push("/home/profile");
   }, [dispatch]);
+  useEffect(() => {
+    const initialize = async () => {
+      const payload: PostDeliveryInfoModel = {
+        orderid: order_list_info[0]?.orderid,
+      };
+      const imagePath = await dispatch(getDelivery(payload));
+      if (imagePath?.statusCode === 200) {
+        const imageDeliveryPayload: GetDeliveryImagePath = {
+          imagePath: imagePath.result.path,
+        };
+        const imageFile = await GetDeliveryImage(imageDeliveryPayload);
+        setFile(imageFile.result.image);
+      }
+    };
+    initialize();
+  }, [dispatch, order_list_info]);
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
@@ -127,6 +159,19 @@ const OrderInfoComponent = () => {
             </>
           ) : null}
         </div>
+        {order_list_info[0]?.status === "approved" ? (
+          <div className="order-list-info-footer-approved-info">
+            <>
+              <IonButton
+                size="small"
+                color="tertiary"
+                onClick={() => router.push("/deliveryInfo")}
+              >
+                Process Item Delivered
+              </IonButton>
+            </>
+          </div>
+        ) : null}
       </div>
       <div className="order-list-info-customer-details">
         <div className="order-list-info-customer">Customer Name: </div>
@@ -253,11 +298,38 @@ const OrderInfoComponent = () => {
           </>
         ) : null}
       </div>
-
+      {order_list_info[0]?.status.toLowerCase() ===
+      "Delivered".toLowerCase() ? (
+        <div className="delivery-image-container">
+          {getFile &&
+            getFile.contentType &&
+            getFile.contentType.startsWith("image/") && (
+              <>
+                <IonText className="delivery-image-text">
+                  Delivery Image
+                </IonText>
+                <Swiper
+                  className="swiper-component"
+                  autoplay={true}
+                  keyboard={true}
+                  pagination={true}
+                  scrollbar={false}
+                  zoom={true}
+                >
+                  <SwiperSlide>
+                    <IonImg
+                      src={"data:image/png;base64," + getFile.fileContents}
+                    ></IonImg>
+                  </SwiperSlide>
+                </Swiper>
+              </>
+            )}
+        </div>
+      ) : null}
       <IonButton
         className="order-info-close"
         expand="block"
-        color="tertiary"
+        color="medium"
         onClick={() => handleClose()}
       >
         Close

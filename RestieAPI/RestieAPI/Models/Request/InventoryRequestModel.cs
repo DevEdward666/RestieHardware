@@ -1,4 +1,6 @@
-﻿namespace RestieAPI.Models.Request
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace RestieAPI.Models.Request
 {
     public class InventoryRequestModel
     {
@@ -45,6 +47,16 @@
         {
             public string customerid { get; set; }
 
+        }     
+        public class GetDelivery
+        {
+            public string orderid { get; set; }
+
+        }
+        public class GetDeliveryImage
+        {
+            public string imagePath { get; set; }
+
         }
         public class GetSelectedOrder 
         {
@@ -71,6 +83,32 @@
             public string? userid { get; set; }
             public string status { get; set; }
             public string? type { get; set; }
+
+        }
+        public class FileModel
+        {
+
+            public string FolderName { get; set; }
+            public string FileName { get; set; }
+            public IFormFile FormFile { get; set; }
+        }
+
+        public class DeliveryInfo
+        {
+
+            public string deliveredby { get; set; }
+            public long deliverydate { get; set; }
+            public string path { get; set; }
+            public long createdat { get; set; }
+            public string createdby { get; set; }
+            public string orderid { get; set; }
+        }
+        public class UpdateDelivery
+        {
+            public string orderid { get; set; }
+            public string cartid { get; set; }
+            public long updateat { get; set; }
+            public string status { get; set; }
 
         }
     }

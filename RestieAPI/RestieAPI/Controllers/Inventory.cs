@@ -6,6 +6,9 @@ using RestieAPI.Configs;
 using RestieAPI.Models.Request;
 using RestieAPI.Models.Response;
 using RestieAPI.Service.Repo;
+using System.IO;
+using static RestieAPI.Models.Request.InventoryRequestModel;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RestieAPI.Controllers
 {
@@ -119,7 +122,94 @@ namespace RestieAPI.Controllers
         public ActionResult<PostResponse> getCustomerInfo(InventoryRequestModel.GetCustomer getCustomer)
         {
             return Ok(_inventoryRepo.getCustomerInfo(getCustomer));
+        }   
+        [Authorize]
+        [HttpPost("PostDeliveryInfo")]
+        public ActionResult<PostResponse> PostDeliveryInfo(InventoryRequestModel.DeliveryInfo deliveryInfo)
+        {
+            return Ok(_inventoryRepo.PostDeliveryInfo(deliveryInfo));
+        }     
+        [Authorize]
+        [HttpPost("UpdateDelivered")]
+        public ActionResult<PostResponse> UpdateDelivered(InventoryRequestModel.UpdateDelivery updateDelivery)
+        {
+            return Ok(_inventoryRepo.UpdateDelivered(updateDelivery));
+        }    
+        [Authorize]
+        [HttpPost("getDelivery")]
+        public ActionResult<PostResponse> getDelivery(InventoryRequestModel.GetDelivery getDelivery)
+        {
+            return Ok(_inventoryRepo.getDelivery(getDelivery));
         }
+        [Authorize]
+        [HttpPost("UploadFile")]
+        public async Task<ActionResult<PostImageResponse>> Post([FromForm] InventoryRequestModel.FileModel file)
+        {
+            try
+            {
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Images", file.FolderName);
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
 
+                string filepath = Path.Combine(path, file.FileName);
+                using (Stream stream = new FileStream(filepath, FileMode.Create))
+                {
+                    await file.FormFile.CopyToAsync(stream);
+                }
+
+                return new PostImageResponse
+                {
+                    result = new SaveImageResponse
+                    {
+                        imagePath = Path.Combine("Resources", "Images", file.FolderName, file.FileName)
+                    },
+                    status = StatusCodes.Status201Created,
+                    message = "Image Uploaded Successfully"
+                };
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new PostImageResponse
+                {
+                    result = null,
+                    status = StatusCodes.Status500InternalServerError,
+                    message = e.Message
+                });
+            }
+        }
+        [Authorize]
+        [HttpPost("Getimage")]
+        public ActionResult<PostDeliveryImageResponse> GetImageDelivery(InventoryRequestModel.GetDeliveryImage getDeliveryImage)
+        {
+            string originalPath = getDeliveryImage.imagePath;
+            string formattedPath = originalPath.Replace("\\", "\\\\");
+            string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+
+            if (!System.IO.File.Exists(path))
+            {
+                return NotFound(); // Return 404 Not Found if the image file does not exist
+            }
+
+            byte[] imageData = System.IO.File.ReadAllBytes(path);
+
+            // Determine the content type based on the file extension
+            string contentType = "image/jpeg"; // Default content type for JPEG images
+            if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+            {
+                contentType = "image/png";
+            }
+
+            return new PostDeliveryImageResponse
+            {
+                result = new DeliveryImageResponse
+                {
+                    image = File(imageData, contentType), // Use FileContentResult with byte array
+                },
+                status = StatusCodes.Status200OK,
+            };
+
+        }
     }
 }

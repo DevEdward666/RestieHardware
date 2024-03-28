@@ -1,6 +1,7 @@
 import { Dispatch } from "react";
 import {
   ADD_TO_CART,
+  GET_DELIVERY_INFO,
   LIST_OF_ITEMS,
   ORDER_LIST,
   ORDER_LIST_INFO,
@@ -10,6 +11,7 @@ import {
   ApprovedOrderAndPay,
   InsertCustomerInfo,
   ListOrder,
+  PostGetDeliveryInfo,
   SavedAndPayOrder,
   SelectedListOrder,
   addToCart,
@@ -23,6 +25,8 @@ import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 import {
   Addtocart,
   InventoryModel,
+  PostDeliveryInfo,
+  PostDeliveryInfoModel,
   PostSelectedOrder,
   PostdOrderList,
   SelectedItemToCart,
@@ -30,6 +34,7 @@ import {
 import { ResponseModel } from "../../../Models/Response/Commons/Commons";
 import { v4 as uuidv4 } from "uuid";
 import {
+  GetDeliveryInfo,
   GetListOrder,
   GetListOrderInfo,
 } from "../../../Models/Response/Inventory/GetInventoryModel";
@@ -287,6 +292,20 @@ export const selectedOrder =
         type: "ADD_TO_CART",
         add_to_cart: res,
       });
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+export const getDelivery =
+  (payload: PostDeliveryInfoModel) =>
+  async (dispatch: Dispatch<GET_DELIVERY_INFO>) => {
+    try {
+      const res = await PostGetDeliveryInfo(payload);
+      dispatch({
+        type: "GET_DELIVERY_INFO",
+        get_delivery_info: res,
+      });
+      return res;
     } catch (error: any) {
       console.log(error);
     }

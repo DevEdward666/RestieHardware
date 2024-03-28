@@ -6,3 +6,7 @@ export interface ResponseModel {
     orderid: string;
   };
 }
+export interface ToastModel {
+  isOpen: boolean;
+  message: string;
+}

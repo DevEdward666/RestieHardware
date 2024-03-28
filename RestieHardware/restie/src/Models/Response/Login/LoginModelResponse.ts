@@ -4,6 +4,7 @@ export interface GetUserInfo {
   refreshToken: string;
 }
 export interface UserInfo {
+  id: string;
   username: string;
   name: string;
   role: string;

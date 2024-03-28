@@ -152,8 +152,30 @@
 .order-list-info-main-container{
     padding-top: 5px;
 }
+.swiper-component{
+    height: 100%;
+    width: 100%;
+}
+.delivery-image-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    margin: 15px;
+    .delivery-image-text{
+        font-family: "Gotham-Medium";
+        font-size: 16px;
+        text-align: center;
+        width: 100%;
+        background: white;
+        color: #125B8C;
+        padding: 10px;
+    } 
+}
+
 .order-info-close{
     padding:10px ;
+    font-family: "Gotham-Medium";
 }
 .breakline{
     padding: 15px;

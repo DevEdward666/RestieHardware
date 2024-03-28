@@ -17,7 +17,7 @@ namespace RestieAPI.Providers
     public interface IJwtAuthManager
     {
         IImmutableDictionary<string, RefreshToken> UsersRefreshTokensReadOnlyDictionary { get; }
-        JwtAuthResult GenerateTokens(string username, Claim[] claims, DateTime now);
+        JwtAuthResult GenerateTokens(string username,string userid, Claim[] claims, DateTime now);
         JwtAuthResult Refresh(string refreshToken, string accessToken, DateTime now);
         void RemoveExpiredRefreshTokens(DateTime now);
         void RemoveRefreshTokenByUserName(string userName);
@@ -82,7 +82,7 @@ namespace RestieAPI.Providers
         //        RefreshToken = refreshToken
         //    };
         //}
-        public JwtAuthResult GenerateTokens(string username, Claim[] claims, DateTime now)
+        public JwtAuthResult GenerateTokens(string username, string userid, Claim[] claims, DateTime now)
         {
             var shouldAddAudienceClaim = string.IsNullOrWhiteSpace(claims?.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Aud)?.Value);
             var jwtToken = new JwtSecurityToken(
@@ -102,6 +102,7 @@ namespace RestieAPI.Providers
             _usersRefreshTokens.AddOrUpdate(refreshToken.TokenString, refreshToken, (s, t) => refreshToken);
             var loginUserInfo = new LoginInfo 
             {
+                id = userid,
                 user_name = username,
                 name = claims[0].Value.ToString(),
                 role = claims[1].Value.ToString(),
@@ -131,7 +132,7 @@ namespace RestieAPI.Providers
                 throw new SecurityTokenException("Invalid token");
             }
 
-            return GenerateTokens(userName, principal.Claims.ToArray(), now); // need to recover the original claims
+            return GenerateTokens(userName, null, principal.Claims.ToArray(), now); // need to recover the original claims
         }
 
         public (ClaimsPrincipal, JwtSecurityToken) DecodeJwtToken(string token)
@@ -180,6 +181,8 @@ namespace RestieAPI.Providers
         }
         public class LoginInfo
         {
+            [JsonPropertyName("id")]
+            public string id { get; set; }       
             [JsonPropertyName("user_name")]
             public string user_name { get; set; }
             [JsonPropertyName("name")]

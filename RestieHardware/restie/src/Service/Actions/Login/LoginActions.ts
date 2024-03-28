@@ -18,6 +18,8 @@ export const Login =
     try {
       const res: GetUserInfo = await LoginAPI(payload);
       localStorage.setItem("bearer", res?.accessToken);
+      localStorage.setItem("user_id", res?.loginInfo.id);
+
       console.log(res);
       dispatch({
         type: "LOGIN_INFORMATION",

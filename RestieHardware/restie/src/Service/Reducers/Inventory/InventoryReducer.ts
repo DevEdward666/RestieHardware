@@ -14,6 +14,12 @@ const defaultState: InventoryTypesModel = {
   add_to_cart: [],
   order_list: [],
   order_list_info: [],
+  get_delivery_info: {
+    deliveryid: "",
+    deliveredby: "",
+    deliverydate: 0,
+    path: "",
+  },
 };
 
 const InventoryReducer = (
@@ -49,6 +55,12 @@ const InventoryReducer = (
       return {
         ...state,
         order_list_info: action.order_list_info,
+      };
+    }
+    case "GET_DELIVERY_INFO": {
+      return {
+        ...state,
+        get_delivery_info: action.get_delivery_info,
       };
     }
     default:

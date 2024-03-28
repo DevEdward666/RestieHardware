@@ -50,6 +50,7 @@ namespace RestieAPI.Service.Repo
                                 {
                                     var inventoryItem = new GetAuthuser
                                     {
+                                        id = reader.GetString(reader.GetOrdinal("id")),
                                         username = reader.GetString(reader.GetOrdinal("username")),
                                         name = reader.GetString(reader.GetOrdinal("name")),
                                         role = reader.GetString(reader.GetOrdinal("role")),

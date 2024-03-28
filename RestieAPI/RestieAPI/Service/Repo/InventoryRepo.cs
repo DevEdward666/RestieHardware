@@ -1388,6 +1388,251 @@ namespace RestieAPI.Service.Repo
             }
 
 
+        }   
+        public DeliveryResponseModel getDelivery(InventoryRequestModel.GetDelivery getDelivery)
+        {
+            var sql = @"select dr.deliveryid ,dr.deliveredby,dr.deliverydate,img.path from delivery AS dr join images AS img on dr.imgsid = img.imgsid where dr.orderid=@orderid";
+            var parameters = new Dictionary<string, object>
+            {
+                { "@orderid", getDelivery.orderid },
+            };
+            var results = new DeliveryResponse();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var orderResponse = new DeliveryResponse
+                                    {
+                                        deliveryid = reader.GetString(reader.GetOrdinal("deliveryid")),
+                                        deliveredby = reader.GetString(reader.GetOrdinal("deliveredby")),
+                                        path = reader.GetString(reader.GetOrdinal("path")),
+                                        deliverydate = reader.GetInt64(reader.GetOrdinal("deliverydate")),
+                                    };
+
+                                    results = orderResponse;
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new DeliveryResponseModel
+                        {
+                            result = results,
+                            statusCode = 200,
+                            success = true,
+
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new DeliveryResponseModel
+                        {
+                            result = null,
+                            statusCode = 500,
+                            success = false,
+                            message = ex.Message,
+
+                        };
+                        throw;
+                    }
+                }
+            }
+
+
+        }
+        public PostResponse PostDeliveryInfo(InventoryRequestModel.DeliveryInfo deliveryInfo)
+        {
+
+            var insertDeliveryInfo = @"insert into delivery (deliveryid,imgsid,deliveredby,deliverydate,orderid)
+                                        values(@deliveryid,@imgsid,@deliveredby,@deliverydate,@orderid)";
+
+            var insertDeliveryImages = @"insert into images (imgsid,path,createdat,createdby)
+                                        values(@imgsid,@path,@createdat,@createdby)";
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+                var total = 0.0;
+                var insertedDeliveryInfo = 0;
+                var insertedDeliveryImages = 0;
+                var deliveryid = Guid.NewGuid().ToString();
+                var imgsid = Guid.NewGuid().ToString();
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        var parameters = new Dictionary<string, object>
+                            {
+                                { "@deliveryid", deliveryid },
+                                { "@imgsid", imgsid },
+                                { "@deliveredby", deliveryInfo.deliveredby },
+                                { "@deliverydate", deliveryInfo.deliverydate },
+                                { "@orderid", deliveryInfo.orderid },
+                            };
+
+
+
+                        // Execute the insertion command for each item
+                        using (var cmd = new NpgsqlCommand(insertDeliveryInfo, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+                            insertedDeliveryInfo = cmd.ExecuteNonQuery();
+                        }
+                        if (insertedDeliveryInfo > 0)
+                        {
+
+                            // Execute the insertOrder command for each item
+                            using (var cmd = new NpgsqlCommand(insertDeliveryImages, connection))
+                            {
+                                var insertOrderParams = new Dictionary<string, object>
+                                {
+                                    { "@imgsid", imgsid },
+                                    { "@path",  deliveryInfo.path},
+                                    { "@createdat", deliveryInfo.createdat },
+                                    { "@createdby", deliveryInfo.createdby },
+                                };
+                                foreach (var param in insertOrderParams)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+                                insertedDeliveryImages = cmd.ExecuteNonQuery();
+                            }
+
+                        }
+                        else
+                        {
+                            tran.Rollback();
+                            return new PostResponse
+                            {
+                                status = 500,
+                                Message = "Delivery Not inserted"
+                            };
+                        }
+
+                        // Commit the transaction after all items have been processed
+                        tran.Commit();
+                        return new PostResponse
+                        {
+                            status = 200,
+                            Message = "Delivery successfully saved"
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostResponse
+                        {
+                            status = 500,
+                            Message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
+        public PostResponse UpdateDelivered(InventoryRequestModel.UpdateDelivery updateDelivery)
+        {
+            var updatecart = @"update cart set status=@status,updateat=@updateat where cartid = @cartid";
+
+            var updateOrder = @"update orders set status=@status,updateat=@updateat  where orderid = @orderid";
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+                var updateOrderRes = 0;
+                var updateCartRes = 0;
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // Execute the insertion command for each item
+                            using (var cmd = new NpgsqlCommand(updatecart, connection))
+                            {
+
+                            var parameters = new Dictionary<string, object>
+                                {
+                                    { "@updateat", updateDelivery.updateat },
+                                    { "@status", updateDelivery.status },
+                                    { "@cartid", updateDelivery.cartid },
+                                };
+                                foreach (var param in parameters)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+                                updateCartRes = cmd.ExecuteNonQuery();
+                            }
+                        
+                        if (updateCartRes > 0)
+                        {
+
+                            // Execute the insertOrder command for each item
+                            using (var cmd = new NpgsqlCommand(updateOrder, connection))
+                            {
+                                var insertOrderParams = new Dictionary<string, object>
+                                {
+                                    { "@updateat", updateDelivery.updateat },
+                                    { "@status", updateDelivery.status },
+                                    { "@orderid", updateDelivery.orderid },
+                                };
+                                foreach (var param in insertOrderParams)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+                                updateOrderRes = cmd.ExecuteNonQuery();
+                            }
+
+                        }
+                        else
+                        {
+                            tran.Rollback();
+                            return new PostResponse
+                            {
+                                status = 500,
+                                Message = "Cart not updated"
+                            };
+                        }
+
+                        // Commit the transaction after all items have been processed
+                        tran.Commit();
+                        return new PostResponse
+                        {
+                            status = 200,
+                            Message = "Order successfully saved"
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostResponse
+                        {
+                            status = 500,
+                            Message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
         }
         //public PostResponse PostInventory(InventoryRequestModel.PostInventory postInventory)
         //{

@@ -43,3 +43,29 @@ export interface PostSelectedOrder {
   userid?: string;
   cartid?: string;
 }
+export interface PostDeliveryImage {
+  FolderName: string;
+  FileName: string;
+  FormFile: File;
+}
+export interface PostDeliveryInfo {
+  deliveredby: string;
+  deliverydate: number;
+  path: string;
+  createdat: number;
+  createdby: string;
+  orderid: string;
+}
+export interface PostUpdateDeliveredOrder {
+  orderid: string;
+  cartid: string;
+  status: string;
+  updateat: number;
+}
+
+export interface PostDeliveryInfoModel {
+  orderid: string;
+}
+export interface GetDeliveryImagePath {
+  imagePath: string;
+}

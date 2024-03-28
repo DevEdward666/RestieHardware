@@ -4,6 +4,7 @@ import {
   SelectedItemToCart,
 } from "../../../Models/Request/Inventory/InventoryModel";
 import {
+  GetDeliveryInfo,
   GetListOrder,
   GetListOrderInfo,
 } from "../../../Models/Response/Inventory/GetInventoryModel";
@@ -24,17 +25,21 @@ export type ORDER_LIST = {
   type: "ORDER_LIST";
   order_list: GetListOrder[];
 };
-
 export type ORDER_LIST_INFO = {
   type: "ORDER_LIST_INFO";
   order_list_info: GetListOrderInfo[];
+};
+export type GET_DELIVERY_INFO = {
+  type: "GET_DELIVERY_INFO";
+  get_delivery_info: GetDeliveryInfo;
 };
 export type LIST_OF_PRODUCT_TYPE =
   | LIST_OF_ITEMS
   | SELECTED_ITEM
   | ADD_TO_CART
   | ORDER_LIST
-  | ORDER_LIST_INFO;
+  | ORDER_LIST_INFO
+  | GET_DELIVERY_INFO;
 
 export interface InventoryTypesModel {
   list_of_items: InventoryModel[];
@@ -42,4 +47,5 @@ export interface InventoryTypesModel {
   add_to_cart: Addtocart[];
   order_list: GetListOrder[];
   order_list_info: GetListOrderInfo[];
+  get_delivery_info: GetDeliveryInfo;
 }

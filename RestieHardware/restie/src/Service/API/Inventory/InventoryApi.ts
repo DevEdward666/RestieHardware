@@ -2,7 +2,12 @@ import { baseUrl } from "../../../Helpers/environment";
 import { get, getWithAuth, post } from "../../../Helpers/useAxios";
 import {
   Addtocart,
+  GetDeliveryImagePath,
+  PostDeliveryImage,
+  PostDeliveryInfo,
+  PostDeliveryInfoModel,
   PostSelectedOrder,
+  PostUpdateDeliveredOrder,
   PostdOrderList,
 } from "../../../Models/Request/Inventory/InventoryModel";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
@@ -50,7 +55,6 @@ export const addToCart = async (payload: Addtocart[]) => {
     },
     JSON.stringify(payload)
   );
-  console.log("order", response);
   return response;
 };
 
@@ -67,7 +71,6 @@ export const SavedAndPayOrder = async (payload: Addtocart[]) => {
     },
     JSON.stringify(payload)
   );
-  console.log("order", response);
   return response;
 };
 export const ApprovedOrderAndPay = async (payload: Addtocart[]) => {
@@ -83,7 +86,6 @@ export const ApprovedOrderAndPay = async (payload: Addtocart[]) => {
     },
     JSON.stringify(payload)
   );
-  console.log("order", response);
   return response;
 };
 export const deleteCart = async (payload: Addtocart[]) => {
@@ -99,11 +101,9 @@ export const deleteCart = async (payload: Addtocart[]) => {
     },
     JSON.stringify(payload)
   );
-  console.log("order", response);
   return response;
 };
 export const updateCartOrder = async (payload: Addtocart[]) => {
-  console.log("order", payload);
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {
     throw new Error("Token not found");
@@ -116,7 +116,6 @@ export const updateCartOrder = async (payload: Addtocart[]) => {
     },
     JSON.stringify(payload)
   );
-  console.log("order", response);
   return response;
 };
 export const ListOrder = async (payload: PostdOrderList) => {
@@ -162,7 +161,6 @@ export const SelectedListOrder = async (payload: PostSelectedOrder) => {
     },
     JSON.stringify(payload)
   );
-  console.log("order", response);
   return response.result.$values;
 };
 
@@ -179,7 +177,6 @@ export const InsertCustomerInfo = async (payload: GetCustomerInformation) => {
     },
     JSON.stringify(payload)
   );
-  console.log("order", response);
   return response.result.$values;
 };
 
@@ -216,4 +213,90 @@ export const GetCustomerInfo = async (payload: PostCustomer) => {
     JSON.stringify(payload)
   );
   return response.result;
+};
+export const UploadDeliveryImages = async (payload: PostDeliveryImage) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const formData = new FormData();
+  formData.append(`Filename`, payload.FileName);
+  formData.append(`FolderName`, payload.FolderName);
+  formData.append(`FormFile`, payload.FormFile);
+
+  const response = await post(
+    `${baseUrl}api/Inventory/UploadFile`,
+    {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${getToken}`,
+    },
+    formData
+  );
+  return response;
+};
+
+export const GetDeliveryImage = async (payload: GetDeliveryImagePath) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+
+  const response = await post(
+    `${baseUrl}api/Inventory/Getimage`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  return response;
+};
+
+export const SavedDeliveryInfo = async (payload: PostDeliveryInfo) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+
+  const response = await post(
+    `${baseUrl}api/Inventory/PostDeliveryInfo`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  return response;
+};
+export const UpdateDelivered = async (payload: PostUpdateDeliveredOrder) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+
+  const response = await post(
+    `${baseUrl}api/Inventory/UpdateDelivered`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  return response;
+};
+export const PostGetDeliveryInfo = async (payload: PostDeliveryInfoModel) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+
+  const response = await post(
+    `${baseUrl}api/Inventory/getDelivery`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  return response;
 };

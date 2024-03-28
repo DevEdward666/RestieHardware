@@ -18,11 +18,13 @@ import { LogoutUser } from "../../../Service/API/Login/LoginAPI";
 const ProfileListButtons: React.FC = () => {
   const router = useIonRouter();
   const dispatch = useTypedDispatch();
+
   const handleOrderListClick = () => {
+    const user_id = localStorage.getItem("user_id");
     const payload: PostdOrderList = {
       limit: 100,
       offset: 0,
-      userid: "4105df30-717a-4170-af97-5dd8dacd03a2",
+      userid: user_id!,
     };
     dispatch(getOrderList(payload));
     router.push("/orders");
@@ -44,14 +46,16 @@ const ProfileListButtons: React.FC = () => {
               <IonIcon icon={chevronForwardOutline}></IonIcon>
             </IonButton>
           </div>
-          <div
-            className="profile-list-button-list"
-            onClick={() => handleLogout()}
-          >
-            <IonText className="profile-button-text">Logout</IonText>
-            <IonButton fill="clear" className="profile-button-order">
-              <IonIcon icon={chevronForwardOutline}></IonIcon>
-            </IonButton>
+          <div className="profile-list-button-list-logout-container">
+            <div
+              className="profile-list-button-list-logout"
+              onClick={() => handleLogout()}
+            >
+              <IonText className="profile-button-text">Logout</IonText>
+              <IonButton fill="clear" className="profile-button-order">
+                <IonIcon icon={chevronForwardOutline}></IonIcon>
+              </IonButton>
+            </div>
           </div>
         </div>
       </div>

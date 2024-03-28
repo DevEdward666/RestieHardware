@@ -9,6 +9,7 @@ const defaultState: LoginTypesModel = {
       username: "",
       name: "",
       role: "",
+      id: "",
     },
     accessToken: "",
     refreshToken: "",
@@ -17,6 +18,7 @@ const defaultState: LoginTypesModel = {
     username: "",
     name: "",
     role: "",
+    id: "",
   },
 };
 

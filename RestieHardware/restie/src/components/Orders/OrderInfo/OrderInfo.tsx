@@ -63,6 +63,7 @@ const OrderInfoComponent = () => {
     hour: 0,
     minute: 0,
   });
+  const [getOrderDate, setOrderDate] = useState("");
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
   const formatDate = (datetime: number) => {
@@ -146,7 +147,12 @@ const OrderInfoComponent = () => {
       const payload: PostDeliveryInfoModel = {
         orderid: order_list_info[0]?.orderid,
       };
-      if (order_list_info[0].status !== "Delivered") {
+      const orderdate = format(
+        new Date(order_list_info[0]?.createdat).toISOString(),
+        "MMMM dd, yyyy hh:mm a"
+      );
+      setOrderDate(orderdate);
+      if (order_list_info[0]?.status !== "Delivered") {
         return;
       }
       const imagePath = await dispatch(getDelivery(payload));
@@ -164,6 +170,7 @@ const OrderInfoComponent = () => {
         const imageFile = await GetDeliveryImage(imageDeliveryPayload);
         setFile(imageFile.result.image);
       }
+
       const deliveryDate = new Date(imagePath.result.deliverydate);
       const orderCreationDate = new Date(order_list_info[0]?.createdat);
       const timeDifference =
@@ -251,12 +258,7 @@ const OrderInfoComponent = () => {
       <div className="order-list-info-customer-details">
         <div className="order-list-info-customer">Order Created: </div>
 
-        <div className="order-list-info-customer-info">
-          {format(
-            new Date(order_list_info[0]?.createdat).toISOString(),
-            "MMMM dd, yyyy hh:mm a"
-          )}
-        </div>
+        <div className="order-list-info-customer-info">{getOrderDate}</div>
       </div>
       <IonImg className="breakline" src={breakline} />
       <div className="order-list-info-container">

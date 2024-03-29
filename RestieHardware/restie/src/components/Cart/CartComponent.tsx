@@ -14,6 +14,8 @@ import {
   IonToolbar,
   IonContent,
   IonToast,
+  IonText,
+  IonImg,
 } from "@ionic/react";
 import { removeCircle, addCircle } from "ionicons/icons";
 import { useSelector } from "react-redux";
@@ -29,6 +31,7 @@ import { RootStore, useTypedDispatch } from "../../Service/Store";
 import stock from "../../assets/images/stock.png";
 import "./CartComponent.css";
 import { useEffect, useState } from "react";
+import emptyCart from "../../assets/images/icons/empty_cart.webp";
 const CartComponent: React.FC = () => {
   const selectedItemselector =
     useSelector((store: RootStore) => store.InventoryReducer.add_to_cart) || [];
@@ -135,7 +138,7 @@ const CartComponent: React.FC = () => {
 
   const CardList = () => {
     return (
-      <div>
+      <IonContent>
         {Array.isArray(selectedItemselector) &&
         selectedItemselector.length > 0 ? (
           selectedItemselector?.map((card) => (
@@ -218,9 +221,12 @@ const CartComponent: React.FC = () => {
             </IonItemSliding>
           ))
         ) : (
-          <p>No items in the cart.</p>
+          <div className="empty-cart-container">
+            <IonImg className="empty-cart-img" src={emptyCart}></IonImg>
+            <IonText className="empty-cart-text">No items in the cart.</IonText>
+          </div>
         )}
-      </div>
+      </IonContent>
     );
   };
 

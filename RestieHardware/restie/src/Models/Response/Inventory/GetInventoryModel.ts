@@ -10,6 +10,8 @@ export interface GetListOrder {
   userid: string;
 }
 export interface GetListOrderInfo {
+  transid?: string;
+
   orderid: string;
   cartid: string;
   total: number;

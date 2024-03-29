@@ -66,18 +66,19 @@ const DeliveryInfoComponent = () => {
       const uploaded = await UploadDeliveryImages(payload);
       if (uploaded.status === 201) {
         const deliveryPayload: PostDeliveryInfo = {
-          deliveredby: user_login_information.name,
+          deliveredby: user_login_information?.name,
           deliverydate: new Date().getTime(),
           path: uploaded.result.imagePath,
           createdat: new Date().getTime(),
-          createdby: user_login_information.name,
+          createdby: user_login_information?.name,
           orderid: order_list_info[0].orderid,
         };
         const savedDelivery = await SavedDeliveryInfo(deliveryPayload);
         if (savedDelivery.status === 200) {
           const updatedeliveryPayload: PostUpdateDeliveredOrder = {
-            orderid: order_list_info[0].orderid,
-            cartid: order_list_info[0].cartid,
+            transid: order_list_info[0]?.transid!,
+            orderid: order_list_info[0]?.orderid,
+            cartid: order_list_info[0]?.cartid,
             status: "Delivered",
             updateat: new Date().getTime(),
           };

@@ -23,3 +23,73 @@
         }
     }
 }
+.categories-container{
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px;
+    
+    .categories-category{
+        /* background-color: #850D0D; */
+        background-color: #051926;
+        color: white;
+        border-radius: 15px;
+        .category-text{
+            font-family: "Gotham-Light";
+            font-size: 14px;
+            padding-left: 15px;
+        }
+        .category-img{
+            border-radius: 15px;
+        }
+    }
+}
+
+.category-card-content{
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 8px;
+    margin-top: 14px; 
+    margin-bottom: 0px;
+   
+    .category-card-title-details{
+        display: flex;
+        font-family: "Gotham-Black";
+        font-size: 14px;
+        flex-direction: row;
+        gap: 5px;
+        align-items: center;
+        .category-card-title{
+            font-family: "Gotham-Black";
+            font-size: 14px;
+        }
+        .category-icon-img{
+            width: 50px;
+            height: 50px;
+        }
+    }
+    .category-card-category-details{
+        display: flex;
+        font-family: "Gotham-Light";
+        font-size: 14px;
+        flex-direction: row;
+        gap: 5px;
+        .category-card-category{
+            font-family: "Gotham-Light";
+            font-size: 14px;
+        }
+    }
+    .category-card-price-details{
+        display: flex;
+        font-family: "Gotham-Light";
+        font-size: 16px;
+        flex-direction: row;
+        color: #f02b2b;
+        font-weight: bolder;
+        gap: 5px;
+        .category-card-price{
+            font-family: "Gotham-Light";
+            font-size: 14px;
+        }
+    }
+}

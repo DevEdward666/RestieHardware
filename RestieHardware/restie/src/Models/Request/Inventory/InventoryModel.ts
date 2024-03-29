@@ -25,6 +25,9 @@ export interface Addtocart {
   createdby?: string;
   userid?: string;
   type?: string;
+  transid?: string;
+  cashier?: string;
+  customer?: string;
 }
 export interface SelectedItemToCart {
   code: string;
@@ -57,6 +60,7 @@ export interface PostDeliveryInfo {
   orderid: string;
 }
 export interface PostUpdateDeliveredOrder {
+  transid: string;
   orderid: string;
   cartid: string;
   status: string;

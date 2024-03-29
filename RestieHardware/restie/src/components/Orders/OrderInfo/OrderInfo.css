@@ -177,6 +177,19 @@
     padding:10px ;
     font-family: "Gotham-Medium";
 }
+
+.delivered-info-container{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding-top: 10px;
+    gap: 8px;
+    .delivered-info-text{
+        font-size: 16px;
+        font-family: "Gotham-Light";
+    }
+}
+
 .breakline{
     padding: 15px;
 }

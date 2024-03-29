@@ -130,7 +130,8 @@ const checkPayload = (
   createdat: number,
   method: string,
   customer_payload: GetCustomerInformation,
-  customerCash?: number
+  customerCash?: number,
+  cashier?: string
 ) => {
   const paymentMethod = { cash: "Cash", pending: "Pending" };
   const updatedPayload = payload.map((val) => ({
@@ -150,6 +151,8 @@ const checkPayload = (
     userid: customer_payload?.customerid,
     type: customer_payload.ordertype,
     updateat: payload[0]?.orderid !== "" ? new Date().getTime() : null,
+    customer: customer_payload.name,
+    cashier: cashier,
   }));
   return updatedPayload;
 };
@@ -159,7 +162,8 @@ export const PostOrder =
     customer_payload: GetCustomerInformation,
     createdat: number,
     method: string,
-    customerCash?: number
+    customerCash?: number,
+    cashierName?: string
   ) =>
   async (dispatch: Dispatch<ADD_TO_CART>) => {
     let res: ResponseModel = {
@@ -179,13 +183,15 @@ export const PostOrder =
       if (payload[0]?.orderid) {
         orderid = payload[0]?.orderid!;
       }
+
       const updatePayload = checkPayload(
         payload,
         orderid,
         createdat,
         method,
         customer_payload,
-        customerCash
+        customerCash,
+        cashierName
       );
       if (method.toLowerCase() === paymentMethod.cash.toLowerCase()) {
         if (payload[0]?.orderid) {
@@ -220,7 +226,8 @@ export const PostOrder =
             createdat,
             method,
             customer_payload,
-            customerCash
+            customerCash,
+            cashierName
           );
           res = await ApprovedOrderAndPay(updatedPayload);
         } else {

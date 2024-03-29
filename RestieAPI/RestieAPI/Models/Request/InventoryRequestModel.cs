@@ -83,6 +83,9 @@ namespace RestieAPI.Models.Request
             public string? userid { get; set; }
             public string status { get; set; }
             public string? type { get; set; }
+            public string? transid { get; set; }
+            public string? cashier { get; set; }
+            public string? customer { get; set; }
 
         }
         public class FileModel
@@ -106,6 +109,7 @@ namespace RestieAPI.Models.Request
         public class UpdateDelivery
         {
             public string orderid { get; set; }
+            public string transid { get; set; }
             public string cartid { get; set; }
             public long updateat { get; set; }
             public string status { get; set; }

@@ -25,8 +25,11 @@ import "./OrderInfo.css";
 import { useCallback, useEffect, useState } from "react";
 import breakline from "../../../assets/images/breakline.png";
 import { GetDeliveryImage } from "../../../Service/API/Inventory/InventoryApi";
-import { FileResponse } from "../../../Models/Response/Inventory/GetInventoryModel";
-
+import {
+  FileResponse,
+  GetDeliveryInfo,
+} from "../../../Models/Response/Inventory/GetInventoryModel";
+import { format } from "date-fns";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/autoplay";
@@ -35,12 +38,31 @@ import "swiper/css/pagination";
 import "swiper/css/scrollbar";
 import "swiper/css/zoom";
 import "@ionic/react/css/ionic-swiper.css";
+import { GetLoginUser } from "../../../Service/Actions/Login/LoginActions";
 const OrderInfoComponent = () => {
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
   );
+  const get_delivery_info = useSelector(
+    (store: RootStore) => store.InventoryReducer.get_delivery_info
+  );
+
+  const user_login_information = useSelector(
+    (store: RootStore) => store.LoginReducer.user_login_information
+  );
+  const [getGetDeliveryInfo, setGetDeliveryInfo] = useState<GetDeliveryInfo>({
+    deliveryid: "",
+    deliveredby: "",
+    deliverydate: 0,
+    path: "",
+  });
+
   const [getFile, setFile] = useState<FileResponse>();
   const [getDiscount, setDiscount] = useState<number>(0.0);
+  const [elapsedTime, setElapsedTime] = useState({
+    hour: 0,
+    minute: 0,
+  });
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
   const formatDate = (datetime: number) => {
@@ -120,10 +142,21 @@ const OrderInfoComponent = () => {
   }, [dispatch]);
   useEffect(() => {
     const initialize = async () => {
+      const res = await dispatch(GetLoginUser());
       const payload: PostDeliveryInfoModel = {
         orderid: order_list_info[0]?.orderid,
       };
+      if (order_list_info[0].status !== "Delivered") {
+        return;
+      }
       const imagePath = await dispatch(getDelivery(payload));
+      setGetDeliveryInfo({
+        deliveredby: imagePath.result.deliveredby,
+        deliverydate: imagePath.result.deliverydate,
+        path: imagePath.result.path,
+        deliveryid: imagePath.result.deliveryid,
+      });
+
       if (imagePath?.statusCode === 200) {
         const imageDeliveryPayload: GetDeliveryImagePath = {
           imagePath: imagePath.result.path,
@@ -131,6 +164,20 @@ const OrderInfoComponent = () => {
         const imageFile = await GetDeliveryImage(imageDeliveryPayload);
         setFile(imageFile.result.image);
       }
+      const deliveryDate = new Date(imagePath.result.deliverydate);
+      const orderCreationDate = new Date(order_list_info[0]?.createdat);
+      const timeDifference =
+        deliveryDate.getTime() - orderCreationDate.getTime();
+
+      // Convert milliseconds to hours and minutes
+      const hours = Math.floor(timeDifference / (1000 * 60 * 60));
+      const minutes = Math.floor(
+        (timeDifference % (1000 * 60 * 60)) / (1000 * 60)
+      );
+      setElapsedTime({
+        hour: hours,
+        minute: minutes,
+      });
     };
     initialize();
   }, [dispatch, order_list_info]);
@@ -199,6 +246,16 @@ const OrderInfoComponent = () => {
 
         <div className="order-list-info-customer-info">
           {order_list_info[0]?.type}
+        </div>
+      </div>
+      <div className="order-list-info-customer-details">
+        <div className="order-list-info-customer">Order Created: </div>
+
+        <div className="order-list-info-customer-info">
+          {format(
+            new Date(order_list_info[0]?.createdat).toISOString(),
+            "MMMM dd, yyyy hh:mm a"
+          )}
         </div>
       </div>
       <IonImg className="breakline" src={breakline} />
@@ -322,6 +379,24 @@ const OrderInfoComponent = () => {
                     ></IonImg>
                   </SwiperSlide>
                 </Swiper>
+                <div className="delivered-info-container">
+                  <IonText className="delivered-info-text">
+                    Delivered by:{"  "}
+                    {getGetDeliveryInfo.deliveredby}
+                  </IonText>
+                  <IonText className="delivered-info-text">
+                    Delivered at:{"  "}
+                    {format(
+                      new Date(getGetDeliveryInfo.deliverydate).toISOString(),
+                      "MMMM dd, yyyy hh:mm a"
+                    )}
+                  </IonText>
+
+                  <IonText className="delivered-info-text">
+                    Time Elapsed: {elapsedTime.hour} hours {elapsedTime.minute}{" "}
+                    minutes
+                  </IonText>
+                </div>
               </>
             )}
         </div>

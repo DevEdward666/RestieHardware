@@ -4,7 +4,6 @@ import {
   IonContent,
   IonFooter,
   IonHeader,
-  IonIcon,
   IonImg,
   IonMenuButton,
   IonPage,
@@ -13,21 +12,14 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import ExploreContainer from "../../components/ExploreContainer";
-import "./Tab2.css";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { saveOrder } from "../../Service/Actions/Inventory/InventoryActions";
+import { GetLoginUser } from "../../Service/Actions/Login/LoginActions";
+import { RootStore, useTypedDispatch } from "../../Service/Store";
 import restielogo from "../../assets/images/Icon@3.png";
 import CartComponent from "../../components/Cart/CartComponent";
-import { useSelector } from "react-redux";
-import { RootStore, useTypedDispatch } from "../../Service/Store";
-import { useEffect, useState } from "react";
-import { card, removeCircle } from "ionicons/icons";
-import {
-  saveOrder,
-  updateOrder,
-} from "../../Service/Actions/Inventory/InventoryActions";
-import { ResponseModel } from "../../Models/Response/Commons/Commons";
-import { updateCartOrder } from "../../Service/API/Inventory/InventoryApi";
-import { GetLoginUser } from "../../Service/Actions/Login/LoginActions";
+import "./Tab2.css";
 
 const Tab2: React.FC = () => {
   const dispatch = useTypedDispatch();
@@ -89,9 +81,6 @@ const Tab2: React.FC = () => {
     <IonPage className="home-page-container">
       <IonHeader className="home-page-header">
         <IonToolbar mode="ios" color="tertiary">
-          <IonButtons slot="start">
-            <IonMenuButton autoHide={false}></IonMenuButton>
-          </IonButtons>
           <IonTitle>Cart</IonTitle>
         </IonToolbar>
         <IonToolbar

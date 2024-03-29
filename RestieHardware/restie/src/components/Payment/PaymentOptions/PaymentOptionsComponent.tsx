@@ -48,6 +48,9 @@ const PaymentOptionsComponent = () => {
   const customer_information = useSelector(
     (store: RootStore) => store.CustomerReducer.customer_information
   );
+  const user_login_information = useSelector(
+    (store: RootStore) => store.LoginReducer.user_login_information
+  );
   const [getTotal, setTotal] = useState<number>(0.0);
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
@@ -78,7 +81,8 @@ const PaymentOptionsComponent = () => {
             customer_information,
             new Date().getTime(),
             type,
-            type.toLowerCase() === "cash" ? customerPayemntInfo.cash : 0.0
+            type.toLowerCase() === "cash" ? customerPayemntInfo.cash : 0.0,
+            user_login_information.name
           )
         );
         if (addedOrder) {

@@ -6,6 +6,8 @@ import {
   IonCardSubtitle,
   IonCardTitle,
   IonIcon,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
   useIonRouter,
 } from "@ionic/react";
 import { v4 as uuidv4 } from "uuid";
@@ -15,6 +17,8 @@ import { useCallback, useEffect, useState } from "react";
 import { RootStore, useTypedDispatch } from "../Service/Store";
 import {
   addToCartAction,
+  getInventory,
+  searchInventoryList,
   selectedItem,
 } from "../Service/Actions/Inventory/InventoryActions";
 import {
@@ -24,8 +28,11 @@ import {
 } from "../Models/Request/Inventory/InventoryModel";
 import { addCircle, cart } from "ionicons/icons";
 import { useSelector } from "react-redux";
+import { SearchInventoryModel } from "../Models/Request/searchInventory";
 interface ContainerProps {
   data: any;
+  searchItem: SearchInventoryModel;
+  category: string;
 }
 
 interface SelectedItem {
@@ -34,10 +41,17 @@ interface SelectedItem {
   price: number;
 }
 
-const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
+const ExploreContainer: React.FC<ContainerProps> = ({
+  data,
+  searchItem,
+  category,
+}) => {
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
   const [getcartid, setCartId] = useState<string>("");
+  const [items, setItems] = useState(data);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const selectedItemselector = useSelector(
     (store: RootStore) => store.InventoryReducer.add_to_cart
   );
@@ -125,7 +139,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
       return [...cartItems, newItem];
     }
   };
-
+  console.log(category);
   const CardList = (card: InventoryModel) => {
     const payload: SelectedItemToCart = {
       code: card.code,
@@ -162,25 +176,83 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data }) => {
       </IonCard>
     );
   };
+
+  const getMoreInventory = useCallback(async () => {
+    let res = [];
+    let isSearch = false;
+    if (searchItem.searchTerm.length <= 0) {
+      res = await dispatch(
+        getInventory({
+          page: page,
+          offset: (page - 1) * limit,
+          limit: limit,
+          searchTerm: "",
+        })
+      );
+    } else {
+      res = await dispatch(
+        searchInventoryList({
+          page: page,
+          offset: (page - 1) * limit,
+          limit: limit,
+          searchTerm: searchItem.searchTerm,
+        })
+      );
+      isSearch = true;
+    }
+
+    return { response: res, isSearch: isSearch };
+  }, [dispatch, searchItem, page, limit]);
+
+  const loadMoreItems = async () => {
+    const newItems = await getMoreInventory();
+    setItems([...items, ...newItems.response]);
+    setPage(page);
+    setLimit((prev) => prev + 10);
+  };
+
+  useEffect(() => {
+    const initializeItems = async () => {
+      const newItems = await getMoreInventory();
+      setItems(newItems.response);
+    };
+    initializeItems();
+  }, [getMoreInventory]);
+  useEffect(() => {
+    const initializeItems = async () => {
+      const newItems = await getMoreInventory();
+      if (newItems.isSearch) {
+        setItems(newItems.response);
+      } else {
+        setItems([...items, ...newItems.response]);
+      }
+    };
+    initializeItems();
+  }, [searchItem]);
   return (
-    <div className="container">
-      {data?.map((res: InventoryModel) => (
-        <div key={res.code}>
-          <CardList
-            code={res.code}
-            item={res.item}
-            price={res.price}
-            qty={res.qty}
-            category={res.category}
-            reorderqty={res.reorderqty}
-            cost={res.cost}
-            status={res.status}
-            createdat={res.createdat}
-            updatedAt={res.updatedAt}
-          />
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="container">
+        {items?.map((res: InventoryModel, index: number) => (
+          <div key={index}>
+            <CardList
+              code={res.code}
+              item={res.item}
+              price={res.price}
+              qty={res.qty}
+              category={res.category}
+              reorderqty={res.reorderqty}
+              cost={res.cost}
+              status={res.status}
+              createdat={res.createdat}
+              updatedAt={res.updatedAt}
+            />
+          </div>
+        ))}
+      </div>
+      <IonButton expand="block" fill="clear" onClick={loadMoreItems}>
+        Load More
+      </IonButton>
+    </>
   );
 };
 

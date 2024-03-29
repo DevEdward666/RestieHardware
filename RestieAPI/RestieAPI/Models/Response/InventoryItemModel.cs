@@ -78,6 +78,7 @@ namespace RestieAPI.Models.Response
     }
     public class OrderInfoResponse
     {
+        public string? transid { get; set; }
         public string orderid { get; set; }
         public string cartid { get; set; }
         public string code { get; set; }

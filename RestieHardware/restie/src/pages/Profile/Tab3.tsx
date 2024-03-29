@@ -21,9 +21,6 @@ const Tab3: React.FC = () => {
     <IonPage className="profile-page-container">
       <IonHeader className="profile-page-header">
         <IonToolbar mode="ios" color="tertiary">
-          <IonButtons slot="start">
-            <IonMenuButton autoHide={false}></IonMenuButton>
-          </IonButtons>
           <IonTitle>Profile</IonTitle>
         </IonToolbar>
         <IonToolbar

@@ -26,6 +26,7 @@ import CustomerInformationPage from "./pages/Customer/CustomerInformation/Custom
 import PaymentOptionsPage from "./pages/Payment/PaymentsOptions/PaymentOptionsPage";
 import LoginPage from "./pages/Login/LoginPage";
 import DeliveryInfoPage from "./pages/Delivery/DeliveryInfo/DeliveryInfoPage";
+import ManageProductPage from "./pages/Products/ManageProducts/ManageProductPage";
 
 setupIonicReact();
 
@@ -45,6 +46,9 @@ const App: React.FC = () => {
       <Route path="/orderInfo" render={() => <OrderInfoPage />} />
       <Route path="/deliveryInfo" render={() => <DeliveryInfoPage />} />
       <Route path="/home/cart" render={() => <MainTab />} />
+
+      {/* ADMIN */}
+      <Route path="/admin/manageproduct" render={() => <ManageProductPage />} />
     </IonApp>
   );
 };

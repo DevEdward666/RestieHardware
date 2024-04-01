@@ -1,0 +1,38 @@
+.manage-page-container{
+    .manage-page-header{
+        display: flex;
+        flex-direction: column;
+    }
+    .manage-page-content{
+        /* --background: linear-gradient(180deg, #0F0526, #125B8C); */
+        .manage-spinner{
+            text-align: center;
+            color: white;
+        }
+    }
+    .manage-toolbar-logo-container{
+        display: flex;
+        flex-direction: row;
+        justify-self: center;
+        align-items: center;
+        text-align: center;
+        .manage-toolbar-logo{
+            height: 100px;
+            width: 100%;
+            margin: 10px;
+        }
+    }
+}
+.tab-cart-content{
+    --background: white;
+}
+.tab-cart-total{
+    font-family: 'Gotham-Black';
+    font-size: 24px;
+}
+.tab-cart-footer{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+}

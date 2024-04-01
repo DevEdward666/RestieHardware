@@ -10,9 +10,9 @@ using System.IO;
 using static RestieAPI.Models.Request.InventoryRequestModel;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace RestieAPI.Controllers
+namespace RestieAPI.Controllers.Inventory
 {
-   
+
     [ApiController]
     [Route("api/[controller]/")]
     public class Inventory : ControllerBase
@@ -24,9 +24,9 @@ namespace RestieAPI.Controllers
             this.configuration = configuration;
             _inventoryRepo = new InventoryRepo(configuration);
         }
-       
+
         [HttpPost("fetchInventory/{pageNumber}")]
-        public ActionResult<InventoryItemModel> FetchInventory( int pageNumber, [FromBody]InventoryRequestModel.GetAllInventory getAllInventory)
+        public ActionResult<InventoryItemModel> FetchInventory(int pageNumber, [FromBody] GetAllInventory getAllInventory)
         {
             int itemsPerPage = getAllInventory.limit; // Or any desired number of items per page
             int offset = (pageNumber - 1) * itemsPerPage;
@@ -36,7 +36,7 @@ namespace RestieAPI.Controllers
             return Ok(_inventoryRepo.fetchInventory(getAllInventory));
         }
         [HttpPost("searchInventory/{pageNumber}")]
-        public ActionResult<InventoryItemModel> SearchInventory(int pageNumber, [FromBody] InventoryRequestModel.GetAllInventory getAllInventory)
+        public ActionResult<InventoryItemModel> SearchInventory(int pageNumber, [FromBody] GetAllInventory getAllInventory)
         {
             int itemsPerPage = getAllInventory.limit; // Or any desired number of items per page
             int offset = (pageNumber - 1) * itemsPerPage;
@@ -45,69 +45,64 @@ namespace RestieAPI.Controllers
             getAllInventory.limit = itemsPerPage;
             return Ok(_inventoryRepo.searchInventory(getAllInventory));
         }
-        [Authorize]
-        [HttpPost("AddInventory")]
-        public ActionResult<PostResponse> PostInventory(InventoryRequestModel.PostInventory postInventory)
-        {
-            return Ok(_inventoryRepo.PostInventory(postInventory));
-        }
+     
         [Authorize]
         [HttpPost("AddToCart")]
-        public ActionResult<PostResponse> AddtoCart(InventoryRequestModel.AddToCart[] addToCart)
+        public ActionResult<PostResponse> AddtoCart(AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.AddToCart(addToCart));
         }
         [Authorize]
         [HttpPost("UpdateCart")]
-        public ActionResult<PostResponse> UpdateCart(InventoryRequestModel.AddToCart[] addToCart)
+        public ActionResult<PostResponse> UpdateCart(AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.updateCart(addToCart));
         }
         [Authorize]
         [HttpPost("SaveOrder")]
-        public ActionResult<PostResponse> SaveCartUpdateInventory(InventoryRequestModel.AddToCart[] addToCart)
+        public ActionResult<PostResponse> SaveCartUpdateInventory(AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.SavetoCartandUpdateInventory(addToCart));
         }
         [Authorize]
         [HttpPost("UpdatedOrderAndCart")]
-        public ActionResult<PostResponse> updatedOrderAndCart(InventoryRequestModel.AddToCart[] addToCart)
+        public ActionResult<PostResponse> updatedOrderAndCart(AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.updatedOrderAndCart(addToCart));
         }
         [Authorize]
         [HttpPost("ApprovedOrderAndPay")]
-        public ActionResult<PostResponse> ApprovedOrderAndpay(InventoryRequestModel.AddToCart[] addToCart)
+        public ActionResult<PostResponse> ApprovedOrderAndpay(AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.ApprovedOrderAndpay(addToCart));
         }
         [Authorize]
         [HttpPost("deleteCart")]
-        public ActionResult<PostResponse> deleteCart(InventoryRequestModel.AddToCart[] addToCart)
+        public ActionResult<PostResponse> deleteCart(AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.deleteCart(addToCart));
         }
         [Authorize]
         [HttpPost("userOrders")]
-        public ActionResult<PostResponse> GetOrder(InventoryRequestModel.GetUserOrder getUserOrder)
+        public ActionResult<PostResponse> GetOrder(GetUserOrder getUserOrder)
         {
             return Ok(_inventoryRepo.getOrder(getUserOrder));
         }
         [Authorize]
         [HttpPost("userOrderInfo")]
-        public ActionResult<PostResponse> GetOrderInfo(InventoryRequestModel.GetSelectedOrder getUserOrder)
+        public ActionResult<PostResponse> GetOrderInfo(GetSelectedOrder getUserOrder)
         {
             return Ok(_inventoryRepo.getOrderInfo(getUserOrder));
         }
         [Authorize]
         [HttpPost("getSelectedOrder")]
-        public ActionResult<PostResponse> GetselectOrder(InventoryRequestModel.GetSelectedOrder getSelectedOrder)
+        public ActionResult<PostResponse> GetselectOrder(GetSelectedOrder getSelectedOrder)
         {
             return Ok(_inventoryRepo.selectOrder(getSelectedOrder));
         }
         [Authorize]
         [HttpPost("PostCustoemrInfo")]
-        public ActionResult<PostResponse> PostCustoemrInfo(InventoryRequestModel.PostCustomerInfo postCustomerInfo)
+        public ActionResult<PostResponse> PostCustoemrInfo(PostCustomerInfo postCustomerInfo)
         {
             return Ok(_inventoryRepo.AddCustomerInfo(postCustomerInfo));
         }
@@ -119,31 +114,31 @@ namespace RestieAPI.Controllers
         }
         [Authorize]
         [HttpPost("GetCustomerInfo")]
-        public ActionResult<PostResponse> getCustomerInfo(InventoryRequestModel.GetCustomer getCustomer)
+        public ActionResult<PostResponse> getCustomerInfo(GetCustomer getCustomer)
         {
             return Ok(_inventoryRepo.getCustomerInfo(getCustomer));
-        }   
+        }
         [Authorize]
         [HttpPost("PostDeliveryInfo")]
-        public ActionResult<PostResponse> PostDeliveryInfo(InventoryRequestModel.DeliveryInfo deliveryInfo)
+        public ActionResult<PostResponse> PostDeliveryInfo(DeliveryInfo deliveryInfo)
         {
             return Ok(_inventoryRepo.PostDeliveryInfo(deliveryInfo));
-        }     
+        }
         [Authorize]
         [HttpPost("UpdateDelivered")]
-        public ActionResult<PostResponse> UpdateDelivered(InventoryRequestModel.UpdateDelivery updateDelivery)
+        public ActionResult<PostResponse> UpdateDelivered(UpdateDelivery updateDelivery)
         {
             return Ok(_inventoryRepo.UpdateDelivered(updateDelivery));
-        }    
+        }
         [Authorize]
         [HttpPost("getDelivery")]
-        public ActionResult<PostResponse> getDelivery(InventoryRequestModel.GetDelivery getDelivery)
+        public ActionResult<PostResponse> getDelivery(GetDelivery getDelivery)
         {
             return Ok(_inventoryRepo.getDelivery(getDelivery));
         }
         [Authorize]
         [HttpPost("UploadFile")]
-        public async Task<ActionResult<PostImageResponse>> Post([FromForm] InventoryRequestModel.FileModel file)
+        public async Task<ActionResult<PostImageResponse>> Post([FromForm] FileModel file)
         {
             try
             {
@@ -181,7 +176,7 @@ namespace RestieAPI.Controllers
         }
         [Authorize]
         [HttpPost("Getimage")]
-        public ActionResult<PostDeliveryImageResponse> GetImageDelivery(InventoryRequestModel.GetDeliveryImage getDeliveryImage)
+        public ActionResult<PostDeliveryImageResponse> GetImageDelivery(GetDeliveryImage getDeliveryImage)
         {
             string originalPath = getDeliveryImage.imagePath;
             string formattedPath = originalPath.Replace("\\", "\\\\");

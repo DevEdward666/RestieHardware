@@ -35,4 +35,9 @@ namespace RestieAPI.Models.Response
         public FileContentResult image { get; set; }
 
     }
+    public class PostInventoryAddResponse
+    {
+        public int status { get; set; }
+        public string message { get; set; }
+    }
 }

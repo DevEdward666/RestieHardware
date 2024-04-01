@@ -59,6 +59,7 @@ namespace RestieAPI.Service.Repo
                                         code = reader.GetString(reader.GetOrdinal("code")),
                                         item = reader.GetString(reader.GetOrdinal("item")),
                                         category = reader.GetString(reader.GetOrdinal("category")),
+                                        brand = reader.GetString(reader.GetOrdinal("brand")),
                                         qty = reader.GetInt64(reader.GetOrdinal("qty")),
                                         reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
                                         cost = reader.GetFloat(reader.GetOrdinal("cost")),
@@ -138,6 +139,7 @@ namespace RestieAPI.Service.Repo
                                         code = reader.GetString(reader.GetOrdinal("code")),
                                         item = reader.GetString(reader.GetOrdinal("item")),
                                         category = reader.GetString(reader.GetOrdinal("category")),
+                                        brand = reader.GetString(reader.GetOrdinal("brand")),
                                         qty = reader.GetInt64(reader.GetOrdinal("qty")),
                                         reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
                                         cost = reader.GetFloat(reader.GetOrdinal("cost")),
@@ -182,91 +184,7 @@ namespace RestieAPI.Service.Repo
         }
 
 
-        public PostResponse PostInventory(InventoryRequestModel.PostInventory postInventory)
-        {
-            var sql = @"insert into inventorylogs (logid,code,onhandqty,addedqty,supplierid,cost,price,createdat) values(@logid,@code,@onhandqty,@addedqty,@supplierid,@cost,@price,@createdat)";
-            var updatesql = @"update  inventory set qty=@onhandqty + @addedqty,cost=@cost,price=@price,createdat=@createdat where code=@code";
-
-            var parameters = new Dictionary<string, object>
-            {
-                { "@logid", postInventory.logid },
-                { "@code", postInventory.code },
-                { "@onhandqty", postInventory.onhandqty },
-                { "@addedqty", postInventory.addedqty },
-                { "@supplierid", postInventory.supplierid },
-                { "@cost", postInventory.cost },
-                { "@price", postInventory.price },
-                { "@createdat", postInventory.createdat },
-            };
-
-            var results = new List<InventoryItems>();
-
-            using (var connection = new NpgsqlConnection(_connectionString))
-            {
-                connection.Open();
-
-                using (var tran = connection.BeginTransaction())
-                {
-                    try
-                    {
-                        var insert = 0;
-                        var update = 0;
-                        using (var cmd = new NpgsqlCommand(sql, connection))
-                        {
-                            foreach (var param in parameters)
-                            {
-                                cmd.Parameters.AddWithValue(param.Key, param.Value);
-                            }
-
-                            insert = cmd.ExecuteNonQuery();
-                        }
-                        using (var cmd = new NpgsqlCommand(updatesql, connection))
-                        {
-                            foreach (var param in parameters)
-                            {
-                                cmd.Parameters.AddWithValue(param.Key, param.Value);
-                            }
-
-                            if (insert > 0)
-                            {
-                                var updateparameters = new Dictionary<string, object>
-                                    {
-                                    { "@code", postInventory.code },
-                                    { "@onhandqty", postInventory.onhandqty },
-                                    { "@addedqty", postInventory.addedqty },
-                                    { "@cost", postInventory.cost },
-                                    { "@price", postInventory.price },
-                                    { "@createdat", postInventory.createdat },
-                                };
-                                update = cmd.ExecuteNonQuery();
-
-                            }
-                        }
-                       
-
-                        // Commit the transaction after the reader has been fully processed
-                        tran.Commit();
-                        return new PostResponse
-                        {
-                            Message="Successfully added",
-                            status = update
-                        };
-                    }
-                    catch (Exception ex)
-                    {
-                        tran.Rollback();
-                        return new PostResponse
-                        {
-                            status = 500,
-                            Message = ex.Message
-                        };
-                        throw;
-                    }
-                }
-            }
-
-          
-        }
+      
         public PostResponse AddCustomerInfo(InventoryRequestModel.PostCustomerInfo postCustomerInfo)
         {
             var sql = @"insert into customer (customerid,name,contactno,address,createdat) 

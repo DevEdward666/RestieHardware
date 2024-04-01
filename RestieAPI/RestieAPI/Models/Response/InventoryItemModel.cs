@@ -8,6 +8,7 @@ namespace RestieAPI.Models.Response
         public List<InventoryItems> result { get; set; }
         public Boolean success {  get; set; }
         public int statusCode { get; set; }
+        public string? message {  get; set; }
     }
     public class OrderResponseModel
     {
@@ -55,6 +56,7 @@ namespace RestieAPI.Models.Response
         public string code { get; set; }
         public string item { get; set; }
         public string category { get; set; }
+        public string? brand { get; set; }
         public long qty { get; set; }
         public long reorderqty { get; set; }
         public float cost { get; set; }

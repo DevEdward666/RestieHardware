@@ -2,6 +2,7 @@ export interface InventoryModel {
   code: string;
   item: string;
   category: string;
+  brand?: string;
   qty: number;
   reorderqty: number;
   cost: string;
@@ -35,6 +36,8 @@ export interface SelectedItemToCart {
   onhandqty?: number;
   price: number;
   qty?: number;
+  category?: string;
+  brand?: string;
 }
 export interface PostdOrderList {
   userid: string;

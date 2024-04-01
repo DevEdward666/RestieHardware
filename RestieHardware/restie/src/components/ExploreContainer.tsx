@@ -139,13 +139,14 @@ const ExploreContainer: React.FC<ContainerProps> = ({
       return [...cartItems, newItem];
     }
   };
-  console.log(category);
   const CardList = (card: InventoryModel) => {
     const payload: SelectedItemToCart = {
       code: card.code,
       item: card.item,
       onhandqty: card.qty,
       price: card.price,
+      category: card.category,
+      brand: card.brand,
     };
     return (
       <IonCard className="inventory-card-main">
@@ -243,6 +244,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({
               reorderqty={res.reorderqty}
               cost={res.cost}
               status={res.status}
+              brand={res.brand}
               createdat={res.createdat}
               updatedAt={res.updatedAt}
             />

@@ -187,10 +187,12 @@ const SelectedItemContainer: React.FC = () => {
         <div className="selected-item-information-details-content">
           <IonText className="selected-item-name">{selectedItem.item}</IonText>
           <div className="selected-item-information-details-content-category-brand">
-            <IonText className="selected-item-name-brand">Brand: Omni</IonText>{" "}
+            <IonText className="selected-item-name-brand">
+              Brand: {selectedItem.brand}
+            </IonText>{" "}
             |
             <IonText className="selected-item-name-category">
-              Category: Electrical
+              Category: {selectedItem.category}
             </IonText>
           </div>
           <IonItem className="selected-item-break-line"></IonItem>

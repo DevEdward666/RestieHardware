@@ -25,6 +25,12 @@ const MainTab: React.FC = () => {
     (store: RootStore) => store.CommonsReducer.set_toast
   );
   const dispatch = useTypedDispatch();
+  useEffect(() => {
+    const initialize = async () => {
+      await dispatch(GetLoginUser());
+    };
+    initialize();
+  }, [dispatch]);
   return (
     <>
       <IonTabs>

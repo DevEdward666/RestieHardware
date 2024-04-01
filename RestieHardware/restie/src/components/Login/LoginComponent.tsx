@@ -60,7 +60,10 @@ const LoginComponent = () => {
     };
     const res = await dispatch(Login(payload));
     if (res?.accessToken) {
-      router.push("/home/main");
+      const res2 = await dispatch(GetLoginUser());
+      if (res2?.name.length! > 0) {
+        router.push("/home/main");
+      }
     } else {
       alert(res);
     }

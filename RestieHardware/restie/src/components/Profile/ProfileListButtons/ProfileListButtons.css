@@ -7,6 +7,7 @@
     .profile-list-button-list-container{
         display: flex;
         flex-direction: column;
+        gap: 10px;
         .profile-list-button-list{
             display: flex;
             flex-direction: row;

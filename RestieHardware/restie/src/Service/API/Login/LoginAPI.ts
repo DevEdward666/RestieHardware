@@ -54,6 +54,7 @@ export const LogoutUser = async () => {
       getToken
     );
     localStorage.removeItem("bearer");
+    localStorage.removeItem("user_id");
     return response; // Return only response data
   } catch (error) {
     console.error("Error while fetching user info:", error);

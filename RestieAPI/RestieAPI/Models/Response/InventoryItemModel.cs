@@ -17,6 +17,13 @@ namespace RestieAPI.Models.Response
         public int statusCode { get; set; }
         public string? message { get; set; }
     }   
+    public class BrandResponseModel
+    {
+        public List<BrandResponse> result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string? message { get; set; }
+    }   
     public class OrderInfoResponseModel
     {
         public List<OrderInfoResponse> result { get; set; }
@@ -77,6 +84,10 @@ namespace RestieAPI.Models.Response
         public long createdat { get; set; }
         public string status { get; set; }
         public string userid { get; set; }
+    }
+    public class BrandResponse
+    {
+        public string brand { get; set; }
     }
     public class OrderInfoResponse
     {

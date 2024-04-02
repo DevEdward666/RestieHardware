@@ -10,6 +10,7 @@ import {
   IonList,
   IonModal,
   IonSearchbar,
+  useIonRouter,
 } from "@ionic/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { searchInventoryList } from "../../../../Service/Actions/Inventory/InventoryActions";
@@ -36,8 +37,12 @@ const ManageProductComponent = () => {
     useSelector(
       (store: RootStore) => store.AdminReducer.admin_list_of_supplier
     ) || [];
+  const user_login_information = useSelector(
+    (store: RootStore) => store.LoginReducer.user_login_information
+  );
   const modal = useRef<HTMLIonModalElement>(null);
   const dispatch = useTypedDispatch();
+  const router = useIonRouter();
   const [openSearchModal, setOpenSearchModal] = useState({
     isOpen: false,
     modal: "",
@@ -88,14 +93,15 @@ const ManageProductComponent = () => {
     const searchInventory = () => {
       dispatch(searchAdminInventoryList(fetchList));
     };
-    searchInventory();
-  }, [dispatch, fetchList]);
-  useEffect(() => {
     const searchSuppliers = () => {
       dispatch(searchSupplier(fetchList));
     };
-    searchSuppliers();
-  }, [dispatch, fetchList]);
+    if (openSearchModal.modal === "products") {
+      searchInventory();
+    } else {
+      searchSuppliers();
+    }
+  }, [dispatch, fetchList, openSearchModal]);
   const handleSearch = (ev: Event) => {
     let query = "";
     const target = ev.target as HTMLIonSearchbarElement;
@@ -185,7 +191,6 @@ const ManageProductComponent = () => {
       return;
     } else {
       const res = await PostInventory(payload);
-      console.log(res);
       if (res.status === 200) {
         dispatch(set_toast({ isOpen: true, message: "Successfully updated" }));
         initialize();

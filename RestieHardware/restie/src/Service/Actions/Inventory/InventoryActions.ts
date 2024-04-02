@@ -1,11 +1,13 @@
 import { Dispatch } from "react";
 import {
   ADD_TO_CART,
+  GET_BRANDS,
   GET_DELIVERY_INFO,
   LIST_OF_ITEMS,
   ORDER_LIST,
   ORDER_LIST_INFO,
   SELECTED_ITEM,
+  SET_CATEGORY_AND_BRAND,
 } from "../../Types/Inventory/InventoryTypes";
 import {
   ApprovedOrderAndPay,
@@ -16,6 +18,7 @@ import {
   SelectedListOrder,
   addToCart,
   deleteCart,
+  fetchBrands,
   getAllInventory,
   searchInventory,
   updateCartOrder,
@@ -24,6 +27,8 @@ import {
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 import {
   Addtocart,
+  CategoryAndBrandModel,
+  GetBrandsModel,
   InventoryModel,
   PostDeliveryInfo,
   PostDeliveryInfoModel,
@@ -313,6 +318,31 @@ export const getDelivery =
         get_delivery_info: res,
       });
       return res;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+export const set_category_and_brand =
+  (payload: CategoryAndBrandModel) =>
+  async (dispatch: Dispatch<SET_CATEGORY_AND_BRAND>) => {
+    try {
+      dispatch({
+        type: "SET_CATEGORY_AND_BRAND",
+        set_category_and_brand: payload,
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+export const get_brands_actions =
+  (payload: GetBrandsModel) => async (dispatch: Dispatch<GET_BRANDS>) => {
+    try {
+      const res = await fetchBrands(payload);
+      dispatch({
+        type: "GET_BRANDS",
+        get_brands: res,
+      });
     } catch (error: any) {
       console.log(error);
     }

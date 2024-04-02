@@ -34,6 +34,12 @@ namespace RestieAPI.Controllers.Inventory
             getAllInventory.offset = offset;
             getAllInventory.limit = itemsPerPage;
             return Ok(_inventoryRepo.fetchInventory(getAllInventory));
+        }     
+        [HttpPost("fetchBrands")]
+        public ActionResult<BrandResponseModel> FetchBrand( [FromBody] GetBrand getBrand)
+        {
+     
+            return Ok(_inventoryRepo.getBrands(getBrand));
         }
         [HttpPost("searchInventory/{pageNumber}")]
         public ActionResult<InventoryItemModel> SearchInventory(int pageNumber, [FromBody] GetAllInventory getAllInventory)

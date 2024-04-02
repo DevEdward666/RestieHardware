@@ -11,6 +11,10 @@ import {
   IonToast,
   IonCheckbox,
   CheckboxChangeEventDetail,
+  IonModal,
+  IonLabel,
+  IonList,
+  IonSearchbar,
 } from "@ionic/react";
 import { chevronForwardOutline } from "ionicons/icons";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
@@ -28,6 +32,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { useSelector } from "react-redux";
 import { GetCustomerInfo } from "../../../Service/API/Inventory/InventoryApi";
+import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 const CustomerInformationComponent: React.FC = () => {
   const router = useIonRouter();
   const customers = useSelector(
@@ -39,6 +44,16 @@ const CustomerInformationComponent: React.FC = () => {
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
     isOpen: false,
+  });
+  const [fetchList, setFetchList] = useState<SearchInventoryModel>({
+    page: 1,
+    offset: 0, // Assuming offset starts from 0
+    limit: 50,
+    searchTerm: "",
+  });
+  const [openSearchModal, setOpenSearchModal] = useState({
+    isOpen: false,
+    modal: "",
   });
   const [isNewCustomer, setNewCustomer] = useState<boolean>(false);
   const [customerInformation, setCustomerInformation] =
@@ -109,6 +124,20 @@ const CustomerInformationComponent: React.FC = () => {
 
     return true;
   };
+  const handleSelectedUser = useCallback(
+    async (value: string) => {
+      const payload: PostCustomer = {
+        customerid: value.toString(),
+      };
+      await dispatch(GetOneCustomer(payload));
+      setCustomerInformation((prevState) => ({
+        ...prevState,
+        customerid: value,
+      }));
+      setOpenSearchModal({ isOpen: false, modal: "" });
+    },
+    [dispatch]
+  );
   const handleInfoChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
@@ -120,12 +149,7 @@ const CustomerInformationComponent: React.FC = () => {
           customerid: uuidv4(),
         }));
       } else {
-        if (name === "name") {
-          const payload: PostCustomer = {
-            customerid: value.toString(),
-          };
-          await dispatch(GetOneCustomer(payload));
-        } else if (name === "ordertype") {
+        if (name === "ordertype") {
           setCustomerInformation((prevState) => ({
             ...prevState,
             ordertype: value,
@@ -161,6 +185,17 @@ const CustomerInformationComponent: React.FC = () => {
     });
     // Handle checkbox change
   };
+  const handleSearch = (ev: Event) => {
+    let query = "";
+    const target = ev.target as HTMLIonSearchbarElement;
+    if (target) query = target.value!.toLowerCase();
+    setFetchList({
+      page: 1,
+      offset: 1,
+      limit: 50,
+      searchTerm: query,
+    });
+  };
   return (
     <IonContent>
       <div className="customer-information-main-content">
@@ -177,36 +212,23 @@ const CustomerInformationComponent: React.FC = () => {
             </IonItem>
             <IonItem className="customer-info-item">
               <IonText className="info-text">Name: </IonText>
-              {!isNewCustomer ? (
-                <IonSelect
-                  name="name"
-                  onIonChange={(e: any) => handleInfoChange(e)}
-                  aria-label="Name"
-                  value={
-                    customerInformation?.customerid !== ""
-                      ? customerInformation.customerid
-                      : "none"
-                  }
-                  className="info-input"
-                >
-                  <IonSelectOption value={"none"}>Select Name</IonSelectOption>
-                  {customers?.map((val, index) => (
-                    <IonSelectOption value={val.customerid} key={index}>
-                      {val.name}
-                    </IonSelectOption>
-                  ))}
-                </IonSelect>
-              ) : (
-                <IonInput
-                  name="name"
-                  type="text"
-                  onIonInput={(e: any) => handleInfoChange(e)}
-                  className="info-input"
-                  label="Customer Name"
-                  labelPlacement="floating"
-                  placeholder="Enter Name"
-                ></IonInput>
-              )}
+
+              <IonInput
+                onClick={() =>
+                  !isNewCustomer
+                    ? setOpenSearchModal({ isOpen: true, modal: "" })
+                    : null
+                }
+                readonly={!isNewCustomer ? true : false}
+                name="name"
+                type="text"
+                onIonInput={(e: any) => handleInfoChange(e)}
+                className="info-input"
+                label="Customer Name"
+                labelPlacement="floating"
+                placeholder="Enter Name"
+                value={customerInformation.name}
+              ></IonInput>
             </IonItem>
 
             <IonItem className="customer-info-item">
@@ -260,6 +282,39 @@ const CustomerInformationComponent: React.FC = () => {
           Proceed
         </IonButton>
       </div>
+      <IonModal
+        isOpen={openSearchModal.isOpen}
+        onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
+        initialBreakpoint={1}
+        breakpoints={[0, 0.25, 0.5, 0.75, 1]}
+      >
+        <IonContent className="ion-padding">
+          <>
+            <IonSearchbar
+              placeholder="Search Supplier"
+              onIonInput={(e) => handleSearch(e)}
+              autocapitalize={"words"}
+              debounce={1500}
+            ></IonSearchbar>
+            <IonList>
+              {customers.map((val, index) => (
+                <IonItem
+                  onClick={() => handleSelectedUser(val.customerid)}
+                  key={index}
+                >
+                  {/* <IonAvatar slot="start">
+                  <IonImg src="https://i.pravatar.cc/300?u=b" />
+                </IonAvatar> */}
+                  <IonLabel>
+                    <h2>{val.name}</h2>
+                    <p>{val.contactno}</p>
+                  </IonLabel>
+                </IonItem>
+              ))}
+            </IonList>
+          </>
+        </IonContent>
+      </IonModal>
       <IonToast
         isOpen={isOpenToast?.isOpen}
         message={isOpenToast.toastMessage}

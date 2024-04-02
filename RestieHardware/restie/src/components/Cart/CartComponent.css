@@ -21,9 +21,11 @@
     padding-inline-end: 0px;
   }
 .main-cart-card-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
 }
   .main-cart-card-content{
     display: flex;

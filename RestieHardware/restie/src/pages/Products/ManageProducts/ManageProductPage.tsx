@@ -8,15 +8,35 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import ManageProductComponent from "../../../components/Admin/Products/ManageProducts/ManageProductComponent";
-import { useTypedDispatch } from "../../../Service/Store";
+import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import restielogo from "../../../assets/images/Icon@3.png";
 import "./ManageProductPage.css";
 import { arrowBack } from "ionicons/icons";
+import { useSelector } from "react-redux";
+import PageNotFoundComponent from "../../../components/PageNotFound/PageNotFoundComponent";
 const ManageProductPage = () => {
+  const user_login_information = useSelector(
+    (store: RootStore) => store.LoginReducer.user_login_information
+  );
+
+  const [isLoaded, setLoaded] = useState<boolean>(false);
   const router = useIonRouter();
-  return (
+  useEffect(() => {
+    if (
+      user_login_information?.role.trim().toLowerCase() === "admin" ||
+      user_login_information?.role.trim().toLowerCase() === "super admin"
+    ) {
+      setLoaded(true);
+    } else {
+      router.push("/pageNotFound");
+    }
+  }, [user_login_information]);
+  console.log(
+    user_login_information?.role.trim().toLowerCase() === "super admin"
+  );
+  return isLoaded ? (
     <IonPage className="manage-page-container">
       <IonHeader className="manage-page-header">
         <IonToolbar mode="ios" color="tertiary">
@@ -35,6 +55,8 @@ const ManageProductPage = () => {
       </IonHeader>
       <ManageProductComponent />
     </IonPage>
+  ) : (
+    <PageNotFoundComponent />
   );
 };
 

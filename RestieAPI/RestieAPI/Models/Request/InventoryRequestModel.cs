@@ -11,6 +11,8 @@ namespace RestieAPI.Models.Request
             public Int32 page { get; set; }
             public Int32 limit { get; set; }
             public string searchTerm {  get; set; }
+            public string? category {  get; set; }
+            public string? brand {  get; set; }
 
         }
         public class PostInventory
@@ -44,6 +46,11 @@ namespace RestieAPI.Models.Request
             public string userid { get; set; }
             public Int32 limit { get; set; }
             public Int32 offset { get; set; }
+
+        }
+        public class GetBrand
+        {
+            public string category { get; set; }
 
         }
         public class GetCustomer

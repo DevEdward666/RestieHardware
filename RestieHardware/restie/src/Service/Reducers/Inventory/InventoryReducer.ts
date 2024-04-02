@@ -20,6 +20,11 @@ const defaultState: InventoryTypesModel = {
     deliverydate: 0,
     path: "",
   },
+  set_category_and_brand: {
+    category: "",
+    brand: "",
+  },
+  get_brands: [],
 };
 
 const InventoryReducer = (
@@ -61,6 +66,18 @@ const InventoryReducer = (
       return {
         ...state,
         get_delivery_info: action.get_delivery_info,
+      };
+    }
+    case "SET_CATEGORY_AND_BRAND": {
+      return {
+        ...state,
+        set_category_and_brand: action.set_category_and_brand,
+      };
+    }
+    case "GET_BRANDS": {
+      return {
+        ...state,
+        get_brands: action.get_brands,
       };
     }
     default:

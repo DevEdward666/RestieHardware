@@ -18,7 +18,7 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { QueryClient } from "react-query";
 import { useSelector } from "react-redux";
 import { SearchInventoryModel } from "../../Models/Request/searchInventory";
@@ -31,16 +31,26 @@ import electrical from "../../assets/images/Categories/Electrical.png";
 import lumber from "../../assets/images/Categories/Lumber.png";
 import paint from "../../assets/images/Categories/Paint.png";
 import categoryIcon from "../../assets/images/icons/category.png";
+import {
+  get_brands_actions,
+  set_category_and_brand,
+} from "../../Service/Actions/Inventory/InventoryActions";
+import { GetBrandsModel } from "../../Models/Request/Inventory/InventoryModel";
 
 const queryClient = new QueryClient();
 const Tab1: React.FC = () => {
   const list_of_items = useSelector(
     (store: RootStore) => store.InventoryReducer.list_of_items
   );
-
+  const fetch_brands = useSelector(
+    (store: RootStore) => store.InventoryReducer.get_brands
+  );
   const dispatch = useTypedDispatch();
   const [isFetching, setFetching] = useState<boolean>(false);
-  const [getCategory, setCategory] = useState<string>();
+  const [getCategoryAndBrand, setCategoryAndBrand] = useState({
+    category: "",
+    brand: "",
+  });
 
   const [fetchList, setFetchList] = useState<SearchInventoryModel>({
     page: 1,
@@ -61,8 +71,27 @@ const Tab1: React.FC = () => {
     });
   };
   const handleCategory = (category: string) => {
-    setCategory(category);
+    setCategoryAndBrand((prev) => ({ ...prev, category: category }));
   };
+  const handleBrand = (brand: string) => {
+    setCategoryAndBrand((prev) => ({ ...prev, brand: brand }));
+  };
+  useEffect(() => {
+    const initializeCategoryAndBrand = () => {
+      dispatch(set_category_and_brand(getCategoryAndBrand));
+    };
+    initializeCategoryAndBrand();
+  }, [dispatch, getCategoryAndBrand]);
+  useEffect(() => {
+    const initializeBrand = () => {
+      const payload: GetBrandsModel = {
+        category: getCategoryAndBrand.brand,
+      };
+      dispatch(get_brands_actions(payload));
+    };
+    initializeBrand();
+  }, []);
+
   return (
     <>
       <IonMenu type={"push"} contentId="main-content">
@@ -73,7 +102,7 @@ const Tab1: React.FC = () => {
         </IonHeader>
         <IonContent className="ion-padding">
           <IonAccordionGroup>
-            <IonAccordion value="first">
+            <IonAccordion value="category">
               <IonItem slot="header" color="light">
                 <div className="category-card-content">
                   <div className="category-card-title-details">
@@ -128,6 +157,34 @@ const Tab1: React.FC = () => {
                 </div>
               </div>
             </IonAccordion>
+            <IonAccordion value="brand">
+              <IonItem slot="header" color="light">
+                <div className="category-card-content">
+                  <div className="category-card-title-details">
+                    <IonImg
+                      color="danger"
+                      slot="start"
+                      className="category-icon-img"
+                      src={categoryIcon}
+                    ></IonImg>
+                    <IonLabel>Brands</IonLabel>
+                  </div>
+                </div>
+              </IonItem>
+              <div className="brand-content" slot="content">
+                {fetch_brands.map((val, index) => (
+                  <div
+                    key={index}
+                    className="brands-container"
+                    onClick={() => handleBrand(val.brand)}
+                  >
+                    <div className="brands-brand">
+                      <IonText className="brand-text">{val.brand}</IonText>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </IonAccordion>
           </IonAccordionGroup>
         </IonContent>
       </IonMenu>
@@ -161,11 +218,7 @@ const Tab1: React.FC = () => {
           <div className="home-spinner">
             {isFetching && <IonSpinner color="light" name="lines"></IonSpinner>}
           </div>
-          <ExploreContainer
-            data={list_of_items}
-            searchItem={fetchList}
-            category={getCategory!}
-          />
+          <ExploreContainer data={list_of_items} searchItem={fetchList} />
         </IonContent>
       </IonPage>
     </>

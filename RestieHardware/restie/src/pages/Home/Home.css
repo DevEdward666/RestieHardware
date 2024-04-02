@@ -1,95 +1,127 @@
-.home-page-container{
-    .home-page-header{
+.home-page-container {
+  .home-page-header {
+    display: flex;
+    flex-direction: column;
+  }
+  .home-page-content {
+    /* --background: linear-gradient(180deg, #0F0526, #125B8C); */
+    .home-spinner {
+      text-align: center;
+      color: white;
+    }
+  }
+  .home-toolbar-logo-container {
+    display: flex;
+    flex-direction: row;
+    justify-self: center;
+    align-items: center;
+    text-align: center;
+    .home-toolbar-logo {
+      height: 100px;
+      width: 100%;
+      margin: 10px;
+    }
+  }
+}
+.categories-container {
+  display: flex;
+  flex-direction: column;
+  padding-top: 10px;
+
+  .categories-category {
+    /* background-color: #850D0D; */
+    background-color: #051926;
+    color: white;
+    border-radius: 15px;
+    .category-text {
+      font-family: "Gotham-Light";
+      font-size: 14px;
+      padding-left: 15px;
+    }
+    .category-img {
+      border-radius: 15px;
+    }
+  }
+}
+.brand-content{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    max-width: calc(130px* 2);
+    .brands-container {
         display: flex;
         flex-direction: column;
-    }
-    .home-page-content{
-        /* --background: linear-gradient(180deg, #0F0526, #125B8C); */
-        .home-spinner{
-            text-align: center;
-            color: white;
-        }
-    }
-    .home-toolbar-logo-container{
-        display: flex;
-        flex-direction: row;
-        justify-self: center;
-        align-items: center;
-        text-align: center;
-        .home-toolbar-logo{
-            height: 100px;
-            width: 100%;
-            margin: 10px;
-        }
-    }
-}
-.categories-container{
-    display: flex;
-    flex-direction: column;
-    padding-top: 10px;
-    
-    .categories-category{
-        /* background-color: #850D0D; */
-        background-color: #051926;
-        color: white;
-        border-radius: 15px;
-        .category-text{
+        padding-top: 10px;
+        padding-left: 10px;
+        .brands-brand {
+          background-color: #051926;
+          height: 50px;
+          color: white;
+          border-radius: 10px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          .brand-text {
             font-family: "Gotham-Light";
-            font-size: 14px;
+            font-size: 16px;
             padding-left: 15px;
-        }
-        .category-img{
+            width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .brand-img {
             border-radius: 15px;
+          }
         }
-    }
+      }
 }
 
-.category-card-content{
+.category-card-content {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  gap: 8px;
+  margin-top: 14px;
+  margin-bottom: 0px;
+
+  .category-card-title-details {
     display: flex;
-    flex-direction: column;
-    padding: 10px;
-    gap: 8px;
-    margin-top: 14px; 
-    margin-bottom: 0px;
-   
-    .category-card-title-details{
-        display: flex;
-        font-family: "Gotham-Black";
-        font-size: 14px;
-        flex-direction: row;
-        gap: 5px;
-        align-items: center;
-        .category-card-title{
-            font-family: "Gotham-Black";
-            font-size: 14px;
-        }
-        .category-icon-img{
-            width: 50px;
-            height: 50px;
-        }
+    font-family: "Gotham-Black";
+    font-size: 14px;
+    flex-direction: row;
+    gap: 5px;
+    align-items: center;
+    .category-card-title {
+      font-family: "Gotham-Black";
+      font-size: 14px;
     }
-    .category-card-category-details{
-        display: flex;
-        font-family: "Gotham-Light";
-        font-size: 14px;
-        flex-direction: row;
-        gap: 5px;
-        .category-card-category{
-            font-family: "Gotham-Light";
-            font-size: 14px;
-        }
+    .category-icon-img {
+      width: 50px;
+      height: 50px;
     }
-    .category-card-price-details{
-        display: flex;
-        font-family: "Gotham-Light";
-        font-size: 16px;
-        flex-direction: row;
-        color: #f02b2b;
-        font-weight: bolder;
-        gap: 5px;
-        .category-card-price{
-            font-family: "Gotham-Light";
-            font-size: 14px;
-        }
+  }
+  .category-card-category-details {
+    display: flex;
+    font-family: "Gotham-Light";
+    font-size: 14px;
+    flex-direction: row;
+    gap: 5px;
+    .category-card-category {
+      font-family: "Gotham-Light";
+      font-size: 14px;
     }
+  }
+  .category-card-price-details {
+    display: flex;
+    font-family: "Gotham-Light";
+    font-size: 16px;
+    flex-direction: row;
+    color: #f02b2b;
+    font-weight: bolder;
+    gap: 5px;
+    .category-card-price {
+      font-family: "Gotham-Light";
+      font-size: 14px;
+    }
+  }
 }

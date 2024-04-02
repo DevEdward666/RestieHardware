@@ -76,3 +76,10 @@ export interface PostDeliveryInfoModel {
 export interface GetDeliveryImagePath {
   imagePath: string;
 }
+export interface CategoryAndBrandModel {
+  category: string;
+  brand: string;
+}
+export interface GetBrandsModel {
+  category: string;
+}

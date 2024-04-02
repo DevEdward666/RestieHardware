@@ -1,13 +1,14 @@
 .container {
-/* display: grid;
-grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); */
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-max-width: calc(150px * 6); /* Set the maximum width to accommodate at most 6 grid items */
-margin: 0 auto; /* Center the grid container */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, .5fr));
+  max-width: calc(190px* 6);
+  margin: 0 auto;
+  justify-content: center;
+
 .inventory-card-content{
   display: flex;
   flex-direction: column;
+  min-height: 100px;
   .inventory-card-title{
     font-family: "Gotham-Medium";
     font-size: 16px;
@@ -73,5 +74,5 @@ margin: 0 auto; /* Center the grid container */
   margin-inline-end: 10px;
   margin-top: 10px;
  margin-bottom: 10px;
- max-height: 300px;
+ max-height: 400px;
 }

@@ -44,3 +44,19 @@ export const GetLoginUser =
       console.log(error);
     }
   };
+export const RemoveLoginUser =
+  () => async (dispatch: Dispatch<USER_LOGIN_INFORMATION>) => {
+    try {
+      dispatch({
+        type: "USER_LOGIN_INFORMATION",
+        user_login_information: {
+          id: "",
+          username: "",
+          name: "",
+          role: "",
+        },
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
+  };

@@ -5,9 +5,11 @@ import {
   IonCardHeader,
   IonCardSubtitle,
   IonCardTitle,
+  IonChip,
   IonIcon,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonLabel,
   useIonRouter,
 } from "@ionic/react";
 import { v4 as uuidv4 } from "uuid";
@@ -20,19 +22,19 @@ import {
   getInventory,
   searchInventoryList,
   selectedItem,
+  set_category_and_brand,
 } from "../Service/Actions/Inventory/InventoryActions";
 import {
   Addtocart,
   InventoryModel,
   SelectedItemToCart,
 } from "../Models/Request/Inventory/InventoryModel";
-import { addCircle, cart } from "ionicons/icons";
+import { addCircle, cart, pin, close } from "ionicons/icons";
 import { useSelector } from "react-redux";
 import { SearchInventoryModel } from "../Models/Request/searchInventory";
 interface ContainerProps {
   data: any;
   searchItem: SearchInventoryModel;
-  category: string;
 }
 
 interface SelectedItem {
@@ -41,11 +43,7 @@ interface SelectedItem {
   price: number;
 }
 
-const ExploreContainer: React.FC<ContainerProps> = ({
-  data,
-  searchItem,
-  category,
-}) => {
+const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
   const [getcartid, setCartId] = useState<string>("");
@@ -55,6 +53,10 @@ const ExploreContainer: React.FC<ContainerProps> = ({
   const selectedItemselector = useSelector(
     (store: RootStore) => store.InventoryReducer.add_to_cart
   );
+  const get_category_and_brand = useSelector(
+    (store: RootStore) => store.InventoryReducer.set_category_and_brand
+  );
+
   useEffect(() => {
     const checkCartId = () => {
       if (selectedItemselector.length <= 0) {
@@ -188,6 +190,14 @@ const ExploreContainer: React.FC<ContainerProps> = ({
           offset: (page - 1) * limit,
           limit: limit,
           searchTerm: "",
+          category:
+            get_category_and_brand.category.length > 0
+              ? get_category_and_brand.category
+              : "",
+          brand:
+            get_category_and_brand.brand.length > 0
+              ? get_category_and_brand.brand
+              : "",
         })
       );
     } else {
@@ -197,13 +207,21 @@ const ExploreContainer: React.FC<ContainerProps> = ({
           offset: (page - 1) * limit,
           limit: limit,
           searchTerm: searchItem.searchTerm,
+          category:
+            get_category_and_brand.category.length > 0
+              ? get_category_and_brand.category
+              : "",
+          brand:
+            get_category_and_brand.brand.length > 0
+              ? get_category_and_brand.brand
+              : "",
         })
       );
       isSearch = true;
     }
 
     return { response: res, isSearch: isSearch };
-  }, [dispatch, searchItem, page, limit]);
+  }, [dispatch, searchItem, page, limit, get_category_and_brand]);
 
   const loadMoreItems = async () => {
     const newItems = await getMoreInventory();
@@ -230,11 +248,46 @@ const ExploreContainer: React.FC<ContainerProps> = ({
     };
     initializeItems();
   }, [searchItem]);
+  const handleRemoveCategory = useCallback(() => {
+    dispatch(
+      set_category_and_brand({
+        category: "",
+        brand: get_category_and_brand.brand,
+      })
+    );
+  }, [dispatch, get_category_and_brand]);
+  const handleRemoveBrand = useCallback(() => {
+    dispatch(
+      set_category_and_brand({
+        category: get_category_and_brand.category,
+        brand: "",
+      })
+    );
+  }, [dispatch, get_category_and_brand]);
   return (
     <>
+      {get_category_and_brand.category.length > 0 ? (
+        <div>
+          <IonChip>
+            <IonLabel>Category: {get_category_and_brand.category}</IonLabel>
+            <IonIcon
+              icon={close}
+              onClick={() => handleRemoveCategory()}
+            ></IonIcon>
+          </IonChip>
+        </div>
+      ) : null}
+      {get_category_and_brand.brand.length > 0 ? (
+        <div>
+          <IonChip>
+            <IonLabel>Brand: {get_category_and_brand.brand}</IonLabel>
+            <IonIcon icon={close} onClick={() => handleRemoveBrand()}></IonIcon>
+          </IonChip>
+        </div>
+      ) : null}
       <div className="container">
         {items?.map((res: InventoryModel, index: number) => (
-          <div key={index}>
+          <div className="card-container" key={index}>
             <CardList
               code={res.code}
               item={res.item}

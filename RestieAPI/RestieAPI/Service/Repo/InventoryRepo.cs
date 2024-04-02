@@ -24,13 +24,15 @@ namespace RestieAPI.Service.Repo
 
         public InventoryItemModel fetchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
         {
-            var sql = @"SELECT * FROM Inventory ORDER BY code LIMIT @limit OFFSET @offset;";
+            var sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY code LIMIT @limit OFFSET @offset;";
 
             var parameters = new Dictionary<string, object>
             {
                 { "@limit", getAllInventory.limit },
                 { "@offset", getAllInventory.offset },
-                { "@searchTerm", getAllInventory.searchTerm }
+                { "@searchTerm", getAllInventory.searchTerm },
+                { "@category", getAllInventory.category },
+                { "@brand", getAllInventory.brand }
             };
 
             var results = new List<InventoryItems>();
@@ -101,15 +103,17 @@ namespace RestieAPI.Service.Repo
         {
             var sql = @"SELECT * FROM Inventory 
                         WHERE LOWER(code) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
-                              LOWER(item) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
-                              LOWER(category) LIKE CONCAT('%', LOWER(@searchTerm), '%') 
+                              LOWER(item) LIKE CONCAT('%', LOWER(@searchTerm), '%') AND
+                              LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%')
                         ORDER BY code 
                         LIMIT @limit;";
 
             var parameters = new Dictionary<string, object>
             {
                 { "@limit", getAllInventory.limit },
-                { "@searchTerm", getAllInventory.searchTerm }
+                { "@searchTerm", getAllInventory.searchTerm },
+                { "@category", getAllInventory.category },
+                { "@brand", getAllInventory.brand }
             };
 
 
@@ -967,7 +971,75 @@ namespace RestieAPI.Service.Repo
         //    }
         //}
 
-        public OrderResponseModel getOrder(InventoryRequestModel.GetUserOrder getUserOrder)
+        public BrandResponseModel getBrands(InventoryRequestModel.GetBrand getBrand)
+        {
+            var sql = @"select brand from inventory where brand ='' is not true and lower(category)  LIKE CONCAT('%', LOWER(@category), '%') group by brand;";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@category", getBrand.category },
+            };
+
+
+            var results = new List<BrandResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var orderResponse = new BrandResponse
+                                    {
+                                        brand = reader.GetString(reader.GetOrdinal("brand")),
+                                    };
+
+                                    results.Add(orderResponse);
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new BrandResponseModel
+                        {
+                            result = results,
+                            statusCode = 200,
+                            success = true,
+
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new BrandResponseModel
+                        {
+                            result = [],
+                            message= ex.Message,
+                            statusCode = 500,
+                            success = false,
+
+                        };
+                        throw;
+                    }
+                }
+            }
+
+          
+        }public OrderResponseModel getOrder(InventoryRequestModel.GetUserOrder getUserOrder)
         {
             var sql = @"select * from orders  ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
 

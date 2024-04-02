@@ -27,6 +27,7 @@ import PaymentOptionsPage from "./pages/Payment/PaymentsOptions/PaymentOptionsPa
 import LoginPage from "./pages/Login/LoginPage";
 import DeliveryInfoPage from "./pages/Delivery/DeliveryInfo/DeliveryInfoPage";
 import ManageProductPage from "./pages/Products/ManageProducts/ManageProductPage";
+import PageNotFoundPage from "./pages/PageNotFound/PageNotFoundPage";
 
 setupIonicReact();
 
@@ -49,6 +50,8 @@ const App: React.FC = () => {
 
       {/* ADMIN */}
       <Route path="/admin/manageproduct" render={() => <ManageProductPage />} />
+      {/* 404 Page not found */}
+      <Route path="/pageNotFound" render={() => <PageNotFoundPage />} />
     </IonApp>
   );
 };

@@ -2,6 +2,7 @@ import { baseUrl } from "../../../Helpers/environment";
 import { get, getWithAuth, post } from "../../../Helpers/useAxios";
 import {
   Addtocart,
+  GetBrandsModel,
   GetDeliveryImagePath,
   PostDeliveryImage,
   PostDeliveryInfo,
@@ -41,7 +42,16 @@ export const searchInventory = async (payload: SearchInventoryModel) => {
   );
   return response.result.$values;
 };
-
+export const fetchBrands = async (payload: GetBrandsModel) => {
+  const response = await post(
+    `${baseUrl}api/Inventory/fetchBrands`,
+    {
+      "Content-Type": "application/json",
+    },
+    JSON.stringify(payload)
+  );
+  return response.result.$values;
+};
 export const addToCart = async (payload: Addtocart[]) => {
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {

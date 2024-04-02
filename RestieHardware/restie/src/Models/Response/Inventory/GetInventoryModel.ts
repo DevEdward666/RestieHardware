@@ -59,3 +59,7 @@ export interface FileResponse {
   fileDownloadName: string;
   lastModified: number;
 }
+
+export interface GetBrandsModel {
+  brand: string;
+}

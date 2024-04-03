@@ -30,7 +30,7 @@
 
   .categories-category {
     /* background-color: #850D0D; */
-    background-color: #051926;
+    background-color: #125B8C;
     color: white;
     border-radius: 15px;
     .category-text {
@@ -53,7 +53,7 @@
         padding-top: 10px;
         padding-left: 10px;
         .brands-brand {
-          background-color: #051926;
+          background-color: #125B8C;
           height: 50px;
           color: white;
           border-radius: 10px;
@@ -124,4 +124,13 @@
       font-size: 14px;
     }
   }
+}
+.filter{
+  padding-top:20px ;
+  display: flex;
+  flex-direction: row;
+  font-size: 14px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
 }

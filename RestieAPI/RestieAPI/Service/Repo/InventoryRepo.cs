@@ -24,7 +24,32 @@ namespace RestieAPI.Service.Repo
 
         public InventoryItemModel fetchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
         {
-            var sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY code LIMIT @limit OFFSET @offset;";
+            var sql = "";
+            if(getAllInventory.filter == "asc")
+            {
+                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY price ASC LIMIT @limit OFFSET @offset;";
+
+            }
+            if(getAllInventory.filter == "desc")
+            {
+                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY price DESC LIMIT @limit OFFSET @offset;";
+
+            }
+            if (getAllInventory.filter == "alphaAZ")
+            {
+                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item ASC LIMIT @limit OFFSET @offset;";
+
+            }
+            if (getAllInventory.filter == "alphaZA")
+            {
+                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item DESC LIMIT @limit OFFSET @offset;";
+
+            }
+            if(getAllInventory.filter == "")
+            {
+                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item LIMIT @limit OFFSET @offset;";
+
+            }
 
             var parameters = new Dictionary<string, object>
             {
@@ -101,12 +126,52 @@ namespace RestieAPI.Service.Repo
         }
         public InventoryItemModel searchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
         {
-            var sql = @"SELECT * FROM Inventory 
+            var sql = "";
+            if(getAllInventory.filter == "asc")
+            {
+                sql = @"SELECT * FROM Inventory 
                         WHERE LOWER(code) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
                               LOWER(item) LIKE CONCAT('%', LOWER(@searchTerm), '%') AND
                               LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%')
-                        ORDER BY code 
+                        ORDER BY price ASC 
                         LIMIT @limit;";
+            }
+            if (getAllInventory.filter == "desc")
+            {
+                sql = @"SELECT * FROM Inventory 
+                        WHERE LOWER(code) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
+                              LOWER(item) LIKE CONCAT('%', LOWER(@searchTerm), '%') AND
+                              LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%')
+                        ORDER BY price DESC 
+                        LIMIT @limit;";
+            }
+            if (getAllInventory.filter == "alphaAZ")
+            {
+                sql = @"SELECT * FROM Inventory 
+                        WHERE LOWER(code) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
+                              LOWER(item) LIKE CONCAT('%', LOWER(@searchTerm), '%') AND
+                              LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%')
+                        ORDER BY item ASC 
+                        LIMIT @limit;";
+            }
+            if (getAllInventory.filter == "alphaZA")
+            {
+                sql = @"SELECT * FROM Inventory 
+                        WHERE LOWER(code) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
+                              LOWER(item) LIKE CONCAT('%', LOWER(@searchTerm), '%') AND
+                              LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%')
+                        ORDER BY item DESC 
+                        LIMIT @limit;";
+            }
+            if (getAllInventory.filter == "")
+            {
+                sql = @"SELECT * FROM Inventory 
+                        WHERE LOWER(code) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
+                              LOWER(item) LIKE CONCAT('%', LOWER(@searchTerm), '%') AND
+                              LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%')
+                        ORDER BY item 
+                        LIMIT @limit;";
+            }
 
             var parameters = new Dictionary<string, object>
             {

@@ -5,12 +5,13 @@ import {
   IonText,
   useIonRouter,
 } from "@ionic/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   PostDeliveryImage,
   PostDeliveryInfo,
   PostUpdateDeliveredOrder,
+  UserPhoto,
 } from "../../../Models/Request/Inventory/InventoryModel";
 import {
   SavedDeliveryInfo,
@@ -21,7 +22,9 @@ import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import attachmentIcon from "../../../assets//images/icons/attchment-icon.svg";
 import attachmentDeleteIcon from "../../../assets//images/icons/cross_screenshot_button.svg";
+
 import "./DeliveryInfoComponent.css";
+import { usePhotoGallery } from "../../../Hooks/usePhotoGallery";
 const DeliveryInfoComponent = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
@@ -37,6 +40,7 @@ const DeliveryInfoComponent = () => {
   const [getFile, setFile] = useState<File>();
   const router = useIonRouter();
   const dispatch = useTypedDispatch();
+  const { file, takePhoto } = usePhotoGallery();
   const onSelectFile = (e: any) => {
     const selectedFiles = e.target.files;
     const newFiles = selectedFiles[0];
@@ -157,7 +161,15 @@ const DeliveryInfoComponent = () => {
       );
     }
   }, [getFile, user_login_information, order_list_info]);
-
+  const handleTakePhoto = async () => {
+    await takePhoto();
+  };
+  useEffect(() => {
+    const initializePhotos = () => {
+      setFile(file);
+    };
+    initializePhotos();
+  }, [file]);
   return (
     <IonContent>
       <div>
@@ -168,69 +180,91 @@ const DeliveryInfoComponent = () => {
           }}
         >
           <div className="attchment-container">
-            {getFile && (
-              <div className="selected-files-list">
-                <div className="selected-file">
-                  <div className="file-thumbnail">
-                    {/* You can render a thumbnail of the file here */}
+            {getFile !== undefined ? (
+              getFile && (
+                <div className="selected-files-list">
+                  <div className="selected-file">
+                    <div className="file-thumbnail">
+                      {/* You can render a thumbnail of the file here */}
+                      {getFile &&
+                        getFile.type &&
+                        getFile.type.startsWith("image/") && (
+                          <img
+                            className="support-image"
+                            src={URL.createObjectURL(getFile)}
+                            alt={`Thumbnail ${getFile.name}`}
+                          />
+                        )}
+                    </div>
                     {getFile &&
-                      getFile.type &&
-                      getFile.type.startsWith("image/") && (
-                        <img
-                          className="support-image"
-                          src={URL.createObjectURL(getFile)}
-                          alt={`Thumbnail ${getFile.name}`}
-                        />
+                      getFile.name !== undefined &&
+                      getFile.size !== undefined && (
+                        <div className="file-details">
+                          <IonText className="file-name">
+                            {getFile!.name}
+                          </IonText>
+                          <IonText className="file-size">
+                            {getFile!.size} bytes
+                          </IonText>
+                        </div>
                       )}
-                  </div>
-                  {getFile &&
-                    getFile.name !== undefined &&
-                    getFile.size !== undefined && (
-                      <div className="file-details">
-                        <IonText className="file-name">{getFile!.name}</IonText>
-                        <IonText className="file-size">
-                          {getFile!.size} bytes
-                        </IonText>
+                    {getFile && (
+                      <div
+                        className="file-delete"
+                        onClick={() => deleteAttachment(getFile!)}
+                      >
+                        <IonIcon
+                          className="file-delete-icon"
+                          icon={attachmentDeleteIcon}
+                        />
                       </div>
                     )}
-                  {getFile && (
-                    <div
-                      className="file-delete"
-                      onClick={() => deleteAttachment(getFile!)}
-                    >
-                      <IonIcon
-                        className="file-delete-icon"
-                        icon={attachmentDeleteIcon}
-                      />
-                    </div>
-                  )}
+                  </div>
                 </div>
-              </div>
+              )
+            ) : (
+              <IonText className="file-info-text">
+                To select image choose attach image. If you want to capture
+                image choose open camera
+              </IonText>
             )}
           </div>
-          <>
-            <input
-              ref={fileInput}
-              hidden
-              type="file"
-              accept="image/*"
-              onChange={(e) => onSelectFile(e)}
-            />
+          <div className="capture-images-buttons">
             <div
               className="need-help-attachment-button"
-              onClick={() => {
-                // @ts-ignore
-                fileInput?.current?.click();
-                // setBackgroundOption(BackgroundOptionType.Gradient);
-              }}
+              onClick={() => handleTakePhoto()}
             >
               <IonIcon
                 className="need-help-attachment-button-icon"
                 icon={attachmentIcon}
               ></IonIcon>
-              Attach Image
+              Open Camera
             </div>
-          </>
+            <>
+              <input
+                ref={fileInput}
+                hidden
+                type="file"
+                accept="image/*"
+                onChange={(e) => onSelectFile(e)}
+              />
+
+              <div
+                className="need-help-attachment-button"
+                onClick={() => {
+                  // @ts-ignore
+                  fileInput?.current?.click();
+                  // setBackgroundOption(BackgroundOptionType.Gradient);
+                }}
+              >
+                <IonIcon
+                  className="need-help-attachment-button-icon"
+                  icon={attachmentIcon}
+                ></IonIcon>
+                Attach Image
+              </div>
+            </>
+          </div>
           <IonButton className="need-help-send-button" type="submit">
             Upload
           </IonButton>

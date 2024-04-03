@@ -79,7 +79,12 @@ export interface GetDeliveryImagePath {
 export interface CategoryAndBrandModel {
   category: string;
   brand: string;
+  filter: string;
 }
 export interface GetBrandsModel {
   category: string;
+}
+export interface UserPhoto {
+  filepath: string;
+  webviewPath?: string;
 }

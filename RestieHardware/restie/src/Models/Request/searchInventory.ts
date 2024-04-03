@@ -5,4 +5,5 @@ export interface SearchInventoryModel {
   searchTerm: string;
   category?: string;
   brand?: string;
+  filter?: string;
 }

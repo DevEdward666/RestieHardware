@@ -189,7 +189,11 @@
         font-family: "Gotham-Light";
     }
 }
-
+.delivery-info-title{
+    font-size: 20px;
+    width: 100%;
+    font-family: "Gotham-Light";
+}
 .breakline{
     padding: 15px;
 }

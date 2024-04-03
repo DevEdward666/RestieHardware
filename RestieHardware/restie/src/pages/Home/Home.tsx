@@ -13,12 +13,14 @@ import {
   IonMenuButton,
   IonPage,
   IonSearchbar,
+  IonSelect,
+  IonSelectOption,
   IonSpinner,
   IonText,
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { QueryClient } from "react-query";
 import { useSelector } from "react-redux";
 import { SearchInventoryModel } from "../../Models/Request/searchInventory";
@@ -45,11 +47,15 @@ const Tab1: React.FC = () => {
   const fetch_brands = useSelector(
     (store: RootStore) => store.InventoryReducer.get_brands
   );
+  const get_category_and_brand = useSelector(
+    (store: RootStore) => store.InventoryReducer.set_category_and_brand
+  );
   const dispatch = useTypedDispatch();
   const [isFetching, setFetching] = useState<boolean>(false);
   const [getCategoryAndBrand, setCategoryAndBrand] = useState({
     category: "",
     brand: "",
+    filter: "",
   });
 
   const [fetchList, setFetchList] = useState<SearchInventoryModel>({
@@ -91,7 +97,31 @@ const Tab1: React.FC = () => {
     };
     initializeBrand();
   }, []);
+  const handleFilter = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      const { name, value } = e.target;
+      let filterby = "";
+      if (value === "lowhigh") {
+        filterby = "asc";
+      }
+      if (value === "highlow") {
+        filterby = "desc";
+      }
+      if (value === "alphaAZ") {
+        filterby = "alphaAZ";
+      }
+      if (value === "alphaZA") {
+        filterby = "alphaZA";
+      }
 
+      setCategoryAndBrand({
+        category: get_category_and_brand.category,
+        brand: get_category_and_brand.brand,
+        filter: filterby,
+      });
+    },
+    [get_category_and_brand]
+  );
   return (
     <>
       <IonMenu type={"push"} contentId="main-content">
@@ -186,6 +216,34 @@ const Tab1: React.FC = () => {
               </div>
             </IonAccordion>
           </IonAccordionGroup>
+          <IonItem className="filter">
+            <IonLabel>Filter By</IonLabel>
+            <IonSelect
+              name="filterby"
+              onIonChange={(e: any) => handleFilter(e)}
+              aria-label="Filter By"
+              // value={
+              //   customerInformation?.ordertype !== ""
+              //     ? customerInformation.ordertype
+              //     : "none"
+              // }
+              className="info-input"
+              placeholder="Select Value"
+            >
+              <IonSelectOption value="lowhigh">
+                Price Low to High
+              </IonSelectOption>
+              <IonSelectOption value="highlow">
+                Price High to Low
+              </IonSelectOption>
+              <IonSelectOption value="alphaAZ">
+                Alphabetical A-Z
+              </IonSelectOption>
+              <IonSelectOption value="alphaZA">
+                Alphabetical Z-A
+              </IonSelectOption>
+            </IonSelect>
+          </IonItem>
         </IonContent>
       </IonMenu>
       <IonPage className="home-page-container" id="main-content">

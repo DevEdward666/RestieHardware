@@ -54,6 +54,7 @@ ion-content{
 
 }
 :root {
+  --ion-mode: 'ios';
   --ion-font-family: "Gotham-Light";
   /** primary **/
   --ion-color-primary: #222428;

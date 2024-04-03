@@ -159,7 +159,11 @@ const SelectedItemContainer: React.FC = () => {
               </IonText>
             </div>
             <div className="selected-item-added-qty-container">
-              <IonButton fill="clear" onClick={() => handleQty(false)}>
+              <IonButton
+                disabled={selectedItem.onhandqty! > 0 ? false : true}
+                fill="clear"
+                onClick={() => handleQty(false)}
+              >
                 <IonIcon
                   color="danger"
                   slot="icon-only"
@@ -170,11 +174,15 @@ const SelectedItemContainer: React.FC = () => {
               <IonInput
                 class="qty"
                 type="number"
-                disabled
+                readonly
                 value={addedQty}
                 onIonInput={(ev) => handleQty(true)}
               ></IonInput>
-              <IonButton fill="clear" onClick={() => handleQty(true)}>
+              <IonButton
+                disabled={selectedItem.onhandqty! > 0 ? false : true}
+                fill="clear"
+                onClick={() => handleQty(true)}
+              >
                 <IonIcon
                   color="secondary"
                   slot="icon-only"
@@ -199,8 +207,12 @@ const SelectedItemContainer: React.FC = () => {
         </div>
       </div>
       <div className="button-container">
-        <IonButton color={"light"} onClick={() => handleAddToCart()}>
-          Add to Cart
+        <IonButton
+          disabled={selectedItem.onhandqty! > 0 ? false : true}
+          color={"light"}
+          onClick={() => handleAddToCart()}
+        >
+          {selectedItem.onhandqty! > 0 ? "Add to Cart" : "Sold out"}
         </IonButton>
       </div>
     </IonContent>

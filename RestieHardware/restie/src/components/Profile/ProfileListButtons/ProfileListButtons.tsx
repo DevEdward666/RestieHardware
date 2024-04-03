@@ -83,7 +83,19 @@ const ProfileListButtons: React.FC = () => {
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="profile-list-button-list-logout-container">
+            <div
+              className="profile-list-button-list-logout"
+              onClick={() => router.push("/login")}
+            >
+              <IonText className="profile-button-text">Login</IonText>
+              <IonButton fill="clear" className="profile-button-order">
+                <IonIcon icon={chevronForwardOutline}></IonIcon>
+              </IonButton>
+            </div>
+          </div>
+        )}
       </div>
     </IonContent>
   );

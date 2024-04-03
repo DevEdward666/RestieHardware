@@ -6,6 +6,13 @@ import {
   IonImg,
   IonButton,
   IonText,
+  IonContent,
+  IonLabel,
+  IonList,
+  IonModal,
+  IonSearchbar,
+  IonHeader,
+  IonTitle,
 } from "@ionic/react";
 import { useSelector } from "react-redux";
 import {
@@ -56,7 +63,10 @@ const OrderInfoComponent = () => {
     deliverydate: 0,
     path: "",
   });
-
+  const [openSearchModal, setOpenSearchModal] = useState({
+    isOpen: false,
+    modal: "",
+  });
   const [getFile, setFile] = useState<FileResponse>();
   const [getDiscount, setDiscount] = useState<number>(0.0);
   const [elapsedTime, setElapsedTime] = useState({
@@ -213,6 +223,15 @@ const OrderInfoComponent = () => {
             </>
           ) : null}
         </div>
+        {order_list_info[0]?.status.toLowerCase() === "delivered" ? (
+          <IonButton
+            size="small"
+            color="tertiary"
+            onClick={() => setOpenSearchModal({ isOpen: true, modal: "" })}
+          >
+            Open Delivery Info
+          </IonButton>
+        ) : null}
         {order_list_info[0]?.status === "approved" ? (
           <div className="order-list-info-footer-approved-info">
             <>
@@ -357,30 +376,32 @@ const OrderInfoComponent = () => {
           </>
         ) : null}
       </div>
-      {order_list_info[0]?.status.toLowerCase() ===
-      "Delivered".toLowerCase() ? (
-        <div className="delivery-image-container">
-          {getFile &&
-            getFile.contentType &&
-            getFile.contentType.startsWith("image/") && (
-              <>
-                <IonText className="delivery-image-text">
-                  Delivery Image
-                </IonText>
-                <Swiper
-                  className="swiper-component"
-                  autoplay={true}
-                  keyboard={true}
-                  pagination={true}
-                  scrollbar={false}
-                  zoom={true}
-                >
-                  <SwiperSlide>
-                    <IonImg
-                      src={"data:image/png;base64," + getFile.fileContents}
-                    ></IonImg>
-                  </SwiperSlide>
-                </Swiper>
+
+      <IonButton
+        className="order-info-close"
+        expand="block"
+        color="medium"
+        onClick={() => handleClose()}
+      >
+        Close
+      </IonButton>
+      <IonModal
+        isOpen={openSearchModal.isOpen}
+        onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
+        initialBreakpoint={1}
+        breakpoints={[0, 0.25, 0.5, 0.75, 1]}
+      >
+        <IonContent className="ion-padding">
+          <IonHeader>
+            <IonTitle className="delivery-info-title">
+              {" "}
+              Delivery Information
+            </IonTitle>
+          </IonHeader>
+          <>
+            {order_list_info[0]?.status.toLowerCase() ===
+            "Delivered".toLowerCase() ? (
+              <div className="delivery-image-container">
                 <div className="delivered-info-container">
                   <IonText className="delivered-info-text">
                     Delivered by:{"  "}
@@ -399,18 +420,36 @@ const OrderInfoComponent = () => {
                     minutes
                   </IonText>
                 </div>
-              </>
-            )}
-        </div>
-      ) : null}
-      <IonButton
-        className="order-info-close"
-        expand="block"
-        color="medium"
-        onClick={() => handleClose()}
-      >
-        Close
-      </IonButton>
+                {getFile &&
+                  getFile.contentType &&
+                  getFile.contentType.startsWith("image/") && (
+                    <>
+                      <IonText className="delivery-image-text">
+                        Delivery Image
+                      </IonText>
+                      <Swiper
+                        className="swiper-component"
+                        autoplay={true}
+                        keyboard={true}
+                        pagination={true}
+                        scrollbar={false}
+                        zoom={true}
+                      >
+                        <SwiperSlide>
+                          <IonImg
+                            src={
+                              "data:image/png;base64," + getFile.fileContents
+                            }
+                          ></IonImg>
+                        </SwiperSlide>
+                      </Swiper>
+                    </>
+                  )}
+              </div>
+            ) : null}
+          </>
+        </IonContent>
+      </IonModal>
     </div>
   );
 };

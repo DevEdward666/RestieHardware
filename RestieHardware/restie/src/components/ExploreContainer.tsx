@@ -170,8 +170,12 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
             </div>
           </IonCardContent>
           <div className="inventory-card-addtocart">
-            <IonButton color="medium" onClick={() => handleAddToCart(payload)}>
-              Add to cart
+            <IonButton
+              disabled={card?.qty > 0 ? false : true}
+              color="medium"
+              onClick={() => handleAddToCart(payload)}
+            >
+              {card?.qty > 0 ? "Add to cart" : "Sold Out"}
               <IonIcon color="light" slot="icon-only" icon={cart}></IonIcon>
             </IonButton>
           </div>
@@ -198,6 +202,10 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
             get_category_and_brand.brand.length > 0
               ? get_category_and_brand.brand
               : "",
+          filter:
+            get_category_and_brand.filter.length > 0
+              ? get_category_and_brand.filter
+              : "",
         })
       );
     } else {
@@ -214,6 +222,10 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           brand:
             get_category_and_brand.brand.length > 0
               ? get_category_and_brand.brand
+              : "",
+          filter:
+            get_category_and_brand.filter.length > 0
+              ? get_category_and_brand.filter
               : "",
         })
       );
@@ -253,6 +265,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       set_category_and_brand({
         category: "",
         brand: get_category_and_brand.brand,
+        filter: get_category_and_brand.filter,
       })
     );
   }, [dispatch, get_category_and_brand]);
@@ -261,6 +274,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       set_category_and_brand({
         category: get_category_and_brand.category,
         brand: "",
+        filter: get_category_and_brand.filter,
       })
     );
   }, [dispatch, get_category_and_brand]);

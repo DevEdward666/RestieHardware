@@ -13,6 +13,7 @@ namespace RestieAPI.Models.Request
             public string searchTerm {  get; set; }
             public string? category {  get; set; }
             public string? brand {  get; set; }
+            public string? filter {  get; set; }
 
         }
         public class PostInventory

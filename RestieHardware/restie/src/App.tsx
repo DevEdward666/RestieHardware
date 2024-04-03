@@ -29,7 +29,7 @@ import DeliveryInfoPage from "./pages/Delivery/DeliveryInfo/DeliveryInfoPage";
 import ManageProductPage from "./pages/Products/ManageProducts/ManageProductPage";
 import PageNotFoundPage from "./pages/PageNotFound/PageNotFoundPage";
 
-setupIonicReact();
+setupIonicReact({ mode: "ios" });
 
 const App: React.FC = () => {
   return (

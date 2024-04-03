@@ -23,6 +23,7 @@ const defaultState: InventoryTypesModel = {
   set_category_and_brand: {
     category: "",
     brand: "",
+    filter: "",
   },
   get_brands: [],
 };

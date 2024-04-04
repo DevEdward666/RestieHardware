@@ -1,7 +1,9 @@
 import {
   IonAvatar,
   IonButton,
+  IonButtons,
   IonContent,
+  IonHeader,
   IonIcon,
   IonImg,
   IonInput,
@@ -10,6 +12,7 @@ import {
   IonList,
   IonModal,
   IonSearchbar,
+  IonToolbar,
   useIonRouter,
 } from "@ionic/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -225,6 +228,17 @@ const ManageProductComponent = () => {
         initialBreakpoint={1}
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
       >
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton
+                onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}
+              >
+                Cancel
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
         <IonContent className="ion-padding">
           {openSearchModal.modal === "products" ? (
             <>

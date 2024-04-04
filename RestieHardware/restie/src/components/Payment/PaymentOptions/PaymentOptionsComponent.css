@@ -25,17 +25,17 @@
             gap: 8px;
             margin-top: 14px; 
             margin-bottom: 0px;
-           
+            font-family: "Gotham-Medium";
+                font-size: 18px;
             .payment-info-card-draft-details{
                 display: flex;
                 font-family: "Gotham-Medium";
-                font-size: 24px;
+                font-size: 18px;
                 flex-direction: row;
-                gap: 5px;
                 align-items: center;
                 .payment-info-card-draft{
                     font-family: "Gotham-Medium";
-                    font-size: 24px;
+                    font-size: 18px;
                 }
             }
         }
@@ -50,13 +50,13 @@
             .payment-info-card-title-details{
                 display: flex;
                 font-family: "Gotham-Black";
-                font-size: 24px;
+                font-size: 18px;
                 flex-direction: row;
                 gap: 5px;
                 align-items: center;
                 .payment-info-card-title{
                     font-family: "Gotham-Black";
-                    font-size: 24px;
+                    font-size: 18px;
                 }
             }
             .payment-info-card-category-details{
@@ -157,8 +157,8 @@
     }
 }
 .payment-info-icon-img{
-    width: 61px;
-    height: 46px;
+    width: 51px;
+    height: 36px;
 }
 .payment-info-cash{
     padding:20px;

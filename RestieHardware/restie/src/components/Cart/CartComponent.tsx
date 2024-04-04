@@ -38,6 +38,7 @@ const CartComponent: React.FC = () => {
   const dispatch = useTypedDispatch();
   const [getItem, setItem] = useState<SelectedItemToCart>();
   const [getOnhand, setOnhand] = useState<number>(0);
+
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
     isOpen: false,
@@ -159,6 +160,7 @@ const CartComponent: React.FC = () => {
                       </div>
                       <div className="main-cart-item-added-qty-container">
                         <IonButton
+                          disabled={card.qty <= 1}
                           size="large"
                           fill="clear"
                           onClick={() =>
@@ -188,6 +190,7 @@ const CartComponent: React.FC = () => {
                         ></IonInput>
 
                         <IonButton
+                          disabled={card.qty >= card?.onhandqty!}
                           size="large"
                           fill="clear"
                           onClick={() =>
@@ -237,6 +240,8 @@ const CartComponent: React.FC = () => {
         <IonToast
           isOpen={isOpenToast?.isOpen}
           message={isOpenToast.toastMessage}
+          position="middle"
+          color={"medium"}
           duration={3000}
           onDidDismiss={() =>
             setIsOpenToast({ toastMessage: "", isOpen: false })

@@ -4,6 +4,7 @@ import {
   IonIcon,
   IonText,
   useIonRouter,
+  IonLoading,
 } from "@ionic/react";
 import "./ProfileListButtons.css";
 import { chevronForwardOutline } from "ionicons/icons";
@@ -17,14 +18,18 @@ import { getOrderList } from "../../../Service/Actions/Inventory/InventoryAction
 import { LogoutUser } from "../../../Service/API/Login/LoginAPI";
 import { useSelector } from "react-redux";
 import { RemoveLoginUser } from "../../../Service/Actions/Login/LoginActions";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 const ProfileListButtons: React.FC = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
   const router = useIonRouter();
   const dispatch = useTypedDispatch();
-
+  const [isOpenToast, setIsOpenToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+    type: "",
+  });
   const handleOrderListClick = () => {
     const user_id = localStorage.getItem("user_id");
     const payload: PostdOrderList = {
@@ -38,11 +43,24 @@ const ProfileListButtons: React.FC = () => {
   const handleLogout = useCallback(async () => {
     await LogoutUser();
     dispatch(RemoveLoginUser());
+    setIsOpenToast((prev) => ({ ...prev, isOpen: true }));
     router.push("/login");
   }, [dispatch]);
   console.log(user_login_information);
   return (
     <IonContent>
+      <IonLoading
+        isOpen={isOpenToast?.isOpen}
+        message="Loading"
+        duration={1000}
+        spinner="circles"
+        onDidDismiss={() =>
+          setIsOpenToast((prev) => ({
+            ...prev,
+            isOpen: false,
+          }))
+        }
+      />
       <div className="profile-list-button-main-content">
         {user_login_information?.name?.length > 0 ? (
           <div className="profile-list-button-list-container">

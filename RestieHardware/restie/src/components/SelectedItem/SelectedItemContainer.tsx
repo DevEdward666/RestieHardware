@@ -11,6 +11,7 @@ import {
   IonSearchbar,
   IonText,
   IonTitle,
+  IonToast,
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
@@ -37,6 +38,11 @@ import {
 const SelectedItemContainer: React.FC = () => {
   const [getcartid, setCartId] = useState<string>("");
   const [addedQty, setAddedQty] = useState<number>(1);
+  const [isOpenToast, setIsOpenToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+    type: "",
+  });
   const dispatch = useTypedDispatch();
   const selectedItem = useSelector(
     (store: RootStore) => store.InventoryReducer.selected_item
@@ -59,7 +65,18 @@ const SelectedItemContainer: React.FC = () => {
       cartid = uuidv4();
       localStorage.setItem("cartid", cartid);
     }
+    const qtyAdded = selectedItemselector.filter(
+      (e) => e.code === selectedItem.code
+    );
 
+    if (qtyAdded && qtyAdded[0]?.qty >= addedQty) {
+      setIsOpenToast({
+        toastMessage: "Not Enough Stocks",
+        isOpen: true,
+        type: "warning",
+      });
+      return;
+    }
     const addeditems = addItem(
       addedQty,
       selectedItem,
@@ -67,6 +84,11 @@ const SelectedItemContainer: React.FC = () => {
       cartid
     );
     await dispatch(addToCartAction(addeditems));
+    setIsOpenToast({
+      toastMessage: "Added to cart",
+      isOpen: true,
+      type: "info",
+    });
   }, [dispatch, selectedItemselector, selectedItem, addedQty]);
 
   const addItem = (
@@ -118,8 +140,33 @@ const SelectedItemContainer: React.FC = () => {
       setAddedQty((prevQty) => (prevQty > 0 ? prevQty - 1 : 0));
     }
   };
+  useEffect(() => {
+    const initalize = () => {
+      if (addedQty !== undefined && addedQty! > selectedItem.onhandqty!) {
+        setIsOpenToast({
+          toastMessage: "Not enough stocks",
+          isOpen: true,
+          type: "warning",
+        });
+        setAddedQty(selectedItem.onhandqty!);
+      }
+    };
+    initalize();
+  }, [addedQty, selectedItem]);
+  console.log(isOpenToast.type);
   return (
     <IonContent className="selected-item-main-content">
+      <IonToast
+        isOpen={isOpenToast?.isOpen}
+        message={isOpenToast.toastMessage}
+        position={isOpenToast?.type === "warning" ? "middle" : "top"}
+        duration={3000}
+        color={"medium"}
+        className="warning-toast"
+        onDidDismiss={() =>
+          setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
+        }
+      ></IonToast>
       <IonHeader className="home-page-header">
         <IonToolbar mode={"md"} color="tertiary">
           <IonButtons slot="start" onClick={() => router.goBack()}>
@@ -155,12 +202,12 @@ const SelectedItemContainer: React.FC = () => {
                 {selectedItem.price.toFixed(2)}
               </IonText>
               <IonText className="selected-item-current-qty">
-                {selectedItem.qty} pcs left
+                {selectedItem.onhandqty} pcs left
               </IonText>
             </div>
             <div className="selected-item-added-qty-container">
               <IonButton
-                disabled={selectedItem.onhandqty! > 0 ? false : true}
+                disabled={addedQty <= 1 ? true : false}
                 fill="clear"
                 onClick={() => handleQty(false)}
               >
@@ -179,7 +226,7 @@ const SelectedItemContainer: React.FC = () => {
                 onIonInput={(ev) => handleQty(true)}
               ></IonInput>
               <IonButton
-                disabled={selectedItem.onhandqty! > 0 ? false : true}
+                disabled={addedQty >= selectedItem.onhandqty! ? true : false}
                 fill="clear"
                 onClick={() => handleQty(true)}
               >
@@ -209,7 +256,7 @@ const SelectedItemContainer: React.FC = () => {
       <div className="button-container">
         <IonButton
           disabled={selectedItem.onhandqty! > 0 ? false : true}
-          color={"light"}
+          color="medium"
           onClick={() => handleAddToCart()}
         >
           {selectedItem.onhandqty! > 0 ? "Add to Cart" : "Sold out"}

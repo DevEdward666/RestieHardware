@@ -10,6 +10,7 @@ import {
   IonInput,
   IonItem,
   IonLabel,
+  IonLoading,
   useIonRouter,
 } from "@ionic/react";
 import {
@@ -32,6 +33,11 @@ const LoginComponent = () => {
   const [customerInformation, setCustomerInformation] = useState<PostLogin>({
     username: "",
     password: "",
+  });
+  const [isOpenToast, setIsOpenToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+    type: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useTypedDispatch();
@@ -59,6 +65,7 @@ const LoginComponent = () => {
       password: customerInformation.password,
     };
     const res = await dispatch(Login(payload));
+    setIsOpenToast((prev) => ({ ...prev, isOpen: true }));
     if (res?.accessToken) {
       const res2 = await dispatch(GetLoginUser());
       if (res2?.name.length! > 0) {
@@ -79,6 +86,18 @@ const LoginComponent = () => {
   }, [dispatch]);
   return (
     <IonContent className="login-main-container">
+      <IonLoading
+        isOpen={isOpenToast?.isOpen}
+        message="Loading"
+        duration={3000}
+        spinner="circles"
+        onDidDismiss={() =>
+          setIsOpenToast((prev) => ({
+            ...prev,
+            isOpen: false,
+          }))
+        }
+      />
       <div className="login-main">
         <IonCard className="login-card-container">
           <IonCardContent className="login-card-content">

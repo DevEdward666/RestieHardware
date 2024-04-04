@@ -9,13 +9,17 @@ import {
   IonIcon,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonItem,
   IonLabel,
+  IonList,
+  IonLoading,
+  IonToast,
   useIonRouter,
 } from "@ionic/react";
 import { v4 as uuidv4 } from "uuid";
 import "./ExploreContainer.css";
 import stock from "../assets/images/stock.png";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, MouseEvent } from "react";
 import { RootStore, useTypedDispatch } from "../Service/Store";
 import {
   addToCartAction,
@@ -46,6 +50,11 @@ interface SelectedItem {
 const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
+  const [isOpenToast, setIsOpenToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+    type: "",
+  });
   const [getcartid, setCartId] = useState<string>("");
   const [items, setItems] = useState(data);
   const [page, setPage] = useState(1);
@@ -70,7 +79,11 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     dispatch(selectedItem(payload));
     router.push("/selectedItem");
   }, []);
-  const handleAddToCart = async (selectedItem: SelectedItemToCart) => {
+  const handleAddToCart = async (
+    selectedItem: SelectedItemToCart,
+    event: MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    event.stopPropagation();
     let cartid = localStorage.getItem("cartid");
 
     if (!cartid && selectedItemselector[0]?.cartid === undefined) {
@@ -80,13 +93,29 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     } else {
       cartid = selectedItemselector[0]?.cartid;
     }
+    const qtyAdded = selectedItemselector.filter(
+      (e) => e.code === selectedItem.code
+    );
 
+    if (qtyAdded && qtyAdded[0]?.qty >= selectedItem.onhandqty!) {
+      setIsOpenToast({
+        toastMessage: "Not Enough Stocks",
+        isOpen: true,
+        type: "warning",
+      });
+      return;
+    }
     const addeditems = addItem(
       selectedItem,
       selectedItemselector || [],
       cartid
     );
     await dispatch(addToCartAction(addeditems));
+    setIsOpenToast({
+      toastMessage: "Added to cart",
+      isOpen: true,
+      type: "warning",
+    });
   };
   const addItem = (
     selectedItem: SelectedItemToCart,
@@ -164,8 +193,11 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
             <div className="inventory-card-content">
               <div className="inventory-card-title">{card?.item}</div>
               <div className="inventory-card-price">
-                <span>&#8369;</span>
-                {card?.price.toFixed(2)}
+                <div>
+                  <span>&#8369;</span>
+                  {card?.price.toFixed(2)}
+                </div>
+                <div className="inventory-qty">QTY - {card?.qty}</div>
               </div>
             </div>
           </IonCardContent>
@@ -173,7 +205,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
             <IonButton
               disabled={card?.qty > 0 ? false : true}
               color="medium"
-              onClick={() => handleAddToCart(payload)}
+              onClick={(event: any) => handleAddToCart(payload, event)}
             >
               {card?.qty > 0 ? "Add to cart" : "Sold Out"}
               <IonIcon color="light" slot="icon-only" icon={cart}></IonIcon>
@@ -299,9 +331,21 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           </IonChip>
         </div>
       ) : null}
-      <div className="container">
+      <IonLoading
+        isOpen={isOpenToast?.isOpen}
+        message="Add to Cart"
+        duration={100}
+        spinner="circles"
+        onDidDismiss={() =>
+          setIsOpenToast((prev) => ({
+            ...prev,
+            isOpen: false,
+          }))
+        }
+      />{" "}
+      <IonList className="container" lines="none">
         {items?.map((res: InventoryModel, index: number) => (
-          <div className="card-container" key={index}>
+          <IonItem className="Item-Card" key={index}>
             <CardList
               code={res.code}
               item={res.item}
@@ -315,12 +359,23 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
               createdat={res.createdat}
               updatedAt={res.updatedAt}
             />
-          </div>
+          </IonItem>
         ))}
-      </div>
+      </IonList>
       <IonButton expand="block" fill="clear" onClick={loadMoreItems}>
         Load More
       </IonButton>
+      {/* <IonToast
+        isOpen={isOpenToast?.isOpen}
+        message={isOpenToast.toastMessage}
+        position={isOpenToast?.type === "warning" ? "middle" : "top"}
+        duration={3000}
+        color={"medium"}
+        className="warning-toast"
+        onDidDismiss={() =>
+          setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
+        }
+      ></IonToast> */}
     </>
   );
 };

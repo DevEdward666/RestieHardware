@@ -1,8 +1,11 @@
+
 .customer-information-main-content{
     display: flex;
     flex-direction: column;
     height: 100%;
-
+    --offset-top: 0px;
+    --offset-bottom: 0px;
+    --keyboard-offset: 177px;
 
     .customer-information-list-container{
         display: flex;
@@ -17,6 +20,7 @@
             /* Body - 16/Regular */
             font-family: Gotham-Book;
             font-size: 16px;
+            gap: 16px;
             font-style: normal;
             font-weight: 400;
             line-height: 24px; /* 150% */
@@ -32,6 +36,8 @@
                 color: white;
             }
             .customer-info-item{
+                font-size: 18px;
+                font-family: "Gotham-Medium";
                 display: flex;
                 flex-direction: row;
                 --padding-end: 0px;
@@ -43,9 +49,16 @@
                     flex: 0.5;
                 }
                 .info-input{
+                    font-family: "Gotham-Medium";
                     flex: 1;
                 }
             }
         }
     }
+}
+
+.content-ltr{
+    --offset-top: 0px;
+    --offset-bottom: 0px;
+    --keyboard-offset: 0px!important;
 }

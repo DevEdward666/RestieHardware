@@ -15,6 +15,10 @@ import {
   IonLabel,
   IonList,
   IonSearchbar,
+  IonButtons,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
 } from "@ionic/react";
 import { chevronForwardOutline } from "ionicons/icons";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
@@ -35,7 +39,7 @@ import { GetCustomerInfo } from "../../../Service/API/Inventory/InventoryApi";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 const CustomerInformationComponent: React.FC = () => {
   const router = useIonRouter();
-  const customers = useSelector(
+  const getcustomers = useSelector(
     (store: RootStore) => store.CustomerReducer.customers
   );
   const get_customer = useSelector(
@@ -45,6 +49,7 @@ const CustomerInformationComponent: React.FC = () => {
     toastMessage: "",
     isOpen: false,
   });
+  const [customers, setCustomers] = useState(getcustomers);
   const [fetchList, setFetchList] = useState<SearchInventoryModel>({
     page: 1,
     offset: 0, // Assuming offset starts from 0
@@ -185,19 +190,15 @@ const CustomerInformationComponent: React.FC = () => {
     });
     // Handle checkbox change
   };
-  const handleSearch = (ev: Event) => {
-    let query = "";
-    const target = ev.target as HTMLIonSearchbarElement;
-    if (target) query = target.value!.toLowerCase();
-    setFetchList({
-      page: 1,
-      offset: 1,
-      limit: 50,
-      searchTerm: query,
-    });
+  const handleSearch = (event: CustomEvent) => {
+    const query = event.detail.value.toLowerCase();
+    const filteredCustomers = getcustomers.filter((customer) =>
+      customer.name.toLowerCase().includes(query)
+    );
+    setCustomers(filteredCustomers);
   };
   return (
-    <IonContent>
+    <IonContent className="customer-information-content">
       <div className="customer-information-main-content">
         <div className="customer-information-list-container">
           <div className="customer-information-list">
@@ -288,6 +289,17 @@ const CustomerInformationComponent: React.FC = () => {
         initialBreakpoint={1}
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
       >
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton
+                onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}
+              >
+                Cancel
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
         <IonContent className="ion-padding">
           <>
             <IonSearchbar

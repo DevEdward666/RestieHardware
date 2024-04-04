@@ -14,6 +14,7 @@ import {
   IonButton,
   IonToast,
   InputChangeEventDetail,
+  IonLoading,
 } from "@ionic/react";
 import { useSelector } from "react-redux";
 import { PostSelectedOrder } from "../../../Models/Request/Inventory/InventoryModel";
@@ -57,6 +58,7 @@ const PaymentOptionsComponent = () => {
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
     isOpen: false,
+    type: "",
   });
   const [customerPayemntInfo, setCustomerPaymentInfo] =
     useState<GetPaymentInfo>({
@@ -73,8 +75,14 @@ const PaymentOptionsComponent = () => {
         setIsOpenToast({
           toastMessage: "Not enough cash",
           isOpen: true,
+          type: "toast",
         });
       } else {
+        setIsOpenToast({
+          toastMessage: "Loading",
+          isOpen: true,
+          type: "loader",
+        });
         const addedOrder: ResponseModel = await dispatch(
           PostOrder(
             add_to_cart,
@@ -118,6 +126,18 @@ const PaymentOptionsComponent = () => {
   };
   return (
     <div className="payment-info-main-container">
+      <IonLoading
+        isOpen={isOpenToast.type === "loader" ? isOpenToast?.isOpen : false}
+        message="Loading"
+        duration={1000}
+        spinner="circles"
+        onDidDismiss={() =>
+          setIsOpenToast((prev) => ({
+            ...prev,
+            isOpen: false,
+          }))
+        }
+      />
       <div className="payment-info-container">
         <div
           className="payment-info-card-container"
@@ -243,7 +263,15 @@ const PaymentOptionsComponent = () => {
                   <IonLabel>Card</IonLabel>
                 </div>
               </IonCard> */}
-              <IonCard
+              <IonButton
+                color={"medium"}
+                className="payment-info-card-content-draft"
+                onClick={() => handlePay("Pending")}
+              >
+                <IonIcon slot="start" icon={draft}></IonIcon>
+                Save as Draft
+              </IonButton>
+              {/* <IonButton
                 className="payment-info-card-content-draft"
                 onClick={() => handlePay("Pending")}
               >
@@ -256,7 +284,7 @@ const PaymentOptionsComponent = () => {
                   ></IonImg>
                   <IonLabel>Save as Draft</IonLabel>
                 </div>
-              </IonCard>
+              </IonButton> */}
             </div>
           </div>
         </div>
@@ -273,10 +301,14 @@ const PaymentOptionsComponent = () => {
         </div>
       </div>
       <IonToast
-        isOpen={isOpenToast?.isOpen}
+        isOpen={isOpenToast.type === "toast" ? isOpenToast?.isOpen : false}
         message={isOpenToast.toastMessage}
+        color={"medium"}
+        position="middle"
         duration={3000}
-        onDidDismiss={() => setIsOpenToast({ toastMessage: "", isOpen: false })}
+        onDidDismiss={() =>
+          setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
+        }
       ></IonToast>
     </div>
   );

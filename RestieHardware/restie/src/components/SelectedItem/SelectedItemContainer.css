@@ -3,7 +3,7 @@
     .selected-item-container{
         display: flex;
         flex-direction: column;
-        height: 50%;
+        height: 70%;
         .swiper-container{
             flex: 1;
             display: flex;
@@ -29,14 +29,14 @@
             gap: 16px;
         }
         .selected-item-current-price{
-            font-family: "Gotham-Light";
+            font-family: "Gotham-Black";
             color: #FF3737;
             font-size: 24px;
         }
         .selected-item-current-qty{
-            font-family: "Gotham-Light";
-            color: #B8B8B8;
-            font-size: 12px;
+            font-family: "Gotham-Medium";
+            color: #FF3737;
+            font-size: 16px;
         }
         .selected-item-added-qty-container{
             display: flex;
@@ -104,4 +104,7 @@ ion-input.qty {
     --border-style: solid;
     --border-width: 5px;
   }
-  
+  .warning-toast{
+    font-size: 14px;
+    font-family: "Gotham-black";
+  }

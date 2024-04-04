@@ -187,7 +187,8 @@ export const InsertCustomerInfo = async (payload: GetCustomerInformation) => {
     },
     JSON.stringify(payload)
   );
-  return response.result.$values;
+  console.log(response);
+  return response.result;
 };
 
 export const GetCustomers = async () => {

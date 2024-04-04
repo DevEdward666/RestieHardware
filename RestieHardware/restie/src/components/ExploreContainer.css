@@ -21,8 +21,14 @@
     white-space: initial;
   }
   .inventory-card-price{
-    font-family: "Gotham-Light";
+    color:#FE3434;
+    font-family: "Gotham-Medium";
     font-size: 18px;
+    .inventory-qty{
+      color:#FE3434;
+      font-family: "Gotham-Medium";
+      font-size: 14px;
+    }
   }
 
 }
@@ -75,4 +81,8 @@
   margin-top: 10px;
  margin-bottom: 10px;
  max-height: 400px;
+}
+.Item-Card{
+  --padding-start: 0px; 
+  --inner-padding-end: 0px;
 }

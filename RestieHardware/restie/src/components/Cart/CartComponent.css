@@ -35,7 +35,8 @@
       font-size: 12px;
     }
     .main-cart-card-price{
-      font-family: "Gotham-Light";
+      color:#FE3434;
+      font-family: "Gotham-Black";
       font-size: 12px;
     }
 }
@@ -59,9 +60,10 @@
 
 }
 .main-cart-card-qty{
+    color:#FE3434;
     padding-top: 10px;
-    font-family: "Gotham-Light";
-    font-size: 10px;
+    font-family: "Gotham-black";
+    font-size: 12px;
 }
 ion-input.main-cart-qty {
     --padding-start: 10px !important;

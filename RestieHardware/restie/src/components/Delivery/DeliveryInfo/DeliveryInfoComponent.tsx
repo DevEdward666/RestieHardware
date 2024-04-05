@@ -106,52 +106,6 @@ const DeliveryInfoComponent = () => {
           })
         );
       }
-
-      //   sendEmail(emailContent.message, emailContent.email, getFile)
-      //     .then(async (value) => {
-      //       if (value?.res.status === 200) {
-      //         const info = await Device.getId();
-      //         createItem("user_event_table", {
-      //           id: randomUUID(),
-      //           user_id: get_user_profile.id.toString(),
-      //           event_type: "NOTIFICATION",
-      //           eventTitle: "NOSA Concerns",
-      //           eventDescription: `Your ticket no. is ${value.data}`,
-      //           event_device_id: info.identifier,
-      //           event_timestamp: new Date().toISOString(),
-      //           lastSynced: -1,
-      //         });
-      //         router.push("/support/message-sent");
-      //       } else if (value?.res.statusText === undefined) {
-      //         dispatch(
-      //           set_toast({
-      //             message: "Invalid Email",
-      //             isOpen: true,
-      //           })
-      //         );
-      //       } else {
-      //         dispatch(
-      //           set_toast({
-      //             message: "Connection timed out",
-      //             isOpen: true,
-      //           })
-      //         );
-      //       }
-      //     })
-      //     .catch((err: any) => {
-      //       if (err.message.includes(undefined)) {
-      //         dispatch(
-      //           set_toast({ message: translate("INVALID_EMAIL"), isOpen: true })
-      //         );
-      //       } else {
-      //         dispatch(
-      //           set_toast({
-      //             message: translate("CONNECTION_TIMED_OUT"),
-      //             isOpen: true,
-      //           })
-      //         );
-      //       }
-      //     });
     } else {
       dispatch(
         set_toast({

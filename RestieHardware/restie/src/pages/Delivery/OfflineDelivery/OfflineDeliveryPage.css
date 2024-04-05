@@ -1,0 +1,25 @@
+.offline-page-container {
+    .offline-page-header {
+      display: flex;
+      flex-direction: column;
+    }
+    .offline-page-content {
+      /* --background: linear-gradient(180deg, #0F0526, #125B8C); */
+      .offline-spinner {
+        text-align: center;
+        color: white;
+      }
+    }
+    .offline-toolbar-logo-container {
+      display: flex;
+      flex-direction: row;
+      justify-self: center;
+      align-items: center;
+      text-align: center;
+      .offline-toolbar-logo {
+        height: 100px;
+        width: 100%;
+        margin: 10px;
+      }
+    }
+  }

@@ -54,6 +54,14 @@ export interface PostDeliveryImage {
   FileName: string;
   FormFile: File;
 }
+export interface PostDeliveryInfoOffline {
+  deliveredby: string;
+  deliverydate: number;
+  imgData: string;
+  createdat: number;
+  createdby: string;
+  orderid: string;
+}
 export interface PostDeliveryInfo {
   deliveredby: string;
   deliverydate: number;

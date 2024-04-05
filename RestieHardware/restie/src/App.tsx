@@ -1,4 +1,4 @@
-import { IonApp, setupIonicReact } from "@ionic/react";
+import { IonApp, setupIonicReact, useIonRouter } from "@ionic/react";
 import { Route } from "react-router";
 /* Core CSS required for Ionic components to work properly */
 import "@ionic/react/css/core.css";
@@ -28,10 +28,40 @@ import LoginPage from "./pages/Login/LoginPage";
 import DeliveryInfoPage from "./pages/Delivery/DeliveryInfo/DeliveryInfoPage";
 import ManageProductPage from "./pages/Products/ManageProducts/ManageProductPage";
 import PageNotFoundPage from "./pages/PageNotFound/PageNotFoundPage";
+import { useEffect, useState } from "react";
+import { Network } from "@capacitor/network";
+import OfflineDeliveryPage from "./pages/Delivery/OfflineDelivery/OfflineDeliveryPage";
 
 setupIonicReact({ mode: "ios" });
 
 const App: React.FC = () => {
+  const [isConnected, setIsConnected] = useState(true); // Assuming online initially
+  const router = useIonRouter();
+  useEffect(() => {
+    const checkNetwork = async () => {
+      const status = await Network.getStatus();
+      setIsConnected(status.connected);
+    };
+
+    const handleNetworkChange = (status: any) => {
+      setIsConnected(status.connected);
+    };
+
+    // Initial check
+    checkNetwork();
+
+    // Add listener for network changes
+    const listener = Network.addListener(
+      "networkStatusChange",
+      handleNetworkChange
+    );
+  }, []);
+  useEffect(() => {
+    if (!isConnected) {
+      // Redirect to offline page if not connected
+      router.push("/DeliverOffline");
+    }
+  }, [isConnected, history]);
   return (
     <IonApp>
       <Route path="/" render={() => <MainTab />} />
@@ -52,6 +82,8 @@ const App: React.FC = () => {
       <Route path="/admin/manageproduct" render={() => <ManageProductPage />} />
       {/* 404 Page not found */}
       <Route path="/pageNotFound" render={() => <PageNotFoundPage />} />
+      {/* Offline */}
+      <Route path="/DeliverOffline" render={() => <OfflineDeliveryPage />} />
     </IonApp>
   );
 };

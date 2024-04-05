@@ -71,8 +71,6 @@ namespace RestieAPI.Models.Request
         }
         public class GetSelectedOrder 
         {
-            public string userid { get; set; }
-            public string? cartid { get; set; }
             public string orderid { get; set; }
 
         }

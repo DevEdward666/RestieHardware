@@ -1187,12 +1187,11 @@ namespace RestieAPI.Service.Repo
                         from orders AS ors join cart AS ct on ors.cartid = ct.cartid join customer cts on cts.customerid = ors.userid 
                         join inventory AS inv on inv.code=ct.code
                         left join transaction as trans on trans.orderid = ors.orderid
-                        where  ors.orderid = @orderid and ors.cartid=@cartid";
+                        where  ors.orderid = @orderid";
 
             var parameters = new Dictionary<string, object>
             {
                 { "@orderid", getUserOrder.orderid },
-                { "@cartid", getUserOrder.cartid },
             };
 
 

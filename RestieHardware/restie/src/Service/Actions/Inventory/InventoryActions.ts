@@ -292,6 +292,7 @@ export const getOrderInfo =
         type: "ORDER_LIST_INFO",
         order_list_info: res,
       });
+      return res;
     } catch (error: any) {
       console.log(error);
     }

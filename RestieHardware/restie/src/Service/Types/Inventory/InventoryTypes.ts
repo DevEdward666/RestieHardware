@@ -9,6 +9,7 @@ import {
   GetDeliveryInfo,
   GetListOrder,
   GetListOrderInfo,
+  GetVouhcerResponse,
 } from "../../../Models/Response/Inventory/GetInventoryModel";
 
 export type LIST_OF_ITEMS = {
@@ -43,6 +44,10 @@ export type GET_BRANDS = {
   type: "GET_BRANDS";
   get_brands: GetBrandsModel[];
 };
+export type GET_VOUCHER = {
+  type: "GET_VOUCHER";
+  get_voucher: GetVouhcerResponse;
+};
 export type LIST_OF_PRODUCT_TYPE =
   | LIST_OF_ITEMS
   | SELECTED_ITEM
@@ -51,7 +56,8 @@ export type LIST_OF_PRODUCT_TYPE =
   | ORDER_LIST_INFO
   | GET_DELIVERY_INFO
   | SET_CATEGORY_AND_BRAND
-  | GET_BRANDS;
+  | GET_BRANDS
+  | GET_VOUCHER;
 
 export interface InventoryTypesModel {
   list_of_items: InventoryModel[];
@@ -62,4 +68,5 @@ export interface InventoryTypesModel {
   get_delivery_info: GetDeliveryInfo;
   set_category_and_brand: CategoryAndBrandModel;
   get_brands: GetBrandsModel[];
+  get_voucher: GetVouhcerResponse;
 }

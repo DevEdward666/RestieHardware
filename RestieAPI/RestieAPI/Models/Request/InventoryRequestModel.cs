@@ -64,6 +64,11 @@ namespace RestieAPI.Models.Request
             public string orderid { get; set; }
 
         }
+        public class GetVoucher
+        {
+            public string vouchercode { get; set; }
+
+        }
         public class GetDeliveryImage
         {
             public string imagePath { get; set; }

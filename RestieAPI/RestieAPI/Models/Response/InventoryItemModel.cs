@@ -57,6 +57,13 @@ namespace RestieAPI.Models.Response
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string message { get; set; }
+    }   
+    public class VoucherResponseModel
+    {
+        public VoucherResponse result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string message { get; set; }
     }
     public class InventoryItems
     {
@@ -141,5 +148,12 @@ namespace RestieAPI.Models.Response
         public string path { get; set; }
         public string deliveredby { get; set; }
         public long deliverydate { get; set; }
+    }
+    public class VoucherResponse
+    {
+        public string name { get; set; }
+        public string description { get; set; }
+        public decimal discount { get; set; }
+        public int maxredemption { get; set; }
     }
 }

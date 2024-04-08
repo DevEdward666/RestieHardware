@@ -3,6 +3,7 @@ import {
   ADD_TO_CART,
   GET_BRANDS,
   GET_DELIVERY_INFO,
+  GET_VOUCHER,
   LIST_OF_ITEMS,
   ORDER_LIST,
   ORDER_LIST_INFO,
@@ -11,6 +12,7 @@ import {
 } from "../../Types/Inventory/InventoryTypes";
 import {
   ApprovedOrderAndPay,
+  GetVoucherInfo,
   InsertCustomerInfo,
   ListOrder,
   PostGetDeliveryInfo,
@@ -33,6 +35,7 @@ import {
   PostDeliveryInfo,
   PostDeliveryInfoModel,
   PostSelectedOrder,
+  PostVoucherInfoModel,
   PostdOrderList,
   SelectedItemToCart,
 } from "../../../Models/Request/Inventory/InventoryModel";
@@ -345,6 +348,20 @@ export const get_brands_actions =
         type: "GET_BRANDS",
         get_brands: res,
       });
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+export const get_voucher_actions =
+  (payload: PostVoucherInfoModel) =>
+  async (dispatch: Dispatch<GET_VOUCHER>) => {
+    try {
+      const res = await GetVoucherInfo(payload);
+      dispatch({
+        type: "GET_VOUCHER",
+        get_voucher: res.result,
+      });
+      return res.result;
     } catch (error: any) {
       console.log(error);
     }

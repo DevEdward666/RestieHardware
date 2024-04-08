@@ -9,6 +9,7 @@ import {
   PostDeliveryInfoModel,
   PostSelectedOrder,
   PostUpdateDeliveredOrder,
+  PostVoucherInfoModel,
   PostdOrderList,
 } from "../../../Models/Request/Inventory/InventoryModel";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
@@ -303,6 +304,22 @@ export const PostGetDeliveryInfo = async (payload: PostDeliveryInfoModel) => {
 
   const response = await post(
     `${baseUrl}api/Inventory/getDelivery`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  return response;
+};
+export const GetVoucherInfo = async (payload: PostVoucherInfoModel) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+
+  const response = await post(
+    `${baseUrl}api/Inventory/GetVoucher`,
     {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getToken}`,

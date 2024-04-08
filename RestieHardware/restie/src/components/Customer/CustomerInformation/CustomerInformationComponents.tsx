@@ -303,10 +303,10 @@ const CustomerInformationComponent: React.FC = () => {
         <IonContent className="ion-padding">
           <>
             <IonSearchbar
-              placeholder="Search Supplier"
+              placeholder="Search Customer"
               onIonInput={(e) => handleSearch(e)}
               autocapitalize={"words"}
-              debounce={1500}
+              debounce={500}
             ></IonSearchbar>
             <IonList>
               {customers.map((val, index) => (

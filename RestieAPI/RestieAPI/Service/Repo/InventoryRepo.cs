@@ -1557,8 +1557,73 @@ namespace RestieAPI.Service.Repo
                     }
                 }
             }
+        }
+        public VoucherResponseModel getVouchers(InventoryRequestModel.GetVoucher getVoucher)
+        {
+            var sql = @"select * from vouchers where vouchercode=@vouchercode";
+            var parameters = new Dictionary<string, object>
+            {
+                { "@vouchercode", getVoucher.vouchercode },
+            };
+            var results = new VoucherResponse();
 
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
 
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var orderResponse = new VoucherResponse
+                                    {
+                                        name = reader.GetString(reader.GetOrdinal("name")),
+                                        description = reader.GetString(reader.GetOrdinal("description")),
+                                        maxredemption = reader.GetInt16(reader.GetOrdinal("maxredemption")),
+                                        discount = reader.GetDecimal(reader.GetOrdinal("discount")),
+                                    };
+
+                                    results = orderResponse;
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new VoucherResponseModel
+                        {
+                            result = results,
+                            statusCode = 200,
+                            success = true,
+
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new VoucherResponseModel
+                        {
+                            result = null,
+                            statusCode = 500,
+                            success = false,
+                            message = ex.Message,
+
+                        };
+                        throw;
+                    }
+                }
+            }
         }
         public PostResponse PostDeliveryInfo(InventoryRequestModel.DeliveryInfo deliveryInfo)
         {

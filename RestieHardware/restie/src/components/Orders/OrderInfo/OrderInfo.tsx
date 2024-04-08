@@ -13,6 +13,7 @@ import {
   IonSearchbar,
   IonHeader,
   IonTitle,
+  IonIcon,
 } from "@ionic/react";
 import { useSelector } from "react-redux";
 import {
@@ -46,6 +47,10 @@ import "swiper/css/scrollbar";
 import "swiper/css/zoom";
 import "@ionic/react/css/ionic-swiper.css";
 import { GetLoginUser } from "../../../Service/Actions/Login/LoginActions";
+import { Clipboard } from "@capacitor/clipboard";
+import { copy } from "ionicons/icons";
+import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
+
 const OrderInfoComponent = () => {
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
@@ -57,6 +62,9 @@ const OrderInfoComponent = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
+  const get_voucher = useSelector(
+    (store: RootStore) => store.InventoryReducer.get_voucher
+  );
   const [getGetDeliveryInfo, setGetDeliveryInfo] = useState<GetDeliveryInfo>({
     deliveryid: "",
     deliveredby: "",
@@ -67,8 +75,11 @@ const OrderInfoComponent = () => {
     isOpen: false,
     modal: "",
   });
+
   const [getFile, setFile] = useState<FileResponse>();
   const [getDiscount, setDiscount] = useState<number>(0.0);
+  const [getTotalAmount, setTotalAmount] = useState<number>(0.0);
+
   const [elapsedTime, setElapsedTime] = useState({
     hour: 0,
     minute: 0,
@@ -91,6 +102,20 @@ const OrderInfoComponent = () => {
 
     return formattedDate;
   };
+  useEffect(() => {
+    const initialize = () => {
+      if (get_voucher && get_voucher.description?.length > 0) {
+        const totalDiscount =
+          order_list_info[0]?.total -
+          order_list_info[0]?.total * get_voucher.discount;
+        setDiscount(get_voucher.discount * 100);
+        setTotalAmount(totalDiscount);
+      } else {
+        setTotalAmount(order_list_info[0]?.total);
+      }
+    };
+    initialize();
+  }, [get_voucher, order_list_info]);
   const handleSelectOrder = (orderid: string, cartid: string) => {
     const payload: PostSelectedOrder = {
       orderid: orderid,
@@ -198,6 +223,20 @@ const OrderInfoComponent = () => {
     };
     initialize();
   }, [dispatch, order_list_info]);
+  const copyOrderId = async (orderId: string) => {
+    await Clipboard.write({
+      string: orderId,
+    });
+  };
+  const handleCopy = async (orderId: string) => {
+    await copyOrderId(orderId);
+    dispatch(
+      set_toast({
+        isOpen: true,
+        message: "Copy Order ID",
+      })
+    );
+  };
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
@@ -279,6 +318,19 @@ const OrderInfoComponent = () => {
 
         <div className="order-list-info-customer-info">{getOrderDate}</div>
       </div>
+      <div className="order-list-info-customer-details">
+        <div className="order-list-info-customer">Order ID: </div>
+
+        <div className="order-list-info-customer-info">
+          {order_list_info[0]?.orderid}
+        </div>
+        <IonButton
+          color={"light"}
+          onClick={() => handleCopy(order_list_info[0]?.orderid)}
+        >
+          <IonIcon src={copy}></IonIcon>
+        </IonButton>
+      </div>
       <IonImg className="breakline" src={breakline} />
       <div className="order-list-info-container">
         {Array.isArray(order_list_info) && order_list_info.length > 0 ? (
@@ -337,11 +389,9 @@ const OrderInfoComponent = () => {
       <div className="order-list-info-footer-details">
         <div className="order-list-info-footer">Discount & Vouchers: </div>
 
-        <div className="order-list-info-footer-info">
-          {" "}
-          <span>&#8369;</span>
-          {getDiscount}
-        </div>
+        <div className="order-list-info-footer-info">{`${
+          getDiscount > 0 ? getDiscount + "%" : 0
+        }`}</div>
       </div>
       <IonImg className="breakline" src={breakline} />
       <div className="order-list-info-footer-total-main">
@@ -350,7 +400,7 @@ const OrderInfoComponent = () => {
 
           <div className="order-list-info-footer-total-info">
             <span>&#8369;</span>
-            {(order_list_info[0]?.total - getDiscount).toFixed(2)}
+            {getTotalAmount.toFixed(2)}
           </div>
         </div>
         {order_list_info[0]?.paidcash > 0 ? (
@@ -368,9 +418,7 @@ const OrderInfoComponent = () => {
 
               <div className="order-list-info-footer-total-info">
                 <span>&#8369;</span>
-                {(
-                  order_list_info[0]?.paidcash - order_list_info[0]?.total
-                ).toFixed(2)}
+                {(order_list_info[0]?.paidcash - getTotalAmount).toFixed(2)}
               </div>
             </div>
           </>

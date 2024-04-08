@@ -2,25 +2,24 @@ import {
   IonButton,
   IonCard,
   IonCardContent,
-  IonCardHeader,
-  IonCardSubtitle,
-  IonCardTitle,
   IonChip,
   IonIcon,
-  IonInfiniteScroll,
-  IonInfiniteScrollContent,
   IonItem,
   IonLabel,
   IonList,
   IonLoading,
-  IonToast,
   useIonRouter,
 } from "@ionic/react";
+import { cart, close } from "ionicons/icons";
+import { MouseEvent, useCallback, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
-import "./ExploreContainer.css";
-import stock from "../assets/images/stock.png";
-import { useCallback, useEffect, useState, MouseEvent } from "react";
-import { RootStore, useTypedDispatch } from "../Service/Store";
+import {
+  Addtocart,
+  InventoryModel,
+  SelectedItemToCart,
+} from "../Models/Request/Inventory/InventoryModel";
+import { SearchInventoryModel } from "../Models/Request/searchInventory";
 import {
   addToCartAction,
   getInventory,
@@ -28,14 +27,9 @@ import {
   selectedItem,
   set_category_and_brand,
 } from "../Service/Actions/Inventory/InventoryActions";
-import {
-  Addtocart,
-  InventoryModel,
-  SelectedItemToCart,
-} from "../Models/Request/Inventory/InventoryModel";
-import { addCircle, cart, pin, close } from "ionicons/icons";
-import { useSelector } from "react-redux";
-import { SearchInventoryModel } from "../Models/Request/searchInventory";
+import { RootStore, useTypedDispatch } from "../Service/Store";
+import stock from "../assets/images/stock.png";
+import "./ExploreContainer.css";
 interface ContainerProps {
   data: any;
   searchItem: SearchInventoryModel;

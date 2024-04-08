@@ -26,6 +26,12 @@ const defaultState: InventoryTypesModel = {
     filter: "",
   },
   get_brands: [],
+  get_voucher: {
+    name: "",
+    description: "",
+    maxredemption: "",
+    discount: 0,
+  },
 };
 
 const InventoryReducer = (
@@ -79,6 +85,12 @@ const InventoryReducer = (
       return {
         ...state,
         get_brands: action.get_brands,
+      };
+    }
+    case "GET_VOUCHER": {
+      return {
+        ...state,
+        get_voucher: action.get_voucher,
       };
     }
     default:

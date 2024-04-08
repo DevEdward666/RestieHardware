@@ -76,17 +76,30 @@ const ProfileListButtons: React.FC = () => {
             {user_login_information?.role.trim().toLowerCase() === "admin" ||
             user_login_information?.role.trim().toLowerCase() ===
               "super admin" ? (
-              <div
-                className="profile-list-button-list"
-                onClick={() => router.push("/admin/manageproduct")}
-              >
-                <IonText className="profile-button-text">
-                  Manage Product
-                </IonText>
-                <IonButton fill="clear" className="profile-button-order">
-                  <IonIcon icon={chevronForwardOutline}></IonIcon>
-                </IonButton>
-              </div>
+              <>
+                <div
+                  className="profile-list-button-list"
+                  onClick={() => router.push("/admin/manageproduct")}
+                >
+                  <IonText className="profile-button-text">
+                    Manage Product
+                  </IonText>
+                  <IonButton fill="clear" className="profile-button-order">
+                    <IonIcon icon={chevronForwardOutline}></IonIcon>
+                  </IonButton>
+                </div>
+                <div
+                  className="profile-list-button-list"
+                  onClick={() => router.push("/DeliverOffline")}
+                >
+                  <IonText className="profile-button-text">
+                    Offline Deliveries Sync
+                  </IonText>
+                  <IonButton fill="clear" className="profile-button-order">
+                    <IonIcon icon={chevronForwardOutline}></IonIcon>
+                  </IonButton>
+                </div>
+              </>
             ) : null}
 
             <div className="profile-list-button-list-logout-container">

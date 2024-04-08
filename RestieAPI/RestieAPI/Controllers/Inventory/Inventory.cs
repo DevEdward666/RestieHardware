@@ -141,6 +141,12 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<PostResponse> getDelivery(GetDelivery getDelivery)
         {
             return Ok(_inventoryRepo.getDelivery(getDelivery));
+        }    
+        [Authorize]
+        [HttpPost("GetVoucher")]
+        public ActionResult<PostResponse> GetVouchers(GetVoucher getVoucher)
+        {
+            return Ok(_inventoryRepo.getVouchers(getVoucher));
         }
         [Authorize]
         [HttpPost("UploadFile")]

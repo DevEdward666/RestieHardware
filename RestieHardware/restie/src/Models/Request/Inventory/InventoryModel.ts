@@ -81,6 +81,9 @@ export interface PostUpdateDeliveredOrder {
 export interface PostDeliveryInfoModel {
   orderid: string;
 }
+export interface PostVoucherInfoModel {
+  vouchercode: string;
+}
 export interface GetDeliveryImagePath {
   imagePath: string;
 }

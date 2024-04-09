@@ -7,6 +7,8 @@ const defaultState: CommonsTypesModel = {
   set_toast: {
     isOpen: false,
     message: "",
+    color: "",
+    position: "",
   },
 };
 

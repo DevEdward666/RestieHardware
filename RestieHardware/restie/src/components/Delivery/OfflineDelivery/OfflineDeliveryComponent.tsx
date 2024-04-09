@@ -35,6 +35,7 @@ import "./OfflineDeliveryComponent.css";
 import { cloud, cloudUpload, save, sync } from "ionicons/icons";
 import { getOrderInfo } from "../../../Service/Actions/Inventory/InventoryActions";
 import { Network } from "@capacitor/network";
+import { base64toFile } from "../DeliverService";
 const OfflineDeliveryComponent = () => {
   const fileInput = useRef(null);
   const [getFile, setFile] = useState<File>();
@@ -138,36 +139,7 @@ const OfflineDeliveryComponent = () => {
     },
     [getFile, DeliveryInfo, base64Image]
   );
-  const base64toFile = (
-    base64String: string,
-    filename: string,
-    mimeType: string
-  ) => {
-    try {
-      // Remove data URI prefix if present
-      const base64Data = base64String.replace(/^data:\w+\/\w+;base64,/, "");
 
-      // Decode base64 string to binary data
-      const binaryString = atob(base64Data);
-
-      // Convert binary string to ArrayBuffer
-      const arrayBuffer = new ArrayBuffer(binaryString.length);
-      const uint8Array = new Uint8Array(arrayBuffer);
-      for (let i = 0; i < binaryString.length; i++) {
-        uint8Array[i] = binaryString.charCodeAt(i);
-      }
-
-      // Create Blob from ArrayBuffer
-      const blob = new Blob([arrayBuffer], {
-        type: "application/octet-stream",
-      });
-
-      return new File([blob], filename, { type: mimeType });
-    } catch (error) {
-      console.error("Error converting base64 to File:", error);
-      return null; // or handle the error in any other way
-    }
-  };
   useEffect(() => {
     const initialize = async () => {
       const items = await getAllItems("deliveryInfo");
@@ -222,7 +194,6 @@ const OfflineDeliveryComponent = () => {
             setRefresh(true);
           }
         }
-        console.log(payload);
       } else {
         setIsOpenToast({
           toastMessage: uploaded.message,

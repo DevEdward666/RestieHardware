@@ -3,11 +3,15 @@ import {
   IonCard,
   IonCardContent,
   IonChip,
+  IonContent,
   IonIcon,
   IonItem,
   IonLabel,
   IonList,
   IonLoading,
+  IonRefresher,
+  IonRefresherContent,
+  RefresherEventDetail,
   useIonRouter,
 } from "@ionic/react";
 import { cart, close } from "ionicons/icons";
@@ -304,8 +308,16 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       })
     );
   }, [dispatch, get_category_and_brand]);
+  const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
+    const newItems = await getMoreInventory();
+    setItems(newItems.response);
+    event.detail.complete();
+  };
   return (
-    <>
+    <IonContent>
+      <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+        <IonRefresherContent refreshingText="Fetching data"></IonRefresherContent>
+      </IonRefresher>
       {get_category_and_brand.category.length > 0 ? (
         <div>
           <IonChip>
@@ -370,7 +382,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
         }
       ></IonToast> */}
-    </>
+    </IonContent>
   );
 };
 

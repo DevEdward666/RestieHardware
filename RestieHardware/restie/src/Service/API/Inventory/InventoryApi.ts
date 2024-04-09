@@ -157,7 +157,7 @@ export const userOrderInfo = async (payload: PostSelectedOrder) => {
     },
     JSON.stringify(payload)
   );
-  return response.result.$values;
+  return response;
 };
 export const SelectedListOrder = async (payload: PostSelectedOrder) => {
   const getToken = localStorage.getItem("bearer");

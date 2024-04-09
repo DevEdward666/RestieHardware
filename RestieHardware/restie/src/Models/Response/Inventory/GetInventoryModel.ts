@@ -9,28 +9,35 @@ export interface GetListOrder {
   status: string;
   userid: string;
 }
-export interface GetListOrderInfo {
-  transid?: string;
 
+export interface GetListOrderInfo {
+  order_item: GetOrderItems[];
+  order_info: GetOrderInfo;
+}
+export interface GetOrderInfo {
+  transid?: string;
   orderid: string;
   cartid: string;
   total: number;
-
-  code: string;
-  item: string;
-  price: number;
-  qty: number;
-  onhandqty?: number;
-  name: string;
-  address: string;
-  contactno: number;
-
   paidthru: string;
   paidcash: number;
   createdby: string;
   createdat: number;
   status: string;
   type: string;
+  name: string;
+  address: string;
+  contactno: number;
+}
+
+export interface GetOrderItems {
+  code: string;
+  item: string;
+  price: number;
+  qty: number;
+  onhandqty?: number;
+  category: string;
+  brand: string;
 }
 export interface SelectedOrder {
   cartid: string;

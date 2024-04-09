@@ -9,4 +9,6 @@ export interface ResponseModel {
 export interface ToastModel {
   isOpen: boolean;
   message: string;
+  color: string;
+  position: string;
 }

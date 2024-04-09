@@ -14,6 +14,8 @@ import {
   IonHeader,
   IonTitle,
   IonIcon,
+  IonButtons,
+  IonToolbar,
 } from "@ionic/react";
 import { useSelector } from "react-redux";
 import {
@@ -106,12 +108,12 @@ const OrderInfoComponent = () => {
     const initialize = () => {
       if (get_voucher && get_voucher.description?.length > 0) {
         const totalDiscount =
-          order_list_info[0]?.total -
-          order_list_info[0]?.total * get_voucher.discount;
+          order_list_info.order_info?.total -
+          order_list_info.order_info?.total * get_voucher.discount;
         setDiscount(get_voucher.discount * 100);
         setTotalAmount(totalDiscount);
       } else {
-        setTotalAmount(order_list_info[0]?.total);
+        setTotalAmount(order_list_info.order_info?.total);
       }
     };
     initialize();
@@ -125,18 +127,19 @@ const OrderInfoComponent = () => {
     router.push("/home/cart");
   };
   const handleApprove = () => {
-    let payload: Addtocart[] = []; // Initialize payload as an empty array
-    order_list_info.map((val) => {
-      const newItem: Addtocart = {
-        orderid: val.orderid,
-        cartid: val.cartid,
-        onhandqty: val.onhandqty,
+    let newItem: Addtocart;
+    let payload: Addtocart[] = [];
+    order_list_info.order_item.map((val) => {
+      newItem = {
+        onhandqty: val?.onhandqty!,
         code: val.code,
         item: val.item,
         qty: val.qty,
         price: val.price,
-        createdAt: val.createdat,
-        status: val.status,
+        orderid: order_list_info.order_info.orderid,
+        cartid: order_list_info.order_info.cartid,
+        createdAt: order_list_info.order_info.createdat,
+        status: order_list_info.order_info.status,
       };
       payload.push(newItem);
     });
@@ -145,22 +148,37 @@ const OrderInfoComponent = () => {
     router.push("/paymentoptions");
   };
   const handleEdit = () => {
-    let payload: Addtocart[] = []; // Initialize payload as an empty array
-    order_list_info.map((val) => {
-      const newItem: Addtocart = {
-        onhandqty: val.onhandqty,
-        orderid: val.orderid,
-        cartid: val.cartid,
+    // let payload: Addtocart[] = []; // Initialize payload as an empty array
+    // order_list_info.map((val) => {
+    //   const newItem: Addtocart = {
+    //     onhandqty: val.onhandqty,
+    //     orderid: val.orderid,
+    //     cartid: val.cartid,
+    //     code: val.code,
+    //     item: val.item,
+    //     qty: val.qty,
+    //     price: val.price,
+    //     createdAt: val.createdat,
+    //     status: val.status,
+    //   };
+    //   payload.push(newItem);
+    // });
+    let newItem: Addtocart;
+    let payload: Addtocart[] = [];
+    order_list_info.order_item.map((val) => {
+      newItem = {
+        onhandqty: val?.onhandqty!,
         code: val.code,
         item: val.item,
         qty: val.qty,
         price: val.price,
-        createdAt: val.createdat,
-        status: val.status,
+        orderid: order_list_info.order_info.orderid,
+        cartid: order_list_info.order_info.cartid,
+        createdAt: order_list_info.order_info.createdat,
+        status: order_list_info.order_info.status,
       };
       payload.push(newItem);
     });
-
     dispatch(addToCartAction(payload));
     router.push("/home/cart");
   };
@@ -180,14 +198,14 @@ const OrderInfoComponent = () => {
     const initialize = async () => {
       const res = await dispatch(GetLoginUser());
       const payload: PostDeliveryInfoModel = {
-        orderid: order_list_info[0]?.orderid,
+        orderid: order_list_info.order_info?.orderid,
       };
       const orderdate = format(
-        new Date(order_list_info[0]?.createdat).toISOString(),
+        new Date(order_list_info.order_info?.createdat).toISOString(),
         "MMMM dd, yyyy hh:mm a"
       );
       setOrderDate(orderdate);
-      if (order_list_info[0]?.status !== "Delivered") {
+      if (order_list_info.order_info?.status !== "Delivered") {
         return;
       }
       const imagePath = await dispatch(getDelivery(payload));
@@ -207,7 +225,7 @@ const OrderInfoComponent = () => {
       }
 
       const deliveryDate = new Date(imagePath.result.deliverydate);
-      const orderCreationDate = new Date(order_list_info[0]?.createdat);
+      const orderCreationDate = new Date(order_list_info.order_info?.createdat);
       const timeDifference =
         deliveryDate.getTime() - orderCreationDate.getTime();
 
@@ -234,16 +252,19 @@ const OrderInfoComponent = () => {
       set_toast({
         isOpen: true,
         message: "Copy Order ID",
+        position: "middle",
+        color: "#125B8C",
       })
     );
   };
+
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
         <div className="order-list-info-footer-approved"> </div>
 
         <div className="order-list-info-footer-approved-info">
-          {order_list_info[0]?.paidthru.toLowerCase() === "pending" ? (
+          {order_list_info.order_info?.paidthru.toLowerCase() === "pending" ? (
             <>
               <IonButton
                 size="small"
@@ -262,18 +283,41 @@ const OrderInfoComponent = () => {
             </>
           ) : null}
         </div>
-        {order_list_info[0]?.status.toLowerCase() === "delivered" ? (
-          <IonButton
-            size="small"
-            color="tertiary"
-            onClick={() => setOpenSearchModal({ isOpen: true, modal: "" })}
-          >
-            Open Delivery Info
-          </IonButton>
-        ) : null}
-        {order_list_info[0]?.status === "approved" ? (
+
+        {order_list_info.order_info?.status.toLowerCase() === "delivered" ? (
           <div className="order-list-info-footer-approved-info">
             <>
+              <IonButton
+                size="small"
+                color="tertiary"
+                onClick={() =>
+                  setOpenSearchModal({ isOpen: true, modal: "receipt" })
+                }
+              >
+                Print Invoice
+              </IonButton>
+              <IonButton
+                size="small"
+                color="tertiary"
+                onClick={() => setOpenSearchModal({ isOpen: true, modal: "" })}
+              >
+                Open Delivery Info
+              </IonButton>
+            </>
+          </div>
+        ) : null}
+        {order_list_info.order_info?.status === "approved" ? (
+          <div className="order-list-info-footer-approved-info">
+            <>
+              <IonButton
+                size="small"
+                color="tertiary"
+                onClick={() =>
+                  setOpenSearchModal({ isOpen: true, modal: "receipt" })
+                }
+              >
+                Print Invoice
+              </IonButton>
               <IonButton
                 size="small"
                 color="tertiary"
@@ -289,28 +333,28 @@ const OrderInfoComponent = () => {
         <div className="order-list-info-customer">Customer Name: </div>
 
         <div className="order-list-info-customer-info">
-          {order_list_info[0]?.name}
+          {order_list_info.order_info?.name}
         </div>
       </div>
       <div className="order-list-info-customer-details">
         <div className="order-list-info-customer">Address: </div>
 
         <div className="order-list-info-customer-info">
-          {order_list_info[0]?.address}
+          {order_list_info.order_info?.address}
         </div>
       </div>
       <div className="order-list-info-customer-details">
         <div className="order-list-info-customer">Contact No: </div>
 
         <div className="order-list-info-customer-info">
-          {order_list_info[0]?.contactno}
+          {order_list_info.order_info?.contactno}
         </div>
       </div>
       <div className="order-list-info-customer-details">
         <div className="order-list-info-customer">Order Type: </div>
 
         <div className="order-list-info-customer-info">
-          {order_list_info[0]?.type}
+          {order_list_info.order_info?.type}
         </div>
       </div>
       <div className="order-list-info-customer-details">
@@ -319,48 +363,61 @@ const OrderInfoComponent = () => {
         <div className="order-list-info-customer-info">{getOrderDate}</div>
       </div>
       <div className="order-list-info-customer-details">
+        <div className="order-list-info-customer">Cashier: </div>
+
+        <div className="order-list-info-customer-info">
+          {order_list_info.order_info.createdby}
+        </div>
+      </div>
+      <div className="order-list-info-customer-details">
         <div className="order-list-info-customer">Order ID: </div>
 
         <div className="order-list-info-customer-info">
-          {order_list_info[0]?.orderid}
+          {order_list_info.order_info?.orderid}
         </div>
         <IonButton
           color={"light"}
-          onClick={() => handleCopy(order_list_info[0]?.orderid)}
+          onClick={() => handleCopy(order_list_info.order_info?.orderid)}
         >
           <IonIcon src={copy}></IonIcon>
         </IonButton>
       </div>
       <IonImg className="breakline" src={breakline} />
       <div className="order-list-info-container">
-        {Array.isArray(order_list_info) && order_list_info.length > 0 ? (
-          order_list_info?.map((orders, index) => (
+        {Array.isArray(order_list_info.order_item) &&
+        order_list_info.order_item.length > 0 ? (
+          order_list_info.order_item?.map((items, index) => (
             <IonItem
               className="order-list-info-card-container"
               key={index}
-              onClick={() => handleSelectOrder(orders.orderid, orders.cartid)}
+              onClick={() =>
+                handleSelectOrder(
+                  order_list_info.order_info.orderid,
+                  order_list_info.order_info.cartid
+                )
+              }
             >
               <div className="order-list-info-card-add-item-container">
                 <div className="order-list-info-card-main-content">
                   <div className="order-list-info-card-content">
                     <div className="order-list-info-card-title-details">
-                      {orders.item}
+                      {items.item}
                     </div>
 
                     <div className="order-list-info-card-category-details">
                       <div className="order-list-info-card-category">
-                        Brand:Omni | Category:Electrical
+                        Brand: {items.brand} | Category:{items.category}
                       </div>
                     </div>
                     <div className="order-list-info-card-price-details">
                       <span>&#8369;</span>
-                      {orders.price.toFixed(2)}
+                      {items.price.toFixed(2)}
                     </div>
                   </div>
                   <div className="order-list-info-card-content">
                     <div className="order-list-info-card-qty">
                       {" "}
-                      X{orders.qty}
+                      X{items.qty}
                     </div>
                   </div>
                 </div>
@@ -375,7 +432,7 @@ const OrderInfoComponent = () => {
         <div className="order-list-info-footer">Payment Method: </div>
         <div className="order-list-info-footer-info">
           {" "}
-          {order_list_info[0]?.paidthru.toLocaleUpperCase()}
+          {order_list_info.order_info?.paidthru.toLocaleUpperCase()}
         </div>
       </div>
       <div className="order-list-info-footer-details">
@@ -383,7 +440,7 @@ const OrderInfoComponent = () => {
         <div className="order-list-info-footer-info">
           {" "}
           <span>&#8369;</span>
-          {order_list_info[0]?.total.toFixed(2)}
+          {order_list_info.order_info?.total.toFixed(2)}
         </div>
       </div>
       <div className="order-list-info-footer-details">
@@ -400,17 +457,17 @@ const OrderInfoComponent = () => {
 
           <div className="order-list-info-footer-total-info">
             <span>&#8369;</span>
-            {getTotalAmount.toFixed(2)}
+            {getTotalAmount?.toFixed(2)}
           </div>
         </div>
-        {order_list_info[0]?.paidcash > 0 ? (
+        {order_list_info.order_info?.paidcash > 0 ? (
           <>
             <div className="order-list-info-footer-total-details">
               <div className="order-list-info-footer-total">Cash: </div>
 
               <div className="order-list-info-footer-total-info">
                 <span>&#8369;</span>
-                {(order_list_info[0]?.paidcash).toFixed(2)}
+                {(order_list_info.order_info?.paidcash).toFixed(2)}
               </div>
             </div>
             <div className="order-list-info-footer-total-details">
@@ -418,7 +475,9 @@ const OrderInfoComponent = () => {
 
               <div className="order-list-info-footer-total-info">
                 <span>&#8369;</span>
-                {(order_list_info[0]?.paidcash - getTotalAmount).toFixed(2)}
+                {(
+                  order_list_info.order_info?.paidcash - getTotalAmount
+                ).toFixed(2)}
               </div>
             </div>
           </>
@@ -434,20 +493,33 @@ const OrderInfoComponent = () => {
         Close
       </IonButton>
       <IonModal
-        isOpen={openSearchModal.isOpen}
+        isOpen={
+          openSearchModal.modal !== "receipt" ? openSearchModal.isOpen : false
+        }
         onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
         initialBreakpoint={1}
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
       >
-        <IonContent className="ion-padding">
-          <IonHeader>
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton
+                onClick={() =>
+                  setOpenSearchModal({ isOpen: false, modal: "receipt" })
+                }
+              >
+                Close
+              </IonButton>
+            </IonButtons>
             <IonTitle className="delivery-info-title">
               {" "}
               Delivery Information
             </IonTitle>
-          </IonHeader>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent className="ion-padding">
           <>
-            {order_list_info[0]?.status.toLowerCase() ===
+            {order_list_info.order_info?.status.toLowerCase() ===
             "Delivered".toLowerCase() ? (
               <div className="delivery-image-container">
                 <div className="delivered-info-container">
@@ -475,26 +547,195 @@ const OrderInfoComponent = () => {
                       <IonText className="delivery-image-text">
                         Delivery Image
                       </IonText>
-                      <Swiper
+                      <IonImg
                         className="swiper-component"
-                        autoplay={true}
-                        keyboard={true}
-                        pagination={true}
-                        scrollbar={false}
-                        zoom={true}
-                      >
-                        <SwiperSlide>
-                          <IonImg
-                            src={
-                              "data:image/png;base64," + getFile.fileContents
-                            }
-                          ></IonImg>
-                        </SwiperSlide>
-                      </Swiper>
+                        src={"data:image/png;base64," + getFile.fileContents}
+                      ></IonImg>
                     </>
                   )}
               </div>
             ) : null}
+          </>
+        </IonContent>
+      </IonModal>
+      <IonModal
+        isOpen={
+          openSearchModal.modal === "receipt" ? openSearchModal.isOpen : false
+        }
+        onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
+        initialBreakpoint={1}
+        breakpoints={[0, 0.25, 0.5, 0.75, 1]}
+      >
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton
+                onClick={() =>
+                  setOpenSearchModal({ isOpen: false, modal: "receipt" })
+                }
+              >
+                Close
+              </IonButton>
+            </IonButtons>
+            <IonTitle className="delivery-info-title"> Invoice</IonTitle>
+            <IonButtons slot="end">
+              <IonButton
+                onClick={() =>
+                  setOpenSearchModal({ isOpen: false, modal: "receipt" })
+                }
+              >
+                Print
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent className="ion-padding">
+          <>
+            <div className="order-list-info-customer-details">
+              <div className="order-list-info-customer">Customer Name: </div>
+
+              <div className="order-list-info-customer-info">
+                {order_list_info.order_info?.name}
+              </div>
+            </div>
+            <div className="order-list-info-customer-details">
+              <div className="order-list-info-customer">Address: </div>
+
+              <div className="order-list-info-customer-info">
+                {order_list_info.order_info?.address}
+              </div>
+            </div>
+            <div className="order-list-info-customer-details">
+              <div className="order-list-info-customer">Contact No: </div>
+
+              <div className="order-list-info-customer-info">
+                {order_list_info.order_info?.contactno}
+              </div>
+            </div>
+            <div className="order-list-info-customer-details">
+              <div className="order-list-info-customer">Order Type: </div>
+
+              <div className="order-list-info-customer-info">
+                {order_list_info.order_info?.type}
+              </div>
+            </div>
+            <div className="order-list-info-customer-details">
+              <div className="order-list-info-customer">Order Created: </div>
+
+              <div className="order-list-info-customer-info">
+                {getOrderDate}
+              </div>
+            </div>
+            <div className="order-list-info-customer-details">
+              <div className="order-list-info-customer">Cashier: </div>
+
+              <div className="order-list-info-customer-info">
+                {order_list_info.order_info.createdby}
+              </div>
+            </div>
+            <IonImg className="breakline" src={breakline} />
+            <div className="order-list-info-container">
+              {Array.isArray(order_list_info.order_item) &&
+              order_list_info.order_item.length > 0 ? (
+                order_list_info?.order_item?.map((items, index) => (
+                  <IonItem
+                    className="order-list-info-card-container"
+                    key={index}
+                    onClick={() =>
+                      handleSelectOrder(
+                        order_list_info.order_info.orderid,
+                        order_list_info.order_info.cartid
+                      )
+                    }
+                  >
+                    <div className="order-list-info-card-add-item-container">
+                      <div className="order-list-info-card-main-content">
+                        <div className="order-list-info-card-content">
+                          <div className="order-list-info-card-title-details">
+                            {items.item}
+                          </div>
+
+                          <div className="order-list-info-card-category-details">
+                            <div className="order-list-info-card-category">
+                              Brand: {items.brand} | Category:{items.category}
+                            </div>
+                          </div>
+                          <div className="order-list-info-card-price-details">
+                            <span>&#8369;</span>
+                            {items.price.toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="order-list-info-card-content">
+                          <div className="order-list-info-card-qty">
+                            {" "}
+                            X{items.qty}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </IonItem>
+                ))
+              ) : (
+                <p>No order info found.</p>
+              )}
+            </div>
+            <div className="order-list-info-footer-details">
+              <div className="order-list-info-footer">Payment Method: </div>
+              <div className="order-list-info-footer-info">
+                {" "}
+                {order_list_info.order_info.paidthru.toLocaleUpperCase()}
+              </div>
+            </div>
+            <div className="order-list-info-footer-details">
+              <div className="order-list-info-footer">Sub-Total: </div>
+              <div className="order-list-info-footer-info">
+                {" "}
+                <span>&#8369;</span>
+                {order_list_info.order_info.total.toFixed(2)}
+              </div>
+            </div>
+            <div className="order-list-info-footer-details">
+              <div className="order-list-info-footer">
+                Discount & Vouchers:{" "}
+              </div>
+
+              <div className="order-list-info-footer-info">{`${
+                getDiscount > 0 ? getDiscount + "%" : 0
+              }`}</div>
+            </div>
+            <IonImg className="breakline" src={breakline} />
+            <div className="order-list-info-footer-total-main">
+              <div className="order-list-info-footer-total-details">
+                <div className="order-list-info-footer-total">Total: </div>
+
+                <div className="order-list-info-footer-total-info">
+                  <span>&#8369;</span>
+                  {getTotalAmount.toFixed(2)}
+                </div>
+              </div>
+              {order_list_info.order_info?.paidcash > 0 ? (
+                <>
+                  <div className="order-list-info-footer-total-details">
+                    <div className="order-list-info-footer-total">Cash: </div>
+
+                    <div className="order-list-info-footer-total-info">
+                      <span>&#8369;</span>
+                      {order_list_info.order_info.paidcash.toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="order-list-info-footer-total-details">
+                    <div className="order-list-info-footer-total">Change: </div>
+
+                    <div className="order-list-info-footer-total-info">
+                      <span>&#8369;</span>
+                      {(
+                        order_list_info.order_info.paidcash - getTotalAmount
+                      ).toFixed(2)}
+                    </div>
+                  </div>
+                </>
+              ) : null}
+            </div>
           </>
         </IonContent>
       </IonModal>

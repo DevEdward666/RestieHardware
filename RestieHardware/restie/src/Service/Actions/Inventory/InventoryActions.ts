@@ -214,21 +214,39 @@ export const PostOrder =
           const resOrderInfo: GetListOrderInfo[] = await userOrderInfo(
             UserOrderInfopayload
           );
+          let newItem: Addtocart;
+
           payload = [];
-          resOrderInfo.map((val) => {
-            const newItem: Addtocart = {
-              onhandqty: val.onhandqty,
-              orderid: val.orderid,
-              cartid: val.cartid,
-              code: val.code,
-              item: val.item,
-              qty: val.qty,
-              price: val.price,
-              createdAt: val.createdat,
-              status: val.status,
-            };
-            payload.push(newItem);
+          resOrderInfo.map((items) => {
+            items.order_item.map((val) => {
+              newItem = {
+                onhandqty: val?.onhandqty!,
+                code: val.code,
+                item: val.item,
+                qty: val.qty,
+                price: val.price,
+                orderid: items.order_info.orderid,
+                cartid: items.order_info.cartid,
+                createdAt: items.order_info.createdat,
+                status: items.order_info.status,
+              };
+              payload.push(newItem);
+            });
           });
+          // resOrderInfo.map((val) => {
+          //   const newItem: Addtocart = {
+          //     onhandqty: val.onhandqty,
+          //     orderid: val.orderid,
+          //     cartid: val.cartid,
+          //     code: val.code,
+          //     item: val.item,
+          //     qty: val.qty,
+          //     price: val.price,
+          //     createdAt: val.createdat,
+          //     status: val.status,
+          //   };
+          //   payload.push(newItem);
+          // });
           const updatedPayload = checkPayload(
             payload,
             orderid,
@@ -290,10 +308,13 @@ export const getOrderInfo =
   (payload: PostSelectedOrder) =>
   async (dispatch: Dispatch<ORDER_LIST_INFO>) => {
     try {
-      const res: GetListOrderInfo[] = await userOrderInfo(payload);
+      const res: any = await userOrderInfo(payload);
       dispatch({
         type: "ORDER_LIST_INFO",
-        order_list_info: res,
+        order_list_info: {
+          order_item: res.order_item.$values,
+          order_info: res.order_info,
+        },
       });
       return res;
     } catch (error: any) {

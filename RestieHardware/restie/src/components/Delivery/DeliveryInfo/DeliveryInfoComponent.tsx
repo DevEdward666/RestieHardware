@@ -75,14 +75,14 @@ const DeliveryInfoComponent = () => {
           path: uploaded.result.imagePath,
           createdat: new Date().getTime(),
           createdby: user_login_information?.name,
-          orderid: order_list_info[0].orderid,
+          orderid: order_list_info.order_info.orderid,
         };
         const savedDelivery = await SavedDeliveryInfo(deliveryPayload);
         if (savedDelivery.status === 200) {
           const updatedeliveryPayload: PostUpdateDeliveredOrder = {
-            transid: order_list_info[0]?.transid!,
-            orderid: order_list_info[0]?.orderid,
-            cartid: order_list_info[0]?.cartid,
+            transid: order_list_info.order_info?.transid!,
+            orderid: order_list_info.order_info?.orderid,
+            cartid: order_list_info.order_info?.cartid,
             status: "Delivered",
             updateat: new Date().getTime(),
           };
@@ -93,6 +93,8 @@ const DeliveryInfoComponent = () => {
               set_toast({
                 message: uploaded.message,
                 isOpen: true,
+                position: "middle",
+                color: "#125B8C",
               })
             );
             router.push("/home/profile");
@@ -103,6 +105,8 @@ const DeliveryInfoComponent = () => {
           set_toast({
             message: uploaded.message,
             isOpen: true,
+            position: "middle",
+            color: "#125B8C",
           })
         );
       }
@@ -111,6 +115,8 @@ const DeliveryInfoComponent = () => {
         set_toast({
           message: "Missing Required Fields",
           isOpen: true,
+          position: "middle",
+          color: "#125B8C",
         })
       );
     }

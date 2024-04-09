@@ -30,7 +30,7 @@ export type ORDER_LIST = {
 };
 export type ORDER_LIST_INFO = {
   type: "ORDER_LIST_INFO";
-  order_list_info: GetListOrderInfo[];
+  order_list_info: GetListOrderInfo;
 };
 export type GET_DELIVERY_INFO = {
   type: "GET_DELIVERY_INFO";
@@ -64,7 +64,7 @@ export interface InventoryTypesModel {
   selected_item: SelectedItemToCart;
   add_to_cart: Addtocart[];
   order_list: GetListOrder[];
-  order_list_info: GetListOrderInfo[];
+  order_list_info: GetListOrderInfo;
   get_delivery_info: GetDeliveryInfo;
   set_category_and_brand: CategoryAndBrandModel;
   get_brands: GetBrandsModel[];

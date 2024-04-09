@@ -1181,21 +1181,23 @@ namespace RestieAPI.Service.Repo
 
           
         }
-        public OrderInfoResponseModel getOrderInfo(InventoryRequestModel.GetSelectedOrder getUserOrder)
+        public OrderInfoResponseModel GetOrderInfo(InventoryRequestModel.GetSelectedOrder getUserOrder)
         {
-            var sql = @"select trans.transid,inv.qty as onhandqty,cts.name,cts.address,cts.contactno, ct.cartid, ors.orderid, ors.paidcash,ors.paidthru, ors.total,ors.createdat,ct.code, ct.item,ct.price,ct.qty,ors.status,ors.createdby,ors.type
-                        from orders AS ors join cart AS ct on ors.cartid = ct.cartid join customer cts on cts.customerid = ors.userid 
-                        join inventory AS inv on inv.code=ct.code
-                        left join transaction as trans on trans.orderid = ors.orderid
-                        where  ors.orderid = @orderid";
+            var sql = @"select inv.category, inv.brand, trans.transid, inv.qty as onhandqty, cts.name, cts.address, cts.contactno, ct.cartid, ors.orderid, ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code, ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type
+                from orders AS ors 
+                join cart AS ct on ors.cartid = ct.cartid 
+                join customer cts on cts.customerid = ors.userid 
+                join inventory AS inv on inv.code = ct.code
+                left join transaction as trans on trans.orderid = ors.orderid
+                where ors.orderid = @orderid";
 
             var parameters = new Dictionary<string, object>
-            {
-                { "@orderid", getUserOrder.orderid },
-            };
+                {
+                    { "@orderid", getUserOrder.orderid },
+                };
 
-
-            var results = new List<OrderInfoResponse>();
+            var orderResponse = new OrderInfoResponse();
+            var orderItems = new List<ItemOrders>();
 
             using (var connection = new NpgsqlConnection(_connectionString))
             {
@@ -1218,18 +1220,11 @@ namespace RestieAPI.Service.Repo
                                 {
                                     var transidOrdinal = reader.GetOrdinal("transid");
                                     var transid = !reader.IsDBNull(transidOrdinal) ? reader.GetString(transidOrdinal) : null;
-                                    var orderResponse = new OrderInfoResponse
+                                    orderResponse = new OrderInfoResponse
                                     {
                                         transid = transid,
                                         orderid = reader.GetString(reader.GetOrdinal("orderid")),
                                         cartid = reader.GetString(reader.GetOrdinal("cartid")),
-                                        total = reader.GetFloat(reader.GetOrdinal("total")),
-
-                                        code = reader.GetString(reader.GetOrdinal("code")),
-                                        item = reader.GetString(reader.GetOrdinal("item")),
-                                        price = reader.GetFloat(reader.GetOrdinal("price")),
-                                        qty = reader.GetInt16(reader.GetOrdinal("qty")),
-                                        onhandqty = reader.GetInt16(reader.GetOrdinal("onhandqty")),
 
                                         name = reader.GetString(reader.GetOrdinal("name")),
                                         address = reader.GetString(reader.GetOrdinal("address")),
@@ -1241,41 +1236,57 @@ namespace RestieAPI.Service.Repo
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                         status = reader.GetString(reader.GetOrdinal("status")),
                                         type = reader.GetString(reader.GetOrdinal("type")),
+                                        total = reader.GetFloat(reader.GetOrdinal("total")),
+
+
                                     };
 
-                                    results.Add(orderResponse);
+                                    var orderItemResponse = new ItemOrders
+                                    {
+
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        price = reader.GetFloat(reader.GetOrdinal("price")),
+                                        qty = reader.GetInt16(reader.GetOrdinal("qty")),
+                                        onhandqty = reader.GetInt16(reader.GetOrdinal("onhandqty")),
+
+                                        brand = reader.GetString(reader.GetOrdinal("brand")),
+                                        category = reader.GetString(reader.GetOrdinal("category")),
+                                    };
+
+                                    orderItems.Add(orderItemResponse);
                                 }
                             }
                         }
 
                         // Commit the transaction after the reader has been fully processed
                         tran.Commit();
+
                         return new OrderInfoResponseModel
                         {
-                            result = results,
+                            order_item = orderItems,
+                            order_info = orderResponse,
                             statusCode = 200,
                             success = true,
-
                         };
                     }
                     catch (Exception ex)
                     {
                         tran.Rollback();
+
                         return new OrderInfoResponseModel
                         {
-                            result = [],
+                            order_item = new List<ItemOrders>(),
+                            order_info = null,
                             statusCode = 500,
                             success = false,
-                            message = ex.Message
-
+                            message = ex.Message,
                         };
-                        throw;
                     }
                 }
             }
-
-
         }
+
         public SelectedOrderResponseModel selectOrder(InventoryRequestModel.GetSelectedOrder getUserOrder)
         {
             var sql = @"SELECT ct.*,ors.createdby, ors.orderid,ors.total,ors.status

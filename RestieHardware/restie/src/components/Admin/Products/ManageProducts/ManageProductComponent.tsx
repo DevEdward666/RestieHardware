@@ -176,7 +176,14 @@ const ManageProductComponent = () => {
       updatedAt: productInfo.updatedAt,
     };
     if (payload.addedqty > 0 && payload.supplierid.length <= 0) {
-      dispatch(set_toast({ isOpen: true, message: "Please Select Supplier" }));
+      dispatch(
+        set_toast({
+          isOpen: true,
+          message: "Please Select Supplier",
+          position: "middle",
+          color: "#125B8C",
+        })
+      );
       return;
     }
     if (
@@ -189,13 +196,22 @@ const ManageProductComponent = () => {
         set_toast({
           isOpen: true,
           message: "Please fill out all neccessary field",
+          position: "middle",
+          color: "#125B8C",
         })
       );
       return;
     } else {
       const res = await PostInventory(payload);
       if (res.status === 200) {
-        dispatch(set_toast({ isOpen: true, message: "Successfully updated" }));
+        dispatch(
+          set_toast({
+            isOpen: true,
+            message: "Successfully updated",
+            position: "middle",
+            color: "#125B8C",
+          })
+        );
         initialize();
         setProductInfo({
           code: "",

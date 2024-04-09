@@ -61,12 +61,16 @@ const MainTab: React.FC = () => {
       <IonToast
         isOpen={get_toast?.isOpen}
         message={get_toast.message}
+        position={"middle"}
+        color={"medium"}
         duration={3000}
         onDidDismiss={() =>
           dispatch(
             set_toast({
               message: "",
               isOpen: false,
+              position: "middle",
+              color: "#125B8C",
             })
           )
         }

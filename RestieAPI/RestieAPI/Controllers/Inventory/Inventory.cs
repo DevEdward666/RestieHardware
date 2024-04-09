@@ -98,7 +98,7 @@ namespace RestieAPI.Controllers.Inventory
         [HttpPost("userOrderInfo")]
         public ActionResult<PostResponse> GetOrderInfo(GetSelectedOrder getUserOrder)
         {
-            return Ok(_inventoryRepo.getOrderInfo(getUserOrder));
+            return Ok(_inventoryRepo.GetOrderInfo(getUserOrder));
         }
         [Authorize]
         [HttpPost("getSelectedOrder")]

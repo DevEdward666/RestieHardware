@@ -62,7 +62,7 @@ const PaymentOptionsComponent = () => {
       cash: 0,
       voucher: "",
     });
-  console.log(add_to_cart);
+
   const handlePay = useCallback(
     async (type: string) => {
       const totalAmountToPay = getOverallTotal > 0 ? getOverallTotal : getTotal;
@@ -98,7 +98,7 @@ const PaymentOptionsComponent = () => {
             cartid: addedOrder.result?.cartid!,
           };
           dispatch(getOrderInfo(payload));
-          router.push("/orderInfo");
+          router.push(`/orderInfo?orderid=${addedOrder.result?.orderid!}`);
         }
       }
     },

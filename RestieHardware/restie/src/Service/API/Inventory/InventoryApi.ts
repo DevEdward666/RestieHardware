@@ -4,6 +4,7 @@ import {
   Addtocart,
   GetBrandsModel,
   GetDeliveryImagePath,
+  PostDaysSalesModel,
   PostDeliveryImage,
   PostDeliveryInfo,
   PostDeliveryInfoModel,
@@ -326,5 +327,22 @@ export const GetVoucherInfo = async (payload: PostVoucherInfoModel) => {
     },
     JSON.stringify(payload)
   );
+  return response;
+};
+export const GetSalesByDay = async (payload: PostDaysSalesModel) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+
+  const response = await post(
+    `${baseUrl}api/Inventory/GetByDaySales`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  console.log(response);
   return response;
 };

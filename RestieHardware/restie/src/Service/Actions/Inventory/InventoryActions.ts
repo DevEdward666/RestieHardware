@@ -183,7 +183,6 @@ export const PostOrder =
       message: "",
     };
     try {
-      console.log(customer_payload);
       if (customer_payload.newUser) {
         await InsertCustomerInfo(customer_payload);
       }

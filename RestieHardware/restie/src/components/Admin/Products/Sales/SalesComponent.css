@@ -1,0 +1,14 @@
+.generate-sales-main {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+    text-align: center;
+    .generate-sales-title{
+        font-size: 24px;
+        font-family: "Gotham-Medium";
+    }
+    .dateTimeComponent{
+        max-width: 100%;
+    }
+}

@@ -25,6 +25,12 @@ namespace RestieAPI.Models.Response
         public string cartid { get; set; }
 
     }
+    public class PostSalesResponse
+    {
+        public FileContentResult result { get; set; }
+        public int status { get; set; }
+        public string Message { get; set; }
+    }
     public class SaveImageResponse
     {
         public string imagePath { get; set; }

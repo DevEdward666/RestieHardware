@@ -65,6 +65,13 @@ namespace RestieAPI.Models.Response
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string message { get; set; }
+    }   
+    public class SalesResponseModel
+    {
+        public List<SalesResponse> sales { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string message { get; set; }
     }
     public class InventoryItems
     {
@@ -161,4 +168,12 @@ namespace RestieAPI.Models.Response
         public decimal discount { get; set; }
         public int maxredemption { get; set; }
     }
+    public class SalesResponse
+    {   
+        public string code { get; set; }
+        public string item { get; set; }
+        public int qty { get; set; }
+        public string total_sales { get; set; }
+    }
 }
+    

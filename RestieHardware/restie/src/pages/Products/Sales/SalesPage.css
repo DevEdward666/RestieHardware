@@ -1,0 +1,38 @@
+.sales-page-container{
+    .sales-page-header{
+        display: flex;
+        flex-direction: column;
+    }
+    .sales-page-content{
+        /* --background: linear-gradient(180deg, #0F0526, #125B8C); */
+        .sales-spinner{
+            text-align: center;
+            color: white;
+        }
+    }
+    .sales-toolbar-logo-container{
+        display: flex;
+        flex-direction: row;
+        justify-self: center;
+        align-items: center;
+        text-align: center;
+        .sales-toolbar-logo{
+            height: 100px;
+            width: 100%;
+            margin: 10px;
+        }
+    }
+}
+.sales-tab-cart-content{
+    --background: white;
+}
+.sales-tab-cart-total{
+    font-family: 'Gotham-Black';
+    font-size: 24px;
+}
+.sales-tab-cart-footer{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+}

@@ -43,10 +43,10 @@ const OrderListComponent = () => {
       };
       if (status.toLowerCase() === statusList.pending.toLowerCase()) {
         dispatch(getOrderInfo(payload));
-        router.push("/orderInfo");
+        router.push(`/orderInfo?orderid=${payload.orderid}`);
       } else {
         dispatch(getOrderInfo(payload));
-        router.push("/orderInfo");
+        router.push(`/orderInfo?orderid=${payload.orderid}`);
       }
     },
     [dispatch]

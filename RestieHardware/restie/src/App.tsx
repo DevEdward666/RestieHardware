@@ -31,6 +31,7 @@ import PageNotFoundPage from "./pages/PageNotFound/PageNotFoundPage";
 import { useEffect, useState } from "react";
 import { Network } from "@capacitor/network";
 import OfflineDeliveryPage from "./pages/Delivery/OfflineDelivery/OfflineDeliveryPage";
+import SalesPage from "./pages/Products/Sales/SalesPage";
 
 setupIonicReact({ mode: "ios" });
 
@@ -80,6 +81,8 @@ const App: React.FC = () => {
 
       {/* ADMIN */}
       <Route path="/admin/manageproduct" render={() => <ManageProductPage />} />
+      <Route path="/admin/sales" render={() => <SalesPage />} />
+
       {/* 404 Page not found */}
       <Route path="/pageNotFound" render={() => <PageNotFoundPage />} />
       {/* Offline */}

@@ -129,5 +129,10 @@ namespace RestieAPI.Models.Request
             public string status { get; set; }
 
         }
+        public class GetSales
+        {
+            public string date { get; set; }
+
+        }
     }
 }

@@ -1,11 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using iTextSharp.text;
+using iTextSharp.text.pdf;
+using Microsoft.AspNetCore.Mvc;
 using Npgsql;
+using Npgsql.Internal;
 using RestieAPI.Configs;
 using RestieAPI.Models.Request;
 using RestieAPI.Models.Response;
 using System.Collections.Generic;
 using System.Data;
+using System.Reflection.Metadata;
 using static RestieAPI.Models.Request.InventoryRequestModel;
+using Document = iTextSharp.text.Document;
 
 namespace RestieAPI.Service.Repo
 {
@@ -466,11 +471,9 @@ namespace RestieAPI.Service.Repo
                             }
                             else
                             {
-
-                               
-
                                 insertOrderParams = new Dictionary<string, object>
                                 {
+
                                     { "@orderid",  orderid.ToString() },
                                     { "@cartid", addToCartItems[0].cartid },
                                     { "@total",  total},
@@ -496,7 +499,7 @@ namespace RestieAPI.Service.Repo
                         {
                             result = new SaveOrderResponse
                             {
-                                orderid = orderid.ToString(),
+                                orderid = addToCartItems[0].orderid.Length > 0? addToCartItems[0].orderid: orderid.ToString(),
                                 cartid = addToCartItems[0].cartid
                             },
                             status = 200,
@@ -1104,7 +1107,8 @@ namespace RestieAPI.Service.Repo
             }
 
           
-        }public OrderResponseModel getOrder(InventoryRequestModel.GetUserOrder getUserOrder)
+        }
+        public OrderResponseModel getOrder(InventoryRequestModel.GetUserOrder getUserOrder)
         {
             var sql = @"select * from orders  ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
 
@@ -1827,6 +1831,116 @@ namespace RestieAPI.Service.Repo
                         throw;
                     }
                 }
+            }
+        }
+
+        public SalesResponseModel getByDaySales(GetSales getSales)
+        {
+            var sql = @"select  ct.code, TRIM(ct.item) as item, SUM(ct.qty) as qty, TO_CHAR(SUM(ct.total), 'FM999,999,999.00') AS total_sales
+                from transaction as tr join orders as ors on tr.orderid = ors.orderid
+                join cart as ct on ct.cartid = ors.cartid where LOWER(ors.status) = 'delivered'
+                AND DATE(to_timestamp(tr.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') = @date
+                group by ct.item, ct.code;";
+
+            DateTime salesDate = DateTime.Parse(getSales.date);
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@date", salesDate },
+            };
+
+            var results = new List<SalesResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var salesResponse = new SalesResponse
+                                    {
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        qty = reader.GetInt16(reader.GetOrdinal("qty")),
+                                        total_sales = reader.GetString(reader.GetOrdinal("total_sales")),
+                                    };
+
+                                    results.Add(salesResponse);
+                                }
+                            }
+                        }
+
+                        tran.Commit();
+
+
+                        return new SalesResponseModel
+                        {
+                            sales = results,
+                            statusCode = 200,
+                            success = true,
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new SalesResponseModel
+                        {
+                            sales = new List<SalesResponse>(),
+                            message = ex.Message,
+                            statusCode = 500,
+                            success = false,
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
+
+        public byte[] GeneratePdfReport(List<SalesResponse> sales, DateTime date)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                Document doc = new Document();
+                PdfWriter.GetInstance(doc, ms);
+                doc.Open();
+
+                // Add title
+                doc.Add(new Paragraph($"Sales Report for {date:MM/dd/yyyy}"));
+
+                // Add table
+                PdfPTable table = new PdfPTable(4);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 1, 3, 1, 2 });
+                table.AddCell("Code");
+                table.AddCell("Item");
+                table.AddCell("Qty");
+                table.AddCell("Total Sales");
+
+                foreach (var sale in sales)
+                {
+                    table.AddCell(sale.code);
+                    table.AddCell(sale.item);
+                    table.AddCell(sale.qty.ToString());
+                    table.AddCell(sale.total_sales);
+                }
+
+                doc.Add(table);
+                doc.Close();
+
+                return ms.ToArray();
             }
         }
         //public PostResponse PostInventory(InventoryRequestModel.PostInventory postInventory)

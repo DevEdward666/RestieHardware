@@ -147,7 +147,22 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<PostResponse> GetVouchers(GetVoucher getVoucher)
         {
             return Ok(_inventoryRepo.getVouchers(getVoucher));
+        }   
+        [Authorize]
+        [HttpPost("GetByDaySales")]
+        public ActionResult<PostSalesResponse> GetByDaySales(GetSales getSales)
+        {
+            var salesResponseModel = _inventoryRepo.getByDaySales(getSales);
+            byte[] fileContents = _inventoryRepo.GeneratePdfReport(salesResponseModel.sales, DateTime.Parse(getSales.date));
+            string fileName = $"Sales_Report_{getSales.date:yyyyMMdd}.pdf";
+            return new PostSalesResponse
+            {
+                result =  File(fileContents, "application/pdf", fileName),
+                status = 200,
+                Message = "PDF Donwloaded"
+            };
         }
+  
         [Authorize]
         [HttpPost("UploadFile")]
         public async Task<ActionResult<PostImageResponse>> Post([FromForm] FileModel file)

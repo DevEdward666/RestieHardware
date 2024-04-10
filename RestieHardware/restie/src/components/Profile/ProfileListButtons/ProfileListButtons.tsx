@@ -90,6 +90,17 @@ const ProfileListButtons: React.FC = () => {
                 </div>
                 <div
                   className="profile-list-button-list"
+                  onClick={() => router.push("/admin/sales")}
+                >
+                  <IonText className="profile-button-text">
+                    Manage Sales
+                  </IonText>
+                  <IonButton fill="clear" className="profile-button-order">
+                    <IonIcon icon={chevronForwardOutline}></IonIcon>
+                  </IonButton>
+                </div>
+                <div
+                  className="profile-list-button-list"
                   onClick={() => router.push("/DeliverOffline")}
                 >
                   <IonText className="profile-button-text">

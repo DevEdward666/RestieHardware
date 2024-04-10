@@ -28,6 +28,7 @@ import {
   addToCartAction,
   getDelivery,
   getInventory,
+  getOrderInfo,
   selectedOrder,
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
@@ -56,13 +57,6 @@ import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
 const OrderInfoComponent = () => {
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
-  );
-  const get_delivery_info = useSelector(
-    (store: RootStore) => store.InventoryReducer.get_delivery_info
-  );
-
-  const user_login_information = useSelector(
-    (store: RootStore) => store.LoginReducer.user_login_information
   );
   const get_voucher = useSelector(
     (store: RootStore) => store.InventoryReducer.get_voucher
@@ -194,11 +188,19 @@ const OrderInfoComponent = () => {
     );
     router.push("/home/profile");
   }, [dispatch]);
+  const getOrderIDFromURL = () => {
+    const url = new URL(window.location.href);
+    return url.searchParams.get("orderid");
+  };
   useEffect(() => {
     const initialize = async () => {
-      const res = await dispatch(GetLoginUser());
+      const orderid = getOrderIDFromURL();
+      await dispatch(GetLoginUser());
+      await dispatch(getOrderInfo({ orderid: orderid! }));
       const payload: PostDeliveryInfoModel = {
-        orderid: order_list_info.order_info?.orderid,
+        orderid: order_list_info.order_info?.orderid
+          ? order_list_info.order_info?.orderid
+          : orderid!,
       };
       const orderdate = format(
         new Date(order_list_info.order_info?.createdat).toISOString(),
@@ -264,7 +266,7 @@ const OrderInfoComponent = () => {
         <div className="order-list-info-footer-approved"> </div>
 
         <div className="order-list-info-footer-approved-info">
-          {order_list_info.order_info?.paidthru.toLowerCase() === "pending" ? (
+          {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ? (
             <>
               <IonButton
                 size="small"

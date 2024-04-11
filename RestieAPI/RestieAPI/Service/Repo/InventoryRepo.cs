@@ -8,6 +8,7 @@ using RestieAPI.Models.Request;
 using RestieAPI.Models.Response;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Reflection.Metadata;
 using static RestieAPI.Models.Request.InventoryRequestModel;
 using Document = iTextSharp.text.Document;
@@ -1839,14 +1840,16 @@ namespace RestieAPI.Service.Repo
             var sql = @"select  ct.code, TRIM(ct.item) as item, SUM(ct.qty) as qty, TO_CHAR(SUM(ct.total), 'FM999,999,999.00') AS total_sales
                 from transaction as tr join orders as ors on tr.orderid = ors.orderid
                 join cart as ct on ct.cartid = ors.cartid where LOWER(ors.status) = 'delivered'
-                AND DATE(to_timestamp(tr.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') = @date
+                AND DATE(to_timestamp(tr.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
                 group by ct.item, ct.code;";
 
-            DateTime salesDate = DateTime.Parse(getSales.date);
+            DateTime fromDate = DateTime.Parse(getSales.fromDate);
+            DateTime toDate = DateTime.Parse(getSales.toDate);
 
             var parameters = new Dictionary<string, object>
             {
-                { "@date", salesDate },
+                { "@fromDate", fromDate },
+                { "@toDate", toDate },
             };
 
             var results = new List<SalesResponse>();
@@ -1907,41 +1910,233 @@ namespace RestieAPI.Service.Repo
                     }
                 }
             }
-        }
-
-        public byte[] GeneratePdfReport(List<SalesResponse> sales, DateTime date)
+        }  
+        public InventoryResponseModel getInventoryQty()
         {
+            var sql = @"select  inv.code,inv.item,inv.qty as onhandqty, count(ct.qty) as soldqty,inv.cost,inv.price
+                        from inventory as inv left join cart ct on inv.code = ct.code 
+                        group by inv.code,inv.item,inv.qty,inv.cost,inv.price order by  inv.qty ASC;";
+
+
+
+            var results = new List<InventoryResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var salesResponse = new InventoryResponse
+                                    {
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        onhandqty = reader.GetInt32(reader.GetOrdinal("onhandqty")),
+                                        soldqty = reader.GetInt32(reader.GetOrdinal("soldqty")),
+                                        cost = reader.GetDecimal(reader.GetOrdinal("cost")),
+                                        price = reader.GetDecimal(reader.GetOrdinal("price")),
+                                    };
+
+                                    results.Add(salesResponse);
+                                }
+                            }
+                        }
+
+                        tran.Commit();
+
+
+                        return new InventoryResponseModel
+                        {
+                            inventory = results,
+                            statusCode = 200,
+                            success = true,
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new InventoryResponseModel
+                        {
+                            inventory = new List<InventoryResponse>(),
+                            message = ex.Message,
+                            statusCode = 500,
+                            success = false,
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
+        public byte[] GenerateInventoryPdfReport(List<InventoryResponse> sales)
+        {
+            // Load company logo
+            byte[] logoBytes = LoadCompanyLogo(); // Assuming this method loads your company logo as byte[]
+
             using (MemoryStream ms = new MemoryStream())
             {
                 Document doc = new Document();
                 PdfWriter.GetInstance(doc, ms);
                 doc.Open();
 
+                // Add company logo
+                if (logoBytes != null)
+                {
+                    Paragraph logotitle = new Paragraph();
+                    logotitle.Alignment = Element.ALIGN_CENTER;
+                    logotitle.Add(Chunk.NEWLINE);
+                    logotitle.Add(new Chunk($"Address: SIR Bucana 76-A", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                    logotitle.Add(Chunk.NEWLINE);
+                    logotitle.Add(new Chunk($"Sandawa Matina Davao City", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                    logotitle.Add(Chunk.NEWLINE);
+                    logotitle.Add(new Chunk($"Davao City, Philippines", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                    logotitle.Add(Chunk.NEWLINE);
+                    logotitle.Add(new Chunk($"Contact No.: (082) 224 1362", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+
+                    Image logo = Image.GetInstance(logoBytes);
+                    logo.Alignment = Element.ALIGN_CENTER;
+                    logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
+                    doc.Add(logo);
+                    doc.Add(logotitle);
+                }
+
                 // Add title
-                doc.Add(new Paragraph($"Sales Report for {date:MM/dd/yyyy}"));
+                Paragraph title = new Paragraph();
+                title.Alignment = Element.ALIGN_CENTER;
+                title.Add(Chunk.NEWLINE);
+                title.Add(new Chunk("Inventory Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                title.Add(Chunk.NEWLINE);
+                title.Add(Chunk.NEWLINE);
+                doc.Add(title);
 
                 // Add table
-                PdfPTable table = new PdfPTable(4);
+                PdfPTable table = new PdfPTable(6);
                 table.WidthPercentage = 100;
-                table.SetWidths(new float[] { 1, 3, 1, 2 });
+                table.SetWidths(new float[] { 1, 3, 1, 2,1,1 });
+                table.SpacingBefore = 20f; // Add spacing before the table
+                                           // Add table headers
                 table.AddCell("Code");
                 table.AddCell("Item");
-                table.AddCell("Qty");
-                table.AddCell("Total Sales");
+                table.AddCell("Onhand Qty");
+                table.AddCell("Sold Qty");
+                table.AddCell("Cost");
+                table.AddCell("Price");
 
+                // Add table data
                 foreach (var sale in sales)
                 {
                     table.AddCell(sale.code);
                     table.AddCell(sale.item);
-                    table.AddCell(sale.qty.ToString());
-                    table.AddCell(sale.total_sales);
+                    table.AddCell(sale.onhandqty.ToString());
+                    table.AddCell(sale.soldqty.ToString());
+                    table.AddCell(sale.cost.ToString("N2"));
+                    table.AddCell(sale.price.ToString("N2"));
                 }
 
+              
                 doc.Add(table);
                 doc.Close();
 
                 return ms.ToArray();
             }
+        }
+        public byte[] GeneratePdfReport(List<SalesResponse> sales, DateTime from_date,DateTime to_date)
+            {
+                // Load company logo
+                byte[] logoBytes = LoadCompanyLogo(); // Assuming this method loads your company logo as byte[]
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    Document doc = new Document();
+                    PdfWriter.GetInstance(doc, ms);
+                    doc.Open();
+
+                    // Add company logo
+                    if (logoBytes != null)
+                    {
+                        Paragraph logotitle = new Paragraph();
+                        logotitle.Alignment = Element.ALIGN_CENTER;
+                        logotitle.Add(Chunk.NEWLINE);
+                        logotitle.Add(new Chunk($"Address: SIR Bucana 76-A", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                        logotitle.Add(Chunk.NEWLINE);
+                        logotitle.Add(new Chunk($"Sandawa Matina Davao City", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                        logotitle.Add(Chunk.NEWLINE);
+                        logotitle.Add(new Chunk($"Davao City, Philippines", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                        logotitle.Add(Chunk.NEWLINE);
+                        logotitle.Add(new Chunk($"Contact No.: (082) 224 1362", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+
+                        Image logo = Image.GetInstance(logoBytes);
+                        logo.Alignment = Element.ALIGN_CENTER;
+                        logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
+                        doc.Add(logo);
+                        doc.Add(logotitle);
+                    }
+
+                    // Add title
+                    Paragraph title = new Paragraph();
+                    title.Alignment = Element.ALIGN_CENTER;
+                    title.Add(Chunk.NEWLINE);
+                    title.Add(new Chunk("Sales Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                    title.Add(Chunk.NEWLINE);
+                    title.Add(Chunk.NEWLINE);
+                    title.Add(new Chunk($"Start Date: {from_date.ToString("MM/dd/yyyy")} End Date: {to_date.ToString("MM/dd/yyyy")}", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                    title.Add(Chunk.NEWLINE);
+                    title.Add(Chunk.NEWLINE);
+                    doc.Add(title);
+
+                    // Add table
+                    PdfPTable table = new PdfPTable(4);
+                    table.WidthPercentage = 100;
+                    table.SetWidths(new float[] { 1, 3, 1, 2 });
+                    table.SpacingBefore = 20f; // Add spacing before the table
+                    // Add table headers
+                    table.AddCell("Code");
+                    table.AddCell("Item");
+                    table.AddCell("Qty");
+                    table.AddCell("Total");
+
+                    // Add table data
+                    decimal totalSales = 0;
+                    foreach (var sale in sales)
+                    {
+                        table.AddCell(sale.code);
+                        table.AddCell(sale.item);
+                        table.AddCell(sale.qty.ToString());
+                        table.AddCell(Decimal.Parse(sale.total_sales).ToString("N2"));// Format Total Sales as currency
+                    totalSales += Decimal.Parse(sale.total_sales);
+                    }
+
+                    // Add total row
+                    PdfPCell totalCell = new PdfPCell(new Phrase("Overall Total", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    totalCell.Colspan = 3;
+                    totalCell.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    table.AddCell(totalCell);
+                    table.AddCell(totalSales.ToString("N2")); // Format Total Sales as currency
+
+                    doc.Add(table);
+                    doc.Close();
+
+                    return ms.ToArray();
+                }
+            }
+        
+
+
+            private byte[] LoadCompanyLogo()
+        {
+            // Implement logic to load company logo as byte[]
+            // Example:
+            string imagePath = Path.Combine("Resources", "Assets", "Icon@3.png");
+            byte[] logoBytes = File.ReadAllBytes(imagePath);
+            return logoBytes;
         }
         //public PostResponse PostInventory(InventoryRequestModel.PostInventory postInventory)
         //{

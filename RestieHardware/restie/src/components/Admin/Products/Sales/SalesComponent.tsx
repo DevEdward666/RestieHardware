@@ -11,14 +11,17 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./SalesComponent.css";
-import { GetSalesByDay } from "../../../../Service/API/Inventory/InventoryApi";
+import {
+  GetInventory,
+  GetSalesByDay,
+} from "../../../../Service/API/Inventory/InventoryApi";
 import { PostDaysSalesModel } from "../../../../Models/Request/Inventory/InventoryModel";
 import { format } from "date-fns";
 import { FileResponse } from "../../../../Models/Response/Inventory/GetInventoryModel";
 const SalesComponent = () => {
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState<string[]>([]);
   const [getFile, setFile] = useState<FileResponse>();
   const [openPDFModal, setopenPDFModal] = useState({
     isOpen: false,
@@ -32,11 +35,11 @@ const SalesComponent = () => {
   const handleWeekChange = (event: Event) => {
     const target = event.target as HTMLIonDatetimeElement;
     const value = target.value;
-
+    console.log(value);
     if (Array.isArray(value)) {
-      setSelectedDate(value.join(",")); // Join array elements into a single string
+      setSelectedDate(value);
     } else {
-      setSelectedDate(value || ""); // Use value directly if it's a string, or fallback to an empty string
+      // setSelectedDate(value);
       formatDate(value!);
     }
   };
@@ -53,12 +56,17 @@ const SalesComponent = () => {
     const formattedDate = `${year}-${month}-${day}`;
     return formattedDate;
   };
-  useEffect(() => {
-    setSelectedDate(formatDate());
-  }, []);
+  // useEffect(() => {
+  //   setSelectedDate(formatDate());
+  // }, []);
   const handleDownloaPdf = useCallback(async () => {
+    const parsedDates = selectedDate.map((date) => new Date(date).getTime());
+    parsedDates.sort((a, b) => a - b);
+    const lowestDate = selectedDate[0];
+    const highestDate = selectedDate[selectedDate.length - 1];
     const payload: PostDaysSalesModel = {
-      date: selectedDate,
+      fromDate: lowestDate,
+      toDate: highestDate,
     };
     setIsOpenToast({
       toastMessage: "Generating PDF",
@@ -85,26 +93,53 @@ const SalesComponent = () => {
     // setopenPDFModal({ isOpen: true, modal: "pdf" });
     setFile(res);
   }, [selectedDate]);
+  const handleGenerateInventory = async () => {
+    setIsOpenToast({
+      toastMessage: "Generating PDF",
+      isOpen: true,
+      type: "PDF",
+    });
+    const res = await GetInventory();
+    const base64Data = res.result.fileContents; // Accessing the Base64 encoded PDF data
+    const decodedData = atob(base64Data); // Decoding the Base64 string
+    const byteArray = new Uint8Array(decodedData.length);
+
+    for (let i = 0; i < decodedData.length; i++) {
+      byteArray[i] = decodedData.charCodeAt(i);
+    }
+
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const fileURL = URL.createObjectURL(blob);
+    window.open(fileURL);
+    setIsOpenToast({
+      toastMessage: "",
+      isOpen: false,
+      type: "",
+    });
+  };
   return (
-    <IonContent>
+    <IonContent className="generate-sales-main-content">
+      <IonText className="generate-sales-title">Generate PDF</IonText>
       <div className="generate-sales-main">
-        <IonText className="generate-sales-title">
-          Generate PDF Sales by Day
-        </IonText>
-        <IonDatetime
-          presentation="date"
-          className="dateTimeComponent"
-          onIonChange={handleWeekChange}
-          value={selectedDate}
-        />
-        <IonButton color={"medium"} expand="block" onClick={handleDownloaPdf}>
-          Generate PDF
+        <IonButton
+          color={"medium"}
+          expand="block"
+          onClick={() => setopenPDFModal({ isOpen: true, modal: "" })}
+        >
+          Generate Sales
+        </IonButton>
+
+        <IonButton
+          color={"medium"}
+          expand="block"
+          onClick={() => handleGenerateInventory()}
+        >
+          Generate Inventory
         </IonButton>
       </div>
       <IonLoading
         isOpen={isOpenToast?.isOpen}
         message={isOpenToast?.toastMessage}
-        duration={3000}
         spinner="circles"
         onDidDismiss={() =>
           setIsOpenToast((prev) => ({
@@ -116,7 +151,7 @@ const SalesComponent = () => {
       <IonModal
         isOpen={openPDFModal.modal !== "receipt" ? openPDFModal.isOpen : false}
         onDidDismiss={() => setopenPDFModal({ isOpen: false, modal: "" })}
-        initialBreakpoint={1}
+        initialBreakpoint={0.5}
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
       >
         <IonHeader>
@@ -128,28 +163,20 @@ const SalesComponent = () => {
                 Close
               </IonButton>
             </IonButtons>
-            <IonTitle className="delivery-info-title">
-              {" "}
-              Delivery Information
-            </IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={handleDownloaPdf}>Generate</IonButton>
+            </IonButtons>
+            <IonTitle className="delivery-info-title"> Choose Dates</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          <>
-            {getFile &&
-              getFile.contentType &&
-              getFile.contentType.startsWith("application/") && (
-                <>
-                  <IonText className="delivery-image-text">
-                    Delivery Image
-                  </IonText>
-                  <IonImg
-                    className="swiper-component"
-                    src={"data:application/pdf;base64," + getFile.fileContents}
-                  ></IonImg>
-                </>
-              )}
-          </>
+          <IonDatetime
+            multiple
+            presentation="date"
+            className="dateTimeComponent"
+            onIonChange={handleWeekChange}
+            value={selectedDate}
+          />
         </IonContent>
       </IonModal>
     </IonContent>

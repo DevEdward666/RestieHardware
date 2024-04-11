@@ -4,11 +4,20 @@
     gap: 8px;
     padding: 20px;
     text-align: center;
-    .generate-sales-title{
-        font-size: 24px;
-        font-family: "Gotham-Medium";
-    }
-    .dateTimeComponent{
-        max-width: 100%;
-    }
+
+   
+}
+ .dateTimeComponent{
+    max-width: 100%;
+}
+.generate-sales-title{
+    font-size: 24px;
+    font-family: "Gotham-Medium";
+}
+.generate-sales-main-content{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }

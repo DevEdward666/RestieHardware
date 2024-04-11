@@ -131,7 +131,8 @@ namespace RestieAPI.Models.Request
         }
         public class GetSales
         {
-            public string date { get; set; }
+            public string fromDate { get; set; }
+            public string toDate { get; set; }
 
         }
     }

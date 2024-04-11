@@ -72,6 +72,13 @@ namespace RestieAPI.Models.Response
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string message { get; set; }
+    }   
+    public class InventoryResponseModel
+    {
+        public List<InventoryResponse> inventory { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string message { get; set; }
     }
     public class InventoryItems
     {
@@ -174,6 +181,17 @@ namespace RestieAPI.Models.Response
         public string item { get; set; }
         public int qty { get; set; }
         public string total_sales { get; set; }
+    }
+
+    public class InventoryResponse
+    {
+        public string code { get; set; }
+        public string item { get; set; }
+        public int onhandqty { get; set; }
+        public int soldqty { get; set; }
+        public decimal cost { get; set; }
+        public decimal price { get; set; }
+
     }
 }
     

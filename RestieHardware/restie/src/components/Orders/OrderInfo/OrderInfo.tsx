@@ -242,7 +242,7 @@ const OrderInfoComponent = () => {
       });
     };
     initialize();
-  }, [dispatch, order_list_info]);
+  }, [dispatch]);
   const copyOrderId = async (orderId: string) => {
     await Clipboard.write({
       string: orderId,

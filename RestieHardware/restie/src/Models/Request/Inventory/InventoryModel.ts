@@ -85,7 +85,8 @@ export interface PostVoucherInfoModel {
   vouchercode: string;
 }
 export interface PostDaysSalesModel {
-  date: string;
+  fromDate: string;
+  toDate: string;
 }
 export interface GetDeliveryImagePath {
   imagePath: string;

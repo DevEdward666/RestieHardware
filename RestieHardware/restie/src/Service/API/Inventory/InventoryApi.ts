@@ -346,3 +346,20 @@ export const GetSalesByDay = async (payload: PostDaysSalesModel) => {
   console.log(response);
   return response;
 };
+export const GetInventory = async () => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+
+  const response = await post(
+    `${baseUrl}api/Inventory/GetInventory`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    null
+  );
+  console.log(response);
+  return response;
+};

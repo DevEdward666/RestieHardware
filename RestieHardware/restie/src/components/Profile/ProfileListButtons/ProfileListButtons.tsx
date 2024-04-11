@@ -7,7 +7,18 @@ import {
   IonLoading,
 } from "@ionic/react";
 import "./ProfileListButtons.css";
-import { chevronForwardOutline } from "ionicons/icons";
+import {
+  bagOutline,
+  barChartOutline,
+  cartOutline,
+  chevronForwardOutline,
+  logInOutline,
+  logOutOutline,
+  syncCircle,
+  syncCircleOutline,
+  syncCircleSharp,
+  syncOutline,
+} from "ionicons/icons";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import { ListOrder } from "../../../Service/API/Inventory/InventoryApi";
 import {
@@ -68,7 +79,11 @@ const ProfileListButtons: React.FC = () => {
               className="profile-list-button-list"
               onClick={() => handleOrderListClick()}
             >
-              <IonText className="profile-button-text">Order List</IonText>
+              <IonButton fill="clear" className="profile-button-order">
+                <IonIcon icon={cartOutline}></IonIcon>
+                <IonText className="profile-button-text">Order List</IonText>
+              </IonButton>
+
               <IonButton fill="clear" className="profile-button-order">
                 <IonIcon icon={chevronForwardOutline}></IonIcon>
               </IonButton>
@@ -81,9 +96,13 @@ const ProfileListButtons: React.FC = () => {
                   className="profile-list-button-list"
                   onClick={() => router.push("/admin/manageproduct")}
                 >
-                  <IonText className="profile-button-text">
-                    Manage Product
-                  </IonText>
+                  <IonButton fill="clear" className="profile-button-order">
+                    <IonIcon icon={bagOutline}></IonIcon>
+                    <IonText className="profile-button-text">
+                      Manage Product
+                    </IonText>
+                  </IonButton>
+
                   <IonButton fill="clear" className="profile-button-order">
                     <IonIcon icon={chevronForwardOutline}></IonIcon>
                   </IonButton>
@@ -92,9 +111,13 @@ const ProfileListButtons: React.FC = () => {
                   className="profile-list-button-list"
                   onClick={() => router.push("/admin/sales")}
                 >
-                  <IonText className="profile-button-text">
-                    Manage Sales
-                  </IonText>
+                  <IonButton fill="clear" className="profile-button-order">
+                    <IonIcon icon={barChartOutline}></IonIcon>
+                    <IonText className="profile-button-text">
+                      Manage Sales
+                    </IonText>
+                  </IonButton>
+
                   <IonButton fill="clear" className="profile-button-order">
                     <IonIcon icon={chevronForwardOutline}></IonIcon>
                   </IonButton>
@@ -103,9 +126,13 @@ const ProfileListButtons: React.FC = () => {
                   className="profile-list-button-list"
                   onClick={() => router.push("/DeliverOffline")}
                 >
-                  <IonText className="profile-button-text">
-                    Offline Deliveries Sync
-                  </IonText>
+                  <IonButton fill="clear" className="profile-button-order">
+                    <IonIcon icon={syncOutline}></IonIcon>
+                    <IonText className="profile-button-text">
+                      Offline Deliveries Sync
+                    </IonText>
+                  </IonButton>
+
                   <IonButton fill="clear" className="profile-button-order">
                     <IonIcon icon={chevronForwardOutline}></IonIcon>
                   </IonButton>
@@ -118,7 +145,10 @@ const ProfileListButtons: React.FC = () => {
                 className="profile-list-button-list-logout"
                 onClick={() => handleLogout()}
               >
-                <IonText className="profile-button-text">Logout</IonText>
+                <IonButton fill="clear" className="profile-button-order">
+                  <IonIcon icon={logOutOutline}></IonIcon>
+                  <IonText className="profile-button-text">Logout</IonText>
+                </IonButton>
                 <IonButton fill="clear" className="profile-button-order">
                   <IonIcon icon={chevronForwardOutline}></IonIcon>
                 </IonButton>
@@ -131,7 +161,11 @@ const ProfileListButtons: React.FC = () => {
               className="profile-list-button-list-logout"
               onClick={() => router.push("/login")}
             >
-              <IonText className="profile-button-text">Login</IonText>
+              <IonButton fill="clear" className="profile-button-order">
+                <IonIcon icon={logInOutline}></IonIcon>
+                <IonText className="profile-button-text">Login</IonText>
+              </IonButton>
+
               <IonButton fill="clear" className="profile-button-order">
                 <IonIcon icon={chevronForwardOutline}></IonIcon>
               </IonButton>

@@ -62,7 +62,6 @@ namespace RestieAPI
             .SetIsOriginAllowed(origin => true)
                 .AllowAnyHeader()
                 .AllowAnyMethod()
-                .AllowCredentials()
             );
             app.UseRouting();
             app.UseAuthentication();

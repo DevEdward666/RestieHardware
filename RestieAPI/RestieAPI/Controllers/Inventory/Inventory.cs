@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -147,7 +148,8 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<PostResponse> GetVouchers(GetVoucher getVoucher)
         {
             return Ok(_inventoryRepo.getVouchers(getVoucher));
-        }   
+        }
+        [EnableCors("_myAllowSpecificOrigins")]
         [Authorize]
         [HttpPost("GetByDaySales")]
         public ActionResult<PostSalesResponse> GetByDaySales(GetSales getSales)
@@ -162,8 +164,9 @@ namespace RestieAPI.Controllers.Inventory
                 status = 200,
                 Message = "PDF Donwloaded"
             };
-        }       
+        }
         [Authorize]
+        [EnableCors("_myAllowSpecificOrigins")]
         [HttpPost("GetInventory")]
         public ActionResult<PostSalesResponse> GetByDaySales()
         {

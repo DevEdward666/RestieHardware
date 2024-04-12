@@ -2003,6 +2003,9 @@ namespace RestieAPI.Service.Repo
                     Paragraph logotitle = new Paragraph();
                     logotitle.Alignment = Element.ALIGN_CENTER;
                     logotitle.Add(Chunk.NEWLINE);
+                    logotitle.Add(new Chunk("Restie Hardware Inventory Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                    logotitle.Add(Chunk.NEWLINE);
+                    logotitle.Add(Chunk.NEWLINE);
                     logotitle.Add(new Chunk($"Address: SIR Bucana 76-A", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
                     logotitle.Add(Chunk.NEWLINE);
                     logotitle.Add(new Chunk($"Sandawa Matina Davao City", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
@@ -2019,13 +2022,13 @@ namespace RestieAPI.Service.Repo
                 //}
 
                 // Add title
-                Paragraph title = new Paragraph();
-                title.Alignment = Element.ALIGN_CENTER;
-                title.Add(Chunk.NEWLINE);
-                title.Add(new Chunk("Restie Hardware Inventory Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
-                title.Add(Chunk.NEWLINE);
-                title.Add(Chunk.NEWLINE);
-                doc.Add(title);
+                //Paragraph title = new Paragraph();
+                //title.Alignment = Element.ALIGN_CENTER;
+                //title.Add(Chunk.NEWLINE);
+                //title.Add(new Chunk("Restie Hardware Inventory Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                //title.Add(Chunk.NEWLINE);
+                //title.Add(Chunk.NEWLINE);
+                //doc.Add(title);
 
                 // Add table
                 PdfPTable table = new PdfPTable(6);
@@ -2076,6 +2079,9 @@ namespace RestieAPI.Service.Repo
                     Paragraph logotitle = new Paragraph();
                         logotitle.Alignment = Element.ALIGN_CENTER;
                         logotitle.Add(Chunk.NEWLINE);
+                        logotitle.Add(new Chunk("Restie Hardware Sales Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                        logotitle.Add(Chunk.NEWLINE);
+                        logotitle.Add(Chunk.NEWLINE);
                         logotitle.Add(new Chunk($"Address: SIR Bucana 76-A", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
                         logotitle.Add(Chunk.NEWLINE);
                         logotitle.Add(new Chunk($"Sandawa Matina Davao City", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
@@ -2092,11 +2098,8 @@ namespace RestieAPI.Service.Repo
                 //}
 
                 // Add title
-                Paragraph title = new Paragraph();
+                    Paragraph title = new Paragraph();
                     title.Alignment = Element.ALIGN_CENTER;
-                    title.Add(Chunk.NEWLINE);
-                    title.Add(new Chunk("Restie Hardware Sales Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
-                    title.Add(Chunk.NEWLINE);
                     title.Add(Chunk.NEWLINE);
                     title.Add(new Chunk($"Start Date: {from_date.ToString("MM/dd/yyyy")} End Date: {to_date.ToString("MM/dd/yyyy")}", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
                     title.Add(Chunk.NEWLINE);

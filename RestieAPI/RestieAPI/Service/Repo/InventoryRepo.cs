@@ -1887,16 +1887,16 @@ namespace RestieAPI.Service.Repo
                         }
 
                         tran.Commit();
-                   
-                        byte[] fileContents = GeneratePdfReport(results, fromDate, toDate);
-                        string fileName = $"Sales_Report_{now:yyyyMMddHHmmss}.pdf"; // Formatting the datetime for the file name
-                        var fileResult = new FileContentResult(fileContents, "application/pdf")
-                        {
-                            FileDownloadName = fileName
-                        };
+
+                        //byte[] fileContents = GeneratePdfReport(results, fromDate, toDate);
+                        //string fileName = $"Sales_Report_{now:yyyyMMddHHmmss}.pdf"; // Formatting the datetime for the file name
+                        //var fileResult = new FileContentResult(fileContents, "application/pdf")
+                        //{
+                        //    FileDownloadName = fileName
+                        //};
                         return new SalesResponseModel
                         {
-                            result = fileResult,
+                            result = null,
                             statusCode = 200,
                             success = true
                         };

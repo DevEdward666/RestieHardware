@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using RestieAPI.Configs;
 using RestieAPI.Services;
@@ -65,6 +66,12 @@ namespace RestieAPI
                 .AllowAnyHeader()
                 .AllowAnyMethod()
             );
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "Resources/Assets")),
+                RequestPath = "/Resources/Assets"
+
+            });
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();

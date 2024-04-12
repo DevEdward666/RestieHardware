@@ -149,7 +149,6 @@ namespace RestieAPI.Controllers.Inventory
         {
             return Ok(_inventoryRepo.getVouchers(getVoucher));
         }
-        [EnableCors("_myAllowSpecificOrigins")]
         [Authorize]
         [HttpPost("GetByDaySales")]
         public ActionResult<PostSalesResponse> GetByDaySales(GetSales getSales)
@@ -166,7 +165,6 @@ namespace RestieAPI.Controllers.Inventory
             };
         }
         [Authorize]
-        [EnableCors("_myAllowSpecificOrigins")]
         [HttpPost("GetInventory")]
         public ActionResult<PostSalesResponse> GetByDaySales()
         {

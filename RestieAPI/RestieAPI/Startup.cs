@@ -25,8 +25,8 @@ namespace RestieAPI
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                     builder =>
                     {
-                        builder.WithOrigins("https://restieapi.fly.dev", "https://restie-hardware.vercel.app")
-                            .SetIsOriginAllowed(origin => true)
+                        builder.AllowAnyOrigin()
+                            .AllowAnyOrigin()
                             .AllowAnyMethod()
                             .AllowAnyHeader();
                     });
@@ -59,7 +59,10 @@ namespace RestieAPI
             }
             app.UseHttpsRedirection();
 
-            app.UseCors(MyAllowSpecificOrigins); // Use the configured CORS policy
+            app.UseCors(builder => builder
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod()); // Use the configured CORS policy
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();

@@ -161,16 +161,7 @@ namespace RestieAPI.Controllers.Inventory
         [HttpPost("GetInventory")]
         public ActionResult<PostSalesResponse> GetByDaySales()
         {
-            DateTime now = DateTime.Now;
-            var salesResponseModel = _inventoryRepo.getInventoryQty();
-            byte[] fileContents = _inventoryRepo.GenerateInventoryPdfReport(salesResponseModel.inventory);
-            string fileName = $"Inventory_Report_{now}.pdf";
-            return new PostSalesResponse
-            {
-                result =  File(fileContents, "application/pdf", fileName),
-                status = 200,
-                Message = "PDF Donwloaded"
-            };
+            return Ok(_inventoryRepo.getInventoryQty());
         }
   
         [Authorize]

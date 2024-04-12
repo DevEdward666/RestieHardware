@@ -76,7 +76,7 @@ namespace RestieAPI.Models.Response
     }   
     public class InventoryResponseModel
     {
-        public List<InventoryResponse> inventory { get; set; }
+        public FileContentResult inventory { get; set; }
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string message { get; set; }

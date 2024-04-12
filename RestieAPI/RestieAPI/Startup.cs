@@ -19,14 +19,17 @@ namespace RestieAPI
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-          
+
             services.AddCors(options =>
             {
                 options.AddPolicy(name: MyAllowSpecificOrigins,
-                                  builder =>
-                                  {
-                                      builder.WithOrigins("https://restieapi.fly.dev","https://restie-hardware.vercel.app").AllowAnyMethod().AllowAnyHeader();
-                                  });
+                    builder =>
+                    {
+                        builder.WithOrigins("https://restieapi.fly.dev", "https://restie-hardware.vercel.app")
+                            .SetIsOriginAllowed(origin => true)
+                            .AllowAnyMethod()
+                            .AllowAnyHeader();
+                    });
             });
             services.InstallServicesInAssembly(Configuration);
             services.AddControllers()
@@ -37,7 +40,7 @@ namespace RestieAPI
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v2", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Restie API", Version = "v2" });
+                c.SwaggerDoc("v2", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Restie API", Version = "v1" });
             });
             services.AddTransient<DatabaseService>();
             services.AddAuthorization();
@@ -55,14 +58,13 @@ namespace RestieAPI
                 });
             }
             app.UseHttpsRedirection();
-
-            app.UseHttpsRedirection();
-            app.UseCors(builder => builder
-              .WithOrigins("http://localhost:3000", "https://restieapi.fly.dev", "https://restie-hardware.vercel.app")
-            .SetIsOriginAllowed(origin => true)
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-            );
+            //app.UseCors(builder => builder
+            //  .WithOrigins("http://localhost:3000", "https://restieapi.fly.dev", "https://restie-hardware.vercel.app")
+            //    .SetIsOriginAllowed(origin => true)
+            //    .AllowAnyHeader()
+            //    .AllowAnyMethod()
+            //);
+            app.UseCors(MyAllowSpecificOrigins); // Use the configured CORS policy
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();

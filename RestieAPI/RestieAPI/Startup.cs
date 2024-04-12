@@ -57,7 +57,8 @@ namespace RestieAPI
             app.UseHttpsRedirection();
 
             app.UseHttpsRedirection();
-            app.UseCors(builder => builder.WithOrigins("http://localhost:3000", "https://restieapi.fly.dev")
+            app.UseCors(builder => builder
+              .WithOrigins("http://localhost:3000", "https://restieapi.fly.dev", "https://restie-hardware.vercel.app")
             .SetIsOriginAllowed(origin => true)
                 .AllowAnyHeader()
                 .AllowAnyMethod()

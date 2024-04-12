@@ -1896,7 +1896,7 @@ namespace RestieAPI.Service.Repo
                         };
                         return new SalesResponseModel
                         {
-                            result = null,
+                            result = fileResult,
                             statusCode = 200,
                             success = true
                         };

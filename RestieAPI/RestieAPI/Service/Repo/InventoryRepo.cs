@@ -1988,8 +1988,8 @@ namespace RestieAPI.Service.Repo
         }
         public byte[] GenerateInventoryPdfReport(List<InventoryResponse> sales)
         {
-            string base64String = LoadCompanyLogoAsBase64();
-            byte[] logoBytes = Convert.FromBase64String(base64String);
+            //string base64String = LoadCompanyLogoAsBase64();
+            //byte[] logoBytes = Convert.FromBase64String(base64String);
 
             using (MemoryStream ms = new MemoryStream())
             {
@@ -1998,8 +1998,8 @@ namespace RestieAPI.Service.Repo
                 doc.Open();
 
                 // Add company logo
-                if (logoBytes != null)
-                {
+                //if (logoBytes != null)
+                //{
                     Paragraph logotitle = new Paragraph();
                     logotitle.Alignment = Element.ALIGN_CENTER;
                     logotitle.Add(Chunk.NEWLINE);
@@ -2011,18 +2011,18 @@ namespace RestieAPI.Service.Repo
                     logotitle.Add(Chunk.NEWLINE);
                     logotitle.Add(new Chunk($"Contact No.: (082) 224 1362", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
 
-                    Image logo = Image.GetInstance(logoBytes);
-                    logo.Alignment = Element.ALIGN_CENTER;
-                    logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
-                    doc.Add(logo);
+                    //Image logo = Image.GetInstance(logoBytes);
+                    //logo.Alignment = Element.ALIGN_CENTER;
+                    //logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
+                    //doc.Add(logo);
                     doc.Add(logotitle);
-                }
+                //}
 
                 // Add title
                 Paragraph title = new Paragraph();
                 title.Alignment = Element.ALIGN_CENTER;
                 title.Add(Chunk.NEWLINE);
-                title.Add(new Chunk("Inventory Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                title.Add(new Chunk("Restie Hardware Inventory Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
                 title.Add(Chunk.NEWLINE);
                 title.Add(Chunk.NEWLINE);
                 doc.Add(title);
@@ -2061,8 +2061,8 @@ namespace RestieAPI.Service.Repo
         public byte[] GeneratePdfReport(List<SalesResponse> sales, DateTime from_date,DateTime to_date)
             {
             // Load company logo
-            string base64String = LoadCompanyLogoAsBase64();
-            byte[] logoBytes = Convert.FromBase64String(base64String);
+            //string base64String = LoadCompanyLogoAsBase64();
+            //byte[] logoBytes = Convert.FromBase64String(base64String);
 
             using (MemoryStream ms = new MemoryStream())
                 {
@@ -2071,8 +2071,8 @@ namespace RestieAPI.Service.Repo
                     doc.Open();
 
                 // Add company logo
-                if (logoBytes != null)
-                {
+                //if (logoBytes != null)
+                //{
                     Paragraph logotitle = new Paragraph();
                         logotitle.Alignment = Element.ALIGN_CENTER;
                         logotitle.Add(Chunk.NEWLINE);
@@ -2084,18 +2084,18 @@ namespace RestieAPI.Service.Repo
                         logotitle.Add(Chunk.NEWLINE);
                         logotitle.Add(new Chunk($"Contact No.: (082) 224 1362", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
 
-                    Image logo = Image.GetInstance(logoBytes);
-                    logo.Alignment = Element.ALIGN_CENTER;
-                    logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
-                    doc.Add(logo);
+                    //Image logo = Image.GetInstance(logoBytes);
+                    //logo.Alignment = Element.ALIGN_CENTER;
+                    //logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
+                    //doc.Add(logo);
                     doc.Add(logotitle);
-                }
+                //}
 
                 // Add title
                 Paragraph title = new Paragraph();
                     title.Alignment = Element.ALIGN_CENTER;
                     title.Add(Chunk.NEWLINE);
-                    title.Add(new Chunk("Sales Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                    title.Add(new Chunk("Restie Hardware Sales Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
                     title.Add(Chunk.NEWLINE);
                     title.Add(Chunk.NEWLINE);
                     title.Add(new Chunk($"Start Date: {from_date.ToString("MM/dd/yyyy")} End Date: {to_date.ToString("MM/dd/yyyy")}", FontFactory.GetFont(FontFactory.HELVETICA, 12)));

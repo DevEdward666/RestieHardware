@@ -154,7 +154,7 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<PostSalesResponse> GetByDaySales(GetSales getSales)
         {
 
-            return Ok(_inventoryRepo.getByDaySales(getSales);
+            return Ok(_inventoryRepo.getByDaySales(getSales));
            
         }
         [Authorize]

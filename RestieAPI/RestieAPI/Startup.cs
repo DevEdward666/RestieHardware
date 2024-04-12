@@ -25,7 +25,7 @@ namespace RestieAPI
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                                   builder =>
                                   {
-                                      builder.WithOrigins("https://restie-hardware.vercel.app").AllowAnyMethod().AllowAnyHeader();
+                                      builder.WithOrigins("https://restieapi.fly.dev","https://restie-hardware.vercel.app").AllowAnyMethod().AllowAnyHeader();
                                   });
             });
             services.InstallServicesInAssembly(Configuration);

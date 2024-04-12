@@ -1888,12 +1888,12 @@ namespace RestieAPI.Service.Repo
 
                         tran.Commit();
 
-                        //byte[] fileContents = GeneratePdfReport(results, fromDate, toDate);
-                        //string fileName = $"Sales_Report_{now:yyyyMMddHHmmss}.pdf"; // Formatting the datetime for the file name
-                        //var fileResult = new FileContentResult(fileContents, "application/pdf")
-                        //{
-                        //    FileDownloadName = fileName
-                        //};
+                        byte[] fileContents = GeneratePdfReport(results, fromDate, toDate);
+                        string fileName = $"Sales_Report_{now:yyyyMMddHHmmss}.pdf"; // Formatting the datetime for the file name
+                        var fileResult = new FileContentResult(fileContents, "application/pdf")
+                        {
+                            FileDownloadName = fileName
+                        };
                         return new SalesResponseModel
                         {
                             result = null,
@@ -1983,7 +1983,7 @@ namespace RestieAPI.Service.Repo
         public byte[] GenerateInventoryPdfReport(List<InventoryResponse> sales)
         {
             // Load company logo
-            byte[] logoBytes = LoadCompanyLogo(); // Assuming this method loads your company logo as byte[]
+            //byte[] logoBytes = LoadCompanyLogo(); // Assuming this method loads your company logo as byte[]
 
             using (MemoryStream ms = new MemoryStream())
             {
@@ -1992,8 +1992,8 @@ namespace RestieAPI.Service.Repo
                 doc.Open();
 
                 // Add company logo
-                if (logoBytes != null)
-                {
+                //if (logoBytes != null)
+                //{
                     Paragraph logotitle = new Paragraph();
                     logotitle.Alignment = Element.ALIGN_CENTER;
                     logotitle.Add(Chunk.NEWLINE);
@@ -2005,12 +2005,12 @@ namespace RestieAPI.Service.Repo
                     logotitle.Add(Chunk.NEWLINE);
                     logotitle.Add(new Chunk($"Contact No.: (082) 224 1362", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
 
-                    Image logo = Image.GetInstance(logoBytes);
-                    logo.Alignment = Element.ALIGN_CENTER;
-                    logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
-                    doc.Add(logo);
+                    //Image logo = Image.GetInstance(logoBytes);
+                    //logo.Alignment = Element.ALIGN_CENTER;
+                    //logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
+                    //doc.Add(logo);
                     doc.Add(logotitle);
-                }
+                //}
 
                 // Add title
                 Paragraph title = new Paragraph();
@@ -2055,7 +2055,7 @@ namespace RestieAPI.Service.Repo
         public byte[] GeneratePdfReport(List<SalesResponse> sales, DateTime from_date,DateTime to_date)
             {
                 // Load company logo
-                byte[] logoBytes = LoadCompanyLogo(); // Assuming this method loads your company logo as byte[]
+                //byte[] logoBytes = LoadCompanyLogo(); // Assuming this method loads your company logo as byte[]
 
                 using (MemoryStream ms = new MemoryStream())
                 {
@@ -2064,8 +2064,8 @@ namespace RestieAPI.Service.Repo
                     doc.Open();
 
                     // Add company logo
-                    if (logoBytes != null)
-                    {
+                    //if (logoBytes != null)
+                    //{
                         Paragraph logotitle = new Paragraph();
                         logotitle.Alignment = Element.ALIGN_CENTER;
                         logotitle.Add(Chunk.NEWLINE);
@@ -2077,12 +2077,12 @@ namespace RestieAPI.Service.Repo
                         logotitle.Add(Chunk.NEWLINE);
                         logotitle.Add(new Chunk($"Contact No.: (082) 224 1362", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
 
-                        Image logo = Image.GetInstance(logoBytes);
-                        logo.Alignment = Element.ALIGN_CENTER;
-                        logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
-                        doc.Add(logo);
+                        //Image logo = Image.GetInstance(logoBytes);
+                        //logo.Alignment = Element.ALIGN_CENTER;
+                        //logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
+                        //doc.Add(logo);
                         doc.Add(logotitle);
-                    }
+                    //}
 
                     // Add title
                     Paragraph title = new Paragraph();
@@ -2134,14 +2134,14 @@ namespace RestieAPI.Service.Repo
         
 
 
-            private byte[] LoadCompanyLogo()
-        {
-            // Implement logic to load company logo as byte[]
-            // Example:
-            string imagePath = Path.Combine("Resources", "Assets", "Icon@3.png");
-            byte[] logoBytes = File.ReadAllBytes(imagePath);
-            return logoBytes;
-        }
+        //    private byte[] LoadCompanyLogo()
+        //{
+        //    // Implement logic to load company logo as byte[]
+        //    // Example:
+        //    string imagePath = Path.Combine("Resources", "Assets", "Icon@3.png");
+        //    byte[] logoBytes = File.ReadAllBytes(imagePath);
+        //    return logoBytes;
+        //}
         //public PostResponse PostInventory(InventoryRequestModel.PostInventory postInventory)
         //{
         //    try

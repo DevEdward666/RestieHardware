@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using Microsoft.AspNetCore.Mvc;
+using Npgsql;
 using System.Numerics;
 
 namespace RestieAPI.Models.Response
@@ -68,7 +69,7 @@ namespace RestieAPI.Models.Response
     }   
     public class SalesResponseModel
     {
-        public List<SalesResponse> sales { get; set; }
+        public FileContentResult result { get; set; }
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string message { get; set; }

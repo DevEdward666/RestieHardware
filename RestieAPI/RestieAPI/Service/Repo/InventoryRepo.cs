@@ -1844,8 +1844,8 @@ namespace RestieAPI.Service.Repo
                 group by ct.item, ct.code;";
 
             DateTime fromDate = DateTime.Parse(getSales.fromDate);
-            DateTime toDate = DateTime.Parse(getSales.toDate);
-
+            DateTime toDate = DateTime.Parse(getSales.toDate); 
+            DateTime now = DateTime.Now;
             var parameters = new Dictionary<string, object>
             {
                 { "@fromDate", fromDate },
@@ -1887,13 +1887,18 @@ namespace RestieAPI.Service.Repo
                         }
 
                         tran.Commit();
-
-
+                   
+                        byte[] fileContents = GeneratePdfReport(results, fromDate, toDate);
+                        string fileName = $"Sales_Report_{now:yyyyMMddHHmmss}.pdf"; // Formatting the datetime for the file name
+                        var fileResult = new FileContentResult(fileContents, "application/pdf")
+                        {
+                            FileDownloadName = fileName
+                        };
                         return new SalesResponseModel
                         {
-                            sales = results,
+                            result = fileResult,
                             statusCode = 200,
-                            success = true,
+                            success = true
                         };
                     }
                     catch (Exception ex)
@@ -1901,10 +1906,9 @@ namespace RestieAPI.Service.Repo
                         tran.Rollback();
                         return new SalesResponseModel
                         {
-                            sales = new List<SalesResponse>(),
-                            message = ex.Message,
-                            statusCode = 500,
-                            success = false,
+                            result = null,
+                            statusCode = 200,
+                            success = true
                         };
                         throw;
                     }

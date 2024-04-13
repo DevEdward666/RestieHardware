@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RestieAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f21053471da8b546f6812f603c4cc460f132f908")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9d4f531bea60ad39fa21d38bd373cd439a3b619f")]
 [assembly: System.Reflection.AssemblyProductAttribute("RestieAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RestieAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

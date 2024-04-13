@@ -100,7 +100,8 @@ const SalesComponent = () => {
       type: "PDF",
     });
     const res = await GetInventory();
-    const base64Data = res.result.fileContents; // Accessing the Base64 encoded PDF data
+    console.log(res?.result?.fileContents);
+    const base64Data = res?.result?.fileContents; // Accessing the Base64 encoded PDF data
     const decodedData = atob(base64Data); // Decoding the Base64 string
     const byteArray = new Uint8Array(decodedData.length);
 

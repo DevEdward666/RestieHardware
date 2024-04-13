@@ -1957,7 +1957,7 @@ namespace RestieAPI.Service.Repo
                         }
 
                         tran.Commit();
-                        byte[] fileContents = GenerateInventoryPdfReport(results);
+                        byte[] fileContents = GenerateInventoryPdfReport(results, now);
                         string fileName = $"Sales_Report_{now:yyyyMMddHHmmss}.pdf"; // Formatting the datetime for the file name
                         var fileResult = new FileContentResult(fileContents, "application/pdf")
                         {
@@ -1966,7 +1966,7 @@ namespace RestieAPI.Service.Repo
 
                         return new InventoryResponseModel
                         {
-                            inventory = fileResult,
+                            result = fileResult,
                             statusCode = 200,
                             success = true,
                         };
@@ -1976,7 +1976,7 @@ namespace RestieAPI.Service.Repo
                         tran.Rollback();
                         return new InventoryResponseModel
                         {
-                            inventory = null,
+                            result = null,
                             message = ex.Message,
                             statusCode = 500,
                             success = false,
@@ -1986,7 +1986,7 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
-        public byte[] GenerateInventoryPdfReport(List<InventoryResponse> sales)
+        public byte[] GenerateInventoryPdfReport(List<InventoryResponse> sales,DateTime date)
         {
             //string base64String = LoadCompanyLogoAsBase64();
             //byte[] logoBytes = Convert.FromBase64String(base64String);
@@ -2022,13 +2022,13 @@ namespace RestieAPI.Service.Repo
                 //}
 
                 // Add title
-                //Paragraph title = new Paragraph();
-                //title.Alignment = Element.ALIGN_CENTER;
-                //title.Add(Chunk.NEWLINE);
-                //title.Add(new Chunk("Restie Hardware Inventory Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
-                //title.Add(Chunk.NEWLINE);
-                //title.Add(Chunk.NEWLINE);
-                //doc.Add(title);
+                Paragraph title = new Paragraph();
+                title.Alignment = Element.ALIGN_CENTER;
+                title.Add(Chunk.NEWLINE);
+                title.Add(new Chunk($"Start Date: {date.ToString("MM/dd/yyyy")}", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                title.Add(Chunk.NEWLINE);
+                title.Add(Chunk.NEWLINE);
+                doc.Add(title);
 
                 // Add table
                 PdfPTable table = new PdfPTable(6);

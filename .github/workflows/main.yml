@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-dotnet:
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest
     name: DEV DEPLOYMENT
     steps:

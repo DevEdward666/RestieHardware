@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Update Connection String
-        run: sed -i "s|${{ secrets.DATABASE_PROD }}|${{ secrets.DATABASE_DEV }}|g" RestieAPI/RestieAPI/appsettings.json
+        run: sed -i 's/${{ secrets.DATABASE_PROD }}/${{ secrets.DATABASE_DEV }}/g' RestieAPI/RestieAPI/appsettings.json
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:

@@ -15,7 +15,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Overwrite Connection String in appsettings.json
-        run: echo '{"ConnectionStrings":{"MyDatabase":"Host=ep-patient-star-a1e8nf2e.ap-southeast-1.aws.neon.tech;Port=5432;Database=restie-dev;Username=neondb_owner;Password=z0n3RWaQFKpC;"}}' > RestieAPI/RestieAPI/appsettings.json
+        run: | 
+          sed -i 's/\"MyDatabase\":\s*\".*\"/\"MyDatabase\": \"Host=ep-patient-star-a1e8nf2e.ap-southeast-1.aws.neon.tech;Port=5432;Database=restie-dev;Username=neondb_owner;Password=z0n3RWaQFKpC;\"/' RestieAPI/RestieAPI/appsettings.json
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:

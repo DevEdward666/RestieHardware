@@ -1,1 +1,1 @@
-export const baseUrl = "http://localhost:5257/";
+export const baseUrl = "https://restiehardware.onrender.com/";

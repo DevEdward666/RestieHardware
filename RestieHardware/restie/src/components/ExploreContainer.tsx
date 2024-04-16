@@ -14,6 +14,7 @@ import {
   RefresherEventDetail,
   useIonRouter,
 } from "@ionic/react";
+import { baseUrl } from "../Helpers/environment";
 import { cart, close } from "ionicons/icons";
 import { MouseEvent, useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -32,8 +33,10 @@ import {
   set_category_and_brand,
 } from "../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../Service/Store";
-import stock from "../assets/images/stock.png";
+import stock from "../assets/images/Image_not_available.png";
 import "./ExploreContainer.css";
+import { GetItemImage } from "../Service/API/Inventory/InventoryApi";
+import { FileResponse } from "../Models/Response/Inventory/GetInventoryModel";
 interface ContainerProps {
   data: any;
   searchItem: SearchInventoryModel;
@@ -53,7 +56,6 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     isOpen: false,
     type: "",
   });
-  const [getcartid, setCartId] = useState<string>("");
   const [items, setItems] = useState(data);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -169,6 +171,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     }
   };
   const CardList = (card: InventoryModel) => {
+    const [getItemImage, setImage] = useState<FileResponse>();
     const payload: SelectedItemToCart = {
       code: card.code,
       item: card.item,
@@ -176,31 +179,59 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       price: card.price,
       category: card.category,
       brand: card.brand,
+      image:
+        card.image.length <= 0
+          ? stock
+          : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`,
     };
+    useEffect(() => {
+      if (card.image.length > 0) {
+        GetItemImage({ imagePath: card.image }).then((res: any) => {
+          setImage(res.result.image);
+        });
+      }
+    }, [card.image]);
+
     return (
-      <IonCard className="inventory-card-main">
-        <div className="inventory-card-add-item-img">
-          <img alt={card?.item} src={stock} />
-        </div>
-        <div className="inventory-card-add-item-container">
-          <IonCardContent
-            onClick={() => handleSelectedItem(payload)}
-            key={card.code}
-            className="inventory-card-main-content"
-          >
-            <div className="inventory-card-content">
-              <div className="inventory-card-title">{card?.item}</div>
-              <div className="inventory-card-price">
-                <div>
-                  <span>&#8369;</span>
-                  {card?.price.toFixed(2)}
+      <div
+        className="inventory-card-main-div"
+        onClick={() => handleSelectedItem(payload)}
+      >
+        <IonCard className="inventory-card-main">
+          <div className="inventory-card-add-item-img">
+            <img
+              alt={card?.item}
+              src={
+                card.image.length <= 0
+                  ? stock
+                  : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`
+              }
+            />
+          </div>
+          <div className="inventory-card-add-item-container">
+            <IonCardContent
+              key={card.code}
+              className="inventory-card-main-content"
+            >
+              <div className="inventory-card-content">
+                <div className="inventory-card-title">{card?.item}</div>
+                <div className="inventory-card-price">
+                  <div>
+                    <span>&#8369;</span>
+                    {card?.price.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div className="inventory-qty">QTY: {card?.qty}</div>
                 </div>
-                <div className="inventory-qty">QTY - {card?.qty}</div>
               </div>
-            </div>
-          </IonCardContent>
+            </IonCardContent>
+          </div>
+
           <div className="inventory-card-addtocart">
             <IonButton
+              size="default"
               disabled={card?.qty > 0 ? false : true}
               color="medium"
               onClick={(event: any) => handleAddToCart(payload, event)}
@@ -209,8 +240,8 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
               <IonIcon color="light" slot="icon-only" icon={cart}></IonIcon>
             </IonButton>
           </div>
-        </div>
-      </IonCard>
+        </IonCard>
+      </div>
     );
   };
 
@@ -360,6 +391,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
               category={res.category}
               reorderqty={res.reorderqty}
               cost={res.cost}
+              image={res.image}
               status={res.status}
               brand={res.brand}
               createdat={res.createdat}

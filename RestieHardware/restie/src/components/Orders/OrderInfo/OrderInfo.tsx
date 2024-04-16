@@ -195,8 +195,14 @@ const OrderInfoComponent = () => {
   useEffect(() => {
     const initialize = async () => {
       const orderid = getOrderIDFromURL();
-      await dispatch(GetLoginUser());
       await dispatch(getOrderInfo({ orderid: orderid! }));
+    };
+    initialize();
+  }, [dispatch]);
+  useEffect(() => {
+    const initialize = async () => {
+      const orderid = getOrderIDFromURL();
+      await dispatch(GetLoginUser());
       const payload: PostDeliveryInfoModel = {
         orderid: order_list_info.order_info?.orderid
           ? order_list_info.order_info?.orderid
@@ -211,6 +217,7 @@ const OrderInfoComponent = () => {
         return;
       }
       const imagePath = await dispatch(getDelivery(payload));
+
       setGetDeliveryInfo({
         deliveredby: imagePath.result.deliveredby,
         deliverydate: imagePath.result.deliverydate,
@@ -242,7 +249,7 @@ const OrderInfoComponent = () => {
       });
     };
     initialize();
-  }, [dispatch]);
+  }, [dispatch, order_list_info]);
   const copyOrderId = async (orderId: string) => {
     await Clipboard.write({
       string: orderId,
@@ -259,7 +266,6 @@ const OrderInfoComponent = () => {
       })
     );
   };
-
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">

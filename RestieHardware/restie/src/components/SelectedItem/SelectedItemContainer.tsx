@@ -153,7 +153,6 @@ const SelectedItemContainer: React.FC = () => {
     };
     initalize();
   }, [addedQty, selectedItem]);
-  console.log(isOpenToast.type);
   return (
     <IonContent className="selected-item-main-content">
       <IonToast
@@ -186,13 +185,7 @@ const SelectedItemContainer: React.FC = () => {
             zoom={true}
           >
             <SwiperSlide>
-              <IonImg src={sample}></IonImg>
-            </SwiperSlide>
-            <SwiperSlide>
-              <IonImg src={sample}></IonImg>
-            </SwiperSlide>
-            <SwiperSlide>
-              <IonImg src={sample}></IonImg>
+              <IonImg src={selectedItem.image}></IonImg>
             </SwiperSlide>
           </Swiper>
           <div className="selected-item-information-container">

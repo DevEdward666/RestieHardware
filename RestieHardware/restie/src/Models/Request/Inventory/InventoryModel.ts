@@ -6,6 +6,7 @@ export interface InventoryModel {
   qty: number;
   reorderqty: number;
   cost: string;
+  image: string;
   price: number;
   status: string;
   createdat: number;
@@ -38,6 +39,7 @@ export interface SelectedItemToCart {
   qty?: number;
   category?: string;
   brand?: string;
+  image: string;
 }
 export interface PostdOrderList {
   userid: string;
@@ -89,6 +91,9 @@ export interface PostDaysSalesModel {
   toDate: string;
 }
 export interface GetDeliveryImagePath {
+  imagePath: string;
+}
+export interface GetItemImageRequest {
   imagePath: string;
 }
 export interface CategoryAndBrandModel {

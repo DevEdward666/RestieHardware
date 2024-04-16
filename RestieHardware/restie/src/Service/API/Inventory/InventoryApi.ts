@@ -4,6 +4,7 @@ import {
   Addtocart,
   GetBrandsModel,
   GetDeliveryImagePath,
+  GetItemImageRequest,
   PostDaysSalesModel,
   PostDeliveryImage,
   PostDeliveryInfo,
@@ -264,7 +265,22 @@ export const GetDeliveryImage = async (payload: GetDeliveryImagePath) => {
   );
   return response;
 };
+export const GetItemImage = async (payload: GetItemImageRequest) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
 
+  const response = await post(
+    `${baseUrl}api/Inventory/Getimage`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  return response;
+};
 export const SavedDeliveryInfo = async (payload: PostDeliveryInfo) => {
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {

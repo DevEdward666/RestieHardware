@@ -99,6 +99,7 @@ namespace RestieAPI.Service.Repo
                                         cost = reader.GetFloat(reader.GetOrdinal("cost")),
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
                                         status = reader.GetString(reader.GetOrdinal("status")),
+                                        image = reader.GetString(reader.GetOrdinal("image")),
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                         updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                                     };
@@ -117,7 +118,7 @@ namespace RestieAPI.Service.Repo
                             statusCode = 200
                         };
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         tran.Rollback();
                         return new InventoryItemModel
@@ -221,6 +222,7 @@ namespace RestieAPI.Service.Repo
                                         cost = reader.GetFloat(reader.GetOrdinal("cost")),
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
                                         status = reader.GetString(reader.GetOrdinal("status")),
+                                        image = reader.GetString(reader.GetOrdinal("image")),
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                         updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                                     };

@@ -207,13 +207,15 @@ const OfflineDeliveryComponent = () => {
               orderid: val.orderid,
             })
           );
+
           const updatedeliveryPayload: PostUpdateDeliveredOrder = {
-            transid: order![0]?.transid!,
-            orderid: order![0]?.orderid,
-            cartid: order![0]?.cartid,
+            transid: order.order_info?.transid!,
+            orderid: order.order_info?.orderid,
+            cartid: order.order_info?.cartid,
             status: "Delivered",
             updateat: new Date().getTime(),
           };
+          console.log(order.order_info);
           const updatedDelivery = await UpdateDelivered(updatedeliveryPayload);
           if (updatedDelivery.status === 200) {
             setFile(undefined);

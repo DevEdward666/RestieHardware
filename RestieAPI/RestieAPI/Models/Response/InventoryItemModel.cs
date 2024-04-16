@@ -92,6 +92,7 @@ namespace RestieAPI.Models.Response
         public float cost { get; set; }
         public float price { get; set; }
         public string status { get; set; }
+        public string image { get; set; }
         public long createdat { get; set; }
         public long updatedat { get; set; }
     }

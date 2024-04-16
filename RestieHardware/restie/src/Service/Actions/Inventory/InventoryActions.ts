@@ -223,6 +223,7 @@ export const PostOrder =
                 code: val.code,
                 item: val.item,
                 qty: val.qty,
+                image: "",
                 price: val.price,
                 orderid: items.order_info.orderid,
                 cartid: items.order_info.cartid,

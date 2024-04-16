@@ -10,6 +10,7 @@ const defaultState: InventoryTypesModel = {
     item: "",
     onhandqty: 0,
     price: 0,
+    image: "",
   },
   add_to_cart: [],
   order_list: [],

@@ -160,6 +160,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
         onhandqty: selectedItem.onhandqty,
         orderid: "",
         qty: 1,
+        image: "",
         price: selectedItem.price,
         createdAt: new Date().getTime(),
         status: "pending",

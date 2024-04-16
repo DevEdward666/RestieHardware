@@ -24,6 +24,7 @@ export interface Addtocart {
   orderid?: string;
   paidthru?: string;
   paidcash?: number;
+  image: string;
   createdby?: string;
   userid?: string;
   type?: string;

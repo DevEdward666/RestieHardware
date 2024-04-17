@@ -25,3 +25,27 @@
     }
  
 }
+.order-list-filter{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 16px;
+    padding-top: 20px;
+    .order-list-search{
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        justify-content: center;
+    }
+}
+ion-toolbar .sc-ion-searchbar-ios-h{
+    padding-top: 15px;
+    padding-bottom: 15px;
+    min-height: 52px;
+}
+.order-list-datetime{
+    display: flex;
+    max-width: 100%;
+    background-color: #ffffff00;
+    padding-top:20px;
+}

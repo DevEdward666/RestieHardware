@@ -47,6 +47,9 @@ const ProfileListButtons: React.FC = () => {
       limit: 100,
       offset: 0,
       userid: user_id!,
+      status: "pending",
+      searchdate: "",
+      orderid: "",
     };
     dispatch(getOrderList(payload));
     router.push("/orders");

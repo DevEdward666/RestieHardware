@@ -45,6 +45,9 @@ namespace RestieAPI.Models.Request
         public class GetUserOrder
         {
             public string userid { get; set; }
+            public string status { get; set; }
+            public string? orderid { get; set; }
+            public string? searchdate { get; set; }
             public Int32 limit { get; set; }
             public Int32 offset { get; set; }
 

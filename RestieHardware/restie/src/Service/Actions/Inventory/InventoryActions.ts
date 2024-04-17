@@ -286,7 +286,6 @@ export const updateOrder =
           type: "ADD_TO_CART",
           add_to_cart: [], // Assuming you want to clear the cart after saving the order
         });
-        alert(res.message);
       }
     } catch (error: any) {
       console.log(error);
@@ -300,8 +299,10 @@ export const getOrderList =
         type: "ORDER_LIST",
         order_list: res,
       });
+      return true;
     } catch (error: any) {
       console.log(error);
+      return false;
     }
   };
 export const getOrderInfo =

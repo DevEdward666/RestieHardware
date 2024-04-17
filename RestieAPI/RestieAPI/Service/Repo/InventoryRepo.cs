@@ -1114,11 +1114,24 @@ namespace RestieAPI.Service.Repo
         }
         public OrderResponseModel getOrder(InventoryRequestModel.GetUserOrder getUserOrder)
         {
-            var sql = @"select * from orders  ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+            var sql = "";
+            DateTime searchDate = new DateTime();
+            if (getUserOrder.searchdate.Length <= 0)
+            {
+                sql = @"select * from orders where LOWER(status)=@status AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+            } else if (getUserOrder.searchdate.Length > 0)
+            {
+                sql = @"select * from orders where LOWER(status)=@status AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') AND DATE(to_timestamp(createdat / 1000.0) AT TIME ZONE 'Asia/Manila')=@searchdate ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+                 searchDate = DateTime.Parse(getUserOrder.searchdate);
+            }
+          
 
             var parameters = new Dictionary<string, object>
             {
                 { "@limit", getUserOrder.limit },
+                { "@status", getUserOrder.status },
+                { "@orderid", getUserOrder.orderid },
+                { "@searchdate", searchDate },
                 { "@offset", getUserOrder.offset },
             };
 

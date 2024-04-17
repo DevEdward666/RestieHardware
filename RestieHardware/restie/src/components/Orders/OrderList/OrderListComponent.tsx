@@ -1,19 +1,31 @@
-import { useIonRouter, IonCard, IonCardContent } from "@ionic/react";
+import {
+  useIonRouter,
+  IonCard,
+  IonCardContent,
+  IonSpinner,
+} from "@ionic/react";
 import { useSelector } from "react-redux";
-import { PostSelectedOrder } from "../../../Models/Request/Inventory/InventoryModel";
+import {
+  OrderListFilter,
+  PostSelectedOrder,
+  PostdOrderList,
+} from "../../../Models/Request/Inventory/InventoryModel";
 import {
   getOrderInfo,
+  getOrderList,
   selectedOrder,
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import "./OrderListComponent.css";
-import { useCallback } from "react";
-const OrderListComponent = () => {
+import { useCallback, useEffect, useState } from "react";
+
+const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
   const order_list = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list
   );
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
+  const [isLoading, setisLoading] = useState<boolean>(false);
   const formatDate = (datetime: number) => {
     const timestamp = datetime;
     const date = new Date(timestamp);
@@ -29,6 +41,27 @@ const OrderListComponent = () => {
 
     return formattedDate;
   };
+  useEffect(() => {
+    const initialize = async () => {
+      setisLoading(true);
+      const user_id = localStorage.getItem("user_id");
+      const payload: PostdOrderList = {
+        limit: 100,
+        offset: 0,
+        userid: user_id!,
+        status: filter.filter.status.trim().toLowerCase(),
+        searchdate: filter.filter.date,
+        orderid: filter.filter.search,
+      };
+      const loaded = await dispatch(getOrderList(payload));
+      if (loaded) {
+        setisLoading(false);
+      } else {
+        setisLoading(false);
+      }
+    };
+    initialize();
+  }, [filter]);
   const handleSelectOrder = useCallback(
     (orderid: string, status: string, cartid: string) => {
       const statusList = {
@@ -53,6 +86,10 @@ const OrderListComponent = () => {
   );
   return (
     <div>
+      {isLoading ? (
+        <IonSpinner className="loader" name="lines-sharp"></IonSpinner>
+      ) : null}
+
       {Array.isArray(order_list) && order_list.length > 0 ? (
         order_list?.map((orders) => (
           <IonCard

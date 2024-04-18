@@ -45,6 +45,7 @@ import {
   GetDeliveryInfo,
   GetListOrder,
   GetListOrderInfo,
+  GetOrderItems,
 } from "../../../Models/Response/Inventory/GetInventoryModel";
 import { GetCustomerInformation } from "../../../Models/Response/Customer/GetCustomerModel";
 export const getInventory =
@@ -166,6 +167,7 @@ const checkPayload = (
 };
 export const PostOrder =
   (
+    post_orderid: string,
     payload: Addtocart[],
     customer_payload: GetCustomerInformation,
     createdat: number,
@@ -188,8 +190,8 @@ export const PostOrder =
       }
       const paymentMethod = { cash: "Cash", pending: "Pending" };
       let orderid = "";
-      if (payload[0]?.orderid) {
-        orderid = payload[0]?.orderid!;
+      if (post_orderid) {
+        orderid = post_orderid!;
       }
 
       const updatePayload = checkPayload(
@@ -210,43 +212,25 @@ export const PostOrder =
             userid: "",
             cartid: payload[0].cartid,
           };
-          const resOrderInfo: GetListOrderInfo[] = await userOrderInfo(
-            UserOrderInfopayload
-          );
+          const resOrderInfo = await userOrderInfo(UserOrderInfopayload);
           let newItem: Addtocart;
-
           payload = [];
-          resOrderInfo.map((items) => {
-            items.order_item.map((val) => {
-              newItem = {
-                onhandqty: val?.onhandqty!,
-                code: val.code,
-                item: val.item,
-                qty: val.qty,
-                image: "",
-                price: val.price,
-                orderid: items.order_info.orderid,
-                cartid: items.order_info.cartid,
-                createdAt: items.order_info.createdat,
-                status: items.order_info.status,
-              };
-              payload.push(newItem);
-            });
+          console.log(resOrderInfo.order_item);
+          resOrderInfo.order_item.$values?.map((val: GetOrderItems) => {
+            newItem = {
+              onhandqty: val?.onhandqty!,
+              code: val.code,
+              item: val.item,
+              qty: val.qty,
+              image: "",
+              price: val.price,
+              orderid: resOrderInfo.order_info.orderid,
+              cartid: resOrderInfo.order_info.cartid,
+              createdAt: resOrderInfo.order_info.createdat,
+              status: resOrderInfo.order_info.status,
+            };
+            payload.push(newItem);
           });
-          // resOrderInfo.map((val) => {
-          //   const newItem: Addtocart = {
-          //     onhandqty: val.onhandqty,
-          //     orderid: val.orderid,
-          //     cartid: val.cartid,
-          //     code: val.code,
-          //     item: val.item,
-          //     qty: val.qty,
-          //     price: val.price,
-          //     createdAt: val.createdat,
-          //     status: val.status,
-          //   };
-          //   payload.push(newItem);
-          // });
           const updatedPayload = checkPayload(
             payload,
             orderid,

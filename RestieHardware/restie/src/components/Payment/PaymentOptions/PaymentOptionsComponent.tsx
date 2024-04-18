@@ -83,6 +83,7 @@ const PaymentOptionsComponent = () => {
         });
         const addedOrder: ResponseModel = await dispatch(
           PostOrder(
+            add_to_cart[0].orderid!,
             add_to_cart,
             customer_information,
             new Date().getTime(),

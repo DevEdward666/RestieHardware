@@ -170,6 +170,7 @@ const OrderInfoComponent = () => {
         image: "",
         orderid: order_list_info.order_info.orderid,
         cartid: order_list_info.order_info.cartid,
+        transid: order_list_info.order_info.transid,
         createdAt: order_list_info.order_info.createdat,
         status: order_list_info.order_info.status,
       };
@@ -331,7 +332,11 @@ const OrderInfoComponent = () => {
               <IonButton
                 size="small"
                 color="tertiary"
-                onClick={() => router.push("/deliveryInfo")}
+                onClick={() =>
+                  router.push(
+                    `/deliveryInfo?orderid=${order_list_info.order_info.orderid}&transid=${order_list_info.order_info.transid}&cartid=${order_list_info.order_info.cartid}`
+                  )
+                }
               >
                 Process Item Delivered
               </IonButton>

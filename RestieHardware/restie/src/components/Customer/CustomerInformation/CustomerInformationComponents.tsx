@@ -197,6 +197,12 @@ const CustomerInformationComponent: React.FC = () => {
     );
     setCustomers(filteredCustomers);
   };
+  useEffect(() => {
+    const initialize = () => {
+      setCustomers(getcustomers);
+    };
+    initialize();
+  }, [getcustomers]);
   return (
     <IonContent className="customer-information-content">
       <div className="customer-information-main-content">

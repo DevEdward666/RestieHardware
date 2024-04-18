@@ -78,6 +78,7 @@ const DeliveryInfoComponent = () => {
           orderid: order_list_info.order_info.orderid,
         };
         const savedDelivery = await SavedDeliveryInfo(deliveryPayload);
+        console.log(deliveryPayload);
         if (savedDelivery.status === 200) {
           const updatedeliveryPayload: PostUpdateDeliveredOrder = {
             transid: order_list_info.order_info?.transid!,
@@ -98,6 +99,15 @@ const DeliveryInfoComponent = () => {
               })
             );
             router.push("/home/profile");
+          } else {
+            dispatch(
+              set_toast({
+                message: uploaded.message,
+                isOpen: true,
+                position: "middle",
+                color: "#125B8C",
+              })
+            );
           }
         }
       } else {

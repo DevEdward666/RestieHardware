@@ -922,6 +922,19 @@ namespace RestieAPI.Service.Repo
                                     }
                                     updateOrderRes = cmd.ExecuteNonQuery();
                                 }
+                            }if(updateOrderRes > 0)
+                            {
+                                tran.Commit();
+                                return new PostResponse
+                                {
+                                    result = new SaveOrderResponse
+                                    {
+                                        orderid = addToCartItems[0].orderid.ToString(),
+                                        cartid = addToCartItems[0].cartid
+                                    },
+                                    status = 200,
+                                    Message = "Order successfully saved"
+                                };
                             }
                             else
                             {
@@ -949,18 +962,8 @@ namespace RestieAPI.Service.Repo
                             };
                         }
 
-                        // Commit the transaction after all items have been processed
-                        tran.Commit();
-                        return new PostResponse
-                        {
-                            result = new SaveOrderResponse
-                            {
-                                orderid = addToCartItems[0].orderid.ToString(),
-                                cartid = addToCartItems[0].cartid
-                            },
-                            status = 200,
-                            Message = "Order successfully saved"
-                        };
+                      
+                      
                     }
                     catch (Exception ex)
                     {

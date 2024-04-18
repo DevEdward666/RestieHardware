@@ -203,9 +203,8 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
             <img
               alt={card?.item}
               src={
-                card.image.length <= 0
-                  ? stock
-                  : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`
+                card.image.length <= 0 ? stock : `${baseUrl}${card.image}`
+                // : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`
               }
             />
           </div>

@@ -91,6 +91,9 @@ const OrderListPage = () => {
               value={selectedFilter.status}
               onIonChange={(val) => handleSelectFilter(val)}
             >
+              <IonSegmentButton value="quotation">
+                <IonLabel>Quotation</IonLabel>
+              </IonSegmentButton>
               <IonSegmentButton value="pending">
                 <IonLabel>Pending</IonLabel>
               </IonSegmentButton>

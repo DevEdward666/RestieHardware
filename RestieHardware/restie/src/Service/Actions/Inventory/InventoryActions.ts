@@ -25,6 +25,7 @@ import {
   searchInventory,
   updateCartOrder,
   userOrderInfo,
+  userQuoatationOrderInfo,
 } from "../../API/Inventory/InventoryApi";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 import {
@@ -142,7 +143,11 @@ const checkPayload = (
   customerCash?: number,
   cashier?: string
 ) => {
-  const paymentMethod = { cash: "Cash", pending: "Pending" };
+  const paymentMethod = {
+    cash: "Cash",
+    pending: "Pending",
+    quotation: "Quotation",
+  };
   const updatedPayload = payload.map((val) => ({
     ...val,
     orderid: orderid,
@@ -156,6 +161,8 @@ const checkPayload = (
     status:
       method.toLowerCase() === paymentMethod.cash.toLowerCase()
         ? "approved"
+        : paymentMethod.quotation.toLowerCase()
+        ? "quotation"
         : "pending",
     userid: customer_payload?.customerid,
     type: customer_payload.ordertype,
@@ -188,7 +195,11 @@ export const PostOrder =
       if (customer_payload.newUser) {
         await InsertCustomerInfo(customer_payload);
       }
-      const paymentMethod = { cash: "Cash", pending: "Pending" };
+      const paymentMethod = {
+        cash: "Cash",
+        pending: "Pending",
+        quotation: "Quotation",
+      };
       let orderid = "";
       if (post_orderid) {
         orderid = post_orderid!;
@@ -247,6 +258,11 @@ export const PostOrder =
       } else if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
         await deleteCart(updatePayload);
         res = await addToCart(updatePayload);
+      } else if (
+        method.toLowerCase() === paymentMethod.quotation.toLowerCase()
+      ) {
+        await deleteCart(updatePayload);
+        res = await addToCart(updatePayload);
       }
       localStorage.removeItem("cartid");
       dispatch({
@@ -294,6 +310,23 @@ export const getOrderInfo =
   async (dispatch: Dispatch<ORDER_LIST_INFO>) => {
     try {
       const res: any = await userOrderInfo(payload);
+      dispatch({
+        type: "ORDER_LIST_INFO",
+        order_list_info: {
+          order_item: res.order_item.$values,
+          order_info: res.order_info,
+        },
+      });
+      return res;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+export const getQuotationOrderInfo =
+  (payload: PostSelectedOrder) =>
+  async (dispatch: Dispatch<ORDER_LIST_INFO>) => {
+    try {
+      const res: any = await userQuoatationOrderInfo(payload);
       dispatch({
         type: "ORDER_LIST_INFO",
         order_list_info: {

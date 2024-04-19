@@ -158,6 +158,12 @@ namespace RestieAPI.Controllers.Inventory
            
         }
         [Authorize]
+        [HttpPost("GetQuotationOrderInfo")]
+        public ActionResult<PostSalesResponse> GetQuotationOrderInfo(GetSelectedOrder getSelectedOrder)
+        {
+            return Ok(_inventoryRepo.GetQuotationOrderInfo(getSelectedOrder));
+        }
+        [Authorize]
         [HttpPost("GetInventory")]
         public ActionResult<PostSalesResponse> GetByDaySales()
         {

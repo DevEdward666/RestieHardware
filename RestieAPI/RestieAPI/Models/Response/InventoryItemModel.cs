@@ -66,7 +66,14 @@ namespace RestieAPI.Models.Response
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string message { get; set; }
-    }   
+    }
+    public class QuotationResponseModel
+    {
+        public FileContentResult result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string message { get; set; }
+    }
     public class SalesResponseModel
     {
         public FileContentResult result { get; set; }

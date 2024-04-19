@@ -75,6 +75,32 @@ const PaymentOptionsComponent = () => {
           isOpen: true,
           type: "toast",
         });
+      } else if (type.toLowerCase() === "quotation") {
+        setIsOpenToast({
+          toastMessage: "Loading",
+          isOpen: true,
+          type: "loader",
+        });
+        const addedOrder: ResponseModel = await dispatch(
+          PostOrder(
+            add_to_cart[0].orderid!,
+            add_to_cart,
+            customer_information,
+            new Date().getTime(),
+            type,
+            type.toLowerCase() === "cash" ? customerPayemntInfo.cash : 0.0,
+            user_login_information.name
+          )
+        );
+        if (addedOrder) {
+          const payload: PostSelectedOrder = {
+            orderid: addedOrder.result?.orderid!,
+            userid: "",
+            cartid: addedOrder.result?.cartid!,
+          };
+          dispatch(getOrderInfo(payload));
+          router.push(`/orderInfo?orderid=${addedOrder.result?.orderid!}`);
+        }
       } else {
         setIsOpenToast({
           toastMessage: "Loading",
@@ -308,6 +334,18 @@ const PaymentOptionsComponent = () => {
                 <IonIcon slot="start" icon={draft}></IonIcon>
                 Save as Draft
               </IonButton>
+              {user_login_information?.role.trim().toLowerCase() === "admin" ||
+              user_login_information?.role.trim().toLowerCase() ===
+                "super admin" ? (
+                <IonButton
+                  color={"medium"}
+                  className="payment-info-card-content-draft"
+                  onClick={() => handlePay("Quotation")}
+                >
+                  <IonIcon slot="start" icon={draft}></IonIcon>
+                  Create a Quotation
+                </IonButton>
+              ) : null}
               {/* <IonButton
                 className="payment-info-card-content-draft"
                 onClick={() => handlePay("Pending")}

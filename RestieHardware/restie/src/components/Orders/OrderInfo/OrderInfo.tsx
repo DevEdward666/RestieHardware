@@ -16,6 +16,7 @@ import {
   IonIcon,
   IonButtons,
   IonToolbar,
+  IonLoading,
 } from "@ionic/react";
 import { useSelector } from "react-redux";
 import {
@@ -35,7 +36,10 @@ import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import "./OrderInfo.css";
 import { useCallback, useEffect, useState } from "react";
 import breakline from "../../../assets/images/breakline.png";
-import { GetDeliveryImage } from "../../../Service/API/Inventory/InventoryApi";
+import {
+  GetDeliveryImage,
+  userQuoatationOrderInfo,
+} from "../../../Service/API/Inventory/InventoryApi";
 import {
   FileResponse,
   GetDeliveryInfo,
@@ -51,7 +55,7 @@ import "swiper/css/zoom";
 import "@ionic/react/css/ionic-swiper.css";
 import { GetLoginUser } from "../../../Service/Actions/Login/LoginActions";
 import { Clipboard } from "@capacitor/clipboard";
-import { copy } from "ionicons/icons";
+import { close, copy, print } from "ionicons/icons";
 import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
 
 const OrderInfoComponent = () => {
@@ -66,6 +70,11 @@ const OrderInfoComponent = () => {
     deliveredby: "",
     deliverydate: 0,
     path: "",
+  });
+  const [isOpenToast, setIsOpenToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+    type: "",
   });
   const [openSearchModal, setOpenSearchModal] = useState({
     isOpen: false,
@@ -269,13 +278,41 @@ const OrderInfoComponent = () => {
       })
     );
   };
+  const handlePrintQuotation = async () => {
+    setIsOpenToast({
+      toastMessage: "Generating PDF",
+      isOpen: true,
+      type: "PDF",
+    });
+    const res = await userQuoatationOrderInfo({
+      orderid: order_list_info.order_info.orderid,
+    });
+    const base64Data = res?.result?.fileContents; // Accessing the Base64 encoded PDF data
+    const decodedData = atob(base64Data); // Decoding the Base64 string
+    const byteArray = new Uint8Array(decodedData.length);
+
+    for (let i = 0; i < decodedData.length; i++) {
+      byteArray[i] = decodedData.charCodeAt(i);
+    }
+
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const fileURL = URL.createObjectURL(blob);
+    window.open(fileURL);
+    setIsOpenToast({
+      toastMessage: "",
+      isOpen: false,
+      type: "",
+    });
+  };
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
         <div className="order-list-info-footer-approved"> </div>
 
         <div className="order-list-info-footer-approved-info">
-          {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ? (
+          {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ||
+          order_list_info.order_info?.paidthru?.toLowerCase() ===
+            "quotation" ? (
             <>
               <IonButton
                 size="small"
@@ -498,14 +535,26 @@ const OrderInfoComponent = () => {
           </>
         ) : null}
       </div>
-
+      {order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" ? (
+        <>
+          <IonButton
+            className="order-info-close"
+            color="medium"
+            onClick={() => handlePrintQuotation()}
+          >
+            <IonIcon src={print}></IonIcon>
+            <IonText className="profile-button-text">Print Quotation</IonText>
+          </IonButton>
+        </>
+      ) : null}
       <IonButton
         className="order-info-close"
-        expand="block"
         color="medium"
         onClick={() => handleClose()}
       >
-        Close
+        <IonIcon slot="start" src={close}></IonIcon>
+
+        <IonText className="profile-button-text"> Close</IonText>
       </IonButton>
       <IonModal
         isOpen={
@@ -754,6 +803,17 @@ const OrderInfoComponent = () => {
           </>
         </IonContent>
       </IonModal>
+      <IonLoading
+        isOpen={isOpenToast?.isOpen}
+        message={isOpenToast?.toastMessage}
+        spinner="circles"
+        onDidDismiss={() =>
+          setIsOpenToast((prev) => ({
+            ...prev,
+            isOpen: false,
+          }))
+        }
+      />
     </div>
   );
 };

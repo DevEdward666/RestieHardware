@@ -22,6 +22,12 @@ jobs:
         run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
       - name: Build
         run: dotnet build RestieAPI/RestieAPI/RestieAPI.csproj --no-restore
+      - name: App Settings Variable Substitution
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: 'RestieAPI/RestieAPI/appsettings.json'
+        env:
+          ConnectionStrings.MyDatabase: ${{ secrets.RELEASE_DB }}
       - name: Publish
         run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieAPI/RestieAPI/restieapi
       - name: Upload artifact for deployment

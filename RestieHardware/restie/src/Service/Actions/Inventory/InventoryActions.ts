@@ -25,6 +25,7 @@ import {
   searchInventory,
   updateCartOrder,
   userOrderInfo,
+  userQuoatationOrderInfo,
 } from "../../API/Inventory/InventoryApi";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 import {
@@ -45,6 +46,7 @@ import {
   GetDeliveryInfo,
   GetListOrder,
   GetListOrderInfo,
+  GetOrderItems,
 } from "../../../Models/Response/Inventory/GetInventoryModel";
 import { GetCustomerInformation } from "../../../Models/Response/Customer/GetCustomerModel";
 export const getInventory =
@@ -141,7 +143,11 @@ const checkPayload = (
   customerCash?: number,
   cashier?: string
 ) => {
-  const paymentMethod = { cash: "Cash", pending: "Pending" };
+  const paymentMethod = {
+    cash: "Cash",
+    pending: "Pending",
+    quotation: "Quotation",
+  };
   const updatedPayload = payload.map((val) => ({
     ...val,
     orderid: orderid,
@@ -155,6 +161,8 @@ const checkPayload = (
     status:
       method.toLowerCase() === paymentMethod.cash.toLowerCase()
         ? "approved"
+        : paymentMethod.quotation.toLowerCase()
+        ? "quotation"
         : "pending",
     userid: customer_payload?.customerid,
     type: customer_payload.ordertype,
@@ -166,6 +174,7 @@ const checkPayload = (
 };
 export const PostOrder =
   (
+    post_orderid: string,
     payload: Addtocart[],
     customer_payload: GetCustomerInformation,
     createdat: number,
@@ -186,10 +195,14 @@ export const PostOrder =
       if (customer_payload.newUser) {
         await InsertCustomerInfo(customer_payload);
       }
-      const paymentMethod = { cash: "Cash", pending: "Pending" };
+      const paymentMethod = {
+        cash: "Cash",
+        pending: "Pending",
+        quotation: "Quotation",
+      };
       let orderid = "";
-      if (payload[0]?.orderid) {
-        orderid = payload[0]?.orderid!;
+      if (post_orderid) {
+        orderid = post_orderid!;
       }
 
       const updatePayload = checkPayload(
@@ -210,42 +223,25 @@ export const PostOrder =
             userid: "",
             cartid: payload[0].cartid,
           };
-          const resOrderInfo: GetListOrderInfo[] = await userOrderInfo(
-            UserOrderInfopayload
-          );
+          const resOrderInfo = await userOrderInfo(UserOrderInfopayload);
           let newItem: Addtocart;
-
           payload = [];
-          resOrderInfo.map((items) => {
-            items.order_item.map((val) => {
-              newItem = {
-                onhandqty: val?.onhandqty!,
-                code: val.code,
-                item: val.item,
-                qty: val.qty,
-                price: val.price,
-                orderid: items.order_info.orderid,
-                cartid: items.order_info.cartid,
-                createdAt: items.order_info.createdat,
-                status: items.order_info.status,
-              };
-              payload.push(newItem);
-            });
+          console.log(resOrderInfo.order_item);
+          resOrderInfo.order_item.$values?.map((val: GetOrderItems) => {
+            newItem = {
+              onhandqty: val?.onhandqty!,
+              code: val.code,
+              item: val.item,
+              qty: val.qty,
+              image: "",
+              price: val.price,
+              orderid: resOrderInfo.order_info.orderid,
+              cartid: resOrderInfo.order_info.cartid,
+              createdAt: resOrderInfo.order_info.createdat,
+              status: resOrderInfo.order_info.status,
+            };
+            payload.push(newItem);
           });
-          // resOrderInfo.map((val) => {
-          //   const newItem: Addtocart = {
-          //     onhandqty: val.onhandqty,
-          //     orderid: val.orderid,
-          //     cartid: val.cartid,
-          //     code: val.code,
-          //     item: val.item,
-          //     qty: val.qty,
-          //     price: val.price,
-          //     createdAt: val.createdat,
-          //     status: val.status,
-          //   };
-          //   payload.push(newItem);
-          // });
           const updatedPayload = checkPayload(
             payload,
             orderid,
@@ -260,6 +256,11 @@ export const PostOrder =
           res = await SavedAndPayOrder(updatePayload);
         }
       } else if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
+        await deleteCart(updatePayload);
+        res = await addToCart(updatePayload);
+      } else if (
+        method.toLowerCase() === paymentMethod.quotation.toLowerCase()
+      ) {
         await deleteCart(updatePayload);
         res = await addToCart(updatePayload);
       }
@@ -285,7 +286,6 @@ export const updateOrder =
           type: "ADD_TO_CART",
           add_to_cart: [], // Assuming you want to clear the cart after saving the order
         });
-        alert(res.message);
       }
     } catch (error: any) {
       console.log(error);
@@ -299,8 +299,10 @@ export const getOrderList =
         type: "ORDER_LIST",
         order_list: res,
       });
+      return true;
     } catch (error: any) {
       console.log(error);
+      return false;
     }
   };
 export const getOrderInfo =
@@ -308,6 +310,23 @@ export const getOrderInfo =
   async (dispatch: Dispatch<ORDER_LIST_INFO>) => {
     try {
       const res: any = await userOrderInfo(payload);
+      dispatch({
+        type: "ORDER_LIST_INFO",
+        order_list_info: {
+          order_item: res.order_item.$values,
+          order_info: res.order_info,
+        },
+      });
+      return res;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+export const getQuotationOrderInfo =
+  (payload: PostSelectedOrder) =>
+  async (dispatch: Dispatch<ORDER_LIST_INFO>) => {
+    try {
+      const res: any = await userQuoatationOrderInfo(payload);
       dispatch({
         type: "ORDER_LIST_INFO",
         order_list_info: {

@@ -149,6 +149,45 @@
         font-size: 16px;
     }
 }
+.order-list-info-hardware-details{
+    display: flex;
+    font-size: 16px;
+    flex-direction: row;
+    gap: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+
+    .order-list-info-hardware{
+        font-family: "Gotham-Medium";
+        font-size: 24px;
+    }
+   
+    .order-list-info-hardware-info{
+        font-family: "Gotham-Light";
+        color: #125B8C;
+        font-size: 16px;
+    }
+}
+.order-list-info-hardware-details-address{
+    display: flex;
+    font-size: 16px;
+    flex-direction: column;
+    gap: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+.order-list-info-hardware-address{
+    font-family: "Gotham-Light";
+    font-size: 18px;
+}
+}
 .order-list-info-main-container{
     padding-top: 5px;
 }
@@ -174,10 +213,13 @@
 }
 
 .order-info-close{
+    width: 100%;
     padding:10px ;
     font-family: "Gotham-Medium";
 }
-
+.order-list-info-main-content{
+    font-family: "Gotham-Medium";
+}
 .delivered-info-container{
     display: flex;
     flex-direction: column;
@@ -205,4 +247,10 @@
 }
 .cancelled{
     color:#f02b2b
+}
+hr {
+    border: 1px dotted #ff0000;
+    border-style: none none dotted; 
+    color: #fff; 
+    background-color: #fff;
 }

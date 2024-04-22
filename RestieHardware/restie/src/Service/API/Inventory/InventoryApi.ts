@@ -161,6 +161,22 @@ export const userOrderInfo = async (payload: PostSelectedOrder) => {
   );
   return response;
 };
+export const userQuoatationOrderInfo = async (payload: PostSelectedOrder) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const response = await post(
+    `${baseUrl}api/Inventory/GetQuotationOrderInfo`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  return response;
+};
+
 export const SelectedListOrder = async (payload: PostSelectedOrder) => {
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {

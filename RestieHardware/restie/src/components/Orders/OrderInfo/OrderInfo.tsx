@@ -16,6 +16,7 @@ import {
   IonIcon,
   IonButtons,
   IonToolbar,
+  IonLoading,
 } from "@ionic/react";
 import { useSelector } from "react-redux";
 import {
@@ -33,9 +34,12 @@ import {
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import "./OrderInfo.css";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import breakline from "../../../assets/images/breakline.png";
-import { GetDeliveryImage } from "../../../Service/API/Inventory/InventoryApi";
+import {
+  GetDeliveryImage,
+  userQuoatationOrderInfo,
+} from "../../../Service/API/Inventory/InventoryApi";
 import {
   FileResponse,
   GetDeliveryInfo,
@@ -51,9 +55,11 @@ import "swiper/css/zoom";
 import "@ionic/react/css/ionic-swiper.css";
 import { GetLoginUser } from "../../../Service/Actions/Login/LoginActions";
 import { Clipboard } from "@capacitor/clipboard";
-import { copy } from "ionicons/icons";
+import { close, copy, print } from "ionicons/icons";
 import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
-
+import { jsPDF } from "jspdf";
+import logo from "../../../assets/images/Icon@2.png";
+import html2PDF from "jspdf-html2canvas";
 const OrderInfoComponent = () => {
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
@@ -61,11 +67,17 @@ const OrderInfoComponent = () => {
   const get_voucher = useSelector(
     (store: RootStore) => store.InventoryReducer.get_voucher
   );
+  const invoiceRef = useRef(null);
   const [getGetDeliveryInfo, setGetDeliveryInfo] = useState<GetDeliveryInfo>({
     deliveryid: "",
     deliveredby: "",
     deliverydate: 0,
     path: "",
+  });
+  const [isOpenToast, setIsOpenToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+    type: "",
   });
   const [openSearchModal, setOpenSearchModal] = useState({
     isOpen: false,
@@ -130,6 +142,7 @@ const OrderInfoComponent = () => {
         item: val.item,
         qty: val.qty,
         price: val.price,
+        image: "",
         orderid: order_list_info.order_info.orderid,
         cartid: order_list_info.order_info.cartid,
         createdAt: order_list_info.order_info.createdat,
@@ -166,8 +179,10 @@ const OrderInfoComponent = () => {
         item: val.item,
         qty: val.qty,
         price: val.price,
+        image: "",
         orderid: order_list_info.order_info.orderid,
         cartid: order_list_info.order_info.cartid,
+        transid: order_list_info.order_info.transid,
         createdAt: order_list_info.order_info.createdat,
         status: order_list_info.order_info.status,
       };
@@ -266,13 +281,72 @@ const OrderInfoComponent = () => {
       })
     );
   };
+  const handlePrintQuotation = async () => {
+    setIsOpenToast({
+      toastMessage: "Generating PDF",
+      isOpen: true,
+      type: "PDF",
+    });
+    const res = await userQuoatationOrderInfo({
+      orderid: order_list_info.order_info.orderid,
+    });
+    const base64Data = res?.result?.fileContents; // Accessing the Base64 encoded PDF data
+    const decodedData = atob(base64Data); // Decoding the Base64 string
+    const byteArray = new Uint8Array(decodedData.length);
+
+    for (let i = 0; i < decodedData.length; i++) {
+      byteArray[i] = decodedData.charCodeAt(i);
+    }
+
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const fileURL = URL.createObjectURL(blob);
+    window.open(fileURL);
+    setIsOpenToast({
+      toastMessage: "",
+      isOpen: false,
+      type: "",
+    });
+  };
+  const downloadPDF = async () => {
+    const pages = document.getElementById("receipt");
+    const width = pages?.clientWidth;
+    const height = pages?.clientHeight;
+
+    console.log(width);
+    await html2PDF(pages!, {
+      jsPDF: {
+        unit: "px",
+        format: [width!, height! + 100],
+      },
+      imageType: "image/jpeg",
+      imageQuality: 1,
+      autoResize: true,
+      output: `./invoice/${
+        order_list_info.order_info?.transid?.split("-")[0]
+      }.pdf`,
+    });
+    // const doc = new jsPDF({
+    //   orientation: "p",
+    //   unit: "pt",
+    //   format: "a4",
+    //   putOnlyUsedFonts: true,
+    // });
+    // doc.html(invoiceRef.current!, {
+    //   async callback(doc) {
+    //     doc.save("pdf_name");
+    //   },
+    // });
+    setOpenSearchModal({ isOpen: false, modal: "receipt" });
+  };
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
         <div className="order-list-info-footer-approved"> </div>
 
         <div className="order-list-info-footer-approved-info">
-          {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ? (
+          {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ||
+          order_list_info.order_info?.paidthru?.toLowerCase() ===
+            "quotation" ? (
             <>
               <IonButton
                 size="small"
@@ -329,7 +403,11 @@ const OrderInfoComponent = () => {
               <IonButton
                 size="small"
                 color="tertiary"
-                onClick={() => router.push("/deliveryInfo")}
+                onClick={() =>
+                  router.push(
+                    `/deliveryInfo?orderid=${order_list_info.order_info.orderid}&transid=${order_list_info.order_info.transid}&cartid=${order_list_info.order_info.cartid}`
+                  )
+                }
               >
                 Process Item Delivered
               </IonButton>
@@ -461,7 +539,7 @@ const OrderInfoComponent = () => {
       <IonImg className="breakline" src={breakline} />
       <div className="order-list-info-footer-total-main">
         <div className="order-list-info-footer-total-details">
-          <div className="order-list-info-footer-total">Total: </div>
+          <div className="order-list-info-footer-total">Amount Due: </div>
 
           <div className="order-list-info-footer-total-info">
             <span>&#8369;</span>
@@ -491,14 +569,26 @@ const OrderInfoComponent = () => {
           </>
         ) : null}
       </div>
-
+      {order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" ? (
+        <>
+          <IonButton
+            className="order-info-close"
+            color="medium"
+            onClick={() => handlePrintQuotation()}
+          >
+            <IonIcon src={print}></IonIcon>
+            <IonText className="profile-button-text">Print Quotation</IonText>
+          </IonButton>
+        </>
+      ) : null}
       <IonButton
         className="order-info-close"
-        expand="block"
         color="medium"
         onClick={() => handleClose()}
       >
-        Close
+        <IonIcon slot="start" src={close}></IonIcon>
+
+        <IonText className="profile-button-text"> Close</IonText>
       </IonButton>
       <IonModal
         isOpen={
@@ -587,18 +677,49 @@ const OrderInfoComponent = () => {
             </IonButtons>
             <IonTitle className="delivery-info-title"> Invoice</IonTitle>
             <IonButtons slot="end">
-              <IonButton
-                onClick={() =>
-                  setOpenSearchModal({ isOpen: false, modal: "receipt" })
-                }
-              >
-                Print
-              </IonButton>
+              <IonButton onClick={() => downloadPDF()}>Print</IonButton>
             </IonButtons>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          <>
+          <div ref={invoiceRef} id="receipt">
+            <div className="order-list-info-hardware-details">
+              <div className="order-list-info-hardware">
+                <img src={logo} />
+              </div>
+            </div>
+            <div className="order-list-info-hardware-details">
+              <div className="order-list-info-hardware">Restie Hardware</div>
+
+              {/* <div className="order-list-info-hardware-info">
+                {order_list_info.order_info?.name}
+              </div> */}
+            </div>
+            <div className="order-list-info-hardware-details-address">
+              <div className="order-list-info-hardware-address">
+                Address: SIR Bucana 76-A
+              </div>
+              <div className="order-list-info-hardware-address">
+                Sandawa Matina Davao City
+              </div>
+              <div className="order-list-info-hardware-address">
+                Davao City, Philippines
+              </div>
+              <div className="order-list-info-hardware-address">
+                Contact No.: (082) 224 1362
+              </div>
+              <hr />
+              {/* <div className="order-list-info-hardware-info">
+                {order_list_info.order_info?.name}
+              </div> */}
+            </div>
+            <div className="order-list-info-customer-details">
+              <div className="order-list-info-customer">Invoice #: </div>
+
+              <div className="order-list-info-customer-info">
+                {order_list_info.order_info?.transid?.split("-")[0]}
+              </div>
+            </div>
             <div className="order-list-info-customer-details">
               <div className="order-list-info-customer">Customer Name: </div>
 
@@ -641,7 +762,8 @@ const OrderInfoComponent = () => {
                 {order_list_info.order_info.createdby}
               </div>
             </div>
-            <IonImg className="breakline" src={breakline} />
+            <hr />
+            {/* <IonImg className="breakline" src={breakline} /> */}
             <div className="order-list-info-container">
               {Array.isArray(order_list_info.order_item) &&
               order_list_info.order_item.length > 0 ? (
@@ -711,10 +833,11 @@ const OrderInfoComponent = () => {
                 getDiscount > 0 ? getDiscount + "%" : 0
               }`}</div>
             </div>
-            <IonImg className="breakline" src={breakline} />
+            <hr />
+            {/* <IonImg className="breakline" src={breakline} /> */}
             <div className="order-list-info-footer-total-main">
               <div className="order-list-info-footer-total-details">
-                <div className="order-list-info-footer-total">Total: </div>
+                <div className="order-list-info-footer-total">Amount Due: </div>
 
                 <div className="order-list-info-footer-total-info">
                   <span>&#8369;</span>
@@ -744,9 +867,20 @@ const OrderInfoComponent = () => {
                 </>
               ) : null}
             </div>
-          </>
+          </div>
         </IonContent>
       </IonModal>
+      <IonLoading
+        isOpen={isOpenToast?.isOpen}
+        message={isOpenToast?.toastMessage}
+        spinner="circles"
+        onDidDismiss={() =>
+          setIsOpenToast((prev) => ({
+            ...prev,
+            isOpen: false,
+          }))
+        }
+      />
     </div>
   );
 };

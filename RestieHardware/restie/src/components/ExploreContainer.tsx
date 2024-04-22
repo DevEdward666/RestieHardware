@@ -105,6 +105,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       });
       return;
     }
+
     const addeditems = addItem(
       selectedItem,
       selectedItemselector || [],
@@ -160,6 +161,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
         onhandqty: selectedItem.onhandqty,
         orderid: "",
         qty: 1,
+        image: selectedItem.image.includes("base64") ? selectedItem.image : "",
         price: selectedItem.price,
         createdAt: new Date().getTime(),
         status: "pending",

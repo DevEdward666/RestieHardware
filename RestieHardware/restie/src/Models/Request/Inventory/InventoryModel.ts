@@ -24,6 +24,7 @@ export interface Addtocart {
   orderid?: string;
   paidthru?: string;
   paidcash?: number;
+  image: string;
   createdby?: string;
   userid?: string;
   type?: string;
@@ -45,6 +46,9 @@ export interface PostdOrderList {
   userid: string;
   limit: number;
   offset: number;
+  status: string;
+  searchdate?: string;
+  orderid?: string;
 }
 export interface PostSelectedOrder {
   orderid: string;
@@ -107,4 +111,12 @@ export interface GetBrandsModel {
 export interface UserPhoto {
   filepath: string;
   webviewPath?: string;
+}
+export interface OrderListFilter {
+  filter: OrderListFilterModel;
+}
+interface OrderListFilterModel {
+  status: string;
+  date: string;
+  search: string;
 }

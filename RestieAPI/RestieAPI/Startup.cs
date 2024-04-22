@@ -70,7 +70,11 @@ namespace RestieAPI
             //{
             //    FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "Resources/Assets")),
             //    RequestPath = "/Resources/Assets"
-
+            //});
+            //app.UseStaticFiles(new StaticFileOptions
+            //{
+            //    FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "Resources/Images")),
+            //    RequestPath = "/Resources/Images"
             //});
             app.UseRouting();
             app.UseAuthentication();

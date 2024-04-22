@@ -34,7 +34,7 @@ import {
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import "./OrderInfo.css";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import breakline from "../../../assets/images/breakline.png";
 import {
   GetDeliveryImage,
@@ -57,7 +57,9 @@ import { GetLoginUser } from "../../../Service/Actions/Login/LoginActions";
 import { Clipboard } from "@capacitor/clipboard";
 import { close, copy, print } from "ionicons/icons";
 import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
-
+import { jsPDF } from "jspdf";
+import logo from "../../../assets/images/Icon@2.png";
+import html2PDF from "jspdf-html2canvas";
 const OrderInfoComponent = () => {
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
@@ -65,6 +67,7 @@ const OrderInfoComponent = () => {
   const get_voucher = useSelector(
     (store: RootStore) => store.InventoryReducer.get_voucher
   );
+  const invoiceRef = useRef(null);
   const [getGetDeliveryInfo, setGetDeliveryInfo] = useState<GetDeliveryInfo>({
     deliveryid: "",
     deliveredby: "",
@@ -304,6 +307,37 @@ const OrderInfoComponent = () => {
       type: "",
     });
   };
+  const downloadPDF = async () => {
+    const pages = document.getElementById("receipt");
+    const width = pages?.clientWidth;
+    const height = pages?.clientHeight;
+
+    console.log(width);
+    await html2PDF(pages!, {
+      jsPDF: {
+        unit: "px",
+        format: [width!, height! + 100],
+      },
+      imageType: "image/jpeg",
+      imageQuality: 1,
+      autoResize: true,
+      output: `./invoice/${
+        order_list_info.order_info?.transid?.split("-")[0]
+      }.pdf`,
+    });
+    // const doc = new jsPDF({
+    //   orientation: "p",
+    //   unit: "pt",
+    //   format: "a4",
+    //   putOnlyUsedFonts: true,
+    // });
+    // doc.html(invoiceRef.current!, {
+    //   async callback(doc) {
+    //     doc.save("pdf_name");
+    //   },
+    // });
+    setOpenSearchModal({ isOpen: false, modal: "receipt" });
+  };
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
@@ -505,7 +539,7 @@ const OrderInfoComponent = () => {
       <IonImg className="breakline" src={breakline} />
       <div className="order-list-info-footer-total-main">
         <div className="order-list-info-footer-total-details">
-          <div className="order-list-info-footer-total">Total: </div>
+          <div className="order-list-info-footer-total">Amount Due: </div>
 
           <div className="order-list-info-footer-total-info">
             <span>&#8369;</span>
@@ -643,18 +677,49 @@ const OrderInfoComponent = () => {
             </IonButtons>
             <IonTitle className="delivery-info-title"> Invoice</IonTitle>
             <IonButtons slot="end">
-              <IonButton
-                onClick={() =>
-                  setOpenSearchModal({ isOpen: false, modal: "receipt" })
-                }
-              >
-                Print
-              </IonButton>
+              <IonButton onClick={() => downloadPDF()}>Print</IonButton>
             </IonButtons>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          <>
+          <div ref={invoiceRef} id="receipt">
+            <div className="order-list-info-hardware-details">
+              <div className="order-list-info-hardware">
+                <img src={logo} />
+              </div>
+            </div>
+            <div className="order-list-info-hardware-details">
+              <div className="order-list-info-hardware">Restie Hardware</div>
+
+              {/* <div className="order-list-info-hardware-info">
+                {order_list_info.order_info?.name}
+              </div> */}
+            </div>
+            <div className="order-list-info-hardware-details-address">
+              <div className="order-list-info-hardware-address">
+                Address: SIR Bucana 76-A
+              </div>
+              <div className="order-list-info-hardware-address">
+                Sandawa Matina Davao City
+              </div>
+              <div className="order-list-info-hardware-address">
+                Davao City, Philippines
+              </div>
+              <div className="order-list-info-hardware-address">
+                Contact No.: (082) 224 1362
+              </div>
+              <hr />
+              {/* <div className="order-list-info-hardware-info">
+                {order_list_info.order_info?.name}
+              </div> */}
+            </div>
+            <div className="order-list-info-customer-details">
+              <div className="order-list-info-customer">Invoice #: </div>
+
+              <div className="order-list-info-customer-info">
+                {order_list_info.order_info?.transid?.split("-")[0]}
+              </div>
+            </div>
             <div className="order-list-info-customer-details">
               <div className="order-list-info-customer">Customer Name: </div>
 
@@ -697,7 +762,8 @@ const OrderInfoComponent = () => {
                 {order_list_info.order_info.createdby}
               </div>
             </div>
-            <IonImg className="breakline" src={breakline} />
+            <hr />
+            {/* <IonImg className="breakline" src={breakline} /> */}
             <div className="order-list-info-container">
               {Array.isArray(order_list_info.order_item) &&
               order_list_info.order_item.length > 0 ? (
@@ -767,10 +833,11 @@ const OrderInfoComponent = () => {
                 getDiscount > 0 ? getDiscount + "%" : 0
               }`}</div>
             </div>
-            <IonImg className="breakline" src={breakline} />
+            <hr />
+            {/* <IonImg className="breakline" src={breakline} /> */}
             <div className="order-list-info-footer-total-main">
               <div className="order-list-info-footer-total-details">
-                <div className="order-list-info-footer-total">Total: </div>
+                <div className="order-list-info-footer-total">Amount Due: </div>
 
                 <div className="order-list-info-footer-total-info">
                   <span>&#8369;</span>
@@ -800,7 +867,7 @@ const OrderInfoComponent = () => {
                 </>
               ) : null}
             </div>
-          </>
+          </div>
         </IonContent>
       </IonModal>
       <IonLoading

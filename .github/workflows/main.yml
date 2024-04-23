@@ -35,13 +35,20 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const { data: { sha } } = await github.repos.getContent({
+              owner: 'DevEdward666',
+              repo: 'RestieHardware',
+              path: 'RestieHardware/restie/src/Helpers/environment.prod.ts'
+            });
+
             await github.repos.createOrUpdateFile({
               owner: 'DevEdward666',
               repo: 'RestieHardware',
               path: 'RestieHardware/restie/src/Helpers/environment.prod.ts',
               message: 'Update prodBaseUrl value',
               content: Buffer.from('${{ steps.modify-file.outputs.modified_content }}').toString('base64'),
-              branch: 'main'
+              branch: 'main',
+              sha: sha
             })
   build-dotnet:
     if: github.ref == 'refs/heads/release'

@@ -8,6 +8,31 @@ on:
   workflow_dispatch:
 
 jobs:
+  modify-file:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0 # This ensures full history is available for commits
+
+      - name: Modify file
+        run: |
+          sed -i 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "NEW_VALUE";#' RestieHardware/restie/src/Helpers/environment.prod.ts
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "devEdward666@github.com"
+          git config --local user.name "devEdward666"
+          git add RestieHardware/restie/src/Helpers/environment.prod.ts
+          git commit -m "Update prodBaseUrl value"
+      
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
   build-dotnet:
     if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest

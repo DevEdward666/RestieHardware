@@ -9,18 +9,26 @@ on:
 
 jobs:
   modify-file:
-     runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-     steps:
+    steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0 # This ensures full history is available for commits
 
-      - name: Modify file
+      - name: Read file content
+        id: read-file
         run: |
-          sed -i 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "NEW_VALUE";#' RestieHardware/restie/src/Helpers/environment.prod.ts
+          content=$(cat RestieHardware/restie/src/Helpers/environment.prod.ts)
+          echo "::set-output name=file_content::$content"
+
+      - name: Modify file content
+        id: modify-file
+        run: |
+          updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "NEW_VALUE";#')
+          echo "$updated_content" > RestieHardware/restie/src/Helpers/environment.prod.ts
 
       - name: Commit changes
         uses: actions/github-script@v4
@@ -32,7 +40,7 @@ jobs:
               repo: 'RestieHardware',
               path: 'RestieHardware/restie/src/Helpers/environment.prod.ts',
               message: 'Update prodBaseUrl value',
-              content: Buffer.from(fs.readFileSync('RestieHardware/restie/src/Helpers/environment.prod.ts')).toString('base64'),
+              content: Buffer.from('${{ steps.modify-file.outputs.modified_content }}').toString('base64'),
               branch: 'main'
             })
   build-dotnet:

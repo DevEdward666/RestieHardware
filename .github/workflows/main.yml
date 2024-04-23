@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install Octokit
+        run: npm install @octokit/rest@latest
+
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:

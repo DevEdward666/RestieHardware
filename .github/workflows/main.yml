@@ -67,9 +67,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '21.5.0' # Change the version according to your project
-      - name: Determine Environment File
-        run: |
-          echo "ENV_FILE=$(if [ ${{ github.event_name }} == 'push' ]; then echo 'environment.dev.ts'; else echo 'environment.dev.ts'; fi)" >> $GITHUB_ENV
       - name: Update environment
         run: |
           sed -i 's|export const prodBaseUrl = "https://restieapi.fly.dev/";|export const prodBaseUrl = "https://restiehardware.onrender.com/";|' RestieHardware/restie/src/Helpers/environment.prod.ts

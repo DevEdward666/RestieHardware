@@ -31,25 +31,16 @@ jobs:
           echo "$updated_content" > RestieHardware/restie/src/Helpers/environment.prod.ts
 
       - name: Commit changes
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data: { sha } } = await github.repos.getContent({
-              owner: 'DevEdward666',
-              repo: 'RestieHardware',
-              path: 'RestieHardware/restie/src/Helpers/environment.prod.ts'
-            });
+        run: |
+          git config --global user.email "DevEdward666@github.com"
+          git config --global user.name "DevEdward666"
+          git add RestieHardware/restie/src/Helpers/environment.prod.ts
+          git commit -m "Update prodBaseUrl value"
 
-            await github.repos.createOrUpdateFile({
-              owner: 'DevEdward666',
-              repo: 'RestieHardware',
-              path: 'RestieHardware/restie/src/Helpers/environment.prod.ts',
-              message: 'Update prodBaseUrl value',
-              content: Buffer.from('${{ steps.modify-file.outputs.modified_content }}', 'utf-8').toString('base64'),
-              branch: 'main',
-              sha: sha
-            })
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
   build-dotnet:
     if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest

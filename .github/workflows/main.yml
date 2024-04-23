@@ -46,7 +46,7 @@ jobs:
               repo: 'RestieHardware',
               path: 'RestieHardware/restie/src/Helpers/environment.prod.ts',
               message: 'Update prodBaseUrl value',
-              content: Buffer.from('${{ steps.modify-file.outputs.modified_content }}').toString('base64'),
+              content: Buffer.from('${{ steps.modify-file.outputs.modified_content }}', 'utf-8').toString('base64'),
               branch: 'main',
               sha: sha
             })

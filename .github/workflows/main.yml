@@ -70,6 +70,9 @@ jobs:
       - name: Determine Environment File
         run: |
           echo "ENV_FILE=$(if [ ${{ github.event_name }} == 'push' ]; then echo 'environment.dev.ts'; else echo 'environment.dev.ts'; fi)" >> $GITHUB_ENV
+      - name: Update environment
+        run: |
+          sed -i 's|export const prodBaseUrl = "https://restieapi.fly.dev/";|export const prodBaseUrl = "https://restiehardware.onrender.com/";|' RestieHardware/restie/src/Helpers/environment.prod.ts
       - name: Build Ionic React app
         run: |
           cd RestieHardware/restie

@@ -93,11 +93,11 @@ jobs:
           node-version: '21.5.0' # Change the version according to your project
       - name: Override prodBaseUrl in environment.prod.ts
         run: |
-          sed -i 's|export const prodBaseUrl = .*;|export const prodBaseUrl = "https://restiehardware.onrender.com/";|' src/Helpers/environment.prod.ts
+          sed -i 's|export const prodBaseUrl = .*;|export const prodBaseUrl = "https://restiehardware.onrender.com/";|' RestieHardware/restie/src/Helpers/environment.prod.ts
       - name: Build Ionic React app
         run: |
             cd RestieHardware/restie
-            echo 'export const prodBaseUrl = "https://restiehardware.onrender.com/";' > RestieHardware/restie/src/Helpers/environment.prod.ts
+            echo 'export const prodBaseUrl = "https://restiehardware.onrender.com/";' > src/Helpers/environment.prod.ts
             sed -i 's|export const prodBaseUrl = .*;|export const prodBaseUrl = "https://restiehardware.onrender.com/";|' src/Helpers/environment.prod.ts
             npm install
             npm run build

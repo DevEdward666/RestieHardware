@@ -73,6 +73,7 @@ jobs:
 
       - name: Display changed file
         run: cat RestieHardware/restie/src/Helpers/environment.prod.ts
+        
       - name: Build Ionic React app
         run: |
             cd RestieHardware/restie

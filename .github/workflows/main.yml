@@ -12,15 +12,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install Octokit
-        run: npm install @octokit/rest@latest
-
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
           repository: DevEdward666/RestieHardware
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0 # This ensures full history is available for commits
+
+      - name: Install Octokit
+        run: npm install @octokit/rest@latest
+        working-directory: ./RestieHardware/restie
 
       - name: Read file content
         id: read-file
@@ -55,7 +56,7 @@ jobs:
               message: 'Update prodBaseUrl value',
               content: Buffer.from('${{ steps.modify-file.outputs.modified_content }}', 'utf-8').toString('base64'),
               sha: sha,
-              branch: 'release'
+              branch: 'main'
             });
   build-dotnet:
     if: github.ref == 'refs/heads/release'

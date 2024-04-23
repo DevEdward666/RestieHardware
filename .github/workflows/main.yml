@@ -11,7 +11,7 @@ jobs:
   modify-file:
     runs-on: ubuntu-latest
 
-    steps:
+   steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
@@ -23,16 +23,18 @@ jobs:
           sed -i 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "NEW_VALUE";#' RestieHardware/restie/src/Helpers/environment.prod.ts
 
       - name: Commit changes
-        run: |
-          git config --local user.email "devEdward666@github.com"
-          git config --local user.name "devEdward666"
-          git add RestieHardware/restie/src/Helpers/environment.prod.ts
-          git commit -m "Update prodBaseUrl value"
-      
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+        uses: actions/github-script@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.repos.createOrUpdateFile({
+              owner: DevEdward666,
+              repo: RestieHardware,
+              path: 'RestieHardware/restie/src/Helpers/environment.prod.ts',
+              message: 'Update prodBaseUrl value',
+              content: Buffer.from(fs.readFileSync('RestieHardware/restie/src/Helpers/environment.prod.ts')).toString('base64'),
+              branch: 'release'
+            })
   build-dotnet:
     if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest

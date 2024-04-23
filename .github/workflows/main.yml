@@ -25,11 +25,27 @@ jobs:
       - name: Publish
         run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieAPI/RestieAPI/restieapi
       - name: App Settings Variable Substitution
-        uses: microsoft/variable-substitution@v1
-        with:
-          files: 'RestieAPI/RestieAPI/appsettings.json'
-        env:
-          ConnectionStrings.MyDatabase: ${{ secrets.RELEASE_DB }}
+        run: |
+          echo '{
+                  "ConnectionStrings": {
+                    "MyDatabase": "Host=ep-patient-star-a1e8nf2e.ap-southeast-1.aws.neon.tech;Port=5432;Database=restie-dev;Username=neondb_owner;Password=z0n3RWaQFKpC;"
+                  },
+                
+                  "jwtTokenConfig": {
+                    "secret": "332404155398F921F9F5F58C49CA1ABA5C244E61ADF820C2486EB67E3D95825D",
+                    "issuer": "https://localhost:44364/",
+                    "audience": "https://localhost:44364/",
+                    "accessTokenExpiration": 999,
+                    "refreshTokenExpiration": 999
+                  },
+                  "Logging": {
+                    "LogLevel": {
+                      "Default": "Information",
+                      "Microsoft.AspNetCore": "Warning"
+                    }
+                  },
+                  "AllowedHosts": "*"
+                }'
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v3
         with:

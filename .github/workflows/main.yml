@@ -97,6 +97,8 @@ jobs:
       - name: Build Ionic React app
         run: |
             cd RestieHardware/restie
+            echo 'export const prodBaseUrl = "https://restiehardware.onrender.com/";' > RestieHardware/restie/src/Helpers/environment.prod.ts
+            sed -i 's|export const prodBaseUrl = .*;|export const prodBaseUrl = "https://restiehardware.onrender.com/";|' RestieHardware/restie/src/Helpers/environment.prod.ts
             npm install
             npm run build
 

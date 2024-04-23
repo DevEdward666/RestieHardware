@@ -1,24 +1,31 @@
+import { Clipboard } from "@capacitor/clipboard";
 import {
-  useIonRouter,
-  IonCard,
-  IonCardContent,
-  IonItem,
-  IonImg,
   IonButton,
-  IonText,
-  IonContent,
-  IonLabel,
-  IonList,
-  IonModal,
-  IonSearchbar,
-  IonHeader,
-  IonTitle,
-  IonIcon,
   IonButtons,
-  IonToolbar,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonImg,
+  IonItem,
   IonLoading,
+  IonModal,
+  IonText,
+  IonTitle,
+  IonToolbar,
+  useIonRouter,
 } from "@ionic/react";
+import "@ionic/react/css/ionic-swiper.css";
+import { format } from "date-fns";
+import { close, copy, print } from "ionicons/icons";
+import html2PDF from "jspdf-html2canvas";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import "swiper/css";
+import "swiper/css/autoplay";
+import "swiper/css/keyboard";
+import "swiper/css/pagination";
+import "swiper/css/scrollbar";
+import "swiper/css/zoom";
 import {
   Addtocart,
   GetDeliveryImagePath,
@@ -26,40 +33,26 @@ import {
   PostSelectedOrder,
 } from "../../../Models/Request/Inventory/InventoryModel";
 import {
+  FileResponse,
+  GetDeliveryInfo,
+} from "../../../Models/Response/Inventory/GetInventoryModel";
+import {
+  GetDeliveryImage,
+  userQuoatationOrderInfo,
+} from "../../../Service/API/Inventory/InventoryApi";
+import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
+import {
   addToCartAction,
   getDelivery,
   getInventory,
   getOrderInfo,
   selectedOrder,
 } from "../../../Service/Actions/Inventory/InventoryActions";
-import { RootStore, useTypedDispatch } from "../../../Service/Store";
-import "./OrderInfo.css";
-import { useCallback, useEffect, useRef, useState } from "react";
-import breakline from "../../../assets/images/breakline.png";
-import {
-  GetDeliveryImage,
-  userQuoatationOrderInfo,
-} from "../../../Service/API/Inventory/InventoryApi";
-import {
-  FileResponse,
-  GetDeliveryInfo,
-} from "../../../Models/Response/Inventory/GetInventoryModel";
-import { format } from "date-fns";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/autoplay";
-import "swiper/css/keyboard";
-import "swiper/css/pagination";
-import "swiper/css/scrollbar";
-import "swiper/css/zoom";
-import "@ionic/react/css/ionic-swiper.css";
 import { GetLoginUser } from "../../../Service/Actions/Login/LoginActions";
-import { Clipboard } from "@capacitor/clipboard";
-import { close, copy, print } from "ionicons/icons";
-import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
-import { jsPDF } from "jspdf";
+import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import logo from "../../../assets/images/Icon@2.png";
-import html2PDF from "jspdf-html2canvas";
+import breakline from "../../../assets/images/breakline.png";
+import "./OrderInfo.css";
 const OrderInfoComponent = () => {
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
@@ -325,17 +318,6 @@ const OrderInfoComponent = () => {
         order_list_info.order_info?.transid?.split("-")[0]
       }.pdf`,
     });
-    // const doc = new jsPDF({
-    //   orientation: "p",
-    //   unit: "pt",
-    //   format: "a4",
-    //   putOnlyUsedFonts: true,
-    // });
-    // doc.html(invoiceRef.current!, {
-    //   async callback(doc) {
-    //     doc.save("pdf_name");
-    //   },
-    // });
     setOpenSearchModal({ isOpen: false, modal: "receipt" });
   };
   return (

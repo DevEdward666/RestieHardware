@@ -73,11 +73,9 @@ jobs:
   
       - name: Display changed file
         run: cat RestieHardware/restie/src/Helpers/environment.prod.ts
-  
       - name: Set NODE_ENV to production
         run: |
           echo "NODE_ENV=production" >> $GITHUB_ENV
-  
       - name: Build Ionic React app
         run: |
             cd RestieHardware/restie

@@ -34,6 +34,7 @@ import {
 } from "../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../Service/Store";
 import stock from "../assets/images/Image_not_available.png";
+
 import "./ExploreContainer.css";
 import { GetItemImage } from "../Service/API/Inventory/InventoryApi";
 import { FileResponse } from "../Models/Response/Inventory/GetInventoryModel";
@@ -173,7 +174,6 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     }
   };
   const CardList = (card: InventoryModel) => {
-    const [getItemImage, setImage] = useState<FileResponse>();
     const payload: SelectedItemToCart = {
       code: card.code,
       item: card.item,
@@ -181,18 +181,8 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       price: card.price,
       category: card.category,
       brand: card.brand,
-      image:
-        card.image.length <= 0
-          ? stock
-          : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`,
+      image: card.image.length <= 0 ? stock : `/public/${card.image}`,
     };
-    useEffect(() => {
-      if (card.image.length > 0) {
-        GetItemImage({ imagePath: card.image }).then((res: any) => {
-          setImage(res.result.image);
-        });
-      }
-    }, [card.image]);
 
     return (
       <div
@@ -203,11 +193,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           <div className="inventory-card-add-item-img">
             <img
               alt={card?.item}
-              src={
-                card.image.length <= 0
-                  ? stock
-                  : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`
-              }
+              src={card.image.length <= 0 ? stock : `/public/${card.image}`}
             />
           </div>
           <div className="inventory-card-add-item-container">

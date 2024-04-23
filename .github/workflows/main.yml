@@ -54,7 +54,7 @@ jobs:
         docker push ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  deploy-ionic-react:
+ deploy-ionic-react:
     runs-on: ubuntu-latest
     needs: build-docker-image
     steps:
@@ -70,12 +70,10 @@ jobs:
       - name: Update environment
         run: |
           sed -i 's|export const prodBaseUrl = "https://restieapi.fly.dev/";|export const prodBaseUrl = "https://restiehardware.onrender.com/";|' RestieHardware/restie/src/Helpers/environment.prod.ts
-  
+
       - name: Display changed file
         run: cat RestieHardware/restie/src/Helpers/environment.prod.ts
-      - name: Set NODE_ENV to production
-        run: |
-          echo "NODE_ENV=production" >> $GITHUB_ENV
+        
       - name: Build Ionic React app
         run: |
             cd RestieHardware/restie

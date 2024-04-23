@@ -18,12 +18,6 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
-      - name: Restore dependencies
-        run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
-      - name: Build
-        run: dotnet build RestieAPI/RestieAPI/RestieAPI.csproj --no-restore
-      - name: Publish
-        run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieAPI/RestieAPI/restieapi
       - name: App Settings Variable Substitution
         run: |
           echo '{
@@ -46,6 +40,12 @@ jobs:
                   },
                   "AllowedHosts": "*"
                 }'
+      - name: Restore dependencies
+        run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
+      - name: Build
+        run: dotnet build RestieAPI/RestieAPI/RestieAPI.csproj --no-restore
+      - name: Publish
+        run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieAPI/RestieAPI/restieapi
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v3
         with:
@@ -91,7 +91,9 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '21.5.0' # Change the version according to your project
-  
+      - name: Override prodBaseUrl in environment.prod.ts
+        run: |
+          sed -i 's|export const prodBaseUrl = .*;|export const prodBaseUrl = "https://restiehardware.onrender.com/";|' RestieHardware/restie/src/Helpers/environment.prod.ts
       - name: Build Ionic React app
         run: |
             cd RestieHardware/restie

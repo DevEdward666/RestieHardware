@@ -70,11 +70,14 @@ jobs:
       - name: Update environment
         run: |
           sed -i 's|export const prodBaseUrl = "https://restieapi.fly.dev/";|export const prodBaseUrl = "https://restiehardware.onrender.com/";|' RestieHardware/restie/src/Helpers/environment.prod.ts
+
+      - name: Display changed file
+        run: cat RestieHardware/restie/src/Helpers/environment.prod.ts
       - name: Build Ionic React app
         run: |
-          cd RestieHardware/restie
-          npm install
-          npm run build
+            cd RestieHardware/restie
+            npm install
+            npm run build
   # deploy-web-api:
   #   runs-on: ubuntu-latest
   #   needs: build-docker-image

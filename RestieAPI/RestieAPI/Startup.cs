@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using ConfigurationPlaceholders;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using RestieAPI.Config;
 using RestieAPI.Configs;
 using RestieAPI.Services;
 using System.Text;
@@ -15,6 +18,7 @@ namespace RestieAPI
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+
         }
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
         public IConfiguration Configuration { get; }
@@ -48,6 +52,8 @@ namespace RestieAPI
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var builder = WebApplication.CreateBuilder();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -56,6 +62,31 @@ namespace RestieAPI
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Restie API v1");
                 });
+                builder
+               .AddConfigurationPlaceholders(new InMemoryPlaceholderResolver(new Dictionary<String, String?>
+               {
+                    { "Database_Config", "Host=ep-patient-star-a1e8nf2e.ap-southeast-1.aws.neon.tech;Port=5432;Database=restie-dev;Username=neondb_owner;Password=z0n3RWaQFKpC;" }
+               }));
+            }
+            else
+            {
+                var checkLocal = Configuration.GetSection("isLocal").Get<CheckLocal>();
+                if (checkLocal.isLocal)
+                {
+                    builder
+                    .AddConfigurationPlaceholders(new InMemoryPlaceholderResolver(new Dictionary<String, String?>
+                    {
+                            { "Database_Config", "Host=ep-patient-star-a1e8nf2e.ap-southeast-1.aws.neon.tech;Port=5432;Database=restie-dev;Username=neondb_owner;Password=z0n3RWaQFKpC;" }
+                    }));
+                }else
+                {
+                    builder
+                             .AddConfigurationPlaceholders(new InMemoryPlaceholderResolver(new Dictionary<String, String?>
+                             {
+                    { "Database_Config", "Host=ep-lively-star-a1yg7u8q.ap-southeast-1.aws.neon.tech;Port=5432;Database=restiedb;Username=restiedb_owner;Password=uvlU6dM5DSmZ;" }
+                             }));
+                }
+          
             }
             app.UseHttpsRedirection();
 

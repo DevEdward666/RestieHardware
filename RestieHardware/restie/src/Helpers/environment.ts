@@ -1,7 +1,8 @@
 import { devBaseUrl } from "./environment.dev";
 import { prodBaseUrl } from "./environment.prod";
+// environment.ts
 
-let baseUrl;
+let baseUrl = "";
 
 if (process.env.NODE_ENV === "production") {
   baseUrl = prodBaseUrl;
@@ -13,5 +14,4 @@ if (process.env.NODE_ENV === "production") {
 if (process.env.REACT_APP_GITHUB_BRANCH === "refs/heads/release") {
   baseUrl = prodBaseUrl;
 }
-
-export { baseUrl };
+export default baseUrl;

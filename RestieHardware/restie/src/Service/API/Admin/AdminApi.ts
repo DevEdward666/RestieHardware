@@ -1,4 +1,4 @@
-import { baseUrl } from "../../../Helpers/environment";
+import baseUrl from "../../../Helpers/environment";
 import { post } from "../../../Helpers/useAxios";
 import { PostInventoryModel } from "../../../Models/Request/Admin/AdminRequestModel";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";

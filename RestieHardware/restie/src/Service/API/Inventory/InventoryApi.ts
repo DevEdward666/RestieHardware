@@ -1,4 +1,4 @@
-import { baseUrl } from "../../../Helpers/environment";
+import baseUrl from "../../../Helpers/environment";
 import { get, getWithAuth, post } from "../../../Helpers/useAxios";
 import {
   Addtocart,

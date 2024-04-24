@@ -86,8 +86,7 @@ jobs:
       - name: Build Ionic React app
         run: |
           cd RestieHardware/restie
-          updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "https://restiehardware.onrender.com/";#')
-          echo "$updated_content" > src/Helpers/environment.prod.ts
+          echo export const prodBaseUrl = "https://restiehardware.onrender.com/" > src/Helpers/environment.prod.ts
           npm install
           npm run build
 

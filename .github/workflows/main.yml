@@ -90,6 +90,7 @@ jobs:
           node-version: '21.5.0'
       - name: Build Ionic React app
         run: |
+          cd restie
           npm install
           npm run build
 

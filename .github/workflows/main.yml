@@ -34,12 +34,13 @@ jobs:
       - name: Install dependencies
         run: npm install @octokit/rest
 
-      - name: Modify File Content
-        uses: jaywcjlove/github-action-modify-file-content@576213501309faf48503f367d941e5e1c1d9e482
+      - name: Write File
+        uses: DamianReeves/write-file-action@v1.3
         with:
           path: RestieHardware/restie/src/Helpers/environment.prod.ts
-          body: 'export const prodBaseUrl = "https://restiehardware.onrender.com/"'
-          overwrite: 'true'
+          contents: |
+            export const prodBaseUrl = "https://restiehardware.onrender.com/"
+          write-mode: append
   build-dotnet:
     if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest

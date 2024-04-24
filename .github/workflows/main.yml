@@ -35,12 +35,12 @@ jobs:
         run: npm install @octokit/rest
 
       - name: Write File
-        uses: DamianReeves/write-file-action@v1.3
+        uses: actions/DamianReeves/write-file-action@v1.3
         with:
           path: RestieHardware/restie/src/Helpers/environment.prod.ts
           contents: |
             export const prodBaseUrl = "https://restiehardware.onrender.com/"
-          write-mode: append
+          write-mode: overwrite
   build-dotnet:
     if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest

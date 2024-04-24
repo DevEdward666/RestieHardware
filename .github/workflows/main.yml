@@ -8,39 +8,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  modify-file:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-        with:
-          repository: DevEdward666/RestieHardware
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0 # This ensures full history is available for commits
-
-      - name: Read file content
-        id: read-file
-        run: |
-          content=$(cat RestieHardware/restie/src/Helpers/environment.prod.ts)
-          echo "::set-output name=file_content::$content"
-
-      - name: Modify file content
-        id: modify-file
-        run: |
-          updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "https://restiehardware.onrender.com/";#')
-          echo "$updated_content" > RestieHardware/restie/src/Helpers/environment.prod.ts
-
-      - name: Install dependencies
-        run: npm install @octokit/rest
-
-      - name: Write File
-        uses: "DamianReeves/write-file-action@master"
-        with:
-          path: RestieHardware/restie/src/Helpers/environment.prod.ts
-          contents: |
-            export const prodBaseUrl = "https://restiehardware.onrender.com/"
-          write-mode: overwrite
   build-dotnet:
     if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest
@@ -51,6 +18,8 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
+      - name: Restore dependencies
+        run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
       - name: App Settings Variable Substitution
         run: |
           echo '{
@@ -73,8 +42,6 @@ jobs:
                   },
                   "AllowedHosts": "*"
                 }'
-      - name: Restore dependencies
-        run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
       - name: Build
         run: dotnet build RestieAPI/RestieAPI/RestieAPI.csproj --no-restore
       - name: Publish
@@ -112,10 +79,16 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-      - name: Update environment.prod.ts
-        run: echo 'export const prodBaseUrl = "https://restiehardware.onrender.com/";' > RestieHardware/restie/src/Helpers/environment.prod.ts
-      - name: Display changed file
-        run: cat RestieHardware/restie/src/Helpers/environment.prod.ts
+      - name: Modify file content
+        id: modify-file
+        run: |
+          updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "https://restiehardware.onrender.com/";#')
+          echo "$updated_content" > RestieHardware/restie/src/Helpers/environment.prod.ts
+      - name: Read file content
+        id: read-file
+        run: |
+          content=$(cat RestieHardware/restie/src/Helpers/environment.prod.ts)
+          echo "::set-output name=file_content::$content"
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:

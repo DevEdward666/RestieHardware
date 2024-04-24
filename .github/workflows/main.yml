@@ -21,27 +21,11 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
       - name: App Settings Variable Substitution
-        run: |
-          echo '{
-                  "ConnectionStrings": {
-                    "MyDatabase": "Host=ep-patient-star-a1e8nf2e.ap-southeast-1.aws.neon.tech;Port=5432;Database=restie-dev;Username=neondb_owner;Password=z0n3RWaQFKpC;"
-                  },
-                
-                  "jwtTokenConfig": {
-                    "secret": "332404155398F921F9F5F58C49CA1ABA5C244E61ADF820C2486EB67E3D95825D",
-                    "issuer": "https://localhost:44364/",
-                    "audience": "https://localhost:44364/",
-                    "accessTokenExpiration": 999,
-                    "refreshTokenExpiration": 999
-                  },
-                  "Logging": {
-                    "LogLevel": {
-                      "Default": "Information",
-                      "Microsoft.AspNetCore": "Warning"
-                    }
-                  },
-                  "AllowedHosts": "*"
-                }'
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: 'RestieAPI/RestieAPI/appsettings.json'
+        env:
+          ConnectionStrings.MyDatabase: "Host=ep-patient-star-a1e8nf2e.ap-southeast-1.aws.neon.tech;Port=5432;Database=restie-dev;Username=neondb_owner;Password=z0n3RWaQFKpC;"
       - name: Build
         run: dotnet build RestieAPI/RestieAPI/RestieAPI.csproj --no-restore
       - name: Publish

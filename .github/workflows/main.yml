@@ -25,7 +25,7 @@ jobs:
         with:
           files: 'RestieAPI/RestieAPI/appsettings.json'
         env:
-          ConnectionStrings.MyDatabase: "Host=ep-patient-star-a1e8nf2e.ap-southeast-1.aws.neon.tech;Port=5432;Database=restie-dev;Username=neondb_owner;Password=z0n3RWaQFKpC;"
+          ConnectionStrings.MyDatabase: Host=ep-patient-star-a1e8nf2e.ap-southeast-1.aws.neon.tech;Port=5432;Database=restie-dev;Username=neondb_owner;Password=z0n3RWaQFKpC;
       - name: Build
         run: dotnet build RestieAPI/RestieAPI/RestieAPI.csproj --no-restore
       - name: Publish

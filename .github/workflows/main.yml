@@ -19,10 +19,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0 # This ensures full history is available for commits
 
-      - name: Install Octokit
-        run: npm install @octokit/rest@latest
-        working-directory: ./RestieHardware/restie
-
       - name: Read file content
         id: read-file
         run: |
@@ -35,36 +31,42 @@ jobs:
           updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "NEW_VALUE";#')
           echo "$updated_content" > RestieHardware/restie/src/Helpers/environment.prod.ts
 
-      - name: Update file
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { Octokit } = require("@octokit/rest");
-            const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-            (async () => {
-              try {
-                const { data: { sha } } = await octokit.repos.getContent({
-                  owner: 'DevEdward666',
-                  repo: 'RestieHardware',
-                  path: 'RestieHardware/restie/src/Helpers/environment.prod.ts'
-                });
-            
-                const { data: { content } } = await octokit.repos.createOrUpdateFileContents({
-                  owner: 'DevEdward666',
-                  repo: 'RestieHardware',
-                  path: 'RestieHardware/restie/src/Helpers/environment.prod.ts',
-                  message: 'Update prodBaseUrl value',
-                  content: Buffer.from('', 'utf-8').toString('base64'),
-                  sha: sha,
-                  branch: 'release'
-                });
-            
-                console.log(content); // Output the result for debugging
-              } catch (error) {
-                console.error('Error:', error.message);
-              }
-            })();
+      - name: Install dependencies
+        run: npm install @octokit/rest
+
+      - name: Update environment file
+        run: |
+          const { Octokit } = require("@octokit/rest");
+          const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+          (async () => {
+            try {
+              const { data: { sha } } = await octokit.repos.getContent({
+                owner: 'DevEdward666',
+                repo: 'RestieHardware',
+                path: 'RestieHardware/restie/src/Helpers/environment.prod.ts'
+              });
+          
+              const { data: { content } } = await octokit.repos.createOrUpdateFileContents({
+                owner: 'DevEdward666',
+                repo: 'RestieHardware',
+                path: 'RestieHardware/restie/src/Helpers/environment.prod.ts',
+                message: 'Update prodBaseUrl value',
+                content: Buffer.from('', 'utf-8').toString('base64'),
+                sha: sha,
+                branch: 'release'
+              });
+          
+              console.log(content); // Output the result for debugging
+            } catch (error) {
+              console.error('Error:', error.message);
+            }
+          })();
+          
+          debug: false
+          user-agent: actions/github-script
+          result-encoding: json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build-dotnet:
     if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest

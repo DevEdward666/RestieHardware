@@ -79,18 +79,15 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-      - name: Modify file content
-        id: modify-file
-        run: |
-          updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "https://restiehardware.onrender.com/";#')
-          echo "$updated_content" > RestieHardware/restie/src/Helpers/environment.prod.ts
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '21.5.0'
       - name: Build Ionic React app
         run: |
-          cd restie
+          cd RestieHardware/restie
+          updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "https://restiehardware.onrender.com/";#')
+          echo "$updated_content" > src/Helpers/environment.prod.ts
           npm install
           npm run build
 

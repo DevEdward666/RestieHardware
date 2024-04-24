@@ -35,7 +35,7 @@ jobs:
         run: npm install @octokit/rest
 
       - name: Modify README.md
-        uses: jaywcjlove/github-action-modify-file-content@main
+        uses: jaywcjlove/github-action-modify-file-content@v2.0.1
         with:
           path: RestieHardware/restie/src/Helpers/environment.prod.ts
           body: 'export const prodBaseUrl = "https://restiehardware.onrender.com/"'

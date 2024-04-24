@@ -28,16 +28,18 @@ jobs:
       - name: Modify file content
         id: modify-file
         run: |
-          updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "NEW_VALUE";#')
+          updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "https://restiehardware.onrender.com/";#')
           echo "$updated_content" > RestieHardware/restie/src/Helpers/environment.prod.ts
 
       - name: Install dependencies
         run: npm install @octokit/rest
 
-      - name: Run JavaScript file
-        run: node updateEnvironment.js
-        env:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Modify README.md
+        uses: jaywcjlove/github-action-modify-file-content@main
+        with:
+          path: RestieHardware/restie/src/Helpers/environment.prod.ts
+          body: 'export const prodBaseUrl = "https://restiehardware.onrender.com/"'
+          overwrite: 'true'
   build-dotnet:
     if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest

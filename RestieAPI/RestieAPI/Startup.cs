@@ -76,6 +76,7 @@ namespace RestieAPI
             //    FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "Resources/Images")),
             //    RequestPath = "/Resources/Images"
             //});
+            app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();

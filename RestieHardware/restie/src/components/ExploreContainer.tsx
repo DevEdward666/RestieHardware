@@ -14,7 +14,6 @@ import {
   RefresherEventDetail,
   useIonRouter,
 } from "@ionic/react";
-import { baseUrl } from "../Helpers/environment";
 import { cart, close } from "ionicons/icons";
 import { MouseEvent, useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";

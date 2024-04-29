@@ -148,7 +148,11 @@ const CartComponent: React.FC = () => {
               <div className="main-cart-card-add-item-img">
                 <img
                   alt={card.item}
-                  src={card.image.length <= 0 ? stock : card.image}
+                  src={
+                    card.image.length <= 0
+                      ? stock
+                      : window.location.origin + card.image
+                  }
                 />
               </div>
               <div className="main-cart-card-add-item-container">

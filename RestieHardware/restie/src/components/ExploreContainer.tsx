@@ -182,7 +182,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       brand: card.brand,
       image: card.image.length <= 0 ? stock : `/public/${card.image}`,
     };
-
+    console.log(window.location.origin);
     return (
       <div
         className="inventory-card-main-div"
@@ -192,7 +192,11 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           <div className="inventory-card-add-item-img">
             <img
               alt={card?.item}
-              src={card.image.length <= 0 ? stock : `/public/${card.image}`}
+              src={
+                card.image.length <= 0
+                  ? stock
+                  : `${window.location.origin}/public/${card.image}`
+              }
             />
           </div>
           <div className="inventory-card-add-item-container">

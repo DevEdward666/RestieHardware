@@ -54,7 +54,6 @@ const SelectedItemContainer: React.FC = () => {
   const router = useIonRouter();
   useEffect(() => {
     console.log(selectedItem);
-    console.log("selectedItemselector", selectedItemselector);
   }, [selectedItem]);
 
   const handleAddToCart = useCallback(async () => {

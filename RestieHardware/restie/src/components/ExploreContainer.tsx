@@ -161,7 +161,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
         onhandqty: selectedItem.onhandqty,
         orderid: "",
         qty: 1,
-        image: selectedItem.image.includes("base64") ? selectedItem.image : "",
+        image: selectedItem.image.length > 0 ? selectedItem.image : "",
         price: selectedItem.price,
         createdAt: new Date().getTime(),
         status: "pending",
@@ -180,9 +180,12 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       price: card.price,
       category: card.category,
       brand: card.brand,
-      image: card.image.length <= 0 ? stock : `/public/${card.image}`,
+      image:
+        card.image.length <= 0
+          ? stock
+          : `${window.location.origin}/${card.image}`,
     };
-
+    console.log(window.location.origin);
     return (
       <div
         className="inventory-card-main-div"
@@ -192,7 +195,11 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           <div className="inventory-card-add-item-img">
             <img
               alt={card?.item}
-              src={card.image.length <= 0 ? stock : `/public/${card.image}`}
+              src={
+                card.image.length <= 0
+                  ? stock
+                  : `${window.location.origin}/${card.image}`
+              }
             />
           </div>
           <div className="inventory-card-add-item-container">

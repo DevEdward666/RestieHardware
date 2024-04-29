@@ -161,7 +161,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
         onhandqty: selectedItem.onhandqty,
         orderid: "",
         qty: 1,
-        image: selectedItem.image.includes("base64") ? selectedItem.image : "",
+        image: selectedItem.image.length > 0 ? selectedItem.image : "",
         price: selectedItem.price,
         createdAt: new Date().getTime(),
         status: "pending",
@@ -180,7 +180,10 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       price: card.price,
       category: card.category,
       brand: card.brand,
-      image: card.image.length <= 0 ? stock : `/public/${card.image}`,
+      image:
+        card.image.length <= 0
+          ? stock
+          : `${window.location.origin}/${card.image}`,
     };
     console.log(window.location.origin);
     return (
@@ -195,7 +198,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
               src={
                 card.image.length <= 0
                   ? stock
-                  : `${window.location.origin}/public/${card.image}`
+                  : `${window.location.origin}/${card.image}`
               }
             />
           </div>

@@ -8,56 +8,56 @@ on:
   workflow_dispatch:
 
 jobs:
-  modify-file:
-    runs-on: ubuntu-latest
+  # modify-file:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-        with:
-          repository: DevEdward666/RestieHardware
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0 # This ensures full history is available for commits
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v2
+  #       with:
+  #         repository: DevEdward666/RestieHardware
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  #         fetch-depth: 0 # This ensures full history is available for commits
 
-      - name: Install Octokit
-        run: npm install @octokit/rest@latest
-        working-directory: ./RestieHardware/restie
+  #     - name: Install Octokit
+  #       run: npm install @octokit/rest@latest
+  #       working-directory: ./RestieHardware/restie
 
-      - name: Read file content
-        id: read-file
-        run: |
-          content=$(cat RestieHardware/restie/src/Helpers/environment.prod.ts)
-          echo "::set-output name=file_content::$content"
+  #     - name: Read file content
+  #       id: read-file
+  #       run: |
+  #         content=$(cat RestieHardware/restie/src/Helpers/environment.prod.ts)
+  #         echo "::set-output name=file_content::$content"
 
-      - name: Modify file content
-        id: modify-file
-        run: |
-          updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "NEW_VALUE";#')
-          echo "$updated_content" > RestieHardware/restie/src/Helpers/environment.prod.ts
+  #     - name: Modify file content
+  #       id: modify-file
+  #       run: |
+  #         updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "NEW_VALUE";#')
+  #         echo "$updated_content" > RestieHardware/restie/src/Helpers/environment.prod.ts
 
-      - name: Update file
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            import { Octokit } from "@octokit/rest";
-            const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+  #     - name: Update file
+  #       uses: actions/github-script@v4
+  #       with:
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         script: |
+  #           import { Octokit } from "@octokit/rest";
+  #           const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
-            const { data: { sha } } = await octokit.repos.getContent({
-              owner: 'DevEdward666',
-              repo: 'RestieHardware',
-              path: 'RestieHardware/restie/src/Helpers/environment.prod.ts'
-            });
+  #           const { data: { sha } } = await octokit.repos.getContent({
+  #             owner: 'DevEdward666',
+  #             repo: 'RestieHardware',
+  #             path: 'RestieHardware/restie/src/Helpers/environment.prod.ts'
+  #           });
 
-            const { data: { content } } = await octokit.repos.createOrUpdateFileContents({
-              owner: 'DevEdward666',
-              repo: 'RestieHardware',
-              path: 'RestieHardware/restie/src/Helpers/environment.prod.ts',
-              message: 'Update prodBaseUrl value',
-              content: Buffer.from('${{ steps.modify-file.outputs.modified_content }}', 'utf-8').toString('base64'),
-              sha: sha,
-              branch: 'release'
-            });
+  #           const { data: { content } } = await octokit.repos.createOrUpdateFileContents({
+  #             owner: 'DevEdward666',
+  #             repo: 'RestieHardware',
+  #             path: 'RestieHardware/restie/src/Helpers/environment.prod.ts',
+  #             message: 'Update prodBaseUrl value',
+  #             content: Buffer.from('${{ steps.modify-file.outputs.modified_content }}', 'utf-8').toString('base64'),
+  #             sha: sha,
+  #             branch: 'release'
+  #           });
   build-dotnet:
     if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest

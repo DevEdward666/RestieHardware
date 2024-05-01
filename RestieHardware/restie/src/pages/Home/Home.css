@@ -134,3 +134,12 @@
   align-items: center;
   flex-wrap: wrap;
 }
+.onboarding{
+  position: absolute;
+  padding-bottom: 10px;
+  bottom: 0;
+  font-size: 14px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}

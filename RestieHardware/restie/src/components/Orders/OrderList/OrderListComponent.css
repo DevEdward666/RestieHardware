@@ -65,6 +65,12 @@
 .approved{
     color:#1bf01b
 }
-.cancelled{
+.cancel{
     color:#f02b2b
+}
+.delivered{
+    color:#4781ec
+}
+.quotation{
+    color:#00f8cf
 }

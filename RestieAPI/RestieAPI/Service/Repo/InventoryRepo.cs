@@ -819,6 +819,123 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
+        public PostResponse CancelOrder(InventoryRequestModel.AddToCart[] addToCartItems)
+        {
+
+            var updatecart = @"update cart set status=@status,qty=@qty,total=@total,updateat=@updateat where cartid=@cartid and code=@code";
+            var updateOrder = @"update orders set total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat,status=@status  where orderid = @orderid";
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+                var total = 0.0;
+                var updateOrderRes = 0;
+                var updateCartRes = 0;
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        foreach (var addToCart in addToCartItems)
+                        {
+                            var parameters = new Dictionary<string, object>
+                            {
+                                { "@code", addToCart.code },
+                                { "@cartid", addToCart.cartid },
+                                { "@qty", addToCart.qty },
+                                { "@total", addToCart.qty * addToCart.price },
+                                { "@updateat", addToCart.updateat },
+                                { "@status", addToCart.status },
+                            };
+
+                            // Execute the insertion command for each item
+                            using (var cmd = new NpgsqlCommand(updatecart, connection))
+                            {
+                                foreach (var param in parameters)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+                                updateCartRes = cmd.ExecuteNonQuery();
+                            }
+                            total = total + addToCart.qty * addToCart.price;
+                        }
+                        if (updateCartRes > 0)
+                        {
+
+                            // Execute the insertOrder command for each item
+                            using (var cmd = new NpgsqlCommand(updateOrder, connection))
+                            {
+                                var insertOrderParams = new Dictionary<string, object>
+                                {
+                                    { "@orderid", addToCartItems[0].orderid },
+                                    { "@total",  total},
+                                    { "@paidthru", addToCartItems[0].paidthru },
+                                    { "@paidcash", addToCartItems[0].paidcash },
+                                    { "@updateat", addToCartItems[0].updateat },
+                                    { "@status", addToCartItems[0].status },
+                                };
+                                foreach (var param in insertOrderParams)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+                                updateOrderRes = cmd.ExecuteNonQuery();
+                            }
+                        
+                           
+                            if (updateOrderRes > 0)
+                            {
+                                tran.Commit();
+                                return new PostResponse
+                                {
+                                    result = new SaveOrderResponse
+                                    {
+                                        orderid = addToCartItems[0].orderid.ToString(),
+                                        cartid = addToCartItems[0].cartid
+                                    },
+                                    status = 200,
+                                    Message = "Order successfully saved"
+                                };
+                            }
+                            else
+                            {
+                                tran.Rollback();
+                                return new PostResponse
+                                {
+                                    result = new SaveOrderResponse
+                                    {
+                                        orderid = addToCartItems[0].orderid.ToString(),
+                                        cartid = addToCartItems[0].cartid
+                                    },
+                                    status = 500,
+                                    Message = "Cart not updated"
+                                };
+                            }
+
+                        }
+                        else
+                        {
+                            tran.Rollback();
+                            return new PostResponse
+                            {
+                                status = 500,
+                                Message = "Cart not updated"
+                            };
+                        }
+
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostResponse
+                        {
+                            status = 500,
+                            Message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
         public PostResponse ApprovedOrderAndpay(InventoryRequestModel.AddToCart[] addToCartItems)
         {
 

@@ -32,6 +32,7 @@ import { useEffect, useState } from "react";
 import { Network } from "@capacitor/network";
 import OfflineDeliveryPage from "./pages/Delivery/OfflineDelivery/OfflineDeliveryPage";
 import SalesPage from "./pages/Products/Sales/SalesPage";
+import OnboardingPage from "./pages/Onboarding/OnboardingPage";
 
 setupIonicReact({ mode: "ios" });
 
@@ -87,6 +88,8 @@ const App: React.FC = () => {
       <Route path="/pageNotFound" render={() => <PageNotFoundPage />} />
       {/* Offline */}
       <Route path="/DeliverOffline" render={() => <OfflineDeliveryPage />} />
+      {/* Onboarding */}
+      <Route path="/Onboarding" render={() => <OnboardingPage />} />
     </IonApp>
   );
 };

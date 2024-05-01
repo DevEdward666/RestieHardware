@@ -73,7 +73,7 @@ const OrderListPage = () => {
     <IonPage className="order-list-page-container">
       <IonHeader className="order-list-page-header">
         <IonToolbar mode="ios" color="tertiary">
-          <IonButtons slot="start" onClick={() => router.goBack()}>
+          <IonButtons slot="start" onClick={() => router.push("/home/profile")}>
             <IonIcon slot="icon-only" icon={arrowBack}></IonIcon>
           </IonButtons>
           <IonTitle>Order List</IonTitle>
@@ -88,6 +88,8 @@ const OrderListPage = () => {
         <IonToolbar mode="ios" color="tertiary">
           <div className="order-list-filter">
             <IonSegment
+              className="orderlist-segment"
+              scrollable={true}
               value={selectedFilter.status}
               onIonChange={(val) => handleSelectFilter(val)}
             >
@@ -102,6 +104,9 @@ const OrderListPage = () => {
               </IonSegmentButton>
               <IonSegmentButton value="delivered">
                 <IonLabel>Delivered</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="cancel">
+                <IonLabel>Cancelled</IonLabel>
               </IonSegmentButton>
             </IonSegment>
             <div className="order-list-search">

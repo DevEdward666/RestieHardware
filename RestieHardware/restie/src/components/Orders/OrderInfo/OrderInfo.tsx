@@ -42,6 +42,7 @@ import {
 } from "../../../Service/API/Inventory/InventoryApi";
 import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
 import {
+  PostOrder,
   addToCartAction,
   getDelivery,
   getInventory,
@@ -53,12 +54,19 @@ import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import logo from "../../../assets/images/Icon@2.png";
 import breakline from "../../../assets/images/breakline.png";
 import "./OrderInfo.css";
+import { ResponseModel } from "../../../Models/Response/Commons/Commons";
 const OrderInfoComponent = () => {
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
   );
   const get_voucher = useSelector(
     (store: RootStore) => store.InventoryReducer.get_voucher
+  );
+  const customer_information = useSelector(
+    (store: RootStore) => store.CustomerReducer.customer_information
+  );
+  const user_login_information = useSelector(
+    (store: RootStore) => store.LoginReducer.user_login_information
   );
   const invoiceRef = useRef(null);
   const [getGetDeliveryInfo, setGetDeliveryInfo] = useState<GetDeliveryInfo>({
@@ -125,6 +133,55 @@ const OrderInfoComponent = () => {
     dispatch(selectedOrder(payload));
     router.push("/home/cart");
   };
+  const handleCancel = useCallback(async () => {
+    let newItem: Addtocart;
+    let payload: Addtocart[] = [];
+    order_list_info.order_item.map((val) => {
+      newItem = {
+        onhandqty: val?.onhandqty!,
+        code: val.code,
+        item: val.item,
+        qty: val.qty,
+        price: val.price,
+        image: "",
+        orderid: order_list_info.order_info.orderid,
+        cartid: order_list_info.order_info.cartid,
+        createdAt: order_list_info.order_info.createdat,
+        status: "cancel",
+      };
+      payload.push(newItem);
+    });
+    setIsOpenToast({
+      toastMessage: "Loading",
+      isOpen: true,
+      type: "loader",
+    });
+    const addedOrder: ResponseModel = await dispatch(
+      PostOrder(
+        payload[0].orderid!,
+        payload,
+        customer_information,
+        new Date().getTime(),
+        "Cancel",
+        0.0,
+        user_login_information.name
+      )
+    );
+    if (addedOrder) {
+      const payload: PostSelectedOrder = {
+        orderid: addedOrder.result?.orderid!,
+        userid: "",
+        cartid: addedOrder.result?.cartid!,
+      };
+      dispatch(getOrderInfo(payload));
+      setIsOpenToast({
+        toastMessage: "Loading",
+        isOpen: false,
+        type: "loader",
+      });
+      router.push(`/orderInfo?orderid=${order_list_info.order_info.orderid!}`);
+    }
+  }, [dispatch, user_login_information, order_list_info]);
   const handleApprove = () => {
     let newItem: Addtocart;
     let payload: Addtocart[] = [];
@@ -194,7 +251,7 @@ const OrderInfoComponent = () => {
         searchTerm: "",
       })
     );
-    router.push("/home/profile");
+    router.push("/orders");
   }, [dispatch]);
   const getOrderIDFromURL = () => {
     const url = new URL(window.location.href);
@@ -330,6 +387,13 @@ const OrderInfoComponent = () => {
           order_list_info.order_info?.paidthru?.toLowerCase() ===
             "quotation" ? (
             <>
+              <IonButton
+                size="small"
+                color="tertiary"
+                onClick={() => handleCancel()}
+              >
+                Cancel Order
+              </IonButton>
               <IonButton
                 size="small"
                 color="tertiary"

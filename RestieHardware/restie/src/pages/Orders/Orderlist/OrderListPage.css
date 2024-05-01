@@ -49,3 +49,6 @@ ion-toolbar .sc-ion-searchbar-ios-h{
     background-color: #ffffff00;
     padding-top:20px;
 }
+.orderlist-segment{
+    width: 100%;
+}

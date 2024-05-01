@@ -19,6 +19,7 @@ import {
   IonText,
   IonTitle,
   IonToolbar,
+  useIonRouter,
 } from "@ionic/react";
 import { useCallback, useEffect, useState } from "react";
 import { QueryClient } from "react-query";
@@ -51,6 +52,7 @@ const Tab1: React.FC = () => {
     (store: RootStore) => store.InventoryReducer.set_category_and_brand
   );
   const dispatch = useTypedDispatch();
+  const router = useIonRouter();
   const [isFetching, setFetching] = useState<boolean>(false);
   const [getCategoryAndBrand, setCategoryAndBrand] = useState({
     category: "",
@@ -243,6 +245,12 @@ const Tab1: React.FC = () => {
                 Alphabetical Z-A
               </IonSelectOption>
             </IonSelect>
+          </IonItem>
+          <IonItem
+            className="onboarding"
+            onClick={() => router.push("/Onboarding")}
+          >
+            Onboarding
           </IonItem>
         </IonContent>
       </IonMenu>

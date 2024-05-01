@@ -12,6 +12,7 @@ import {
 } from "../../Types/Inventory/InventoryTypes";
 import {
   ApprovedOrderAndPay,
+  CancelOrder,
   GetVoucherInfo,
   InsertCustomerInfo,
   ListOrder,
@@ -199,6 +200,7 @@ export const PostOrder =
         cash: "Cash",
         pending: "Pending",
         quotation: "Quotation",
+        cancel: "Cancel",
       };
       let orderid = "";
       if (post_orderid) {
@@ -263,6 +265,8 @@ export const PostOrder =
       ) {
         await deleteCart(updatePayload);
         res = await addToCart(updatePayload);
+      } else if (method.toLowerCase() === paymentMethod.cancel.toLowerCase()) {
+        res = await CancelOrder(updatePayload);
       }
       localStorage.removeItem("cartid");
       dispatch({

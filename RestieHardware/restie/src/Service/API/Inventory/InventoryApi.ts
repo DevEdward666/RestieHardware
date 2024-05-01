@@ -86,6 +86,22 @@ export const SavedAndPayOrder = async (payload: Addtocart[]) => {
   );
   return response;
 };
+export const CancelOrder = async (payload: Addtocart[]) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const response: ResponseModel = await post(
+    `${baseUrl}api/Inventory/CancelOrder`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  console.log(response);
+  return response;
+};
 export const ApprovedOrderAndPay = async (payload: Addtocart[]) => {
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {

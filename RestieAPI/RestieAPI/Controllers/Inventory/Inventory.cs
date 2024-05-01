@@ -82,6 +82,12 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<PostResponse> ApprovedOrderAndpay(AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.ApprovedOrderAndpay(addToCart));
+        }   
+        [Authorize]
+        [HttpPost("CancelOrder")]
+        public ActionResult<PostResponse> CancelOrder(AddToCart[] addToCart)
+        {
+            return Ok(_inventoryRepo.CancelOrder(addToCart));
         }
         [Authorize]
         [HttpPost("deleteCart")]

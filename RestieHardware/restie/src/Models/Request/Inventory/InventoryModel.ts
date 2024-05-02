@@ -31,6 +31,7 @@ export interface Addtocart {
   transid?: string;
   cashier?: string;
   customer?: string;
+  reorder?: boolean;
 }
 export interface SelectedItemToCart {
   code: string;

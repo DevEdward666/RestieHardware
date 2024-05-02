@@ -77,6 +77,15 @@ namespace RestieAPI.Models.Request
             public string imagePath { get; set; }
 
         }
+        public class PostEmail
+        {
+            public string from { get; set; }
+            public string to { get; set; }
+            public string subject { get; set; }
+            public string text { get; set; }
+            public string pdfFile { get; set; }
+
+        }
         public class GetSelectedOrder 
         {
             public string orderid { get; set; }

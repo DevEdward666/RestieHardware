@@ -412,7 +412,7 @@ namespace RestieAPI.Service.Repo
             var insertOrder = "";
             if (addToCartItems[0].orderid.Length > 0) 
             {
-                insertOrder = @"update orders set total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat,status=@status  where orderid = @orderid";
+                insertOrder = @"update orders set total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat,status=@status,createdat=@createdat  where orderid = @orderid";
             }
             else
             {
@@ -471,6 +471,7 @@ namespace RestieAPI.Service.Repo
                                     { "@paidthru", addToCartItems[0].paidthru },
                                     { "@paidcash", addToCartItems[0].paidcash },
                                     { "@updateat", addToCartItems[0].updateat },
+                                    { "@createdat", addToCartItems[0].createdat },
                                     { "@status", addToCartItems[0].status },
                                 };
                             }

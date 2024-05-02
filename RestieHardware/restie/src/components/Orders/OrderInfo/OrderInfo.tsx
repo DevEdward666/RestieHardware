@@ -148,6 +148,7 @@ const OrderInfoComponent = () => {
         cartid: order_list_info.order_info.cartid,
         createdAt: order_list_info.order_info.createdat,
         status: "cancel",
+        reorder: false,
       };
       payload.push(newItem);
     });
@@ -204,43 +205,49 @@ const OrderInfoComponent = () => {
     dispatch(addToCartAction(payload));
     router.push("/paymentoptions");
   };
-  const handleEdit = () => {
-    // let payload: Addtocart[] = []; // Initialize payload as an empty array
-    // order_list_info.map((val) => {
-    //   const newItem: Addtocart = {
-    //     onhandqty: val.onhandqty,
-    //     orderid: val.orderid,
-    //     cartid: val.cartid,
-    //     code: val.code,
-    //     item: val.item,
-    //     qty: val.qty,
-    //     price: val.price,
-    //     createdAt: val.createdat,
-    //     status: val.status,
-    //   };
-    //   payload.push(newItem);
-    // });
-    let newItem: Addtocart;
-    let payload: Addtocart[] = [];
-    order_list_info.order_item.map((val) => {
-      newItem = {
-        onhandqty: val?.onhandqty!,
-        code: val.code,
-        item: val.item,
-        qty: val.qty,
-        price: val.price,
-        image: "",
-        orderid: order_list_info.order_info.orderid,
-        cartid: order_list_info.order_info.cartid,
-        transid: order_list_info.order_info.transid,
-        createdAt: order_list_info.order_info.createdat,
-        status: order_list_info.order_info.status,
-      };
-      payload.push(newItem);
-    });
-    dispatch(addToCartAction(payload));
-    router.push("/home/cart");
-  };
+  const handleEdit = useCallback(
+    (reorder: boolean) => {
+      // let payload: Addtocart[] = []; // Initialize payload as an empty array
+      // order_list_info.map((val) => {
+      //   const newItem: Addtocart = {
+      //     onhandqty: val.onhandqty,
+      //     orderid: val.orderid,
+      //     cartid: val.cartid,
+      //     code: val.code,
+      //     item: val.item,
+      //     qty: val.qty,
+      //     price: val.price,
+      //     createdAt: val.createdat,
+      //     status: val.status,
+      //   };
+      //   payload.push(newItem);
+      // });
+      let newItem: Addtocart;
+      let payload: Addtocart[] = [];
+      order_list_info.order_item.map((val) => {
+        newItem = {
+          onhandqty: val?.onhandqty!,
+          code: val.code,
+          item: val.item,
+          qty: val.qty,
+          price: val.price,
+          image: "",
+          orderid: order_list_info.order_info.orderid,
+          cartid: order_list_info.order_info.cartid,
+          transid: order_list_info.order_info.transid,
+          createdAt: reorder
+            ? new Date().getTime()
+            : order_list_info.order_info.createdat,
+          status: order_list_info.order_info.status,
+          reorder: reorder,
+        };
+        payload.push(newItem);
+      });
+      dispatch(addToCartAction(payload));
+      router.push("/home/cart");
+    },
+    [dispatch, order_list_info]
+  );
 
   const handleClose = useCallback(() => {
     dispatch(
@@ -381,11 +388,22 @@ const OrderInfoComponent = () => {
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
         <div className="order-list-info-footer-approved"> </div>
-
-        <div className="order-list-info-footer-approved-info">
-          {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ||
-          order_list_info.order_info?.paidthru?.toLowerCase() ===
-            "quotation" ? (
+        {order_list_info.order_info?.paidthru?.toLowerCase() === "cancel" ? (
+          <div className="order-list-info-footer-approved-info">
+            <>
+              <IonButton
+                size="small"
+                color="tertiary"
+                onClick={() => handleEdit(true)}
+              >
+                Reorder
+              </IonButton>
+            </>
+          </div>
+        ) : null}
+        {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ||
+        order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" ? (
+          <div className="order-list-info-footer-approved-info">
             <>
               <IonButton
                 size="small"
@@ -397,7 +415,7 @@ const OrderInfoComponent = () => {
               <IonButton
                 size="small"
                 color="tertiary"
-                onClick={() => handleEdit()}
+                onClick={() => handleEdit(false)}
               >
                 Edit Order
               </IonButton>
@@ -409,9 +427,8 @@ const OrderInfoComponent = () => {
                 Process Order
               </IonButton>
             </>
-          ) : null}
-        </div>
-
+          </div>
+        ) : null}
         {order_list_info.order_info?.status.toLowerCase() === "delivered" ? (
           <div className="order-list-info-footer-approved-info">
             <>

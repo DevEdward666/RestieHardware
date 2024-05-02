@@ -1,12 +1,18 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using iTextSharp.text.pdf.codec.wmf;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.OpenApi.Models;
+using Org.BouncyCastle.Asn1.Crmf;
 using RestieAPI.Configs;
 using RestieAPI.Models.Request;
 using RestieAPI.Models.Response;
+using RestieAPI.Providers;
 using RestieAPI.Service.Repo;
+using RestSharp;
+using RestSharp.Authenticators;
 using System.IO;
 using static RestieAPI.Models.Request.InventoryRequestModel;
 using static System.Net.Mime.MediaTypeNames;
@@ -245,6 +251,42 @@ namespace RestieAPI.Controllers.Inventory
                 status = StatusCodes.Status200OK,
             };
 
+        }  
+        [Authorize]
+        [HttpPost("SendEmail")]
+        public ActionResult<PostSendEmail> SendMailgunEmail(PostEmail postEmail)
+        {
+         
+
+            MailgunEmailSender emailSender = new MailgunEmailSender();
+
+            string from = postEmail.from;
+            string to = postEmail.to;
+            string subject = postEmail.subject;
+            string text = postEmail.text;
+            string pdfFilePath = postEmail.pdfFile;
+            try
+            {
+                emailSender.SendEmail(from, to, subject, text, pdfFilePath);
+              
+                return new PostSendEmail
+                {
+                  
+                    status = StatusCodes.Status200OK,
+                    message = "Email sent successfully!"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PostSendEmail
+                {
+
+                    status = StatusCodes.Status500InternalServerError,
+                    message = ex.Message
+                };
+            }
+
         }
+      
     }
 }

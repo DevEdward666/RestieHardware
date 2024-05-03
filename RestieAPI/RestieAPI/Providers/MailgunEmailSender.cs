@@ -5,6 +5,7 @@ using RestSharp;
 using RestSharp.Authenticators;
 using MailKit.Net.Smtp;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
+using static RestieAPI.Models.Request.InventoryRequestModel;
 namespace RestieAPI.Providers
 {
 
@@ -15,18 +16,29 @@ namespace RestieAPI.Providers
         private RestClient _client;
         private RestClientOptions _auth;
 
-        public void SendEmail(string from, string to, string subject, string text, string pdfFilePath)
+     
+        public async Task SendEmail(PostEmail form_email)
         {
             var email = new MimeMessage();
 
-            email.From.Add(new MailboxAddress("Restie Hardware", from));
-            email.To.Add(new MailboxAddress("Receiver Name", to));
+            email.From.Add(new MailboxAddress("Restie Hardware", form_email.from));
+            email.To.Add(new MailboxAddress(form_email.to, form_email.to));
 
-            email.Subject = subject;
-            email.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+            email.Subject = form_email.subject;
+
+            var builder = new BodyBuilder();
+            builder.HtmlBody = form_email.text;
+
+            if (form_email.Attachment.Length>0)
             {
-                Text =text
-            };
+                var attachmentStream = new MemoryStream();
+                await form_email.Attachment.CopyToAsync(attachmentStream);
+                attachmentStream.Position = 0; // Reset the position to the beginning of the stream
+
+                builder.Attachments.Add(form_email.Attachment.FileName, attachmentStream);
+            }
+
+            email.Body = builder.ToMessageBody();
 
             using (var smtp = new SmtpClient())
             {
@@ -35,7 +47,7 @@ namespace RestieAPI.Providers
                 // Note: only needed if the SMTP server requires authentication
                 smtp.Authenticate("fernandezedward6653@gmail.com", "rseg dfvc sncv guoz");
 
-                smtp.Send(email);
+                await smtp.SendAsync(email);
                 smtp.Disconnect(true);
             }
         }

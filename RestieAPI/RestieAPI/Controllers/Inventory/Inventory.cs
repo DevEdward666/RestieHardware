@@ -251,42 +251,32 @@ namespace RestieAPI.Controllers.Inventory
                 status = StatusCodes.Status200OK,
             };
 
-        }  
+        }
         [Authorize]
         [HttpPost("SendEmail")]
-        public ActionResult<PostSendEmail> SendMailgunEmail(PostEmail postEmail)
+        public async Task<ActionResult<PostSendEmail>> SendMailgunEmail([FromForm] PostEmail postEmail)
         {
-         
-
             MailgunEmailSender emailSender = new MailgunEmailSender();
 
-            string from = postEmail.from;
-            string to = postEmail.to;
-            string subject = postEmail.subject;
-            string text = postEmail.text;
-            string pdfFilePath = postEmail.pdfFile;
             try
             {
-                emailSender.SendEmail(from, to, subject, text, pdfFilePath);
-              
+                await emailSender.SendEmail(postEmail);
+
                 return new PostSendEmail
                 {
-                  
                     status = StatusCodes.Status200OK,
                     message = "Email sent successfully!"
                 };
             }
             catch (Exception ex)
             {
-                return new PostSendEmail
+                return StatusCode(StatusCodes.Status500InternalServerError, new PostSendEmail
                 {
-
                     status = StatusCodes.Status500InternalServerError,
                     message = ex.Message
-                };
+                });
             }
-
         }
-      
+
     }
 }

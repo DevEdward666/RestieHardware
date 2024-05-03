@@ -6,6 +6,7 @@ import {
   IonHeader,
   IonIcon,
   IonImg,
+  IonInput,
   IonItem,
   IonLoading,
   IonModal,
@@ -38,6 +39,7 @@ import {
 } from "../../../Models/Response/Inventory/GetInventoryModel";
 import {
   GetDeliveryImage,
+  SendEmail,
   userQuoatationOrderInfo,
 } from "../../../Service/API/Inventory/InventoryApi";
 import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
@@ -88,6 +90,7 @@ const OrderInfoComponent = () => {
   const [getFile, setFile] = useState<FileResponse>();
   const [getDiscount, setDiscount] = useState<number>(0.0);
   const [getTotalAmount, setTotalAmount] = useState<number>(0.0);
+  const [getEmail, setEmail] = useState<string>("");
 
   const [elapsedTime, setElapsedTime] = useState({
     hour: 0,
@@ -148,6 +151,7 @@ const OrderInfoComponent = () => {
         cartid: order_list_info.order_info.cartid,
         createdAt: order_list_info.order_info.createdat,
         status: "cancel",
+        reorder: false,
       };
       payload.push(newItem);
     });
@@ -204,43 +208,49 @@ const OrderInfoComponent = () => {
     dispatch(addToCartAction(payload));
     router.push("/paymentoptions");
   };
-  const handleEdit = () => {
-    // let payload: Addtocart[] = []; // Initialize payload as an empty array
-    // order_list_info.map((val) => {
-    //   const newItem: Addtocart = {
-    //     onhandqty: val.onhandqty,
-    //     orderid: val.orderid,
-    //     cartid: val.cartid,
-    //     code: val.code,
-    //     item: val.item,
-    //     qty: val.qty,
-    //     price: val.price,
-    //     createdAt: val.createdat,
-    //     status: val.status,
-    //   };
-    //   payload.push(newItem);
-    // });
-    let newItem: Addtocart;
-    let payload: Addtocart[] = [];
-    order_list_info.order_item.map((val) => {
-      newItem = {
-        onhandqty: val?.onhandqty!,
-        code: val.code,
-        item: val.item,
-        qty: val.qty,
-        price: val.price,
-        image: "",
-        orderid: order_list_info.order_info.orderid,
-        cartid: order_list_info.order_info.cartid,
-        transid: order_list_info.order_info.transid,
-        createdAt: order_list_info.order_info.createdat,
-        status: order_list_info.order_info.status,
-      };
-      payload.push(newItem);
-    });
-    dispatch(addToCartAction(payload));
-    router.push("/home/cart");
-  };
+  const handleEdit = useCallback(
+    (reorder: boolean) => {
+      // let payload: Addtocart[] = []; // Initialize payload as an empty array
+      // order_list_info.map((val) => {
+      //   const newItem: Addtocart = {
+      //     onhandqty: val.onhandqty,
+      //     orderid: val.orderid,
+      //     cartid: val.cartid,
+      //     code: val.code,
+      //     item: val.item,
+      //     qty: val.qty,
+      //     price: val.price,
+      //     createdAt: val.createdat,
+      //     status: val.status,
+      //   };
+      //   payload.push(newItem);
+      // });
+      let newItem: Addtocart;
+      let payload: Addtocart[] = [];
+      order_list_info.order_item.map((val) => {
+        newItem = {
+          onhandqty: val?.onhandqty!,
+          code: val.code,
+          item: val.item,
+          qty: val.qty,
+          price: val.price,
+          image: "",
+          orderid: order_list_info.order_info.orderid,
+          cartid: order_list_info.order_info.cartid,
+          transid: order_list_info.order_info.transid,
+          createdAt: reorder
+            ? new Date().getTime()
+            : order_list_info.order_info.createdat,
+          status: order_list_info.order_info.status,
+          reorder: reorder,
+        };
+        payload.push(newItem);
+      });
+      dispatch(addToCartAction(payload));
+      router.push("/home/cart");
+    },
+    [dispatch, order_list_info]
+  );
 
   const handleClose = useCallback(() => {
     dispatch(
@@ -357,13 +367,54 @@ const OrderInfoComponent = () => {
       type: "",
     });
   };
-  const downloadPDF = async () => {
+  const base64toFile = (
+    base64Data: string,
+    filename: string,
+    mimeType: string
+  ) => {
+    try {
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: mimeType });
+      return new File([blob], filename, { type: mimeType });
+    } catch (error) {
+      console.error("Failed to convert base64 to file:", error);
+      return null; // or handle the error as needed
+    }
+  };
+
+  const downloadPDF = useCallback(async () => {
+    setIsOpenToast({ isOpen: false, type: "email", toastMessage: "" });
+
     const pages = document.getElementById("receipt");
     const width = pages?.clientWidth;
     const height = pages?.clientHeight;
-
-    console.log(width);
-    await html2PDF(pages!, {
+    const currentDate = new Date();
+    const formattedDate = `${currentDate.getFullYear()}-${(
+      currentDate.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${currentDate
+      .getDate()
+      .toString()
+      .padStart(2, "0")}-${currentDate
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${currentDate
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}:${currentDate
+      .getSeconds()
+      .toString()
+      .padStart(2, "0")}`;
+    const filename = `./invoice/${formattedDate}/${
+      order_list_info.order_info?.transid?.split("-")[0]
+    }.pdf`;
+    const pdf = await html2PDF(pages!, {
       jsPDF: {
         unit: "px",
         format: [width!, height! + 100],
@@ -371,21 +422,76 @@ const OrderInfoComponent = () => {
       imageType: "image/jpeg",
       imageQuality: 1,
       autoResize: true,
-      output: `./invoice/${
-        order_list_info.order_info?.transid?.split("-")[0]
-      }.pdf`,
+      output: filename,
     });
+    const file = pdf.output("dataurlstring");
+
+    const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
+
+    const mimeType = "application/pdf";
+    const pdfFile = base64toFile(base64PDF, filename, mimeType);
+
+    if (getEmail !== "") {
+      setIsOpenToast({ isOpen: true, type: "", toastMessage: "Sending Email" });
+      await SendEmail(
+        "fernandezedward6653@gmail.com",
+        getEmail,
+        `Your E-Receipt from Restie Hardware: Ensuring a Seamless Transaction:${
+          order_list_info.order_info?.transid?.split("-")[0]
+        }`,
+        `<h2>Dear Valued Customer,</h2><br>
+  
+        <span>We hope this message finds you well.</p>
+        <span>We are pleased to provide you with your electronic receipt (E-receipt) from Restie Hardware, confirming </span>
+        <span>your recent transaction with us. At Restie Hardware, we are committed to delivering top-notch service </span>
+        <span>and ensuring that your shopping experience is nothing short of exceptional.</span><br>
+  
+        <span>Your satisfaction is our utmost priority, and we understand the importance of transparency and </p>
+        <span>efficiency in every transaction. As such, we have meticulously compiled and generated this E-receipt to </span>
+        <span>offer you a comprehensive overview of your purchase details.</span><br>
+  
+        <p>Please see attached file for the breakdown of your transaction</p><br>
+  
+        <span>Once again, thank you for choosing Restie Hardware.We look forward to serving you again soon </span>
+        <span>and trust that your recent purchase will prove to be both functional and reliable.</span><br>
+  
+        <p>Best Regards,</p><br>
+  
+        <p>Restie Hardware</p>
+        `,
+        pdfFile
+      );
+
+      setIsOpenToast({
+        isOpen: false,
+        type: "",
+        toastMessage: "Sending Email",
+      });
+    }
+    setEmail("");
     setOpenSearchModal({ isOpen: false, modal: "receipt" });
-  };
+  }, [getEmail, order_list_info]);
+
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
         <div className="order-list-info-footer-approved"> </div>
-
-        <div className="order-list-info-footer-approved-info">
-          {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ||
-          order_list_info.order_info?.paidthru?.toLowerCase() ===
-            "quotation" ? (
+        {order_list_info.order_info?.paidthru?.toLowerCase() === "cancel" ? (
+          <div className="order-list-info-footer-approved-info">
+            <>
+              <IonButton
+                size="small"
+                color="tertiary"
+                onClick={() => handleEdit(true)}
+              >
+                Reorder
+              </IonButton>
+            </>
+          </div>
+        ) : null}
+        {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ||
+        order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" ? (
+          <div className="order-list-info-footer-approved-info">
             <>
               <IonButton
                 size="small"
@@ -397,7 +503,7 @@ const OrderInfoComponent = () => {
               <IonButton
                 size="small"
                 color="tertiary"
-                onClick={() => handleEdit()}
+                onClick={() => handleEdit(false)}
               >
                 Edit Order
               </IonButton>
@@ -409,9 +515,8 @@ const OrderInfoComponent = () => {
                 Process Order
               </IonButton>
             </>
-          ) : null}
-        </div>
-
+          </div>
+        ) : null}
         {order_list_info.order_info?.status.toLowerCase() === "delivered" ? (
           <div className="order-list-info-footer-approved-info">
             <>
@@ -723,7 +828,17 @@ const OrderInfoComponent = () => {
             </IonButtons>
             <IonTitle className="delivery-info-title"> Invoice</IonTitle>
             <IonButtons slot="end">
-              <IonButton onClick={() => downloadPDF()}>Print</IonButton>
+              <IonButton
+                onClick={() =>
+                  setIsOpenToast({
+                    isOpen: true,
+                    type: "email",
+                    toastMessage: "",
+                  })
+                }
+              >
+                Print
+              </IonButton>
             </IonButtons>
           </IonToolbar>
         </IonHeader>
@@ -916,8 +1031,37 @@ const OrderInfoComponent = () => {
           </div>
         </IonContent>
       </IonModal>
+      <IonModal
+        onDidDismiss={() =>
+          setIsOpenToast({ isOpen: false, type: "email", toastMessage: "" })
+        }
+        id="email-modal"
+        isOpen={isOpenToast.type === "email" ? isOpenToast.isOpen : false}
+      >
+        <div className="wrapper">
+          <IonText className="email-header">
+            Send receipt to customers email
+          </IonText>
+          <IonItem>
+            <IonInput
+              label="Customers Email"
+              labelPlacement="floating"
+              type="email"
+              placeholder="email@gmail.com"
+              onIonInput={(e) => setEmail(e.target.value?.toString()!)}
+            ></IonInput>
+          </IonItem>
+          <IonButton
+            expand="block"
+            color={"medium"}
+            onClick={() => downloadPDF()}
+          >
+            Submit
+          </IonButton>
+        </div>
+      </IonModal>
       <IonLoading
-        isOpen={isOpenToast?.isOpen}
+        isOpen={isOpenToast?.type !== "email" ? isOpenToast?.isOpen : false}
         message={isOpenToast?.toastMessage}
         spinner="circles"
         onDidDismiss={() =>

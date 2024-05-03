@@ -411,3 +411,31 @@ export const GetInventory = async () => {
   console.log(response);
   return response;
 };
+export const SendEmail = async (
+  from: string,
+  to: string,
+  subject: string,
+  body: string,
+  Attachment: any
+) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const formData = new FormData();
+  formData.append("from", from);
+  formData.append("to", to);
+  formData.append("subject", subject);
+  formData.append("text", body);
+  formData.append("Attachment", Attachment);
+  const response = await post(
+    `${baseUrl}api/Inventory/SendEmail`,
+    {
+      "Content-Type": "multipart/data",
+      Authorization: `Bearer ${getToken}`,
+    },
+    formData
+  );
+  console.log(response);
+  return response;
+};

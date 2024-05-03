@@ -148,23 +148,32 @@ const checkPayload = (
     cash: "Cash",
     pending: "Pending",
     quotation: "Quotation",
+    cancel: "Cancel",
   };
+  let update_status = "";
+  if (method.toLowerCase() === paymentMethod.cash.toLowerCase()) {
+    update_status = "approved";
+  }
+  if (method.toLowerCase() === paymentMethod.quotation.toLowerCase()) {
+    update_status = "quotation";
+  }
+  if (method.toLowerCase() === paymentMethod.cancel.toLowerCase()) {
+    update_status = "cancel";
+  }
+  if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
+    update_status = "pending";
+  }
   const updatedPayload = payload.map((val) => ({
     ...val,
     orderid: orderid,
-    createdAt: createdat,
+    createdAt: payload[0].reorder ? new Date().getTime() : createdat,
     createdby: "Admin",
     paidcash:
       method.toLowerCase() === paymentMethod.cash.toLowerCase()
         ? customerCash
         : 0.0,
     paidthru: method,
-    status:
-      method.toLowerCase() === paymentMethod.cash.toLowerCase()
-        ? "approved"
-        : paymentMethod.quotation.toLowerCase()
-        ? "quotation"
-        : "pending",
+    status: update_status,
     userid: customer_payload?.customerid,
     type: customer_payload.ordertype,
     updateat: payload[0]?.orderid !== "" ? new Date().getTime() : null,
@@ -184,6 +193,7 @@ export const PostOrder =
     cashierName?: string
   ) =>
   async (dispatch: Dispatch<ADD_TO_CART>) => {
+    let isReorder = payload[0].reorder;
     let res: ResponseModel = {
       result: {
         cartid: "",
@@ -228,7 +238,6 @@ export const PostOrder =
           const resOrderInfo = await userOrderInfo(UserOrderInfopayload);
           let newItem: Addtocart;
           payload = [];
-          console.log(resOrderInfo.order_item);
           resOrderInfo.order_item.$values?.map((val: GetOrderItems) => {
             newItem = {
               onhandqty: val?.onhandqty!,
@@ -239,7 +248,9 @@ export const PostOrder =
               price: val.price,
               orderid: resOrderInfo.order_info.orderid,
               cartid: resOrderInfo.order_info.cartid,
-              createdAt: resOrderInfo.order_info.createdat,
+              createdAt: isReorder
+                ? new Date().getTime()
+                : resOrderInfo.order_info.createdat,
               status: resOrderInfo.order_info.status,
             };
             payload.push(newItem);

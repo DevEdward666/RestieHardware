@@ -14,6 +14,11 @@ namespace RestieAPI.Models.Response
         public int status { get; set; }
         public string message { get; set; }
     }
+    public class PostSendEmail
+    {
+        public int status { get; set; }
+        public string message { get; set; }
+    }
     public class PostDeliveryImageResponse
     {
         public DeliveryImageResponse result { get; set; }

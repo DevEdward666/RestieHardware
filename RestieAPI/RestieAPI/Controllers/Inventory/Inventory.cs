@@ -1,12 +1,18 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using iTextSharp.text.pdf.codec.wmf;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.OpenApi.Models;
+using Org.BouncyCastle.Asn1.Crmf;
 using RestieAPI.Configs;
 using RestieAPI.Models.Request;
 using RestieAPI.Models.Response;
+using RestieAPI.Providers;
 using RestieAPI.Service.Repo;
+using RestSharp;
+using RestSharp.Authenticators;
 using System.IO;
 using static RestieAPI.Models.Request.InventoryRequestModel;
 using static System.Net.Mime.MediaTypeNames;
@@ -246,5 +252,31 @@ namespace RestieAPI.Controllers.Inventory
             };
 
         }
+        [Authorize]
+        [HttpPost("SendEmail")]
+        public async Task<ActionResult<PostSendEmail>> SendMailgunEmail([FromForm] PostEmail postEmail)
+        {
+            MailgunEmailSender emailSender = new MailgunEmailSender();
+
+            try
+            {
+                await emailSender.SendEmail(postEmail);
+
+                return new PostSendEmail
+                {
+                    status = StatusCodes.Status200OK,
+                    message = "Email sent successfully!"
+                };
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new PostSendEmail
+                {
+                    status = StatusCodes.Status500InternalServerError,
+                    message = ex.Message
+                });
+            }
+        }
+
     }
 }

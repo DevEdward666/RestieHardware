@@ -19,6 +19,7 @@ import { ResponseModel } from "../../../Models/Response/Commons/Commons";
 import {
   GetCustomerInformation,
   PostCustomer,
+  PutCustomerEmail,
 } from "../../../Models/Response/Customer/GetCustomerModel";
 import {
   GetListOrder,
@@ -215,7 +216,23 @@ export const InsertCustomerInfo = async (payload: GetCustomerInformation) => {
     throw new Error("Token not found");
   }
   const response = await post(
-    `${baseUrl}api/Inventory/PostCustoemrInfo`,
+    `${baseUrl}api/Inventory/PostCustomerInfo`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  console.log(response);
+  return response.result;
+};
+export const UpdateCustomerEmail = async (payload: PutCustomerEmail) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const response = await post(
+    `${baseUrl}api/Inventory/UpdateCustomerEmail`,
     {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getToken}`,

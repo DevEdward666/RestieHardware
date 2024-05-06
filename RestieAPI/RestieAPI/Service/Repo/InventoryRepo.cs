@@ -266,8 +266,8 @@ namespace RestieAPI.Service.Repo
       
         public PostResponse AddCustomerInfo(InventoryRequestModel.PostCustomerInfo postCustomerInfo)
         {
-            var sql = @"insert into customer (customerid,name,contactno,address,createdat) 
-                values(@customerid,@name,@contactno,@address,@createdat)";
+            var sql = @"insert into customer (customerid,name,contactno,address,createdat,customer_email) 
+                values(@customerid,@name,@contactno,@address,@createdat,@customer_email)";
         
             var parameters = new Dictionary<string, object>
             {
@@ -276,6 +276,7 @@ namespace RestieAPI.Service.Repo
                 { "@contactno", postCustomerInfo.contactno },
                 { "@address", postCustomerInfo.address },
                 { "@createdat", postCustomerInfo.createdat },
+                { "@customer_email", postCustomerInfo.customer_email },
             };
 
             var results = new List<InventoryItems>();
@@ -303,6 +304,59 @@ namespace RestieAPI.Service.Repo
                         return new PostResponse
                         {
                             Message = "Successfully added",
+                            status = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostResponse
+                        {
+                            status = 500,
+                            Message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+
+
+        }
+        public PostResponse UpdateCustomerEmail(InventoryRequestModel.PutCustomerEmail putCustomerEmail)
+        {
+            var sql = @"update customer set customer_email=@customer_email where customerid= @customerid";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@customerid", putCustomerEmail.customerid },
+                { "@customer_email", putCustomerEmail.customer_email },
+            };
+
+            var results = new List<InventoryItems>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        var insert = 0;
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            insert = cmd.ExecuteNonQuery();
+                        }
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new PostResponse
+                        {
+                            Message = "Successfully updated",
                             status = 200
                         };
                     }
@@ -1326,13 +1380,13 @@ namespace RestieAPI.Service.Repo
         }
         public OrderInfoResponseModel GetOrderInfo(InventoryRequestModel.GetSelectedOrder getUserOrder)
         {
-            var sql = @"select inv.category, inv.brand, trans.transid, inv.qty as onhandqty, cts.name, cts.address, cts.contactno, ct.cartid, ors.orderid, ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code, ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type
+            var sql = @"select cts.customerid, cts.customer_email, inv.category, inv.brand, trans.transid, inv.qty as onhandqty, cts.name, cts.address, cts.contactno, ct.cartid, ors.orderid, ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code, ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type
                 from orders AS ors 
                 join cart AS ct on ors.cartid = ct.cartid 
                 join customer cts on cts.customerid = ors.userid 
                 join inventory AS inv on inv.code = ct.code
                 left join transaction as trans on trans.orderid = ors.orderid
-                where ors.orderid = @orderid";
+                where ors.orderid = @orderid  group by cts.customerid, cts.customer_email, inv.category, inv.brand, trans.transid, inv.qty, cts.name, cts.address, cts.contactno, ct.cartid, ors.orderid, ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code, ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type";
 
             var parameters = new Dictionary<string, object>
                 {
@@ -1368,6 +1422,9 @@ namespace RestieAPI.Service.Repo
                                         transid = transid,
                                         orderid = reader.GetString(reader.GetOrdinal("orderid")),
                                         cartid = reader.GetString(reader.GetOrdinal("cartid")),
+
+                                        customerid = reader.GetString(reader.GetOrdinal("customerid")),
+                                        customer_email = reader.GetString(reader.GetOrdinal("customer_email")),
 
                                         name = reader.GetString(reader.GetOrdinal("name")),
                                         address = reader.GetString(reader.GetOrdinal("address")),
@@ -1974,13 +2031,13 @@ namespace RestieAPI.Service.Repo
         }
         public QuotationResponseModel GetQuotationOrderInfo(InventoryRequestModel.GetSelectedOrder getUserOrder)
         {
-            var sql = @"select inv.category, inv.brand, trans.transid, inv.qty as onhandqty, cts.name, cts.address, cts.contactno, ct.cartid, ors.orderid, ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code, ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type
+            var sql = @"select cts.customerid, cts.customer_email, inv.category, inv.brand, trans.transid, inv.qty as onhandqty, cts.name, cts.address, cts.contactno, ct.cartid, ors.orderid, ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code, ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type
                 from orders AS ors 
                 join cart AS ct on ors.cartid = ct.cartid 
                 join customer cts on cts.customerid = ors.userid 
                 join inventory AS inv on inv.code = ct.code
                 left join transaction as trans on trans.orderid = ors.orderid
-                where ors.orderid = @orderid";
+                where ors.orderid = @orderid  group by cts.customerid, cts.customer_email, inv.category, inv.brand, trans.transid, inv.qty, cts.name, cts.address, cts.contactno, ct.cartid, ors.orderid, ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code, ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type";
 
             var parameters = new Dictionary<string, object>
                 {

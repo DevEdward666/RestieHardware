@@ -40,6 +40,7 @@ import {
 import {
   GetDeliveryImage,
   SendEmail,
+  UpdateCustomerEmail,
   userQuoatationOrderInfo,
 } from "../../../Service/API/Inventory/InventoryApi";
 import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
@@ -341,7 +342,7 @@ const OrderInfoComponent = () => {
       })
     );
   };
-  const handlePrintQuotation = async () => {
+  const handlePrintQuotation = useCallback(async () => {
     setIsOpenToast({
       toastMessage: "Generating PDF",
       isOpen: true,
@@ -361,12 +362,50 @@ const OrderInfoComponent = () => {
     const blob = new Blob([byteArray], { type: "application/pdf" });
     const fileURL = URL.createObjectURL(blob);
     window.open(fileURL);
-    setIsOpenToast({
-      toastMessage: "",
-      isOpen: false,
-      type: "",
-    });
-  };
+    const pdfFile = base64toFile(
+      base64Data,
+      res?.result?.fileDownloadName,
+      blob.type
+    );
+    if (getEmail !== "") {
+      setIsOpenToast({
+        isOpen: true,
+        type: "sending-email",
+        toastMessage: "Sending Email",
+      });
+      await SendEmail(
+        "fernandezedward6653@gmail.com",
+        getEmail,
+        `Quotation for Hardware Order`,
+        `<h2>Dear Valued Customer,</h2><br>
+  
+        <span>I hope this email finds you well. We appreciate the opportunity to provide you with a quotation for the </span>
+        <span>hardware items you require. Below, please find the detailed breakdown of the items along with their  </span>
+        <span>respective prices: </span><br>
+      
+        <span>If you require any further information or customization, please feel free to contact us. We are committed  </span>
+        <span>to providing the best service possible and look forward to fulfilling your hardware needs. </span><br>
+
+        <span>Thank you for considering Restie Hardware for your hardware requirements. We are eager to serve you. </span><br>
+
+        <p>Best Regards,</p><br>
+  
+        <p>Restie Hardware</p>
+        `,
+        pdfFile
+      );
+      await UpdateCustomerEmail({
+        customerid: order_list_info?.order_info.customerid!,
+        customer_email: getEmail,
+      });
+      setIsOpenToast({
+        isOpen: false,
+        type: "sending-email",
+        toastMessage: "Sending Email",
+      });
+    }
+    setEmail("");
+  }, [order_list_info, getEmail]);
   const base64toFile = (
     base64Data: string,
     filename: string,
@@ -388,7 +427,7 @@ const OrderInfoComponent = () => {
   };
 
   const downloadPDF = useCallback(async () => {
-    setIsOpenToast({ isOpen: false, type: "email", toastMessage: "" });
+    setIsOpenToast({ isOpen: false, type: "receipt-email", toastMessage: "" });
 
     const pages = document.getElementById("receipt");
     const width = pages?.clientWidth;
@@ -461,7 +500,10 @@ const OrderInfoComponent = () => {
         `,
         pdfFile
       );
-
+      await UpdateCustomerEmail({
+        customerid: order_list_info?.order_info.customerid!,
+        customer_email: getEmail,
+      });
       setIsOpenToast({
         isOpen: false,
         type: "",
@@ -471,7 +513,28 @@ const OrderInfoComponent = () => {
     setEmail("");
     setOpenSearchModal({ isOpen: false, modal: "receipt" });
   }, [getEmail, order_list_info]);
-
+  const handleSetEmail = useCallback(
+    async (ev: Event) => {
+      if (order_list_info?.order_info.customer_email?.length! > 0) {
+        setEmail(getEmail);
+      } else {
+        const target = ev.target as HTMLIonInputElement;
+        const query = target.value?.toString() ?? "";
+        setEmail(query);
+      }
+    },
+    [order_list_info, getEmail]
+  );
+  useEffect(() => {
+    const checkUserEmail = () => {
+      if (order_list_info?.order_info.customer_email?.length! > 0) {
+        setEmail(order_list_info?.order_info.customer_email!);
+      } else {
+        setEmail("");
+      }
+    };
+    checkUserEmail();
+  }, [order_list_info.order_info.customer_email]);
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
@@ -489,17 +552,21 @@ const OrderInfoComponent = () => {
             </>
           </div>
         ) : null}
+
         {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ||
         order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" ? (
           <div className="order-list-info-footer-approved-info">
             <>
-              <IonButton
-                size="small"
-                color="tertiary"
-                onClick={() => handleCancel()}
-              >
-                Cancel Order
-              </IonButton>
+              {order_list_info.order_info?.paidthru?.toLowerCase() ===
+              "pending" ? (
+                <IonButton
+                  size="small"
+                  color="tertiary"
+                  onClick={() => handleCancel()}
+                >
+                  Cancel Order
+                </IonButton>
+              ) : null}
               <IonButton
                 size="small"
                 color="tertiary"
@@ -725,7 +792,13 @@ const OrderInfoComponent = () => {
           <IonButton
             className="order-info-close"
             color="medium"
-            onClick={() => handlePrintQuotation()}
+            onClick={() =>
+              setIsOpenToast({
+                isOpen: true,
+                type: "quotation-email",
+                toastMessage: "",
+              })
+            }
           >
             <IonIcon src={print}></IonIcon>
             <IonText className="profile-button-text">Print Quotation</IonText>
@@ -832,7 +905,7 @@ const OrderInfoComponent = () => {
                 onClick={() =>
                   setIsOpenToast({
                     isOpen: true,
-                    type: "email",
+                    type: "receipt-email",
                     toastMessage: "",
                   })
                 }
@@ -1033,35 +1106,59 @@ const OrderInfoComponent = () => {
       </IonModal>
       <IonModal
         onDidDismiss={() =>
-          setIsOpenToast({ isOpen: false, type: "email", toastMessage: "" })
+          setIsOpenToast({
+            isOpen: false,
+            type:
+              isOpenToast.type === "quotation-email"
+                ? "quotation-email"
+                : "receipt-email",
+            toastMessage: "",
+          })
         }
         id="email-modal"
-        isOpen={isOpenToast.type === "email" ? isOpenToast.isOpen : false}
+        isOpen={
+          isOpenToast.type === "receipt-email" ||
+          isOpenToast.type === "quotation-email"
+            ? isOpenToast.isOpen
+            : false
+        }
       >
         <div className="wrapper">
           <IonText className="email-header">
-            Send receipt to customers email
+            {isOpenToast.type === "quotation-email"
+              ? "Send quotation to customers email"
+              : "Send receipt to customers email"}
           </IonText>
           <IonItem>
             <IonInput
               label="Customers Email"
               labelPlacement="floating"
               type="email"
+              value={getEmail}
               placeholder="email@gmail.com"
-              onIonInput={(e) => setEmail(e.target.value?.toString()!)}
+              onIonInput={(e) => handleSetEmail(e)}
             ></IonInput>
           </IonItem>
           <IonButton
             expand="block"
             color={"medium"}
-            onClick={() => downloadPDF()}
+            onClick={() =>
+              isOpenToast.type === "quotation-email"
+                ? handlePrintQuotation()
+                : downloadPDF()
+            }
           >
             Submit
           </IonButton>
         </div>
       </IonModal>
       <IonLoading
-        isOpen={isOpenToast?.type !== "email" ? isOpenToast?.isOpen : false}
+        isOpen={
+          isOpenToast?.type === "receipt-email" ||
+          isOpenToast?.type === "quotation-email"
+            ? false
+            : isOpenToast?.isOpen
+        }
         message={isOpenToast?.toastMessage}
         spinner="circles"
         onDidDismiss={() =>

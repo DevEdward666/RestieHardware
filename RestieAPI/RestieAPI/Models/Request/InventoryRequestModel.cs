@@ -38,7 +38,15 @@ namespace RestieAPI.Models.Request
             public string name { get; set; }
             public string contactno { get; set; }
             public string address { get; set; }
+            public string customer_email { get; set; }
             public long createdat { get; set; }
+
+
+        }
+        public class PutCustomerEmail
+        {
+            public string customerid { get; set; }
+            public string customer_email { get; set; }
 
 
         }

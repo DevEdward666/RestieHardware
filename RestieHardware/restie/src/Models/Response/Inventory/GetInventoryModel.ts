@@ -28,6 +28,8 @@ export interface GetOrderInfo {
   name: string;
   address: string;
   contactno: number;
+  customerid?: string;
+  customer_email?: string;
 }
 
 export interface GetOrderItems {

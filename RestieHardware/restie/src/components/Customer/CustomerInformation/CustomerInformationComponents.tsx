@@ -68,6 +68,7 @@ const CustomerInformationComponent: React.FC = () => {
       address: "",
       contactno: 0,
       ordertype: "",
+      customer_email: "",
       newUser: true,
     });
   const dispatch = useTypedDispatch();
@@ -78,6 +79,7 @@ const CustomerInformationComponent: React.FC = () => {
         address: "",
         contactno: 0,
         ordertype: "",
+        customer_email: "",
         newUser: true,
       });
       dispatch(GetAllCustomers());
@@ -93,6 +95,7 @@ const CustomerInformationComponent: React.FC = () => {
       address: "",
       contactno: 0,
       ordertype: "",
+      customer_email: "",
       newUser: true,
     });
     router.push("/paymentoptions");
@@ -173,6 +176,7 @@ const CustomerInformationComponent: React.FC = () => {
         address: get_customer.address,
         contactno: get_customer.contactno,
         ordertype: "deliver",
+        customer_email: "",
         newUser: false,
       });
     };
@@ -186,6 +190,7 @@ const CustomerInformationComponent: React.FC = () => {
       name: "",
       address: "",
       contactno: 0,
+      customer_email: "",
       ordertype: "",
     });
     // Handle checkbox change

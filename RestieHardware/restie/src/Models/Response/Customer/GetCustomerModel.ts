@@ -4,7 +4,12 @@ export interface GetCustomerInformation {
   address: string;
   contactno: number;
   ordertype: string;
+  customer_email?: string;
   newUser?: boolean;
+}
+export interface PutCustomerEmail {
+  customerid: string;
+  customer_email: string;
 }
 export interface GetPaymentInfo {
   cash: number;

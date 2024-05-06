@@ -136,6 +136,8 @@ namespace RestieAPI.Models.Response
         public string address { get; set; }
         public string contactno { get; set; }
         public string type { get; set; }
+        public string? customer_email { get; set; }
+        public string? customerid { get; set; }
         public float total { get; set; }
     }
     public class ItemOrders

@@ -120,10 +120,16 @@ namespace RestieAPI.Controllers.Inventory
             return Ok(_inventoryRepo.selectOrder(getSelectedOrder));
         }
         [Authorize]
-        [HttpPost("PostCustoemrInfo")]
+        [HttpPost("PostCustomerInfo")]
         public ActionResult<PostResponse> PostCustoemrInfo(PostCustomerInfo postCustomerInfo)
         {
             return Ok(_inventoryRepo.AddCustomerInfo(postCustomerInfo));
+        }
+        [Authorize]
+        [HttpPost("UpdateCustomerEmail")]
+        public ActionResult<PostResponse> UpdateCustomerEmail(PutCustomerEmail putCustomerEmail)
+        {
+            return Ok(_inventoryRepo.UpdateCustomerEmail(putCustomerEmail));
         }
         [Authorize]
         [HttpGet("GetCustomers")]

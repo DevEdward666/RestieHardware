@@ -695,7 +695,7 @@ const OrderInfoComponent = () => {
           </div>
           <IonButton
             color={"light"}
-            onClick={() => handleCopy(order_list_info.order_info?.transid)}
+            onClick={() => handleCopy(order_list_info.order_info?.transid!)}
           >
             <IonIcon src={copy}></IonIcon>
           </IonButton>

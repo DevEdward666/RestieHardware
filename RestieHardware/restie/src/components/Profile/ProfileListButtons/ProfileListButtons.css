@@ -36,9 +36,12 @@
     }
 }
 .profile-list-button-list-logout-container{
+    display: flex;
     bottom: 0;
     position: absolute;
     width: 100%;
+    gap: 8px;
+    flex-direction: column;
 
     .profile-list-button-list-logout{
         display: flex;

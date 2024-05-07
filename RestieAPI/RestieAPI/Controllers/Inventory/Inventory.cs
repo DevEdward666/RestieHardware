@@ -186,6 +186,18 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<PostSalesResponse> GetByDaySales()
         {
             return Ok(_inventoryRepo.getInventoryQty());
+        }   
+        [Authorize]
+        [HttpPost("GetItemsToRefund")]
+        public ActionResult<RequestRefundResponseModel> getItemtoRefund(RequestRefundRequest requestRefundRequest)
+        {
+            return Ok(_inventoryRepo.getItemtoRefund(requestRefundRequest));
+        }   
+        [Authorize]
+        [HttpPost("PostReturnItems")]
+        public ActionResult<PostResponse> PostReturnItems(ReturnItems returnItems)
+        {
+            return Ok(_inventoryRepo.PostReturnItems(returnItems));
         }
   
         [Authorize]

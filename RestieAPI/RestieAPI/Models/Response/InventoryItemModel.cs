@@ -116,6 +116,25 @@ namespace RestieAPI.Models.Response
         public string status { get; set; }
         public string userid { get; set; }
     }
+
+    public class RequestRefundResponseModel
+    {
+
+        public List<RequestRefundResponse> result { get; set; }
+        public int statusCode { get; set; }
+        public string message { get; set; }
+    }
+    public class RequestRefundResponse
+    {
+
+        public string transid { get; set; }
+        public string orderid { get; set; }
+        public string code { get; set; }
+        public string item { get; set; }
+        public long price { get; set; }
+        public long qty { get; set; }
+        public long createdat { get; set; }
+    }
     public class BrandResponse
     {
         public string brand { get; set; }

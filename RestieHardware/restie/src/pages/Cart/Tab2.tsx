@@ -12,14 +12,20 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { saveOrder } from "../../Service/Actions/Inventory/InventoryActions";
+import {
+  PostOrder,
+  getOrderInfo,
+  saveOrder,
+} from "../../Service/Actions/Inventory/InventoryActions";
 import { GetLoginUser } from "../../Service/Actions/Login/LoginActions";
 import { RootStore, useTypedDispatch } from "../../Service/Store";
 import restielogo from "../../assets/images/Icon@3.png";
 import CartComponent from "../../components/Cart/CartComponent";
 import "./Tab2.css";
+import { PostSelectedOrder } from "../../Models/Request/Inventory/InventoryModel";
+import { ResponseModel } from "../../Models/Response/Commons/Commons";
 
 const Tab2: React.FC = () => {
   const dispatch = useTypedDispatch();
@@ -28,6 +34,12 @@ const Tab2: React.FC = () => {
     useSelector((store: RootStore) => store.InventoryReducer.add_to_cart) || [];
   const [getTotal, setTotal] = useState<number>(0);
   const [existingOrder, setExistingOrder] = useState<boolean>(false);
+  const customer_information = useSelector(
+    (store: RootStore) => store.CustomerReducer.customer_information
+  );
+  const user_login_information = useSelector(
+    (store: RootStore) => store.LoginReducer.user_login_information
+  );
   useEffect(() => {
     const getTotal = () => {
       let totalPrice = 0; // Initialize total price
@@ -59,7 +71,7 @@ const Tab2: React.FC = () => {
     });
   };
 
-  const handleSaveOrder = async () => {
+  const handleSaveOrder = useCallback(async () => {
     try {
       const res = await dispatch(GetLoginUser());
       console.log(res);
@@ -68,15 +80,42 @@ const Tab2: React.FC = () => {
       } else {
         const date = new Date().getTime();
         if (existingOrder) {
-          await dispatch(saveOrder(selectedItemselector, date));
+          if (
+            (selectedItemselector &&
+              selectedItemselector[0].status === "quotation") ||
+            selectedItemselector[0].status === "pending"
+          ) {
+            const addedOrder: ResponseModel = await dispatch(
+              PostOrder(
+                selectedItemselector[0].orderid!,
+                selectedItemselector,
+                customer_information,
+                new Date().getTime(),
+                selectedItemselector[0].status,
+                0.0,
+                user_login_information.name
+              )
+            );
+            if (addedOrder) {
+              const payload: PostSelectedOrder = {
+                orderid: addedOrder.result?.orderid!,
+                userid: "",
+                cartid: addedOrder.result?.cartid!,
+              };
+              dispatch(getOrderInfo(payload));
+              router.push(`/orderInfo?orderid=${addedOrder.result?.orderid!}`);
+            }
+          } else {
+            await dispatch(saveOrder(selectedItemselector, date));
 
-          router.push("/customerInformation");
+            router.push("/customerInformation");
+          }
         }
       }
     } catch (error) {
       console.log("User Not logged in");
     }
-  };
+  }, [dispatch, user_login_information, selectedItemselector]);
   return (
     <IonPage className="home-page-container">
       <IonHeader className="home-page-header">

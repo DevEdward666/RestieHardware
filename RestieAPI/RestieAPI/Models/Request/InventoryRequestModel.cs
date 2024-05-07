@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RestieAPI.Models.Response;
 
 namespace RestieAPI.Models.Request
 {
@@ -15,6 +16,10 @@ namespace RestieAPI.Models.Request
             public string? brand {  get; set; }
             public string? filter {  get; set; }
 
+        }
+        public class RequestRefundRequest
+        {
+            public string transid { get; set; }
         }
         public class PostInventory
         {
@@ -147,6 +152,18 @@ namespace RestieAPI.Models.Request
             public string cartid { get; set; }
             public long updateat { get; set; }
             public string status { get; set; }
+
+        }
+        public class ReturnItems
+        {
+            public string orderid { get; set; }
+            public string transid { get; set; }
+            public string code { get; set; }
+            public string item { get; set; }
+            public long qty { get; set; }
+            public long price { get; set; }
+            public long createdat { get; set; }
+
 
         }
         public class GetSales

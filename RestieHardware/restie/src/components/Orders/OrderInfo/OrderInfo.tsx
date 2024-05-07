@@ -134,8 +134,8 @@ const OrderInfoComponent = () => {
       orderid: orderid,
       userid: "",
     };
-    dispatch(selectedOrder(payload));
-    router.push("/home/cart");
+    // dispatch(selectedOrder(payload));
+    // router.push("/home/cart");
   };
   const handleCancel = useCallback(async () => {
     let newItem: Addtocart;
@@ -686,6 +686,22 @@ const OrderInfoComponent = () => {
           <IonIcon src={copy}></IonIcon>
         </IonButton>
       </div>
+      {order_list_info.order_info?.transid?.length! > 0 ? (
+        <div className="order-list-info-customer-details">
+          <div className="order-list-info-customer">Transaction ID: </div>
+
+          <div className="order-list-info-customer-info">
+            {order_list_info.order_info?.transid}
+          </div>
+          <IonButton
+            color={"light"}
+            onClick={() => handleCopy(order_list_info.order_info?.transid)}
+          >
+            <IonIcon src={copy}></IonIcon>
+          </IonButton>
+        </div>
+      ) : null}
+
       <IonImg className="breakline" src={breakline} />
       <div className="order-list-info-container">
         {Array.isArray(order_list_info.order_item) &&

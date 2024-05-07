@@ -1,8 +1,10 @@
 ﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using Npgsql.Internal;
+using Org.BouncyCastle.Utilities.Collections;
 using RestieAPI.Configs;
 using RestieAPI.Models.Request;
 using RestieAPI.Models.Response;
@@ -2141,7 +2143,7 @@ namespace RestieAPI.Service.Repo
         {
             var sql = @"select  ct.code, TRIM(ct.item) as item, SUM(ct.qty) as qty, TO_CHAR(SUM(ct.total), 'FM999,999,999.00') AS total_sales
                 from transaction as tr join orders as ors on tr.orderid = ors.orderid
-                join cart as ct on ct.cartid = ors.cartid where LOWER(ors.status) = 'delivered'
+                join cart as ct on ct.cartid = ors.cartid where LOWER(ors.status) = 'approved'  and LOWER(ct.status) = 'approved'
                 AND DATE(to_timestamp(tr.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
                 group by ct.item, ct.code;";
 
@@ -2281,6 +2283,142 @@ namespace RestieAPI.Service.Repo
                             message = ex.Message,
                             statusCode = 500,
                             success = false,
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
+        public RequestRefundResponseModel getItemtoRefund(RequestRefundRequest requestRefundRequest)
+        {
+            var sql = @"select  tr.transid, tr.orderid,ct.code,ct.item,ct.qty,ct.total,tr.createdat from transaction as tr
+                        join orders as ors on tr.orderid = ors.orderid
+                        join cart as ct on ct.cartid = ors.cartid  where tr.transid=@transid";
+            var parameters = new Dictionary<string, object>
+            {
+                { "@transid", requestRefundRequest.transid },
+            };
+            var results = new List<RequestRefundResponse>();
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var refundItemsResponse = new RequestRefundResponse
+                                    {
+                                        transid = reader.GetString(reader.GetOrdinal("transid")),
+                                        orderid = reader.GetString(reader.GetOrdinal("orderid")),
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        price = reader.GetInt64(reader.GetOrdinal("price")),
+                                        qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                    };
+
+                                    results.Add(refundItemsResponse);
+                                }
+                            }
+                        }
+
+                        tran.Commit();
+
+                        return new RequestRefundResponseModel
+                        {
+                            result = results,
+                            statusCode = 200,
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new RequestRefundResponseModel
+                        {
+                            message = ex.Message,
+                            statusCode = 500,
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
+        public PostResponse PostReturnItems(InventoryRequestModel.ReturnItems returnItems)
+        {
+            var insertReturn = @"insert into returns (transid,orderid,code,item,qty,price,createdat) 
+                                values(@transid, @orderid, @code, @item, @qty, @price,@createdat)";
+                
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+                var insertedReturns = 0;
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // Execute the insertion command for each item
+                        using (var cmd = new NpgsqlCommand(insertReturn, connection))
+                        {
+
+                            var parameters = new Dictionary<string, object>
+                                {
+                                    { "@transid", returnItems.transid },
+                                    { "@orderid", returnItems.orderid },
+                                    { "@code", returnItems.code },
+                                    { "@item", returnItems.item },
+                                    { "@qty", returnItems.qty },
+                                    { "@price", returnItems.price },
+                                    { "@createdat", returnItems.createdat },
+                                };
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+                            insertedReturns = cmd.ExecuteNonQuery();
+                        }
+
+                        if (insertedReturns > 0)
+                        {
+
+                            tran.Commit();
+                            return new PostResponse
+                            {
+                                status = 200,
+                                Message = "Order successfully return"
+                            };
+                        }
+                        else
+                        {
+                            tran.Rollback();
+                            return new PostResponse
+                            {
+                                status = 500,
+                                Message = "Return failed"
+                            };
+                        }
+
+                        // Commit the transaction after all items have been processed
+                     
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostResponse
+                        {
+                            status = 500,
+                            Message = ex.Message
                         };
                         throw;
                     }

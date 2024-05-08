@@ -17,7 +17,16 @@ import {
 } from "@ionic/react";
 import "@ionic/react/css/ionic-swiper.css";
 import { format } from "date-fns";
-import { close, copy, print } from "ionicons/icons";
+import {
+  cashOutline,
+  chevronForwardOutline,
+  close,
+  closeCircle,
+  closeCircleOutline,
+  closeCircleSharp,
+  copy,
+  print,
+} from "ionicons/icons";
 import html2PDF from "jspdf-html2canvas";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
@@ -50,6 +59,7 @@ import {
   getDelivery,
   getInventory,
   getOrderInfo,
+  get_item_returns,
   selectedOrder,
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import { GetLoginUser } from "../../../Service/Actions/Login/LoginActions";
@@ -535,6 +545,16 @@ const OrderInfoComponent = () => {
     };
     checkUserEmail();
   }, [order_list_info.order_info.customer_email]);
+  const handleRefund = useCallback(() => {
+    dispatch(
+      get_item_returns({
+        transid: order_list_info?.order_info?.transid!,
+      })
+    );
+    router.push(
+      `/returnrefund?transid=${order_list_info?.order_info?.transid}&orderid=${order_list_info?.order_info?.orderid}&cartid=${order_list_info?.order_info?.cartid}`
+    );
+  }, [dispatch, order_list_info]);
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
@@ -584,7 +604,7 @@ const OrderInfoComponent = () => {
             </>
           </div>
         ) : null}
-        {order_list_info.order_info?.status.toLowerCase() === "delivered" ? (
+        {order_list_info.order_info?.status?.toLowerCase() === "delivered" ? (
           <div className="order-list-info-footer-approved-info">
             <>
               <IonButton
@@ -752,7 +772,7 @@ const OrderInfoComponent = () => {
         <div className="order-list-info-footer">Payment Method: </div>
         <div className="order-list-info-footer-info">
           {" "}
-          {order_list_info.order_info?.paidthru.toLocaleUpperCase()}
+          {order_list_info.order_info?.paidthru?.toLocaleUpperCase()}
         </div>
       </div>
       <div className="order-list-info-footer-details">
@@ -760,7 +780,7 @@ const OrderInfoComponent = () => {
         <div className="order-list-info-footer-info">
           {" "}
           <span>&#8369;</span>
-          {order_list_info.order_info?.total.toFixed(2)}
+          {order_list_info.order_info?.total?.toFixed(2)}
         </div>
       </div>
       <div className="order-list-info-footer-details">
@@ -803,33 +823,42 @@ const OrderInfoComponent = () => {
           </>
         ) : null}
       </div>
-      {order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" ? (
-        <>
-          <IonButton
-            className="order-info-close"
-            color="medium"
-            onClick={() =>
-              setIsOpenToast({
-                isOpen: true,
-                type: "quotation-email",
-                toastMessage: "",
-              })
-            }
+      <div className="order-info-footer-button">
+        {order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" ? (
+          <>
+            <div className="order-info-button-list-normal">
+              <IonButton fill="clear" className="profile-button-order">
+                <IonIcon color="medium" icon={print}></IonIcon>
+                <IonText className="order-info-button-text">
+                  Print Quotation
+                </IonText>
+              </IonButton>
+            </div>
+          </>
+        ) : null}
+        {order_list_info.order_info?.paidthru?.toLowerCase() === "cash" ? (
+          <div
+            className="order-info-button-list-normal"
+            onClick={() => handleRefund()}
           >
-            <IonIcon src={print}></IonIcon>
-            <IonText className="profile-button-text">Print Quotation</IonText>
+            <IonButton fill="clear" className="profile-button-order">
+              <IonIcon color="medium" icon={cashOutline}></IonIcon>
+              <IonText className="order-info-button-text">
+                Return/Refund
+              </IonText>
+            </IonButton>
+          </div>
+        ) : null}
+        <div
+          className="order-info-button-list-close"
+          onClick={() => handleClose()}
+        >
+          <IonButton fill="clear" className="profile-button-order">
+            <IonIcon color="light" icon={close}></IonIcon>
+            <IonText className="order-info-button-text">Close</IonText>
           </IonButton>
-        </>
-      ) : null}
-      <IonButton
-        className="order-info-close"
-        color="medium"
-        onClick={() => handleClose()}
-      >
-        <IonIcon slot="start" src={close}></IonIcon>
-
-        <IonText className="profile-button-text"> Close</IonText>
-      </IonButton>
+        </div>
+      </div>
       <IonModal
         isOpen={
           openSearchModal.modal !== "receipt" ? openSearchModal.isOpen : false

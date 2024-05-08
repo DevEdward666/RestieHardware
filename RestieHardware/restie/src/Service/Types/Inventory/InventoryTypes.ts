@@ -2,6 +2,7 @@ import {
   Addtocart,
   CategoryAndBrandModel,
   InventoryModel,
+  ItemReturns,
   SelectedItemToCart,
 } from "../../../Models/Request/Inventory/InventoryModel";
 import {
@@ -48,6 +49,10 @@ export type GET_VOUCHER = {
   type: "GET_VOUCHER";
   get_voucher: GetVouhcerResponse;
 };
+export type GET_ITEM_RETURNS = {
+  type: "GET_ITEM_RETURNS";
+  get_item_returns: ItemReturns[];
+};
 export type LIST_OF_PRODUCT_TYPE =
   | LIST_OF_ITEMS
   | SELECTED_ITEM
@@ -57,12 +62,14 @@ export type LIST_OF_PRODUCT_TYPE =
   | GET_DELIVERY_INFO
   | SET_CATEGORY_AND_BRAND
   | GET_BRANDS
-  | GET_VOUCHER;
+  | GET_VOUCHER
+  | GET_ITEM_RETURNS;
 
 export interface InventoryTypesModel {
   list_of_items: InventoryModel[];
   selected_item: SelectedItemToCart;
   add_to_cart: Addtocart[];
+  get_item_returns: ItemReturns[];
   order_list: GetListOrder[];
   order_list_info: GetListOrderInfo;
   get_delivery_info: GetDeliveryInfo;

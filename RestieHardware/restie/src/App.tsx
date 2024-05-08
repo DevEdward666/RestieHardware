@@ -33,6 +33,7 @@ import { Network } from "@capacitor/network";
 import OfflineDeliveryPage from "./pages/Delivery/OfflineDelivery/OfflineDeliveryPage";
 import SalesPage from "./pages/Products/Sales/SalesPage";
 import OnboardingPage from "./pages/Onboarding/OnboardingPage";
+import ReturnRefundPage from "./pages/Orders/ReturnRefund/ReturnRefundPage";
 
 setupIonicReact({ mode: "ios" });
 
@@ -77,6 +78,8 @@ const App: React.FC = () => {
       <Route path="/paymentoptions" render={() => <PaymentOptionsPage />} />
 
       <Route path="/orderInfo" render={() => <OrderInfoPage />} />
+      <Route path="/returnrefund" render={() => <ReturnRefundPage />} />
+
       <Route path="/deliveryInfo" render={() => <DeliveryInfoPage />} />
       <Route path="/home/cart" render={() => <MainTab />} />
 

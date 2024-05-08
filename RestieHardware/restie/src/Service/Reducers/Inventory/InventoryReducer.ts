@@ -49,6 +49,7 @@ const defaultState: InventoryTypesModel = {
     maxredemption: "",
     discount: 0,
   },
+  get_item_returns: [],
 };
 
 const InventoryReducer = (
@@ -108,6 +109,12 @@ const InventoryReducer = (
       return {
         ...state,
         get_voucher: action.get_voucher,
+      };
+    }
+    case "GET_ITEM_RETURNS": {
+      return {
+        ...state,
+        get_item_returns: action.get_item_returns,
       };
     }
     default:

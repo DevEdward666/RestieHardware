@@ -140,7 +140,6 @@ const CartComponent: React.FC = () => {
   };
 
   const CardList = (card: Addtocart) => {
-    console.log(card.image);
     return (
       <div>
         <IonItemSliding>

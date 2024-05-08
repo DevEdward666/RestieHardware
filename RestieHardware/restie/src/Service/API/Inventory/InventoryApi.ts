@@ -5,6 +5,8 @@ import {
   GetBrandsModel,
   GetDeliveryImagePath,
   GetItemImageRequest,
+  GetItemToRefundRequest,
+  ItemReturns,
   PostDaysSalesModel,
   PostDeliveryImage,
   PostDeliveryInfo,
@@ -428,6 +430,41 @@ export const GetInventory = async () => {
   console.log(response);
   return response;
 };
+export const GetItemsToRefund = async (payload: GetItemToRefundRequest) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+
+  const response = await post(
+    `${baseUrl}api/Inventory/GetItemsToRefund`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  console.log(response);
+  return response;
+};
+export const PostReturnItems = async (payload: ItemReturns[]) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+
+  const response = await post(
+    `${baseUrl}api/Inventory/PostReturnItems`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  console.log(response);
+  return response;
+};
+
 export const SendEmail = async (
   from: string,
   to: string,

@@ -33,6 +33,18 @@ export interface Addtocart {
   customer?: string;
   reorder?: boolean;
 }
+export interface ItemReturns {
+  transid: string;
+  orderid: string;
+  cartid: string;
+  code: string;
+  item: string;
+  qty: number;
+  price: number;
+  total: number;
+  createdat: number;
+  status: string;
+}
 export interface SelectedItemToCart {
   code: string;
   item: string;
@@ -94,6 +106,9 @@ export interface PostVoucherInfoModel {
 export interface PostDaysSalesModel {
   fromDate: string;
   toDate: string;
+}
+export interface GetItemToRefundRequest {
+  transid: string;
 }
 export interface GetDeliveryImagePath {
   imagePath: string;

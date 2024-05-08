@@ -2291,7 +2291,7 @@ namespace RestieAPI.Service.Repo
         }
         public RequestRefundResponseModel getItemtoRefund(RequestRefundRequest requestRefundRequest)
         {
-            var sql = @"select  tr.transid, tr.orderid,ct.code,ct.item,ct.qty,ct.total,tr.createdat from transaction as tr
+            var sql = @"select  tr.transid, tr.orderid,ct.cartid,ct.code,ct.item,ct.qty,ct.price,ct.total,ct.status,ors.createdat from transaction as tr
                         join orders as ors on tr.orderid = ors.orderid
                         join cart as ct on ct.cartid = ors.cartid  where tr.transid=@transid";
             var parameters = new Dictionary<string, object>
@@ -2322,10 +2322,13 @@ namespace RestieAPI.Service.Repo
                                     {
                                         transid = reader.GetString(reader.GetOrdinal("transid")),
                                         orderid = reader.GetString(reader.GetOrdinal("orderid")),
+                                        cartid = reader.GetString(reader.GetOrdinal("cartid")),
                                         code = reader.GetString(reader.GetOrdinal("code")),
                                         item = reader.GetString(reader.GetOrdinal("item")),
-                                        price = reader.GetInt64(reader.GetOrdinal("price")),
+                                        status = reader.GetString(reader.GetOrdinal("status")),
+                                        price = reader.GetFloat(reader.GetOrdinal("price")),
                                         qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                        total = reader.GetFloat(reader.GetOrdinal("total")),
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                     };
 
@@ -2355,7 +2358,7 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
-        public PostResponse PostReturnItems(InventoryRequestModel.ReturnItems returnItems)
+        public PostResponse PostReturnItems(InventoryRequestModel.ReturnItems[] returnItems)
         {
             var insertReturn = @"insert into returns (transid,orderid,code,item,qty,price,createdat) 
                                 values(@transid, @orderid, @code, @item, @qty, @price,@createdat)";
@@ -2371,22 +2374,25 @@ namespace RestieAPI.Service.Repo
                         // Execute the insertion command for each item
                         using (var cmd = new NpgsqlCommand(insertReturn, connection))
                         {
-
-                            var parameters = new Dictionary<string, object>
-                                {
-                                    { "@transid", returnItems.transid },
-                                    { "@orderid", returnItems.orderid },
-                                    { "@code", returnItems.code },
-                                    { "@item", returnItems.item },
-                                    { "@qty", returnItems.qty },
-                                    { "@price", returnItems.price },
-                                    { "@createdat", returnItems.createdat },
-                                };
-                            foreach (var param in parameters)
+                            foreach (var items in returnItems)
                             {
-                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                var parameters = new Dictionary<string, object>
+                                {
+                                    { "@transid", items.transid },
+                                    { "@orderid", items.orderid },
+                                    { "@code", items.code },
+                                    { "@item", items.item },
+                                    { "@qty", items.qty },
+                                    { "@price", items.price },
+                                    { "@createdat", items.createdat },
+                                };
+
+                                foreach (var param in parameters)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+                                insertedReturns = cmd.ExecuteNonQuery();
                             }
-                            insertedReturns = cmd.ExecuteNonQuery();
                         }
 
                         if (insertedReturns > 0)

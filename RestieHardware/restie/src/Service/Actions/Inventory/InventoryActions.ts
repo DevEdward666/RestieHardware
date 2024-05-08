@@ -3,6 +3,7 @@ import {
   ADD_TO_CART,
   GET_BRANDS,
   GET_DELIVERY_INFO,
+  GET_ITEM_RETURNS,
   GET_VOUCHER,
   LIST_OF_ITEMS,
   ORDER_LIST,
@@ -13,6 +14,7 @@ import {
 import {
   ApprovedOrderAndPay,
   CancelOrder,
+  GetItemsToRefund,
   GetVoucherInfo,
   InsertCustomerInfo,
   ListOrder,
@@ -33,7 +35,9 @@ import {
   Addtocart,
   CategoryAndBrandModel,
   GetBrandsModel,
+  GetItemToRefundRequest,
   InventoryModel,
+  ItemReturns,
   PostDeliveryInfo,
   PostDeliveryInfoModel,
   PostSelectedOrder,
@@ -416,6 +420,33 @@ export const get_voucher_actions =
         get_voucher: res.result,
       });
       return res.result;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+export const get_item_returns =
+  (payload: GetItemToRefundRequest) =>
+  async (dispatch: Dispatch<GET_ITEM_RETURNS>) => {
+    try {
+      const res = await GetItemsToRefund(payload);
+      dispatch({
+        type: "GET_ITEM_RETURNS",
+        get_item_returns: res.result.$values,
+      });
+      return res.result.$values;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+export const update_item_returns =
+  (payload: ItemReturns[]) => async (dispatch: Dispatch<GET_ITEM_RETURNS>) => {
+    try {
+      dispatch({
+        type: "GET_ITEM_RETURNS",
+        get_item_returns: payload,
+      });
+      return payload;
     } catch (error: any) {
       console.log(error);
     }

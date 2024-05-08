@@ -154,11 +154,17 @@ namespace RestieAPI.Models.Request
             public string status { get; set; }
 
         }
+        public class ReturnItemsModel
+        {
+            public List<ReturnItems> returnItems { get; set; }
+
+
+        }
         public class ReturnItems
         {
             public string orderid { get; set; }
             public string transid { get; set; }
-            public string code { get; set; }
+            public Int64 code { get; set; }
             public string item { get; set; }
             public long qty { get; set; }
             public long price { get; set; }

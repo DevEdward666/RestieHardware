@@ -145,17 +145,6 @@ const ProfileListButtons: React.FC = () => {
             ) : null}
 
             <div className="profile-list-button-list-logout-container">
-              <div className="profile-list-button-list-logout">
-                <IonButton fill="clear" className="profile-button-order">
-                  <IonIcon icon={cashOutline}></IonIcon>
-                  <IonText className="profile-button-text">
-                    Request a refund
-                  </IonText>
-                </IonButton>
-                <IonButton fill="clear" className="profile-button-order">
-                  <IonIcon icon={chevronForwardOutline}></IonIcon>
-                </IonButton>
-              </div>
               <div
                 className="profile-list-button-list-logout"
                 onClick={() => handleLogout()}

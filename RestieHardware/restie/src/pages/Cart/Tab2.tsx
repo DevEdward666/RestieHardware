@@ -70,20 +70,20 @@ const Tab2: React.FC = () => {
       maximumFractionDigits: 2,
     });
   };
-
   const handleSaveOrder = useCallback(async () => {
+    console.log(selectedItemselector);
+    console.log(selectedItemselector.length);
+
     try {
       const res = await dispatch(GetLoginUser());
-      console.log(res);
       if (res?.name.length! <= 0 || res === undefined) {
         router.push("/login");
       } else {
         const date = new Date().getTime();
         if (existingOrder) {
           if (
-            (selectedItemselector &&
-              selectedItemselector[0].status === "quotation") ||
-            selectedItemselector[0].status === "pending"
+            selectedItemselector.length > 0 &&
+            selectedItemselector[0].status === "quotation"
           ) {
             const addedOrder: ResponseModel = await dispatch(
               PostOrder(

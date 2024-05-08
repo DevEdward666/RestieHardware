@@ -129,9 +129,12 @@ namespace RestieAPI.Models.Response
 
         public string transid { get; set; }
         public string orderid { get; set; }
+        public string cartid { get; set; }
         public string code { get; set; }
         public string item { get; set; }
-        public long price { get; set; }
+        public float total { get; set; }
+        public string status { get; set; }
+        public float price { get; set; }
         public long qty { get; set; }
         public long createdat { get; set; }
     }

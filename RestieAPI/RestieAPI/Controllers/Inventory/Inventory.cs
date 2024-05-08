@@ -195,7 +195,7 @@ namespace RestieAPI.Controllers.Inventory
         }   
         [Authorize]
         [HttpPost("PostReturnItems")]
-        public ActionResult<PostResponse> PostReturnItems(ReturnItems returnItems)
+        public ActionResult<PostResponse> PostReturnItems(ReturnItems[] returnItems)
         {
             return Ok(_inventoryRepo.PostReturnItems(returnItems));
         }

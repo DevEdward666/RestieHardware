@@ -334,6 +334,7 @@ export const getOrderInfo =
         order_list_info: {
           order_item: res.order_item.$values,
           order_info: res.order_info,
+          return_item: res.return_items.$values,
         },
       });
       return res;
@@ -351,6 +352,7 @@ export const getQuotationOrderInfo =
         order_list_info: {
           order_item: res.order_item.$values,
           order_info: res.order_info,
+          return_item: res.return_items.$values,
         },
       });
       return res;

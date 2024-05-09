@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using Npgsql.Internal;
+using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.Utilities.Collections;
 using RestieAPI.Configs;
 using RestieAPI.Models.Request;
@@ -1394,9 +1395,20 @@ namespace RestieAPI.Service.Repo
                 {
                     { "@orderid", getUserOrder.orderid },
                 };
+            var sqlReturns = @" select ret.transid, ret.orderid, ret.code, ret.item, ret.qty, ret.price, ret.createdat
+                                from transaction AS trans
+                                join returns  as ret on ret.transid = trans.transid
+                                where ret.orderid =@orderid
+                                group by ret.code, ret.item, trans.transid, ret.transid, ret.orderid, ret.qty, ret.price, ret.createdat";
+
+            var returnsParameters = new Dictionary<string, object>
+                {
+                    { "@orderid", getUserOrder.orderid },
+                };
 
             var orderResponse = new OrderInfoResponse();
             var orderItems = new List<ItemOrders>();
+            var returnItems = new List<ReturnItems>();
 
             using (var connection = new NpgsqlConnection(_connectionString))
             {
@@ -1406,6 +1418,35 @@ namespace RestieAPI.Service.Repo
                 {
                     try
                     {
+                        using (var cmd = new NpgsqlCommand(sqlReturns, connection))
+                        {
+                            foreach (var param in returnsParameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                   
+
+                                    var returnItemResponse = new ReturnItems
+                                    {
+
+                                        transid = reader.GetString(reader.GetOrdinal("transid")),
+                                        orderid = reader.GetString(reader.GetOrdinal("orderid")),
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        price = reader.GetInt64(reader.GetOrdinal("price")),
+                                        qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                    };
+
+                                    returnItems.Add(returnItemResponse);
+                                }
+                            }
+                        }
                         using (var cmd = new NpgsqlCommand(sql, connection))
                         {
                             foreach (var param in parameters)
@@ -1468,6 +1509,7 @@ namespace RestieAPI.Service.Repo
                         {
                             order_item = orderItems,
                             order_info = orderResponse,
+                            return_items = returnItems,
                             statusCode = 200,
                             success = true,
                         };
@@ -2362,7 +2404,8 @@ namespace RestieAPI.Service.Repo
         {
             var insertReturn = @"insert into returns (transid,orderid,code,item,qty,price,createdat) 
                                 values(@transid, @orderid, @code, @item, @qty, @price,@createdat)";
-                
+            var updateCart = @"update cart set status='return' where cartid=@cartid and code=@code";
+            var cmd = new NpgsqlCommand();
             using (var connection = new NpgsqlConnection(_connectionString))
             {
                 connection.Open();
@@ -2371,11 +2414,29 @@ namespace RestieAPI.Service.Repo
                 {
                     try
                     {
-                        // Execute the insertion command for each item
-                        using (var cmd = new NpgsqlCommand(insertReturn, connection))
+                        foreach (var cartItems in returnItems)
                         {
-                            foreach (var items in returnItems)
+                            // Execute the insertion command for each item
+                            using (cmd = new NpgsqlCommand(updateCart, connection))
                             {
+                                var parameters = new Dictionary<string, object>
+                                {
+                                    { "@cartid", cartItems.cartid },
+                                    { "@code", cartItems.code },
+                                };
+                                foreach (var param in parameters)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                        foreach (var items in returnItems)
+                        {
+                            // Execute the insertion command for each item
+                            using (cmd = new NpgsqlCommand(insertReturn, connection))
+                            {
+                            
                                 var parameters = new Dictionary<string, object>
                                 {
                                     { "@transid", items.transid },

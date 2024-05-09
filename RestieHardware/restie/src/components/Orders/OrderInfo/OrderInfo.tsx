@@ -726,46 +726,65 @@ const OrderInfoComponent = () => {
       <div className="order-list-info-container">
         {Array.isArray(order_list_info.order_item) &&
         order_list_info.order_item.length > 0 ? (
-          order_list_info.order_item?.map((items, index) => (
-            <IonItem
-              className="order-list-info-card-container"
-              key={index}
-              onClick={() =>
-                handleSelectOrder(
-                  order_list_info.order_info.orderid,
-                  order_list_info.order_info.cartid
-                )
-              }
-            >
-              <div className="order-list-info-card-add-item-container">
-                <div className="order-list-info-card-main-content">
-                  <div className="order-list-info-card-content">
-                    <div className="order-list-info-card-title-details">
-                      {items.item}
-                    </div>
+          order_list_info.order_item.map((items, index) => {
+            const correspondingReturn = order_list_info.return_item.find(
+              (returns) =>
+                returns.code === items.code && returns.qty === items.qty
+            );
+            const returnItems = order_list_info.return_item.find(
+              (returns) => returns.code === items.code
+            );
 
-                    <div className="order-list-info-card-category-details">
-                      <div className="order-list-info-card-category">
-                        Brand: {items.brand} | Category:{items.category}
+            return (
+              <IonItem
+                className="order-list-info-card-container"
+                key={index}
+                onClick={() =>
+                  handleSelectOrder(
+                    order_list_info.order_info.orderid,
+                    order_list_info.order_info.cartid
+                  )
+                }
+              >
+                <div className="order-list-info-card-add-item-container">
+                  <div
+                    className={`order-list-info-card-main-content ${
+                      correspondingReturn ? "all" : ""
+                    }`}
+                  >
+                    <div className="order-list-info-card-content">
+                      <div className={`order-list-info-card-title-details `}>
+                        {items.item}{" "}
+                        {returnItems && (
+                          <div className="order-list-info-card-title-details-returns">
+                            Return/Refund - {returnItems.qty}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="order-list-info-card-category-details">
+                        <div className="order-list-info-card-category">
+                          Brand: {items.brand} | Category:{items.category}
+                        </div>
+                      </div>
+                      <div className="order-list-info-card-price-details">
+                        <span>&#8369;</span>
+                        {items.price.toFixed(2)}
                       </div>
                     </div>
-                    <div className="order-list-info-card-price-details">
-                      <span>&#8369;</span>
-                      {items.price.toFixed(2)}
-                    </div>
-                  </div>
-                  <div className="order-list-info-card-content">
-                    <div className="order-list-info-card-qty">
-                      {" "}
-                      X{items.qty}
+                    <div className="order-list-info-card-content">
+                      <div className="order-list-info-card-qty">
+                        {" "}
+                        {`X${items.qty}`}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </IonItem>
-          ))
+              </IonItem>
+            );
+          })
         ) : (
-          <p>No order info found.</p>
+          <div>No items to display</div>
         )}
       </div>
       <div className="order-list-info-footer-details">
@@ -836,7 +855,8 @@ const OrderInfoComponent = () => {
             </div>
           </>
         ) : null}
-        {order_list_info.order_info?.paidthru?.toLowerCase() === "cash" ? (
+        {order_list_info.order_info?.paidthru?.toLowerCase() === "cash" &&
+        order_list_info?.return_item.length === 0 ? (
           <div
             className="order-info-button-list-normal"
             onClick={() => handleRefund()}

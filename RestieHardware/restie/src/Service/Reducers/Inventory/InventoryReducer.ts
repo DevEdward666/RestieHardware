@@ -30,6 +30,7 @@ const defaultState: InventoryTypesModel = {
       address: "",
       contactno: 0,
     },
+    return_item: [],
   },
   get_delivery_info: {
     deliveryid: "",

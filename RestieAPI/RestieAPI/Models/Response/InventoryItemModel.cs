@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using System.Numerics;
+using static RestieAPI.Models.Request.InventoryRequestModel;
 
 namespace RestieAPI.Models.Response
 {
@@ -28,6 +29,7 @@ namespace RestieAPI.Models.Response
     public class OrderInfoResponseModel
     {
         public List<ItemOrders> order_item { get; set; }
+        public List<ReturnItems> return_items { get; set; }
         public OrderInfoResponse order_info { get; set; }
         public Boolean success { get; set; }
         public int statusCode { get; set; }
@@ -162,6 +164,7 @@ namespace RestieAPI.Models.Response
         public string? customerid { get; set; }
         public float total { get; set; }
     }
+
     public class ItemOrders
     {
         public string code { get; set; }

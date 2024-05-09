@@ -164,12 +164,18 @@ namespace RestieAPI.Models.Request
         {
             public string orderid { get; set; }
             public string transid { get; set; }
-            public Int64 code { get; set; }
+            public string cartid { get; set; }
+            public string code { get; set; }
             public string item { get; set; }
             public long qty { get; set; }
             public long price { get; set; }
             public long createdat { get; set; }
 
+        }
+        public class UpdateCartItemsStatus
+        {
+            public string cartid { get; set; }
+            public Int64 code { get; set; }
 
         }
         public class GetSales

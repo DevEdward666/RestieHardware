@@ -19,6 +19,9 @@
         padding-inline-end: 0px;
         justify-content: space-between;
         align-items: center;
+        &.all{
+            opacity: .5;
+        }
         .order-list-info-card-content{
             display: flex;
             flex-direction: column;
@@ -36,6 +39,18 @@
                     font-family: "Gotham-Medium";
                     font-size: 14px;
                 }
+               
+            }
+            .order-list-info-card-title-details-returns{
+                display: flex;
+                background: grey;
+                color: white;
+                padding: 2px;
+                font-size: 12px;
+                flex-direction: row;
+                align-content: center;
+                align-items: center;
+             
             }
             .order-list-info-card-category-details{
                 display: flex;

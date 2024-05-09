@@ -12,6 +12,7 @@ export interface GetListOrder {
 
 export interface GetListOrderInfo {
   order_item: GetOrderItems[];
+  return_item: ReturnItems[];
   order_info: GetOrderInfo;
 }
 export interface GetOrderInfo {
@@ -31,7 +32,15 @@ export interface GetOrderInfo {
   customerid?: string;
   customer_email?: string;
 }
-
+export interface ReturnItems {
+  transid: string;
+  orderid: string;
+  code: string;
+  item: string;
+  qty: number;
+  price: number;
+  createdat: number;
+}
 export interface GetOrderItems {
   code: string;
   item: string;

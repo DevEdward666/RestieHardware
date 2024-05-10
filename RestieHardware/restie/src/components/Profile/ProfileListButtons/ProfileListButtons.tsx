@@ -61,7 +61,6 @@ const ProfileListButtons: React.FC = () => {
     setIsOpenToast((prev) => ({ ...prev, isOpen: true }));
     router.push("/login");
   }, [dispatch]);
-  console.log(user_login_information);
   return (
     <IonContent>
       <IonLoading

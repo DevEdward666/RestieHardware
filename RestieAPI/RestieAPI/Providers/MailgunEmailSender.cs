@@ -45,7 +45,7 @@ namespace RestieAPI.Providers
                 smtp.Connect("smtp.gmail.com", 587, false);
 
                 // Note: only needed if the SMTP server requires authentication
-                smtp.Authenticate("fernandezedward6653@gmail.com", "rseg dfvc sncv guoz");
+                smtp.Authenticate("fernandezedward6653@gmail.com", "fdkg ddin stoe mucy");
 
                 await smtp.SendAsync(email);
                 smtp.Disconnect(true);

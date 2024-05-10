@@ -136,3 +136,6 @@ interface OrderListFilterModel {
   date: string;
   search: string;
 }
+export interface SubmitReturnRefund {
+  submit: boolean;
+}

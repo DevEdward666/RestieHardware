@@ -14,6 +14,7 @@ import {
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./SalesComponent.css";
 import {
+  GenerateSalesReturn,
   GetInventory,
   GetSalesByDay,
 } from "../../../../Service/API/Inventory/InventoryApi";
@@ -26,6 +27,7 @@ const SalesComponent = () => {
   const [openPDFModal, setopenPDFModal] = useState({
     isOpen: false,
     modal: "",
+    type: "",
   });
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
@@ -35,7 +37,6 @@ const SalesComponent = () => {
   const handleWeekChange = (event: Event) => {
     const target = event.target as HTMLIonDatetimeElement;
     const value = target.value;
-    console.log(value);
     if (Array.isArray(value)) {
       setSelectedDate(value);
     } else {
@@ -73,7 +74,10 @@ const SalesComponent = () => {
       isOpen: true,
       type: "PDF",
     });
-    const res = await GetSalesByDay(payload);
+    const res =
+      openPDFModal.type === "sales"
+        ? await GetSalesByDay(payload)
+        : await GenerateSalesReturn(payload);
     const base64Data = res.result.fileContents; // Accessing the Base64 encoded PDF data
     const decodedData = atob(base64Data); // Decoding the Base64 string
     const byteArray = new Uint8Array(decodedData.length);
@@ -92,7 +96,7 @@ const SalesComponent = () => {
     });
     // setopenPDFModal({ isOpen: true, modal: "pdf" });
     setFile(res);
-  }, [selectedDate]);
+  }, [openPDFModal, selectedDate]);
   const handleGenerateInventory = async () => {
     setIsOpenToast({
       toastMessage: "Generating PDF",
@@ -100,7 +104,6 @@ const SalesComponent = () => {
       type: "PDF",
     });
     const res = await GetInventory();
-    console.log(res?.result?.fileContents);
     const base64Data = res?.result?.fileContents; // Accessing the Base64 encoded PDF data
     const decodedData = atob(base64Data); // Decoding the Base64 string
     const byteArray = new Uint8Array(decodedData.length);
@@ -125,11 +128,21 @@ const SalesComponent = () => {
         <IonButton
           color={"medium"}
           expand="block"
-          onClick={() => setopenPDFModal({ isOpen: true, modal: "" })}
+          onClick={() =>
+            setopenPDFModal({ isOpen: true, modal: "", type: "sales" })
+          }
         >
           Generate Sales
         </IonButton>
-
+        <IonButton
+          color={"medium"}
+          expand="block"
+          onClick={() =>
+            setopenPDFModal({ isOpen: true, modal: "", type: "returns" })
+          }
+        >
+          Generate Sales Return/Refund
+        </IonButton>
         <IonButton
           color={"medium"}
           expand="block"
@@ -151,7 +164,13 @@ const SalesComponent = () => {
       />
       <IonModal
         isOpen={openPDFModal.modal !== "receipt" ? openPDFModal.isOpen : false}
-        onDidDismiss={() => setopenPDFModal({ isOpen: false, modal: "" })}
+        onDidDismiss={() =>
+          setopenPDFModal({
+            isOpen: false,
+            modal: "",
+            type: openPDFModal?.type,
+          })
+        }
         initialBreakpoint={0.5}
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
       >
@@ -159,7 +178,9 @@ const SalesComponent = () => {
           <IonToolbar>
             <IonButtons slot="start">
               <IonButton
-                onClick={() => setopenPDFModal({ isOpen: false, modal: "pdf" })}
+                onClick={() =>
+                  setopenPDFModal({ isOpen: false, modal: "pdf", type: "" })
+                }
               >
                 Close
               </IonButton>

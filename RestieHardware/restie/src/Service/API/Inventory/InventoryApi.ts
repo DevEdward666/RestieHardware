@@ -396,6 +396,24 @@ export const GetVoucherInfo = async (payload: PostVoucherInfoModel) => {
   );
   return response;
 };
+
+export const GenerateSalesReturn = async (payload: PostDaysSalesModel) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+
+  const response = await post(
+    `${baseUrl}api/Inventory/GenerateSalesReturn`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  console.log(response);
+  return response;
+};
 export const GetSalesByDay = async (payload: PostDaysSalesModel) => {
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {

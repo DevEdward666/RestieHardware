@@ -174,6 +174,14 @@ namespace RestieAPI.Controllers.Inventory
 
             return Ok(_inventoryRepo.getByDaySales(getSales));
            
+        }   
+        [Authorize]
+        [HttpPost("GenerateSalesReturn")]
+        public ActionResult<PostSalesResponse> GenerateSalesReturn(GetSales getSales)
+        {
+
+            return Ok(_inventoryRepo.GenerateSalesReturn(getSales));
+           
         }
         [Authorize]
         [HttpPost("GetQuotationOrderInfo")]

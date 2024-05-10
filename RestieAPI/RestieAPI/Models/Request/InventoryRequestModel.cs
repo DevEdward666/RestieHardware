@@ -168,7 +168,7 @@ namespace RestieAPI.Models.Request
             public string code { get; set; }
             public string item { get; set; }
             public long qty { get; set; }
-            public long price { get; set; }
+            public float price { get; set; }
             public long createdat { get; set; }
 
         }

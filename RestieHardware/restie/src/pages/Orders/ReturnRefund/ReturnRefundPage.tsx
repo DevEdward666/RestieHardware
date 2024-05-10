@@ -1,4 +1,5 @@
 import {
+  IonButton,
   IonButtons,
   IonHeader,
   IonIcon,
@@ -7,18 +8,24 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import React from "react";
+import React, { useCallback } from "react";
 import ReturnRefundComponent from "../../../components/Orders/ReturnRefund/ReturnRefundComponent";
 import { arrowBack } from "ionicons/icons";
-
+import "./ReturnRefundPage.css";
+import { useTypedDispatch } from "../../../Service/Store";
+import { submit_return_refund } from "../../../Service/Actions/Inventory/InventoryActions";
 const ReturnRefundPage: React.FC = () => {
   const router = useIonRouter();
+  const dispatch = useTypedDispatch();
   const getOrderIDFromURL = () => {
     const url = new URL(window.location.href);
     return url.searchParams.get("orderid");
   };
+  const handleReturnRefund = useCallback(() => {
+    dispatch(submit_return_refund({ submit: true }));
+  }, [dispatch]);
   return (
-    <IonPage>
+    <IonPage className="return-refund-page-main">
       <IonHeader className="order-info-page-header">
         <IonToolbar mode="ios" color="tertiary">
           <IonButtons
@@ -33,6 +40,15 @@ const ReturnRefundPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <ReturnRefundComponent />
+      <div className="return-refund-button-container">
+        <IonButton
+          className="return-refund-button-list-normal"
+          color={"medium"}
+          onClick={() => handleReturnRefund()}
+        >
+          Submit for Return/Refund
+        </IonButton>
+      </div>
     </IonPage>
   );
 };

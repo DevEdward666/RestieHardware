@@ -348,4 +348,5 @@ ion-modal#email-modal {
     flex-direction: row;
     padding: 20px 10px;
     gap: 8px;
+    width: 100%;
 }

@@ -11,6 +11,7 @@ import {
   IonItemOptions,
   IonItemSliding,
   IonToast,
+  useIonRouter,
 } from "@ionic/react";
 import { removeCircle, addCircle } from "ionicons/icons";
 import React, { useCallback, useEffect, useState } from "react";
@@ -21,6 +22,7 @@ import {
 } from "../../../Models/Request/Inventory/InventoryModel";
 import {
   addToCartAction,
+  submit_return_refund,
   update_item_returns,
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import stock from "../../../assets/images/Image_not_available.png";
@@ -32,7 +34,11 @@ const ReturnRefundComponent: React.FC = () => {
   const get_item_returns = useSelector(
     (store: RootStore) => store.InventoryReducer.get_item_returns
   );
+  const return_refund = useSelector(
+    (store: RootStore) => store.InventoryReducer.submit_return_refund
+  );
   const dispatch = useTypedDispatch();
+  const router = useIonRouter();
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
     isOpen: false,
@@ -211,21 +217,38 @@ const ReturnRefundComponent: React.FC = () => {
     };
     initialize();
   }, [checkedItems]);
-  const handleReturnRefund = useCallback(async () => {
-    if (checkedItems.length > 0) {
-      await PostReturnItems(checkedItems);
-    } else {
-      setIsOpenToast({
-        isOpen: true,
-        toastMessage: "Please check items you want to refund",
-      });
-    }
-  }, [checkedItems]);
+  // const handleReturnRefund = useCallback(async () => {
+
+  // }, [checkedItems]);
+  const getOrderIDFromURL = () => {
+    const url = new URL(window.location.href);
+    return url.searchParams.get("orderid");
+  };
+  useEffect(() => {
+    const submitRefund = async () => {
+      const orderId = getOrderIDFromURL();
+      if (!return_refund.submit) {
+        return;
+      }
+      if (checkedItems.length > 0 && return_refund.submit) {
+        await PostReturnItems(checkedItems);
+        dispatch(submit_return_refund({ submit: false }));
+        router.push(`/orderInfo?orderid=${orderId}`);
+      } else {
+        setIsOpenToast({
+          isOpen: true,
+          toastMessage: "Please check items you want to refund",
+        });
+      }
+    };
+    submitRefund();
+  }, [dispatch, return_refund, checkedItems]);
+  console.log(return_refund.submit);
   return (
     <IonContent>
       <div>
-        {get_item_returns?.map((card) => (
-          <div className="checkbox-container">
+        {get_item_returns?.map((card, index) => (
+          <div className="checkbox-container" key={index}>
             <IonCheckbox
               className="checkbox-content"
               labelPlacement="end"
@@ -249,14 +272,7 @@ const ReturnRefundComponent: React.FC = () => {
           </div>
         ))}
       </div>
-      <IonButton
-        expand="full"
-        color={"medium"}
-        onClick={() => handleReturnRefund()}
-      >
-        {" "}
-        Submit for Return/Refund
-      </IonButton>
+
       <IonToast
         isOpen={isOpenToast?.isOpen}
         message={isOpenToast.toastMessage}

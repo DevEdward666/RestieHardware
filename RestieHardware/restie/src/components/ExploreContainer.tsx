@@ -185,7 +185,6 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           ? stock
           : `${window.location.origin}/${card.image}`,
     };
-    console.log(window.location.origin);
     return (
       <div
         className="inventory-card-main-div"

@@ -10,6 +10,7 @@ import {
   ORDER_LIST_INFO,
   SELECTED_ITEM,
   SET_CATEGORY_AND_BRAND,
+  SUBMIT_RETURN_REFUND,
 } from "../../Types/Inventory/InventoryTypes";
 import {
   ApprovedOrderAndPay,
@@ -44,6 +45,7 @@ import {
   PostVoucherInfoModel,
   PostdOrderList,
   SelectedItemToCart,
+  SubmitReturnRefund,
 } from "../../../Models/Request/Inventory/InventoryModel";
 import { ResponseModel } from "../../../Models/Response/Commons/Commons";
 import { v4 as uuidv4 } from "uuid";
@@ -207,6 +209,7 @@ export const PostOrder =
       message: "",
     };
     try {
+      console.log(customer_payload);
       if (customer_payload.newUser) {
         await InsertCustomerInfo(customer_payload);
       }
@@ -447,6 +450,19 @@ export const update_item_returns =
       dispatch({
         type: "GET_ITEM_RETURNS",
         get_item_returns: payload,
+      });
+      return payload;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+export const submit_return_refund =
+  (payload: SubmitReturnRefund) =>
+  async (dispatch: Dispatch<SUBMIT_RETURN_REFUND>) => {
+    try {
+      dispatch({
+        type: "SUBMIT_RETURN_REFUND",
+        submit_return_refund: payload,
       });
       return payload;
     } catch (error: any) {

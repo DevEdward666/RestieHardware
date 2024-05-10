@@ -4,6 +4,7 @@ import {
   InventoryModel,
   ItemReturns,
   SelectedItemToCart,
+  SubmitReturnRefund,
 } from "../../../Models/Request/Inventory/InventoryModel";
 import {
   GetBrandsModel,
@@ -53,6 +54,11 @@ export type GET_ITEM_RETURNS = {
   type: "GET_ITEM_RETURNS";
   get_item_returns: ItemReturns[];
 };
+export type SUBMIT_RETURN_REFUND = {
+  type: "SUBMIT_RETURN_REFUND";
+  submit_return_refund: SubmitReturnRefund;
+};
+
 export type LIST_OF_PRODUCT_TYPE =
   | LIST_OF_ITEMS
   | SELECTED_ITEM
@@ -63,7 +69,8 @@ export type LIST_OF_PRODUCT_TYPE =
   | SET_CATEGORY_AND_BRAND
   | GET_BRANDS
   | GET_VOUCHER
-  | GET_ITEM_RETURNS;
+  | GET_ITEM_RETURNS
+  | SUBMIT_RETURN_REFUND;
 
 export interface InventoryTypesModel {
   list_of_items: InventoryModel[];
@@ -76,4 +83,5 @@ export interface InventoryTypesModel {
   set_category_and_brand: CategoryAndBrandModel;
   get_brands: GetBrandsModel[];
   get_voucher: GetVouhcerResponse;
+  submit_return_refund: SubmitReturnRefund;
 }

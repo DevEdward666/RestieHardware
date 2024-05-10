@@ -26,6 +26,7 @@ import CartComponent from "../../components/Cart/CartComponent";
 import "./Tab2.css";
 import { PostSelectedOrder } from "../../Models/Request/Inventory/InventoryModel";
 import { ResponseModel } from "../../Models/Response/Commons/Commons";
+import { AddCustomerInformation } from "../../Service/Actions/Customer/CustomerActions";
 
 const Tab2: React.FC = () => {
   const dispatch = useTypedDispatch();
@@ -59,11 +60,20 @@ const Tab2: React.FC = () => {
       );
       if (existingOrder > -1) {
         setExistingOrder(true);
+        dispatch(
+          AddCustomerInformation({
+            name: "",
+            address: "",
+            contactno: 0,
+            ordertype: "",
+            newUser: false,
+          })
+        );
       }
     };
 
     getTotal(); // Calculate total when selectedItemselector changes
-  }, [selectedItemselector]);
+  }, [dispatch, selectedItemselector]);
   const formattedNumber = (number: number) => {
     return number.toLocaleString("en-US", {
       minimumFractionDigits: 2,
@@ -71,10 +81,8 @@ const Tab2: React.FC = () => {
     });
   };
   const handleSaveOrder = useCallback(async () => {
-    console.log(selectedItemselector);
-    console.log(selectedItemselector.length);
-
     try {
+      console.log(customer_information);
       const res = await dispatch(GetLoginUser());
       if (res?.name.length! <= 0 || res === undefined) {
         router.push("/login");
@@ -106,7 +114,7 @@ const Tab2: React.FC = () => {
               router.push(`/orderInfo?orderid=${addedOrder.result?.orderid!}`);
             }
           } else {
-            await dispatch(saveOrder(selectedItemselector, date));
+            // await dispatch(saveOrder(selectedItemselector, date));
 
             router.push("/customerInformation");
           }
@@ -115,7 +123,13 @@ const Tab2: React.FC = () => {
     } catch (error) {
       console.log("User Not logged in");
     }
-  }, [dispatch, user_login_information, selectedItemselector]);
+  }, [
+    dispatch,
+    user_login_information,
+    selectedItemselector,
+    customer_information,
+    existingOrder,
+  ]);
   return (
     <IonPage className="home-page-container">
       <IonHeader className="home-page-header">

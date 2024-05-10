@@ -845,7 +845,16 @@ const OrderInfoComponent = () => {
       <div className="order-info-footer-button">
         {order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" ? (
           <>
-            <div className="order-info-button-list-normal">
+            <div
+              className="order-info-button-list-normal"
+              onClick={() =>
+                setIsOpenToast({
+                  isOpen: true,
+                  type: "quotation-email",
+                  toastMessage: "Sending Email",
+                })
+              }
+            >
               <IonButton fill="clear" className="profile-button-order">
                 <IonIcon color="medium" icon={print}></IonIcon>
                 <IonText className="order-info-button-text">
@@ -906,7 +915,7 @@ const OrderInfoComponent = () => {
         </IonHeader>
         <IonContent className="ion-padding">
           <>
-            {order_list_info.order_info?.status.toLowerCase() ===
+            {order_list_info?.order_info?.status?.toLowerCase() ===
             "Delivered".toLowerCase() ? (
               <div className="delivery-image-container">
                 <div className="delivered-info-container">

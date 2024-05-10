@@ -216,9 +216,18 @@ namespace RestieAPI.Models.Response
         public string code { get; set; }
         public string item { get; set; }
         public int qty { get; set; }
+
         public string total_sales { get; set; }
     }
+    public class ReturnSalesResponse
+    {
+        public string code { get; set; }
+        public string item { get; set; }
+        public int qty { get; set; }
+        public float price { get; set; }
 
+        public string total_sales { get; set; }
+    }
     public class InventoryResponse
     {
         public string code { get; set; }

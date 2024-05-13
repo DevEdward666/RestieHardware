@@ -170,6 +170,7 @@ namespace RestieAPI.Models.Request
             public long qty { get; set; }
             public float price { get; set; }
             public long createdat { get; set; }
+            public string? remarks {  get; set; }
 
         }
         public class UpdateCartItemsStatus

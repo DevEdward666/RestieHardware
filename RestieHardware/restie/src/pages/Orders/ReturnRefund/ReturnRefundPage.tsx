@@ -14,6 +14,7 @@ import { arrowBack } from "ionicons/icons";
 import "./ReturnRefundPage.css";
 import { useTypedDispatch } from "../../../Service/Store";
 import { submit_return_refund } from "../../../Service/Actions/Inventory/InventoryActions";
+import { SubmitReturnRefund } from "../../../Models/Request/Inventory/InventoryModel";
 const ReturnRefundPage: React.FC = () => {
   const router = useIonRouter();
   const dispatch = useTypedDispatch();
@@ -22,7 +23,10 @@ const ReturnRefundPage: React.FC = () => {
     return url.searchParams.get("orderid");
   };
   const handleReturnRefund = useCallback(() => {
-    dispatch(submit_return_refund({ submit: true }));
+    const payload: SubmitReturnRefund = {
+      submit: true,
+    };
+    dispatch(submit_return_refund(payload));
   }, [dispatch]);
   return (
     <IonPage className="return-refund-page-main">

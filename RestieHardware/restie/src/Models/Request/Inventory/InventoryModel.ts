@@ -44,6 +44,7 @@ export interface ItemReturns {
   total: number;
   createdat: number;
   status: string;
+  remarks?: string;
 }
 export interface SelectedItemToCart {
   code: string;

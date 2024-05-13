@@ -2488,8 +2488,8 @@ namespace RestieAPI.Service.Repo
         }
         public PostResponse PostReturnItems(InventoryRequestModel.ReturnItems[] returnItems)
         {
-            var insertReturn = @"insert into returns (transid,orderid,code,item,qty,price,createdat) 
-                                values(@transid, @orderid, @code, @item, @qty, @price,@createdat)";
+            var insertReturn = @"insert into returns (transid,orderid,code,item,qty,price,createdat,remarks) 
+                                values(@transid, @orderid, @code, @item, @qty, @price,@createdat,@remarks)";
             var updateCart = @"update cart set status='return' where cartid=@cartid and code=@code";
             var cmd = new NpgsqlCommand();
             using (var connection = new NpgsqlConnection(_connectionString))
@@ -2532,6 +2532,7 @@ namespace RestieAPI.Service.Repo
                                     { "@qty", items.qty },
                                     { "@price", items.price },
                                     { "@createdat", items.createdat },
+                                    { "@remarks", items.remarks },
                                 };
 
                                 foreach (var param in parameters)

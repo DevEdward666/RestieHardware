@@ -10,6 +10,7 @@ import {
   IonItemOption,
   IonItemOptions,
   IonItemSliding,
+  IonTextarea,
   IonToast,
   useIonRouter,
 } from "@ionic/react";
@@ -44,70 +45,79 @@ const ReturnRefundComponent: React.FC = () => {
     isOpen: false,
   });
   const [checkedItems, setCheckedItems] = useState<ItemReturns[]>([]);
-
+  const [getRemarks, setRemarks] = useState({
+    itemCode: "",
+    text: "",
+  });
   const CardList = (card: ItemReturns) => {
     return (
       <div key={card.code}>
-        <IonItem className="main-cart-item-card">
-          <IonCard className="main-cart-card-container">
-            <div className="main-cart-card-add-item-img">
-              <img alt={card.item} src={stock} />
-            </div>
-            <div className="main-cart-card-add-item-container">
-              <IonCardContent className="main-cart-card-main-content">
-                <div className="main-cart-card-content">
-                  <div className="main-cart-card-title">{card.item}</div>
-                  <div className="main-cart-card-price">
-                    <span>&#8369;</span>
-                    {card.price.toFixed(2)}
+        <IonItem className="main-return-item-card">
+          <div className="main-return-item-card-div">
+            <IonCard className="main-return-card-container">
+              <div className="main-return-card-add-item-img">
+                <img alt={card.item} src={stock} />
+              </div>
+              <div className="main-return-card-add-item-container">
+                <IonCardContent className="main-return-card-main-content">
+                  <div className="main-return-card-content">
+                    <div className="main-return-card-title">{card.item}</div>
+                    <div className="main-return-card-price">
+                      <span>&#8369;</span>
+                      {card.price.toFixed(2)}
+                    </div>
                   </div>
-                </div>
-                <div className="main-cart-item-added-qty-container">
-                  <IonButton
-                    disabled={card.qty <= 1}
-                    size="large"
-                    fill="clear"
-                    onClick={() => handleQty(card, false, undefined, card?.qty)}
-                  >
-                    <IonIcon
-                      color="danger"
-                      slot="icon-only"
-                      icon={removeCircle}
-                    />
-                  </IonButton>
+                  <div className="main-return-item-added-qty-container">
+                    <IonButton
+                      disabled={card.qty <= 1}
+                      size="large"
+                      fill="clear"
+                      onClick={() =>
+                        handleQty(card, false, undefined, card?.qty)
+                      }
+                    >
+                      <IonIcon
+                        color="danger"
+                        slot="icon-only"
+                        icon={removeCircle}
+                      />
+                    </IonButton>
 
-                  <IonInput
-                    class="main-cart-qty"
-                    type="number"
-                    value={card.qty}
-                    debounce={1500}
-                    onIonInput={(ev) =>
-                      handleQty(
-                        card,
-                        true,
-                        parseInt(ev.target.value?.toString()!),
-                        card?.qty
-                      )
-                    }
-                  ></IonInput>
+                    <IonInput
+                      class="main-cart-qty"
+                      type="number"
+                      value={card.qty}
+                      debounce={1500}
+                      onIonInput={(ev) =>
+                        handleQty(
+                          card,
+                          true,
+                          parseInt(ev.target.value?.toString()!),
+                          card?.qty
+                        )
+                      }
+                    ></IonInput>
 
-                  <IonButton
-                    disabled={card.qty >= card?.qty!}
-                    size="large"
-                    fill="clear"
-                    onClick={() => handleQty(card, true, undefined, card?.qty)}
-                  >
-                    <IonIcon
-                      color="secondary"
-                      slot="icon-only"
-                      icon={addCircle}
-                    />
-                  </IonButton>
-                </div>
-                <div className="main-cart-card-qty">{card?.qty} pcs</div>
-              </IonCardContent>
-            </div>
-          </IonCard>
+                    <IonButton
+                      disabled={card.qty >= card?.qty!}
+                      size="large"
+                      fill="clear"
+                      onClick={() =>
+                        handleQty(card, true, undefined, card?.qty)
+                      }
+                    >
+                      <IonIcon
+                        color="secondary"
+                        slot="icon-only"
+                        icon={addCircle}
+                      />
+                    </IonButton>
+                  </div>
+                  <div className="main-return-card-qty">{card?.qty} pcs</div>
+                </IonCardContent>
+              </div>
+            </IonCard>
+          </div>
         </IonItem>
       </div>
     );
@@ -147,6 +157,48 @@ const ReturnRefundComponent: React.FC = () => {
         cartid: cartId,
         createdat: new Date().getTime(),
         status: selectedItem.status,
+      };
+      if (existingOrder > -1) {
+        newItem.orderid = String(cartItems[existingOrder]?.orderid);
+      }
+      return [...cartItems, newItem];
+    }
+  };
+  const addItemRemarks = (
+    selectedItem: ItemReturns,
+    cartItems: ItemReturns[],
+    cartId: string,
+    ItemRemarks: string
+  ) => {
+    // Find existing item index
+    const existingItemIndex = cartItems.findIndex(
+      (item) => item.code === selectedItem.code
+    );
+    const existingOrder = cartItems.findIndex(
+      (item) => item.orderid !== "" || item.orderid !== undefined
+    );
+    console.log(existingItemIndex);
+    if (existingItemIndex !== -1) {
+      // If item already exists, update its quantity
+      const updatedCartItems = cartItems.map((item, index) => {
+        if (index === existingItemIndex) {
+          if (ItemRemarks !== undefined) {
+            return { ...item, remarks: ItemRemarks };
+          } else {
+            return { ...item, remarks: ItemRemarks };
+          }
+        }
+        return item;
+      });
+      return updatedCartItems;
+    } else {
+      // If item doesn't exist, add it to the cart
+      const newItem: ItemReturns = {
+        ...selectedItem,
+        cartid: cartId,
+        createdat: new Date().getTime(),
+        status: selectedItem.status,
+        remarks: ItemRemarks,
       };
       if (existingOrder > -1) {
         newItem.orderid = String(cartItems[existingOrder]?.orderid);
@@ -196,21 +248,30 @@ const ReturnRefundComponent: React.FC = () => {
   };
 
   // Function to handle checkbox change
-  const handleCheckBox = (
-    code: string,
-    isChecked: boolean,
-    item: ItemReturns
-  ) => {
-    if (isChecked) {
-      // If checked, add the item's ID to the checkedItems array
-      setCheckedItems([...checkedItems, item]);
-    } else {
-      // If unchecked, remove the item's ID from the checkedItems array
-      setCheckedItems(
-        checkedItems.filter((checkedItem) => checkedItem.code !== code)
+  const handleCheckBox = useCallback(
+    async (code: string, isChecked: boolean, item: ItemReturns) => {
+      if (isChecked) {
+        // If checked, add the item's ID to the checkedItems array
+        if (getRemarks.itemCode === item.code) {
+          item.remarks = getRemarks.text;
+        }
+        setCheckedItems([...checkedItems, item]);
+      } else {
+        // If unchecked, remove the item's ID from the checkedItems array
+        setCheckedItems(
+          checkedItems.filter((checkedItem) => checkedItem.code !== code)
+        );
+      }
+      const addeditemsRemarks = addItemRemarks(
+        item,
+        get_item_returns,
+        get_item_returns[0].cartid,
+        getRemarks?.text
       );
-    }
-  };
+      await dispatch(update_item_returns(addeditemsRemarks));
+    },
+    [dispatch, getRemarks, checkedItems]
+  );
   useEffect(() => {
     const initialize = () => {
       console.log(checkedItems);
@@ -243,7 +304,17 @@ const ReturnRefundComponent: React.FC = () => {
     };
     submitRefund();
   }, [dispatch, return_refund, checkedItems]);
-  console.log(return_refund.submit);
+  const handleInfoChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+    items: ItemReturns
+  ) => {
+    const { value } = e.target;
+    setRemarks({
+      itemCode: items.code,
+      text: value,
+    });
+  };
+
   return (
     <IonContent>
       <div>
@@ -252,23 +323,35 @@ const ReturnRefundComponent: React.FC = () => {
             <IonCheckbox
               className="checkbox-content"
               labelPlacement="end"
-              onIonChange={(e) =>
-                handleCheckBox(card.code, e.detail.checked, card)
-              }
+              onIonChange={(e) => {
+                handleCheckBox(card.code, e.detail.checked, card);
+              }}
             ></IonCheckbox>
-            <CardList
-              key={card.code}
-              cartid={card.cartid}
-              code={card.code}
-              item={card.item}
-              qty={card.qty}
-              price={card.price}
-              createdat={card.createdat}
-              status={card.status}
-              transid={card.transid}
-              orderid={card.orderid}
-              total={card.total}
-            />
+            <div className="checkbox-card-container">
+              {/* Your CardList component */}
+              <CardList
+                key={card.code}
+                cartid={card.cartid}
+                code={card.code}
+                item={card.item}
+                qty={card.qty}
+                price={card.price}
+                createdat={card.createdat}
+                status={card.status}
+                transid={card.transid}
+                orderid={card.orderid}
+                total={card.total}
+                remarks={card.remarks}
+              />
+
+              <IonTextarea
+                labelPlacement="floating"
+                label="Remarks"
+                name="remarks"
+                onIonInput={(e: any) => handleInfoChange(e, card)}
+                className="remarks-input"
+              ></IonTextarea>
+            </div>
           </div>
         ))}
       </div>

@@ -56,8 +56,9 @@ const Tab2: React.FC = () => {
 
       setTotal(totalPrice); // Set the total price
       const existingOrder = selectedItemselector.findIndex(
-        (item) => item.orderid !== "" || item.orderid !== undefined
+        (item) => item.orderid?.length! > 0
       );
+      console.log(existingOrder);
       if (existingOrder > -1) {
         setExistingOrder(true);
         dispatch(
@@ -82,24 +83,30 @@ const Tab2: React.FC = () => {
   };
   const handleSaveOrder = useCallback(async () => {
     try {
-      console.log(customer_information);
       const res = await dispatch(GetLoginUser());
       if (res?.name.length! <= 0 || res === undefined) {
         router.push("/login");
       } else {
         const date = new Date().getTime();
         if (existingOrder) {
+          console.log(existingOrder);
           if (
-            selectedItemselector.length > 0 &&
-            selectedItemselector[0].status === "quotation"
+            (selectedItemselector.length > 0 &&
+              selectedItemselector[0].status === "quotation") ||
+            selectedItemselector[0].status === "pending" ||
+            selectedItemselector[0].status === "cancel"
           ) {
+            let status =
+              selectedItemselector[0].status === "cancel"
+                ? "pending"
+                : selectedItemselector[0].status;
             const addedOrder: ResponseModel = await dispatch(
               PostOrder(
                 selectedItemselector[0].orderid!,
                 selectedItemselector,
                 customer_information,
                 new Date().getTime(),
-                selectedItemselector[0].status,
+                status,
                 0.0,
                 user_login_information.name
               )
@@ -113,11 +120,11 @@ const Tab2: React.FC = () => {
               dispatch(getOrderInfo(payload));
               router.push(`/orderInfo?orderid=${addedOrder.result?.orderid!}`);
             }
-          } else {
-            // await dispatch(saveOrder(selectedItemselector, date));
-
-            router.push("/customerInformation");
           }
+        } else {
+          // await dispatch(saveOrder(selectedItemselector, date));
+          console.log(existingOrder);
+          router.push("/customerInformation");
         }
       }
     } catch (error) {
@@ -130,6 +137,7 @@ const Tab2: React.FC = () => {
     customer_information,
     existingOrder,
   ]);
+  console.log(selectedItemselector);
   return (
     <IonPage className="home-page-container">
       <IonHeader className="home-page-header">

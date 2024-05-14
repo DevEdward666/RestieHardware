@@ -40,6 +40,7 @@ export interface ItemReturns {
   code: string;
   item: string;
   qty: number;
+  onhandqty?: number;
   price: number;
   total: number;
   createdat: number;
@@ -139,4 +140,7 @@ interface OrderListFilterModel {
 }
 export interface SubmitReturnRefund {
   submit: boolean;
+}
+export interface CompleteReturnRefund {
+  complete: boolean;
 }

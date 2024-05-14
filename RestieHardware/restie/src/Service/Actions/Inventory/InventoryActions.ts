@@ -1,6 +1,8 @@
 import { Dispatch } from "react";
 import {
   ADD_TO_CART,
+  CHECKED_RETURN_REFUND,
+  COMPLETE_RETURN_REFUND,
   GET_BRANDS,
   GET_DELIVERY_INFO,
   GET_ITEM_RETURNS,
@@ -20,6 +22,7 @@ import {
   InsertCustomerInfo,
   ListOrder,
   PostGetDeliveryInfo,
+  PostReturnItems,
   SavedAndPayOrder,
   SelectedListOrder,
   addToCart,
@@ -35,6 +38,7 @@ import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 import {
   Addtocart,
   CategoryAndBrandModel,
+  CompleteReturnRefund,
   GetBrandsModel,
   GetItemToRefundRequest,
   InventoryModel,
@@ -209,7 +213,6 @@ export const PostOrder =
       message: "",
     };
     try {
-      console.log(customer_payload);
       if (customer_payload.newUser) {
         await InsertCustomerInfo(customer_payload);
       }
@@ -465,6 +468,46 @@ export const submit_return_refund =
         submit_return_refund: payload,
       });
       return payload;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+export const checked_refund_items =
+  (payload: ItemReturns[]) =>
+  async (dispatch: Dispatch<CHECKED_RETURN_REFUND>) => {
+    try {
+      dispatch({
+        type: "CHECKED_RETURN_REFUND",
+        checked_return_refund: payload,
+      });
+      return payload;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+export const complete_return_refund =
+  (payload: CompleteReturnRefund) =>
+  async (dispatch: Dispatch<COMPLETE_RETURN_REFUND>) => {
+    try {
+      dispatch({
+        type: "COMPLETE_RETURN_REFUND",
+        complete_return_refund: payload,
+      });
+      return payload;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+export const completeRefund =
+  (payload: ItemReturns[]) =>
+  async (dispatch: Dispatch<COMPLETE_RETURN_REFUND>) => {
+    try {
+      const res = await PostReturnItems(payload);
+      dispatch({
+        type: "COMPLETE_RETURN_REFUND",
+        complete_return_refund: { complete: false },
+      });
+      return res;
     } catch (error: any) {
       console.log(error);
     }

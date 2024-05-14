@@ -2266,13 +2266,13 @@ namespace RestieAPI.Service.Repo
         }
         public SalesResponseModel GenerateSalesReturn(GetSales getSales)
         {
-            var sql = @" select  ct.code, TRIM(ct.item) as item, ret.price, SUM(ret.qty) as qty, TO_CHAR(SUM(ret.qty* ret.price), 'FM999,999,999.00') AS total_sales
+            var sql = @" select  ct.code, TRIM(ct.item) as item, SUM(ret.price) as price, SUM(ret.qty) as qty, TO_CHAR(SUM(ret.qty* ret.price), 'FM999,999,999.00') AS total_sales
                 from transaction as tr join orders as ors on tr.orderid = ors.orderid
                 join cart as ct on ct.cartid = ors.cartid
-                left join returns ret on ret.orderid = ors.orderid
+                join returns ret on ret.orderid = ors.orderid
                 where LOWER(ors.status) = 'approved' and LOWER(ct.status) = 'return'
                 AND DATE(to_timestamp(tr.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
-                group by ct.item, ct.code ,ret.price;";
+                group by ct.item, ct.code;";
 
             DateTime fromDate = DateTime.Parse(getSales.fromDate);
             DateTime toDate = DateTime.Parse(getSales.toDate);
@@ -2339,8 +2339,9 @@ namespace RestieAPI.Service.Repo
                         return new SalesResponseModel
                         {
                             result = null,
-                            statusCode = 200,
-                            success = true
+                            statusCode = 500,
+                            success = true,
+                            message=ex.Message
                         };
                         throw;
                     }
@@ -2456,6 +2457,7 @@ namespace RestieAPI.Service.Repo
                                         status = reader.GetString(reader.GetOrdinal("status")),
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
                                         qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                        onhandqty = reader.GetInt64(reader.GetOrdinal("qty")),
                                         total = reader.GetFloat(reader.GetOrdinal("total")),
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                     };

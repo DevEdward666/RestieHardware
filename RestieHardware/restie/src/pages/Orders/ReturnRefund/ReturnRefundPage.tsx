@@ -50,7 +50,7 @@ const ReturnRefundPage: React.FC = () => {
           color={"medium"}
           onClick={() => handleReturnRefund()}
         >
-          Submit for Return/Refund
+          Next
         </IonButton>
       </div>
     </IonPage>

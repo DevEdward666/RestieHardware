@@ -52,6 +52,8 @@ const defaultState: InventoryTypesModel = {
   },
   get_item_returns: [],
   submit_return_refund: { submit: false },
+  checked_return_refund: [],
+  complete_return_refund: { complete: false },
 };
 
 const InventoryReducer = (
@@ -123,6 +125,18 @@ const InventoryReducer = (
       return {
         ...state,
         submit_return_refund: action.submit_return_refund,
+      };
+    }
+    case "COMPLETE_RETURN_REFUND": {
+      return {
+        ...state,
+        complete_return_refund: action.complete_return_refund,
+      };
+    }
+    case "CHECKED_RETURN_REFUND": {
+      return {
+        ...state,
+        checked_return_refund: action.checked_return_refund,
       };
     }
     default:

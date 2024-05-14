@@ -9,6 +9,7 @@ import {
   IonModal,
   IonText,
   IonTitle,
+  IonToast,
   IonToolbar,
 } from "@ionic/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -33,6 +34,10 @@ const SalesComponent = () => {
     toastMessage: "",
     isOpen: false,
     type: "",
+  });
+  const [isOpenMessageToast, setMessageToast] = useState({
+    toastMessage: "",
+    isOpen: false,
   });
   const handleWeekChange = (event: Event) => {
     const target = event.target as HTMLIonDatetimeElement;
@@ -74,10 +79,36 @@ const SalesComponent = () => {
       isOpen: true,
       type: "PDF",
     });
+    console.log(payload);
+    if (payload.fromDate === undefined) {
+      setIsOpenToast({
+        toastMessage: "No reports available",
+        isOpen: false,
+        type: "PDF",
+      });
+      setMessageToast({
+        toastMessage: "Please select date",
+        isOpen: true,
+      });
+      return;
+    }
     const res =
       openPDFModal.type === "sales"
         ? await GetSalesByDay(payload)
         : await GenerateSalesReturn(payload);
+    console.log(res);
+    if (res.result === null || res.result === undefined) {
+      setIsOpenToast({
+        toastMessage: "No reports available",
+        isOpen: false,
+        type: "PDF",
+      });
+      setMessageToast({
+        toastMessage: "No reports available",
+        isOpen: true,
+      });
+      return;
+    }
     const base64Data = res.result.fileContents; // Accessing the Base64 encoded PDF data
     const decodedData = atob(base64Data); // Decoding the Base64 string
     const byteArray = new Uint8Array(decodedData.length);
@@ -201,6 +232,16 @@ const SalesComponent = () => {
           />
         </IonContent>
       </IonModal>
+      <IonToast
+        isOpen={isOpenMessageToast?.isOpen}
+        message={isOpenMessageToast.toastMessage}
+        position="middle"
+        color={"medium"}
+        duration={3000}
+        onDidDismiss={() =>
+          setMessageToast({ toastMessage: "", isOpen: false })
+        }
+      ></IonToast>
     </IonContent>
   );
 };

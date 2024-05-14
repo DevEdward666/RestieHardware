@@ -23,6 +23,8 @@ import {
 } from "../../../Models/Request/Inventory/InventoryModel";
 import {
   addToCartAction,
+  checked_refund_items,
+  get_item_returns,
   submit_return_refund,
   update_item_returns,
 } from "../../../Service/Actions/Inventory/InventoryActions";
@@ -32,7 +34,7 @@ import { useSelector } from "react-redux";
 import "./ReturnRefundComponent.css";
 import { PostReturnItems } from "../../../Service/API/Inventory/InventoryApi";
 const ReturnRefundComponent: React.FC = () => {
-  const get_item_returns = useSelector(
+  const item_returns = useSelector(
     (store: RootStore) => store.InventoryReducer.get_item_returns
   );
   const return_refund = useSelector(
@@ -73,7 +75,7 @@ const ReturnRefundComponent: React.FC = () => {
                       size="large"
                       fill="clear"
                       onClick={() =>
-                        handleQty(card, false, undefined, card?.qty)
+                        handleQty(card, false, undefined, card?.onhandqty)
                       }
                     >
                       <IonIcon
@@ -93,17 +95,17 @@ const ReturnRefundComponent: React.FC = () => {
                           card,
                           true,
                           parseInt(ev.target.value?.toString()!),
-                          card?.qty
+                          card?.onhandqty
                         )
                       }
                     ></IonInput>
 
                     <IonButton
-                      disabled={card.qty >= card?.qty!}
+                      disabled={card.qty >= card?.onhandqty!}
                       size="large"
                       fill="clear"
                       onClick={() =>
-                        handleQty(card, true, undefined, card?.qty)
+                        handleQty(card, true, undefined, card?.onhandqty)
                       }
                     >
                       <IonIcon
@@ -113,7 +115,9 @@ const ReturnRefundComponent: React.FC = () => {
                       />
                     </IonButton>
                   </div>
-                  <div className="main-return-card-qty">{card?.qty} pcs</div>
+                  <div className="main-return-card-qty">
+                    {card?.onhandqty} pcs
+                  </div>
                 </IonCardContent>
               </div>
             </IonCard>
@@ -164,48 +168,47 @@ const ReturnRefundComponent: React.FC = () => {
       return [...cartItems, newItem];
     }
   };
-  const addItemRemarks = (
-    selectedItem: ItemReturns,
-    cartItems: ItemReturns[],
-    cartId: string,
-    ItemRemarks: string
-  ) => {
-    // Find existing item index
-    const existingItemIndex = cartItems.findIndex(
-      (item) => item.code === selectedItem.code
-    );
-    const existingOrder = cartItems.findIndex(
-      (item) => item.orderid !== "" || item.orderid !== undefined
-    );
-    console.log(existingItemIndex);
-    if (existingItemIndex !== -1) {
-      // If item already exists, update its quantity
-      const updatedCartItems = cartItems.map((item, index) => {
-        if (index === existingItemIndex) {
-          if (ItemRemarks !== undefined) {
-            return { ...item, remarks: ItemRemarks };
-          } else {
-            return { ...item, remarks: ItemRemarks };
-          }
-        }
-        return item;
-      });
-      return updatedCartItems;
-    } else {
-      // If item doesn't exist, add it to the cart
-      const newItem: ItemReturns = {
-        ...selectedItem,
-        cartid: cartId,
-        createdat: new Date().getTime(),
-        status: selectedItem.status,
-        remarks: ItemRemarks,
-      };
-      if (existingOrder > -1) {
-        newItem.orderid = String(cartItems[existingOrder]?.orderid);
-      }
-      return [...cartItems, newItem];
-    }
-  };
+  // const addItemRemarks = (
+  //   selectedItem: ItemReturns,
+  //   cartItems: ItemReturns[],
+  //   cartId: string,
+  //   ItemRemarks: string
+  // ) => {
+  //   // Find existing item index
+  //   const existingItemIndex = cartItems.findIndex(
+  //     (item) => item.code === selectedItem.code
+  //   );
+  //   const existingOrder = cartItems.findIndex(
+  //     (item) => item.orderid !== "" || item.orderid !== undefined
+  //   );
+  //   if (existingItemIndex !== -1) {
+  //     // If item already exists, update its quantity
+  //     const updatedCartItems = cartItems.map((item, index) => {
+  //       if (index === existingItemIndex) {
+  //         if (ItemRemarks !== undefined) {
+  //           return { ...item, remarks: ItemRemarks };
+  //         } else {
+  //           return { ...item, remarks: ItemRemarks };
+  //         }
+  //       }
+  //       return item;
+  //     });
+  //     return updatedCartItems;
+  //   } else {
+  //     // If item doesn't exist, add it to the cart
+  //     const newItem: ItemReturns = {
+  //       ...selectedItem,
+  //       cartid: cartId,
+  //       createdat: new Date().getTime(),
+  //       status: selectedItem.status,
+  //       remarks: ItemRemarks,
+  //     };
+  //     if (existingOrder > -1) {
+  //       newItem.orderid = String(cartItems[existingOrder]?.orderid);
+  //     }
+  //     return [...cartItems, newItem];
+  //   }
+  // };
   const handleQty = async (
     selectedItem: ItemReturns,
     isAdd?: boolean,
@@ -240,8 +243,8 @@ const ReturnRefundComponent: React.FC = () => {
     const addeditems = addItem(
       change,
       selectedItem,
-      get_item_returns,
-      get_item_returns[0].cartid,
+      item_returns,
+      item_returns[0]?.cartid,
       qtyAdded
     );
     await dispatch(update_item_returns(addeditems));
@@ -251,10 +254,6 @@ const ReturnRefundComponent: React.FC = () => {
   const handleCheckBox = useCallback(
     async (code: string, isChecked: boolean, item: ItemReturns) => {
       if (isChecked) {
-        // If checked, add the item's ID to the checkedItems array
-        if (getRemarks.itemCode === item.code) {
-          item.remarks = getRemarks.text;
-        }
         setCheckedItems([...checkedItems, item]);
       } else {
         // If unchecked, remove the item's ID from the checkedItems array
@@ -262,22 +261,38 @@ const ReturnRefundComponent: React.FC = () => {
           checkedItems.filter((checkedItem) => checkedItem.code !== code)
         );
       }
-      const addeditemsRemarks = addItemRemarks(
-        item,
-        get_item_returns,
-        get_item_returns[0].cartid,
-        getRemarks?.text
-      );
-      await dispatch(update_item_returns(addeditemsRemarks));
+      // const addeditemsRemarks = addItemRemarks(
+      //   item,
+      //   get_item_returns,
+      //   get_item_returns[0]?.cartid,
+      //   getRemarks?.text
+      // );
+      // await dispatch(update_item_returns(addeditemsRemarks));
     },
     [dispatch, getRemarks, checkedItems]
   );
   useEffect(() => {
-    const initialize = () => {
-      console.log(checkedItems);
+    const initialize = async () => {
+      await dispatch(checked_refund_items(checkedItems));
     };
     initialize();
-  }, [checkedItems]);
+  }, [dispatch, checkedItems]);
+  const getTranIDFromURL = () => {
+    const url = new URL(window.location.href);
+    return url.searchParams.get("transid");
+  };
+  useEffect(() => {
+    const initialize = async () => {
+      const transId = getTranIDFromURL();
+      dispatch(
+        get_item_returns({
+          transid: transId!,
+        })
+      );
+    };
+    initialize();
+  }, [dispatch]);
+
   // const handleReturnRefund = useCallback(async () => {
 
   // }, [checkedItems]);
@@ -292,9 +307,10 @@ const ReturnRefundComponent: React.FC = () => {
         return;
       }
       if (checkedItems.length > 0 && return_refund.submit) {
-        await PostReturnItems(checkedItems);
+        // await PostReturnItems(checkedItems);
         dispatch(submit_return_refund({ submit: false }));
-        router.push(`/orderInfo?orderid=${orderId}`);
+        // router.push(`/orderInfo?orderid=${orderId}`);
+        router.push(`/refundsubmit?orderid=${orderId}`);
       } else {
         setIsOpenToast({
           isOpen: true,
@@ -304,21 +320,28 @@ const ReturnRefundComponent: React.FC = () => {
     };
     submitRefund();
   }, [dispatch, return_refund, checkedItems]);
-  const handleInfoChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>,
-    items: ItemReturns
-  ) => {
-    const { value } = e.target;
-    setRemarks({
-      itemCode: items.code,
-      text: value,
-    });
-  };
+  // const handleInfoChange = useCallback(
+  //   async (e: React.ChangeEvent<HTMLTextAreaElement>, items: ItemReturns) => {
+  //     const { value } = e.target;
+  //     const addeditemsRemarks = addItemRemarks(
+  //       items,
+  //       get_item_returns,
+  //       get_item_returns[0]?.cartid,
+  //       value
+  //     );
+  //     await dispatch(update_item_returns(addeditemsRemarks));
+  //     setRemarks({
+  //       itemCode: items.code,
+  //       text: value,
+  //     });
+  //   },
+  //   [dispatch, checkedItems, get_item_returns]
+  // );
 
   return (
     <IonContent>
       <div>
-        {get_item_returns?.map((card, index) => (
+        {item_returns?.map((card, index) => (
           <div className="checkbox-container" key={index}>
             <IonCheckbox
               className="checkbox-content"
@@ -342,15 +365,16 @@ const ReturnRefundComponent: React.FC = () => {
                 orderid={card.orderid}
                 total={card.total}
                 remarks={card.remarks}
+                onhandqty={card.onhandqty}
               />
 
-              <IonTextarea
+              {/* <IonTextarea 
                 labelPlacement="floating"
                 label="Remarks"
                 name="remarks"
                 onIonInput={(e: any) => handleInfoChange(e, card)}
                 className="remarks-input"
-              ></IonTextarea>
+              ></IonTextarea>*/}
             </div>
           </div>
         ))}

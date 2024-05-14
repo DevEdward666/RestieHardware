@@ -1,6 +1,7 @@
 import {
   Addtocart,
   CategoryAndBrandModel,
+  CompleteReturnRefund,
   InventoryModel,
   ItemReturns,
   SelectedItemToCart,
@@ -58,6 +59,14 @@ export type SUBMIT_RETURN_REFUND = {
   type: "SUBMIT_RETURN_REFUND";
   submit_return_refund: SubmitReturnRefund;
 };
+export type COMPLETE_RETURN_REFUND = {
+  type: "COMPLETE_RETURN_REFUND";
+  complete_return_refund: CompleteReturnRefund;
+};
+export type CHECKED_RETURN_REFUND = {
+  type: "CHECKED_RETURN_REFUND";
+  checked_return_refund: ItemReturns[];
+};
 
 export type LIST_OF_PRODUCT_TYPE =
   | LIST_OF_ITEMS
@@ -70,7 +79,9 @@ export type LIST_OF_PRODUCT_TYPE =
   | GET_BRANDS
   | GET_VOUCHER
   | GET_ITEM_RETURNS
-  | SUBMIT_RETURN_REFUND;
+  | SUBMIT_RETURN_REFUND
+  | COMPLETE_RETURN_REFUND
+  | CHECKED_RETURN_REFUND;
 
 export interface InventoryTypesModel {
   list_of_items: InventoryModel[];
@@ -84,4 +95,6 @@ export interface InventoryTypesModel {
   get_brands: GetBrandsModel[];
   get_voucher: GetVouhcerResponse;
   submit_return_refund: SubmitReturnRefund;
+  complete_return_refund: CompleteReturnRefund;
+  checked_return_refund: ItemReturns[];
 }

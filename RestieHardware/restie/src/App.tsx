@@ -34,6 +34,7 @@ import OfflineDeliveryPage from "./pages/Delivery/OfflineDelivery/OfflineDeliver
 import SalesPage from "./pages/Products/Sales/SalesPage";
 import OnboardingPage from "./pages/Onboarding/OnboardingPage";
 import ReturnRefundPage from "./pages/Orders/ReturnRefund/ReturnRefundPage";
+import RefundSubmitPage from "./pages/Orders/ReturnRefund/RefundSubmitPage/RefundSubmitPage";
 
 setupIonicReact({ mode: "ios" });
 
@@ -79,6 +80,7 @@ const App: React.FC = () => {
 
       <Route path="/orderInfo" render={() => <OrderInfoPage />} />
       <Route path="/returnrefund" render={() => <ReturnRefundPage />} />
+      <Route path="/refundsubmit" render={() => <RefundSubmitPage />} />
 
       <Route path="/deliveryInfo" render={() => <DeliveryInfoPage />} />
       <Route path="/home/cart" render={() => <MainTab />} />

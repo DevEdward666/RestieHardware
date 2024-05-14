@@ -138,6 +138,7 @@ namespace RestieAPI.Models.Response
         public string status { get; set; }
         public float price { get; set; }
         public long qty { get; set; }
+        public long onhandqty { get; set; }
         public long createdat { get; set; }
     }
     public class BrandResponse

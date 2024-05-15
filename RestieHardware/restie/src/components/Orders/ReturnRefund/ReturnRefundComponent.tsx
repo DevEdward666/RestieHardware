@@ -20,6 +20,7 @@ import {
   Addtocart,
   ItemReturns,
   SelectedItemToCart,
+  SubmitReturnRefund,
 } from "../../../Models/Request/Inventory/InventoryModel";
 import {
   addToCartAction,
@@ -303,7 +304,18 @@ const ReturnRefundComponent: React.FC = () => {
   useEffect(() => {
     const submitRefund = async () => {
       const orderId = getOrderIDFromURL();
-      if (!return_refund.submit) {
+      if (return_refund.submit && checkedItems.length <= 0) {
+        setIsOpenToast({
+          isOpen: true,
+          toastMessage: "Please check items you want to refund",
+        });
+        const payload: SubmitReturnRefund = {
+          submit: false,
+        };
+        dispatch(submit_return_refund(payload));
+        return;
+      }
+      if (!return_refund.submit || checkedItems.length <= 0) {
         return;
       }
       if (checkedItems.length > 0 && return_refund.submit) {
@@ -312,10 +324,6 @@ const ReturnRefundComponent: React.FC = () => {
         // router.push(`/orderInfo?orderid=${orderId}`);
         router.push(`/refundsubmit?orderid=${orderId}`);
       } else {
-        setIsOpenToast({
-          isOpen: true,
-          toastMessage: "Please check items you want to refund",
-        });
       }
     };
     submitRefund();

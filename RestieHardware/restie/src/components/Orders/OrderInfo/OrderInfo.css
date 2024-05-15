@@ -123,7 +123,8 @@
         color: #f02b2b;
         font-size: 24px;
     }
-}}
+}
+}
 .order-list-info-footer-approved-details{
     display: flex;
     font-size: 24px;
@@ -349,4 +350,26 @@ ion-modal#email-modal {
     padding: 20px 10px;
     gap: 8px;
     width: 100%;
+}
+.order-list-info-footer-total-details-remarks{
+    display: flex;
+    font-size: 24px;
+    flex-direction: column;
+    font-weight: bolder;
+    gap: 5px;
+    justify-content: space-between;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    .order-list-info-footer-remarks{
+        font-family: "Gotham-Medium";
+        font-size: 24px;
+    }
+    .order-list-info-footer-info-remarks{
+        font-family: "Gotham-Light";
+        color:black;
+        font-size: 16px;
+        padding-top: 10px;
+        padding-left: 10px;
+    }
 }

@@ -1295,14 +1295,33 @@ namespace RestieAPI.Service.Repo
         {
             var sql = "";
             DateTime searchDate = new DateTime();
-            if (getUserOrder.searchdate.Length <= 0)
+            if (getUserOrder.status == "returns")
             {
-                sql = @"select * from orders where LOWER(status)=@status AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
-            } else if (getUserOrder.searchdate.Length > 0)
-            {
-                sql = @"select * from orders where LOWER(status)=@status AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') AND DATE(to_timestamp(createdat / 1000.0) AT TIME ZONE 'Asia/Manila')=@searchdate ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
-                 searchDate = DateTime.Parse(getUserOrder.searchdate);
+                if (getUserOrder.searchdate.Length <= 0)
+                {
+                    sql = @"select ors.* from orders ors join returns ret on ret.orderid=ors.orderid where  ret.orderid LIKE CONCAT('%', LOWER(@orderid), '%') group by ret.orderid, ors.orderid, cartid, total, paidthru, paidcash, createdby, ors.createdat, status, userid, updateat, type
+                            ORDER BY ors.createdat desc LIMIT @limit OFFSET @offset;";
+
+                }else if (getUserOrder.searchdate.Length > 0)
+                {
+                    sql = @"select ors.* from orders ors join returns ret on ret.orderid=ors.orderid where  ret.orderid LIKE CONCAT('%', LOWER(@orderid), '%') AND DATE(to_timestamp(ret.createdat / 1000.0) AT TIME ZONE 'Asia/Manila')=@searchdate group by ret.orderid, ors.orderid, cartid, total, paidthru, paidcash, createdby, ors.createdat, status, userid, updateat, type
+                            ORDER BY ors.createdat desc LIMIT @limit OFFSET @offset;";
+
+                }
             }
+            else
+            {
+                if (getUserOrder.searchdate.Length <= 0)
+                {
+                    sql = @"select * from orders where LOWER(status)=@status AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+                }
+                else if (getUserOrder.searchdate.Length > 0)
+                {
+                    sql = @"select * from orders where LOWER(status)=@status AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') AND DATE(to_timestamp(createdat / 1000.0) AT TIME ZONE 'Asia/Manila')=@searchdate ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+                    searchDate = DateTime.Parse(getUserOrder.searchdate);
+                }
+            }
+ 
           
 
             var parameters = new Dictionary<string, object>
@@ -1393,7 +1412,11 @@ namespace RestieAPI.Service.Repo
                         LEFT JOIN customer cts ON cts.customerid = ors.userid 
                         JOIN inventory AS inv ON inv.code = ct.code
                         LEFT JOIN transaction AS trans ON trans.orderid = ors.orderid
-                        WHERE ors.orderid = @orderid";
+                        WHERE ors.orderid = @orderid 
+                        group by cts.customerid, cts.customer_email, inv.category, inv.brand, trans.transid,
+                                 ct.cartid, ors.orderid, cts.contactno, cts.address, ct.price, ct.item, ct.code,
+                                 ors.createdat, ors.type, ors.createdby, ors.total, cts.name, ors.paidthru, ors.status,
+                                 ct.status, ct.qty, ors.paidcash, inv.qty";
 
             var parameters = new Dictionary<string, object>
             {
@@ -1401,10 +1424,11 @@ namespace RestieAPI.Service.Repo
             };
 
             var sqlReturns = @"
-                            SELECT ret.transid, ret.orderid, ret.code, ret.item, ret.qty, ret.price, ret.createdat
-                            FROM transaction AS trans
-                            JOIN returns AS ret ON ret.transid = trans.transid
-                            WHERE ret.orderid = @orderid";
+                        SELECT ret.transid, ret.orderid, ret.code, ret.item, ret.qty, ret.price, ret.createdat,sum(ret.qty * ret.price) as total,ret.remarks
+                        FROM transaction AS trans
+                        JOIN returns AS ret ON ret.transid = trans.transid
+                        WHERE ret.orderid = @orderid 
+                        group by ret.createdat, ret.price, ret.qty, ret.item, ret.code, ret.orderid, ret.transid,ret.remarks";
 
             var returnsParameters = new Dictionary<string, object>
             {
@@ -1440,8 +1464,10 @@ namespace RestieAPI.Service.Repo
                                         orderid = reader.GetString(reader.GetOrdinal("orderid")),
                                         code = reader.GetString(reader.GetOrdinal("code")),
                                         item = reader.GetString(reader.GetOrdinal("item")),
+                                        remarks = reader.GetString(reader.GetOrdinal("remarks")),
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
                                         qty = reader.GetInt32(reader.GetOrdinal("qty")),
+                                        total = reader.GetFloat(reader.GetOrdinal("total")),
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                     };
 

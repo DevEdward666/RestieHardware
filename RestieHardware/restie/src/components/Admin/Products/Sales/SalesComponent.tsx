@@ -163,7 +163,7 @@ const SalesComponent = () => {
             setopenPDFModal({ isOpen: true, modal: "", type: "sales" })
           }
         >
-          Generate Sales
+          Generate Sales Report
         </IonButton>
         <IonButton
           color={"medium"}
@@ -172,14 +172,14 @@ const SalesComponent = () => {
             setopenPDFModal({ isOpen: true, modal: "", type: "returns" })
           }
         >
-          Generate Sales Return/Refund
+          Generate Sales Return/Refund Report
         </IonButton>
         <IonButton
           color={"medium"}
           expand="block"
           onClick={() => handleGenerateInventory()}
         >
-          Generate Inventory
+          Generate Inventory Report
         </IonButton>
       </div>
       <IonLoading

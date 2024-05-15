@@ -35,7 +35,9 @@ const ReturnRefundPage: React.FC = () => {
           <IonButtons
             slot="start"
             onClick={() =>
-              router.push(`/orderInfo?orderid=${getOrderIDFromURL()!}`)
+              router.push(
+                `/orderInfo?orderid=${getOrderIDFromURL()!}&return=false`
+              )
             }
           >
             <IonIcon slot="icon-only" icon={arrowBack}></IonIcon>

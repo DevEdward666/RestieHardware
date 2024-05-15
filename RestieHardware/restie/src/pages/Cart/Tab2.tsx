@@ -118,7 +118,9 @@ const Tab2: React.FC = () => {
                 cartid: addedOrder.result?.cartid!,
               };
               dispatch(getOrderInfo(payload));
-              router.push(`/orderInfo?orderid=${addedOrder.result?.orderid!}`);
+              router.push(
+                `/orderInfo?orderid=${addedOrder.result?.orderid!}&return=false`
+              );
             }
           }
         } else {

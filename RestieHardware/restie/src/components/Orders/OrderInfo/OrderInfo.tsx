@@ -102,6 +102,7 @@ const OrderInfoComponent = () => {
   const [getDiscount, setDiscount] = useState<number>(0.0);
   const [getTotalAmount, setTotalAmount] = useState<number>(0.0);
   const [getEmail, setEmail] = useState<string>("");
+  const [getReturnsFromUrl, setReturnsFromUrl] = useState<string>("");
 
   const [elapsedTime, setElapsedTime] = useState({
     hour: 0,
@@ -134,7 +135,15 @@ const OrderInfoComponent = () => {
         setDiscount(get_voucher.discount * 100);
         setTotalAmount(totalDiscount);
       } else {
-        setTotalAmount(order_list_info.order_info?.total);
+        if (getReturnsFromUrl === "true") {
+          let total = 0;
+          order_list_info.return_item.map((val) => {
+            total += val.total;
+          });
+          setTotalAmount(total);
+        } else {
+          setTotalAmount(order_list_info.order_info?.total);
+        }
       }
     };
     initialize();
@@ -194,7 +203,9 @@ const OrderInfoComponent = () => {
         isOpen: false,
         type: "loader",
       });
-      router.push(`/orderInfo?orderid=${order_list_info.order_info.orderid!}`);
+      router.push(
+        `/orderInfo?orderid=${order_list_info.order_info.orderid!}&return=false`
+      );
     }
   }, [dispatch, user_login_information, order_list_info]);
   const handleApprove = () => {
@@ -278,10 +289,16 @@ const OrderInfoComponent = () => {
     const url = new URL(window.location.href);
     return url.searchParams.get("orderid");
   };
+  const isReturn = () => {
+    const url = new URL(window.location.href);
+    const isreturn = url.searchParams.get("return");
+    setReturnsFromUrl(isreturn!);
+  };
   useEffect(() => {
     const initialize = async () => {
       const orderid = getOrderIDFromURL();
       await dispatch(getOrderInfo({ orderid: orderid! }));
+      isReturn();
     };
     initialize();
   }, [dispatch]);
@@ -559,97 +576,107 @@ const OrderInfoComponent = () => {
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
         <div className="order-list-info-footer-approved"> </div>
-        {order_list_info.order_info?.paidthru?.toLowerCase() === "cancel" ? (
-          <div className="order-list-info-footer-approved-info">
-            <>
-              <IonButton
-                size="small"
-                color="tertiary"
-                onClick={() => handleEdit(true)}
-              >
-                Reorder
-              </IonButton>
-            </>
-          </div>
-        ) : null}
+        {getReturnsFromUrl === "false" ? (
+          <div>
+            {order_list_info.order_info?.paidthru?.toLowerCase() ===
+            "cancel" ? (
+              <div className="order-list-info-footer-approved-info">
+                <>
+                  <IonButton
+                    size="small"
+                    color="tertiary"
+                    onClick={() => handleEdit(true)}
+                  >
+                    Reorder
+                  </IonButton>
+                </>
+              </div>
+            ) : null}
 
-        {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ||
-        order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" ? (
-          <div className="order-list-info-footer-approved-info">
-            <>
-              {order_list_info.order_info?.paidthru?.toLowerCase() ===
-              "pending" ? (
-                <IonButton
-                  size="small"
-                  color="tertiary"
-                  onClick={() => handleCancel()}
-                >
-                  Cancel Order
-                </IonButton>
-              ) : null}
-              <IonButton
-                size="small"
-                color="tertiary"
-                onClick={() => handleEdit(false)}
-              >
-                Edit Order
-              </IonButton>
-              <IonButton
-                size="small"
-                color="tertiary"
-                onClick={() => handleApprove()}
-              >
-                Process Order
-              </IonButton>
-            </>
-          </div>
-        ) : null}
-        {order_list_info.order_info?.status?.toLowerCase() === "delivered" ? (
-          <div className="order-list-info-footer-approved-info">
-            <>
-              <IonButton
-                size="small"
-                color="tertiary"
-                onClick={() =>
-                  setOpenSearchModal({ isOpen: true, modal: "receipt" })
-                }
-              >
-                Print Invoice
-              </IonButton>
-              <IonButton
-                size="small"
-                color="tertiary"
-                onClick={() => setOpenSearchModal({ isOpen: true, modal: "" })}
-              >
-                Open Delivery Info
-              </IonButton>
-            </>
-          </div>
-        ) : null}
-        {order_list_info.order_info?.status === "approved" ? (
-          <div className="order-list-info-footer-approved-info">
-            <>
-              <IonButton
-                size="small"
-                color="tertiary"
-                onClick={() =>
-                  setOpenSearchModal({ isOpen: true, modal: "receipt" })
-                }
-              >
-                Print Invoice
-              </IonButton>
-              <IonButton
-                size="small"
-                color="tertiary"
-                onClick={() =>
-                  router.push(
-                    `/deliveryInfo?orderid=${order_list_info.order_info.orderid}&transid=${order_list_info.order_info.transid}&cartid=${order_list_info.order_info.cartid}`
-                  )
-                }
-              >
-                Process Item Delivered
-              </IonButton>
-            </>
+            {order_list_info.order_info?.paidthru?.toLowerCase() ===
+              "pending" ||
+            order_list_info.order_info?.paidthru?.toLowerCase() ===
+              "quotation" ? (
+              <div className="order-list-info-footer-approved-info">
+                <>
+                  {order_list_info.order_info?.paidthru?.toLowerCase() ===
+                  "pending" ? (
+                    <IonButton
+                      size="small"
+                      color="tertiary"
+                      onClick={() => handleCancel()}
+                    >
+                      Cancel Order
+                    </IonButton>
+                  ) : null}
+                  <IonButton
+                    size="small"
+                    color="tertiary"
+                    onClick={() => handleEdit(false)}
+                  >
+                    Edit Order
+                  </IonButton>
+                  <IonButton
+                    size="small"
+                    color="tertiary"
+                    onClick={() => handleApprove()}
+                  >
+                    Process Order
+                  </IonButton>
+                </>
+              </div>
+            ) : null}
+            {order_list_info.order_info?.status?.toLowerCase() ===
+            "delivered" ? (
+              <div className="order-list-info-footer-approved-info">
+                <>
+                  <IonButton
+                    size="small"
+                    color="tertiary"
+                    onClick={() =>
+                      setOpenSearchModal({ isOpen: true, modal: "receipt" })
+                    }
+                  >
+                    Print Invoice
+                  </IonButton>
+                  <IonButton
+                    size="small"
+                    color="tertiary"
+                    onClick={() =>
+                      setOpenSearchModal({ isOpen: true, modal: "" })
+                    }
+                  >
+                    Open Delivery Info
+                  </IonButton>
+                </>
+              </div>
+            ) : null}
+            {order_list_info.order_info?.status === "approved" ? (
+              <div className="order-list-info-footer-approved-info">
+                <>
+                  <IonButton
+                    size="small"
+                    color="tertiary"
+                    onClick={() =>
+                      setOpenSearchModal({ isOpen: true, modal: "receipt" })
+                    }
+                  >
+                    Print Invoice
+                  </IonButton>
+                  <IonButton
+                    size="small"
+                    color="tertiary"
+                    onClick={() =>
+                      router.push(
+                        `/deliveryInfo?orderid=${order_list_info.order_info.orderid}&transid=${order_list_info.order_info.transid}&cartid=${order_list_info.order_info.cartid}`
+                      )
+                    }
+                  >
+                    Process Item Delivered
+                  </IonButton>
+                </>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -724,124 +751,241 @@ const OrderInfoComponent = () => {
 
       <IonImg className="breakline" src={breakline} />
       <div className="order-list-info-container">
-        {Array.isArray(order_list_info.order_item) &&
-        order_list_info.order_item.length > 0 ? (
-          order_list_info.order_item.map((items, index) => {
-            const correspondingReturn = order_list_info.return_item.find(
-              (returns) =>
-                returns.code === items.code && returns.qty === items.qty
-            );
-            const returnItems = order_list_info.return_item.find(
-              (returns) => returns.code === items.code
-            );
+        {getReturnsFromUrl === "true" ? (
+          <div>
+            {Array.isArray(order_list_info.order_item) &&
+            order_list_info.return_item.length > 0 ? (
+              order_list_info.return_item.map((items, index) => {
+                const returnItems = order_list_info.return_item.find(
+                  (returns) => returns.code === items.code
+                );
 
-            return (
-              <IonItem
-                className="order-list-info-card-container"
-                key={index}
-                onClick={() =>
-                  handleSelectOrder(
-                    order_list_info.order_info.orderid,
-                    order_list_info.order_info.cartid
-                  )
-                }
-              >
-                <div className="order-list-info-card-add-item-container">
-                  <div
-                    className={`order-list-info-card-main-content ${
-                      correspondingReturn ? "all" : ""
-                    }`}
+                return (
+                  <IonItem
+                    className="order-list-info-card-container"
+                    key={index}
+                    onClick={() =>
+                      handleSelectOrder(
+                        order_list_info.order_info.orderid,
+                        order_list_info.order_info.cartid
+                      )
+                    }
                   >
-                    <div className="order-list-info-card-content">
-                      <div className={`order-list-info-card-title-details `}>
-                        {items.item}{" "}
-                        {returnItems && (
-                          <div className="order-list-info-card-title-details-returns">
-                            Return/Refund - {returnItems.qty}
+                    <div className="order-list-info-card-add-item-container">
+                      <div className={`order-list-info-card-main-content`}>
+                        <div className="order-list-info-card-content">
+                          <div
+                            className={`order-list-info-card-title-details `}
+                          >
+                            {items.item}{" "}
+                            {returnItems && (
+                              <div className="order-list-info-card-title-details-returns">
+                                Return/Refund - {returnItems.qty}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
 
-                      <div className="order-list-info-card-category-details">
-                        <div className="order-list-info-card-category">
-                          Brand: {items.brand} | Category:{items.category}
+                          <div className="order-list-info-card-category-details">
+                            <div className="order-list-info-card-category">
+                              {/* Brand: {items.brand} | Category:{items.category} */}
+                            </div>
+                          </div>
+                          <div className="order-list-info-card-price-details">
+                            <span>&#8369;</span>
+                            {items.price.toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="order-list-info-card-content">
+                          <div className="order-list-info-card-qty">
+                            {" "}
+                            {`X${items.qty}`}
+                          </div>
                         </div>
                       </div>
-                      <div className="order-list-info-card-price-details">
-                        <span>&#8369;</span>
-                        {items.price.toFixed(2)}
-                      </div>
                     </div>
-                    <div className="order-list-info-card-content">
-                      <div className="order-list-info-card-qty">
-                        {" "}
-                        {`X${items.qty}`}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </IonItem>
-            );
-          })
+                  </IonItem>
+                );
+              })
+            ) : (
+              <div>No items to display</div>
+            )}
+          </div>
         ) : (
-          <div>No items to display</div>
+          <div>
+            {Array.isArray(order_list_info.order_item) &&
+            order_list_info.order_item.length > 0 ? (
+              order_list_info.order_item.map((items, index) => {
+                const correspondingReturn = order_list_info.return_item.find(
+                  (returns) =>
+                    returns.code === items.code && returns.qty === items.qty
+                );
+                const returnItems = order_list_info.return_item.find(
+                  (returns) => returns.code === items.code
+                );
+
+                return (
+                  <IonItem
+                    className="order-list-info-card-container"
+                    key={index}
+                    onClick={() =>
+                      handleSelectOrder(
+                        order_list_info.order_info.orderid,
+                        order_list_info.order_info.cartid
+                      )
+                    }
+                  >
+                    <div className="order-list-info-card-add-item-container">
+                      <div
+                        className={`order-list-info-card-main-content ${
+                          correspondingReturn ? "all" : ""
+                        }`}
+                      >
+                        <div className="order-list-info-card-content">
+                          <div
+                            className={`order-list-info-card-title-details `}
+                          >
+                            {items.item}{" "}
+                            {returnItems && (
+                              <div className="order-list-info-card-title-details-returns">
+                                Return/Refund - {returnItems.qty}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="order-list-info-card-category-details">
+                            <div className="order-list-info-card-category">
+                              Brand: {items.brand} | Category:{items.category}
+                            </div>
+                          </div>
+                          <div className="order-list-info-card-price-details">
+                            <span>&#8369;</span>
+                            {items.price.toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="order-list-info-card-content">
+                          <div className="order-list-info-card-qty">
+                            {" "}
+                            {`X${items.qty}`}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </IonItem>
+                );
+              })
+            ) : (
+              <div>No items to display</div>
+            )}
+          </div>
         )}
       </div>
-      <div className="order-list-info-footer-details">
-        <div className="order-list-info-footer">Payment Method: </div>
-        <div className="order-list-info-footer-info">
-          {" "}
-          {order_list_info.order_info?.paidthru?.toLocaleUpperCase()}
-        </div>
-      </div>
-      <div className="order-list-info-footer-details">
-        <div className="order-list-info-footer">Sub-Total: </div>
-        <div className="order-list-info-footer-info">
-          {" "}
-          <span>&#8369;</span>
-          {order_list_info.order_info?.total?.toFixed(2)}
-        </div>
-      </div>
-      <div className="order-list-info-footer-details">
-        <div className="order-list-info-footer">Discount & Vouchers: </div>
-
-        <div className="order-list-info-footer-info">{`${
-          getDiscount > 0 ? getDiscount + "%" : 0
-        }`}</div>
-      </div>
-      <IonImg className="breakline" src={breakline} />
-      <div className="order-list-info-footer-total-main">
-        <div className="order-list-info-footer-total-details">
-          <div className="order-list-info-footer-total">Amount Due: </div>
-
-          <div className="order-list-info-footer-total-info">
-            <span>&#8369;</span>
-            {getTotalAmount?.toFixed(2)}
+      {getReturnsFromUrl === "true" ? (
+        <>
+          <div className="order-list-info-footer-details">
+            <div className="order-list-info-footer">Payment Method: </div>
+            <div className="order-list-info-footer-info">
+              {" "}
+              {order_list_info.order_info?.paidthru?.toLocaleUpperCase()}
+            </div>
           </div>
-        </div>
-        {order_list_info.order_info?.paidcash > 0 ? (
-          <>
+          <div className="order-list-info-footer-details">
+            <div className="order-list-info-footer">Sub-Total: </div>
+            <div className="order-list-info-footer-info">
+              {" "}
+              <span>&#8369;</span>
+              {order_list_info.order_info?.total?.toFixed(2)}
+            </div>
+          </div>
+          <div className="order-list-info-footer-details">
+            <div className="order-list-info-footer">Discount & Vouchers: </div>
+
+            <div className="order-list-info-footer-info">{`${
+              getDiscount > 0 ? getDiscount + "%" : 0
+            }`}</div>
+          </div>
+          <IonImg className="breakline" src={breakline} />
+          <div className="order-list-info-footer-total-main">
             <div className="order-list-info-footer-total-details">
-              <div className="order-list-info-footer-total">Cash: </div>
+              <div className="order-list-info-footer-total">
+                Amount Return:{" "}
+              </div>
 
               <div className="order-list-info-footer-total-info">
                 <span>&#8369;</span>
-                {(order_list_info.order_info?.paidcash).toFixed(2)}
+                {getTotalAmount?.toFixed(2)}
               </div>
             </div>
+          </div>
+          <div className="order-list-info-footer-total-main">
+            <div className="order-list-info-footer-total-details-remarks">
+              <div className="order-list-info-footer-remarks">Remarks: </div>
+
+              <div className="order-list-info-footer-info-remarks">
+                <IonText>{order_list_info.return_item[0]?.remarks}</IonText>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="order-list-info-footer-details">
+            <div className="order-list-info-footer">Payment Method: </div>
+            <div className="order-list-info-footer-info">
+              {" "}
+              {order_list_info.order_info?.paidthru?.toLocaleUpperCase()}
+            </div>
+          </div>
+          <div className="order-list-info-footer-details">
+            <div className="order-list-info-footer">Sub-Total: </div>
+            <div className="order-list-info-footer-info">
+              {" "}
+              <span>&#8369;</span>
+              {order_list_info.order_info?.total?.toFixed(2)}
+            </div>
+          </div>
+          <div className="order-list-info-footer-details">
+            <div className="order-list-info-footer">Discount & Vouchers: </div>
+
+            <div className="order-list-info-footer-info">{`${
+              getDiscount > 0 ? getDiscount + "%" : 0
+            }`}</div>
+          </div>
+          <IonImg className="breakline" src={breakline} />
+          <div className="order-list-info-footer-total-main">
             <div className="order-list-info-footer-total-details">
-              <div className="order-list-info-footer-total">Change: </div>
+              <div className="order-list-info-footer-total">Amount Due: </div>
 
               <div className="order-list-info-footer-total-info">
                 <span>&#8369;</span>
-                {(
-                  order_list_info.order_info?.paidcash - getTotalAmount
-                ).toFixed(2)}
+                {getTotalAmount?.toFixed(2)}
               </div>
             </div>
-          </>
-        ) : null}
-      </div>
+            {order_list_info.order_info?.paidcash > 0 ? (
+              <>
+                <div className="order-list-info-footer-total-details">
+                  <div className="order-list-info-footer-total">Cash: </div>
+
+                  <div className="order-list-info-footer-total-info">
+                    <span>&#8369;</span>
+                    {(order_list_info.order_info?.paidcash).toFixed(2)}
+                  </div>
+                </div>
+                <div className="order-list-info-footer-total-details">
+                  <div className="order-list-info-footer-total">Change: </div>
+
+                  <div className="order-list-info-footer-total-info">
+                    <span>&#8369;</span>
+                    {(
+                      order_list_info.order_info?.paidcash - getTotalAmount
+                    ).toFixed(2)}
+                  </div>
+                </div>
+              </>
+            ) : null}
+          </div>
+        </>
+      )}
+
       <div className="order-info-footer-button">
         {order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" ? (
           <>

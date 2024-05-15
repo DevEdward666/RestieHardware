@@ -87,20 +87,20 @@ const RefundSubmitComponents: React.FC = () => {
   useEffect(() => {
     const initialize = async () => {
       const orderId = getOrderIDFromURL();
-      const updatedItems = checked_return_refund.map((val) => {
-        return {
-          ...val,
-          remarks: getRemarks, // Update the remarks property
-        };
-      });
       if (complete.complete) {
+        const updatedItems = checked_return_refund.map((val) => {
+          return {
+            ...val,
+            remarks: getRemarks, // Update the remarks property
+          };
+        });
         const res = await dispatch(completeRefund(updatedItems));
         if (res.status === 200) {
           setIsOpenToast({
             isOpen: true,
             toastMessage: res.message,
           });
-          router.push(`/orderInfo?orderid=${orderId}`);
+          router.push(`/orderInfo?orderid=${orderId}&return=false`);
         } else {
           setIsOpenToast({
             isOpen: true,
@@ -170,6 +170,7 @@ const RefundSubmitComponents: React.FC = () => {
             label="Reason for refund"
             name="reason"
             rows={3}
+            maxlength={255}
             onIonInput={(e: any) => handleInfoChange(e)}
             className="remarks-input"
           ></IonTextarea>

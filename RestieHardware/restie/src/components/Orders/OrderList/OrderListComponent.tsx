@@ -63,7 +63,12 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
     initialize();
   }, [filter]);
   const handleSelectOrder = useCallback(
-    (orderid: string, status: string, cartid: string) => {
+    (
+      orderid: string,
+      status: string,
+      cartid: string,
+      return_status: string
+    ) => {
       const statusList = {
         pending: "pending",
         approved: "approved",
@@ -76,10 +81,14 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
       };
       if (status.toLowerCase() === statusList.pending.toLowerCase()) {
         dispatch(getOrderInfo(payload));
-        router.push(`/orderInfo?orderid=${payload.orderid}`);
+        router.push(`/orderInfo?orderid=${payload.orderid}&return=false`);
       } else {
         dispatch(getOrderInfo(payload));
-        router.push(`/orderInfo?orderid=${payload.orderid}`);
+        if (return_status === "returns") {
+          router.push(`/orderInfo?orderid=${payload.orderid}&return=true`);
+        } else {
+          router.push(`/orderInfo?orderid=${payload.orderid}&return=false`);
+        }
       }
     },
     [dispatch]
@@ -96,7 +105,12 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
             className="order-list-card-container"
             key={orders.orderid}
             onClick={() =>
-              handleSelectOrder(orders.orderid, orders.status, orders.cartid)
+              handleSelectOrder(
+                orders.orderid,
+                orders.status,
+                orders.cartid,
+                filter.filter.status
+              )
             }
           >
             <div className="order-list-card-add-item-container">
@@ -121,12 +135,16 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
                     {orders.paidcash.toFixed(2)}
                   </div>
                   <div
-                    className={`order-list-card-qty ${orders?.status
-                      .trim()
-                      .toLowerCase()}`}
+                    className={`order-list-card-qty ${
+                      filter.filter.status.toLowerCase() === "returns"
+                        ? "returns"
+                        : orders?.status.trim().toLowerCase()
+                    }`}
                   >
                     Status:{" "}
-                    {orders?.status.toLowerCase() === "approved"
+                    {filter.filter.status.toLowerCase() === "returns"
+                      ? "Return/Refund".toUpperCase()
+                      : orders?.status.toLowerCase() === "approved"
                       ? "Completed".toUpperCase()
                       : orders?.status.toUpperCase()}
                   </div>

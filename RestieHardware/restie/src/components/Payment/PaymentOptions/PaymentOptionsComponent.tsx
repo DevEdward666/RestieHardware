@@ -99,7 +99,9 @@ const PaymentOptionsComponent = () => {
             cartid: addedOrder.result?.cartid!,
           };
           dispatch(getOrderInfo(payload));
-          router.push(`/orderInfo?orderid=${addedOrder.result?.orderid!}`);
+          router.push(
+            `/orderInfo?orderid=${addedOrder.result?.orderid!}&return=false`
+          );
         }
       } else {
         setIsOpenToast({
@@ -125,7 +127,9 @@ const PaymentOptionsComponent = () => {
             cartid: addedOrder.result?.cartid!,
           };
           dispatch(getOrderInfo(payload));
-          router.push(`/orderInfo?orderid=${addedOrder.result?.orderid!}`);
+          router.push(
+            `/orderInfo?orderid=${addedOrder.result?.orderid!}&return=false`
+          );
         }
       }
     },

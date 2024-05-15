@@ -37,7 +37,9 @@ export interface ReturnItems {
   orderid: string;
   code: string;
   item: string;
+  remarks: string;
   qty: number;
+  total: number;
   price: number;
   createdat: number;
 }

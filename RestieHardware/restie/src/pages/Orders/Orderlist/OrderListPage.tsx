@@ -108,6 +108,9 @@ const OrderListPage = () => {
               <IonSegmentButton value="cancel">
                 <IonLabel>Cancelled</IonLabel>
               </IonSegmentButton>
+              <IonSegmentButton value="returns">
+                <IonLabel>Return/Refund</IonLabel>
+              </IonSegmentButton>
             </IonSegment>
             <div className="order-list-search">
               <IonSearchbar

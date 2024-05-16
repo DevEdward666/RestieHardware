@@ -60,7 +60,6 @@ const Tab1: React.FC = () => {
     filter: "",
   });
   const platform = getPlatforms();
-  console.log(platform);
   const [fetchList, setFetchList] = useState<SearchInventoryModel>({
     page: 1,
     offset: 0, // Assuming offset starts from 0

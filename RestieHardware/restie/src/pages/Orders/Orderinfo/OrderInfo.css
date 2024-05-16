@@ -28,3 +28,8 @@
 .order-info-content{
     --background:white;
 }
+.order-info-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

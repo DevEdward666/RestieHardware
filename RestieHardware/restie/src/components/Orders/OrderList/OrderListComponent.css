@@ -54,6 +54,14 @@
     }
 
 }
+.order-list-main-content {
+    .desktop{
+        width: 50%;
+    }
+    .mobile{
+        width: 100%;
+    }
+}
 .loader{
     display: flex;
     flex-direction: row;

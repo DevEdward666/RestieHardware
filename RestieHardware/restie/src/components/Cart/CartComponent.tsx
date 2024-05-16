@@ -16,6 +16,7 @@ import {
   IonToast,
   IonText,
   IonImg,
+  getPlatforms,
 } from "@ionic/react";
 import { removeCircle, addCircle, card } from "ionicons/icons";
 import { useSelector } from "react-redux";
@@ -40,7 +41,7 @@ const CartComponent: React.FC = () => {
   const dispatch = useTypedDispatch();
   const [getItem, setItem] = useState<SelectedItemToCart>();
   const [getOnhand, setOnhand] = useState<number>(0);
-
+  const platform = getPlatforms();
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
     isOpen: false,
@@ -143,76 +144,84 @@ const CartComponent: React.FC = () => {
     return (
       <div>
         <IonItemSliding>
-          <IonItem className="main-cart-item-card">
-            <IonCard className="main-cart-card-container">
-              <div className="main-cart-card-add-item-img">
-                <img
-                  alt={card.item}
-                  src={card.image.length <= 0 ? stock : `${card.image}`}
-                />
-              </div>
-              <div className="main-cart-card-add-item-container">
-                <IonCardContent className="main-cart-card-main-content">
-                  <div className="main-cart-card-content">
-                    <div className="main-cart-card-title">{card.item}</div>
-                    <div className="main-cart-card-price">
-                      <span>&#8369;</span>
-                      {card.price.toFixed(2)}
+          <div className="main-cart-item-container">
+            <IonItem className="main-cart-item-card">
+              <IonCard
+                className={`main-cart-card-container ${
+                  platform.includes("mobileweb") && !platform.includes("tablet")
+                    ? "cart-mobile"
+                    : "cart-desktop"
+                }`}
+              >
+                <div className="main-cart-card-add-item-img">
+                  <img
+                    alt={card.item}
+                    src={card.image.length <= 0 ? stock : `${card.image}`}
+                  />
+                </div>
+                <div className="main-cart-card-add-item-container">
+                  <IonCardContent className="main-cart-card-main-content">
+                    <div className="main-cart-card-content">
+                      <div className="main-cart-card-title">{card.item}</div>
+                      <div className="main-cart-card-price">
+                        <span>&#8369;</span>
+                        {card.price.toFixed(2)}
+                      </div>
                     </div>
-                  </div>
-                  <div className="main-cart-item-added-qty-container">
-                    <IonButton
-                      disabled={card.qty <= 1}
-                      size="large"
-                      fill="clear"
-                      onClick={() =>
-                        handleQty(card, false, undefined, card?.onhandqty)
-                      }
-                    >
-                      <IonIcon
-                        color="danger"
-                        slot="icon-only"
-                        icon={removeCircle}
-                      />
-                    </IonButton>
+                    <div className="main-cart-item-added-qty-container">
+                      <IonButton
+                        disabled={card.qty <= 1}
+                        size="large"
+                        fill="clear"
+                        onClick={() =>
+                          handleQty(card, false, undefined, card?.onhandqty)
+                        }
+                      >
+                        <IonIcon
+                          color="danger"
+                          slot="icon-only"
+                          icon={removeCircle}
+                        />
+                      </IonButton>
 
-                    <IonInput
-                      class="main-cart-qty"
-                      type="number"
-                      value={card.qty}
-                      debounce={1500}
-                      onIonInput={(ev) =>
-                        handleQty(
-                          card,
-                          true,
-                          parseInt(ev.target.value?.toString()!),
-                          card?.onhandqty
-                        )
-                      }
-                    ></IonInput>
+                      <IonInput
+                        class="main-cart-qty"
+                        type="number"
+                        value={card.qty}
+                        debounce={1500}
+                        onIonInput={(ev) =>
+                          handleQty(
+                            card,
+                            true,
+                            parseInt(ev.target.value?.toString()!),
+                            card?.onhandqty
+                          )
+                        }
+                      ></IonInput>
 
-                    <IonButton
-                      disabled={card.qty >= card?.onhandqty!}
-                      size="large"
-                      fill="clear"
-                      onClick={() =>
-                        handleQty(card, true, undefined, card?.onhandqty)
-                      }
-                    >
-                      <IonIcon
-                        color="secondary"
-                        slot="icon-only"
-                        icon={addCircle}
-                      />
-                    </IonButton>
-                  </div>
-                  <div className="main-cart-card-qty">
-                    {card?.onhandqty} pcs
-                  </div>
-                </IonCardContent>
-              </div>
-            </IonCard>
-          </IonItem>
+                      <IonButton
+                        disabled={card.qty >= card?.onhandqty!}
+                        size="large"
+                        fill="clear"
+                        onClick={() =>
+                          handleQty(card, true, undefined, card?.onhandqty)
+                        }
+                      >
+                        <IonIcon
+                          color="secondary"
+                          slot="icon-only"
+                          icon={addCircle}
+                        />
+                      </IonButton>
+                    </div>
+                    <div className="main-cart-card-qty">
+                      {card?.onhandqty} pcs
+                    </div>
+                  </IonCardContent>
+                </div>
+              </IonCard>
+            </IonItem>
+          </div>
           <IonItemOptions>
             <IonItemOption
               color="danger"

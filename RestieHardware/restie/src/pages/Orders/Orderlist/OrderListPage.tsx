@@ -17,6 +17,7 @@ import {
   IonTitle,
   IonToolbar,
   SegmentChangeEventDetail,
+  getPlatforms,
   useIonRouter,
 } from "@ionic/react";
 import React, { useState } from "react";
@@ -32,6 +33,7 @@ const OrderListPage = () => {
     date: "",
     search: "",
   });
+  const platform = getPlatforms();
   const [selectedDate, setSelectedDate] = useState<string | null>(
     new Date().toISOString()
   );
@@ -112,28 +114,36 @@ const OrderListPage = () => {
                 <IonLabel>Return/Refund</IonLabel>
               </IonSegmentButton>
             </IonSegment>
-            <div className="order-list-search">
-              <IonSearchbar
-                className="order-list-searchbar"
-                animated={true}
-                placeholder="Search Order ID"
-                onIonInput={(val) => handleSearch(val)}
-                debounce={500}
-                autocapitalize={""}
-              ></IonSearchbar>
-              <IonButton
-                color="light"
-                fill="clear"
-                onClick={() => setIsOpenModal(true)}
+            <div className={`order-list-search-container`}>
+              <div
+                className={`order-list-search  ${
+                  platform.includes("mobileweb") && !platform.includes("tablet")
+                    ? "mobile"
+                    : "desktop"
+                }`}
               >
-                <IonIcon src={calendar}></IonIcon>
-              </IonButton>
+                <IonSearchbar
+                  className="order-list-searchbar"
+                  animated={true}
+                  placeholder="Search Order ID"
+                  onIonInput={(val) => handleSearch(val)}
+                  debounce={500}
+                  autocapitalize={""}
+                ></IonSearchbar>
+                <IonButton
+                  color="light"
+                  fill="clear"
+                  onClick={() => setIsOpenModal(true)}
+                >
+                  <IonIcon src={calendar}></IonIcon>
+                </IonButton>
+              </div>
             </div>
           </div>
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <div>
+        <div className="order-list-container-page">
           <OrderListComponent filter={selectedFilter} />
         </div>
         <IonModal

@@ -34,8 +34,13 @@
     .order-list-search{
         display: flex;
         flex-direction: row;
-        width: 100%;
         justify-content: center;
+        .desktop{
+            width: 50%;
+        }
+        .mobile{
+            width: 100%;
+        }
     }
 }
 ion-toolbar .sc-ion-searchbar-ios-h{
@@ -51,4 +56,17 @@ ion-toolbar .sc-ion-searchbar-ios-h{
 }
 .orderlist-segment{
     width: 100%;
+}
+.order-list-container-page{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.order-list-search-container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+   
+    justify-content: center;
+  
 }

@@ -5,6 +5,7 @@ import {
   IonText,
   useIonRouter,
   IonLoading,
+  getPlatforms,
 } from "@ionic/react";
 import "./ProfileListButtons.css";
 import {
@@ -36,6 +37,7 @@ const ProfileListButtons: React.FC = () => {
     (store: RootStore) => store.LoginReducer.user_login_information
   );
   const router = useIonRouter();
+  const platform = getPlatforms();
   const dispatch = useTypedDispatch();
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
@@ -77,7 +79,13 @@ const ProfileListButtons: React.FC = () => {
       />
       <div className="profile-list-button-main-content">
         {user_login_information?.name?.length > 0 ? (
-          <div className="profile-list-button-list-container">
+          <div
+            className={`profile-list-button-list-container ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? "profile-list-mobile"
+                : "profile-list-desktop"
+            }`}
+          >
             <div
               className="profile-list-button-list"
               onClick={() => handleOrderListClick()}
@@ -143,7 +151,13 @@ const ProfileListButtons: React.FC = () => {
               </>
             ) : null}
 
-            <div className="profile-list-button-list-logout-container">
+            <div
+              className={`profile-list-button-list-logout-container ${
+                platform.includes("mobileweb") && !platform.includes("tablet")
+                  ? "profile-logout-mobile"
+                  : "profile-logout-desktop"
+              }`}
+            >
               <div
                 className="profile-list-button-list-logout"
                 onClick={() => handleLogout()}
@@ -159,7 +173,13 @@ const ProfileListButtons: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="profile-list-button-list-logout-container">
+          <div
+            className={`profile-list-button-list-logout-container ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? "profile-logout-mobile"
+                : "profile-logout-desktop"
+            }`}
+          >
             <div
               className="profile-list-button-list-logout"
               onClick={() => router.push("/login")}

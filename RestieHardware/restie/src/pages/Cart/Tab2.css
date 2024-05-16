@@ -33,7 +33,13 @@
 }
 .tab-cart-footer{
     display: flex;
-    justify-content: space-between;
     align-items: center;
     flex-direction: row;
+  
+}
+.tab-cart-mobile{
+    justify-content: space-between!important;
+}
+.tab-cart-desktop{
+    justify-content: space-evenly!important;
 }

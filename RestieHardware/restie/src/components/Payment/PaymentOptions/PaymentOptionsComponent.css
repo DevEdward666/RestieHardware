@@ -1,6 +1,12 @@
 .payment-info-container{
     padding-bottom: 20px;
 }
+.payment-info-card-main{
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+}
 .payment-info-card-container{
     display: flex;
     flex-direction: column;

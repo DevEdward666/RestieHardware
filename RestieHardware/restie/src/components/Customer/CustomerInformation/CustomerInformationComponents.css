@@ -1,4 +1,10 @@
 
+.customer-information-main{
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+}
 .customer-information-main-content{
     display: flex;
     flex-direction: column;
@@ -6,6 +12,12 @@
     --offset-top: 0px;
     --offset-bottom: 0px;
     --keyboard-offset: 177px;
+    .dektop{
+        width: 50%;
+    }
+    .mobile{
+        width: 100%;
+    }
 
     .customer-information-list-container{
         display: flex;

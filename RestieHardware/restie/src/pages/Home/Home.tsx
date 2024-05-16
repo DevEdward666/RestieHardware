@@ -39,7 +39,7 @@ import {
   set_category_and_brand,
 } from "../../Service/Actions/Inventory/InventoryActions";
 import { GetBrandsModel } from "../../Models/Request/Inventory/InventoryModel";
-
+import { getPlatforms } from "@ionic/react";
 const queryClient = new QueryClient();
 const Tab1: React.FC = () => {
   const list_of_items = useSelector(
@@ -59,7 +59,7 @@ const Tab1: React.FC = () => {
     brand: "",
     filter: "",
   });
-
+  const platform = getPlatforms();
   const [fetchList, setFetchList] = useState<SearchInventoryModel>({
     page: 1,
     offset: 0, // Assuming offset starts from 0
@@ -124,6 +124,7 @@ const Tab1: React.FC = () => {
     },
     [get_category_and_brand]
   );
+
   return (
     <>
       <IonMenu type={"push"} contentId="main-content">
@@ -255,7 +256,7 @@ const Tab1: React.FC = () => {
         </IonContent>
       </IonMenu>
       <IonPage className="home-page-container" id="main-content">
-        <IonHeader className="home-page-header">
+        <IonHeader className={`home-page-header `}>
           <IonToolbar mode="ios" color="tertiary">
             <IonButtons slot="start">
               <IonMenuButton></IonMenuButton>
@@ -270,17 +271,30 @@ const Tab1: React.FC = () => {
             <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
           </IonToolbar>
           <IonToolbar mode="ios" color="tertiary">
-            <IonSearchbar
-              debounce={2000}
-              onIonInput={(e) => handleSearch(e)}
-              mode="ios"
-              autocapitalize={"words"}
-              color="light"
-            ></IonSearchbar>
+            <div
+              className={`home-search-container ${
+                platform.includes("mobileweb") && !platform.includes("tablet")
+                  ? "mobile-container"
+                  : "desktop-container"
+              }`}
+            >
+              <IonSearchbar
+                className={`home-search ${
+                  platform.includes("mobileweb") && !platform.includes("tablet")
+                    ? "mobile"
+                    : "desktop"
+                }`}
+                debounce={2000}
+                onIonInput={(e) => handleSearch(e)}
+                mode="ios"
+                autocapitalize={"words"}
+                color="light"
+              ></IonSearchbar>
+            </div>
           </IonToolbar>
         </IonHeader>
 
-        <IonContent fullscreen className="home-page-content">
+        <IonContent fullscreen className={`home-page-content `}>
           <div className="home-spinner">
             {isFetching && <IonSpinner color="light" name="lines"></IonSpinner>}
           </div>

@@ -3,6 +3,7 @@ import {
   IonCard,
   IonCardContent,
   IonSpinner,
+  getPlatforms,
 } from "@ionic/react";
 import { useSelector } from "react-redux";
 import {
@@ -25,6 +26,7 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
   );
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
+  const platform = getPlatforms();
   const [isLoading, setisLoading] = useState<boolean>(false);
   const formatDate = (datetime: number) => {
     const timestamp = datetime;
@@ -94,7 +96,13 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
     [dispatch]
   );
   return (
-    <div>
+    <div
+      className={`order-list-main-content ${
+        platform.includes("mobileweb") && !platform.includes("tablet")
+          ? "mobile"
+          : "desktop"
+      }`}
+    >
       {isLoading ? (
         <IonSpinner className="loader" name="lines-sharp"></IonSpinner>
       ) : null}

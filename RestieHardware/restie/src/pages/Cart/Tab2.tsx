@@ -10,6 +10,7 @@ import {
   IonText,
   IonTitle,
   IonToolbar,
+  getPlatforms,
   useIonRouter,
 } from "@ionic/react";
 import { useCallback, useEffect, useState } from "react";
@@ -41,6 +42,7 @@ const Tab2: React.FC = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
+  const platform = getPlatforms();
   useEffect(() => {
     const getTotal = () => {
       let totalPrice = 0; // Initialize total price
@@ -159,7 +161,13 @@ const Tab2: React.FC = () => {
       </IonContent>
       <IonFooter>
         <IonToolbar>
-          <div className="tab-cart-footer">
+          <div
+            className={`tab-cart-footer ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? "tab-cart-mobile"
+                : "tab-cart-desktop"
+            }`}
+          >
             <IonText className="tab-cart-total">
               Total - <span>&#8369;</span>
               {formattedNumber(getTotal)}

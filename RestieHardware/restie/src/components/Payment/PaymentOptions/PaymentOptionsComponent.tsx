@@ -10,6 +10,7 @@ import {
   IonLabel,
   IonLoading,
   IonToast,
+  getPlatforms,
   useIonRouter,
 } from "@ionic/react";
 import { close } from "ionicons/icons";
@@ -52,6 +53,7 @@ const PaymentOptionsComponent = () => {
 
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
+  const platform = getPlatforms();
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
     isOpen: false,
@@ -180,121 +182,131 @@ const PaymentOptionsComponent = () => {
   }, [dispatch, add_to_cart]);
 
   return (
-    <div className="payment-info-main-container">
-      <IonLoading
-        isOpen={isOpenToast.type === "loader" ? isOpenToast?.isOpen : false}
-        message="Loading"
-        duration={1000}
-        spinner="circles"
-        onDidDismiss={() =>
-          setIsOpenToast((prev) => ({
-            ...prev,
-            isOpen: false,
-          }))
-        }
-      />
-      <div className="payment-info-container">
-        <div
-          className="payment-info-card-container"
-          //   onClick={() => handleSelectOrder(orders.orderid)}
-        >
-          <div className="payment-info-card-add-item-container">
-            <div className="payment-info-card-main-content">
-              <IonAccordionGroup>
-                <IonAccordion value="first">
-                  <IonItem slot="header" color="light">
-                    <div className="payment-info-card-content">
-                      <div className="payment-info-card-title-details">
-                        <IonImg
-                          color="danger"
-                          slot="start"
-                          className="payment-info-icon-img"
-                          src={cash}
-                        ></IonImg>
-                        <IonLabel>Cash</IonLabel>
+    <div className="payment-info-card-main">
+      <div
+        className={`payment-info-main-container ${
+          platform.includes("mobileweb") && !platform.includes("tablet")
+            ? "mobile"
+            : "desktop"
+        }`}
+      >
+        <IonLoading
+          isOpen={isOpenToast.type === "loader" ? isOpenToast?.isOpen : false}
+          message="Loading"
+          duration={1000}
+          spinner="circles"
+          onDidDismiss={() =>
+            setIsOpenToast((prev) => ({
+              ...prev,
+              isOpen: false,
+            }))
+          }
+        />
+        <div className="payment-info-container">
+          <div
+            className="payment-info-card-container"
+            //   onClick={() => handleSelectOrder(orders.orderid)}
+          >
+            <div className="payment-info-card-add-item-container">
+              <div className="payment-info-card-main-content">
+                <IonAccordionGroup>
+                  <IonAccordion value="first">
+                    <IonItem slot="header" color="light">
+                      <div className="payment-info-card-content">
+                        <div className="payment-info-card-title-details">
+                          <IonImg
+                            color="danger"
+                            slot="start"
+                            className="payment-info-icon-img"
+                            src={cash}
+                          ></IonImg>
+                          <IonLabel>Cash</IonLabel>
+                        </div>
                       </div>
-                    </div>
-                  </IonItem>
-                  <div className="payment-info-cash" slot="content">
-                    <IonItem className="payment-info-item">
-                      <IonInput
-                        name="cash"
-                        onIonInput={(e: any) => handleInfoChange(e)}
-                        className="payment-info-input"
-                        label="Cash"
-                        type="number"
-                        labelPlacement="floating"
-                        placeholder="Enter Cash"
-                      ></IonInput>
                     </IonItem>
-                    <IonItem className="payment-info-item">
-                      <IonInput
-                        name="voucher"
-                        onIonInput={(e: any) => handleInfoChange(e)}
-                        className="payment-info-input"
-                        label="Voucher"
-                        debounce={1500}
-                        labelPlacement="floating"
-                        placeholder="Enter Voucher"
-                      ></IonInput>
+                    <div className="payment-info-cash" slot="content">
+                      <IonItem className="payment-info-item">
+                        <IonInput
+                          name="cash"
+                          onIonInput={(e: any) => handleInfoChange(e)}
+                          className="payment-info-input"
+                          label="Cash"
+                          type="number"
+                          labelPlacement="floating"
+                          placeholder="Enter Cash"
+                        ></IonInput>
+                      </IonItem>
+                      <IonItem className="payment-info-item">
+                        <IonInput
+                          name="voucher"
+                          onIonInput={(e: any) => handleInfoChange(e)}
+                          className="payment-info-input"
+                          label="Voucher"
+                          debounce={1500}
+                          labelPlacement="floating"
+                          placeholder="Enter Voucher"
+                        ></IonInput>
+                      </IonItem>
+                      {get_voucher?.description !== null &&
+                      get_voucher?.description !== "" ? (
+                        <div>
+                          <IonChip>
+                            <IonLabel>{get_voucher.description}</IonLabel>
+                            <IonIcon
+                              icon={close}
+                              onClick={() => handleRemoveVoucher()}
+                            ></IonIcon>
+                          </IonChip>
+                        </div>
+                      ) : null}
+                      <IonButton
+                        color="medium"
+                        onClick={() => handlePay("Cash")}
+                      >
+                        Pay now
+                      </IonButton>
+                    </div>
+                  </IonAccordion>
+                  <IonAccordion value="second" disabled>
+                    <IonItem slot="header" color="light">
+                      <div className="payment-info-card-content">
+                        <div className="payment-info-card-title-details">
+                          <IonImg
+                            color="danger"
+                            slot="start"
+                            className="payment-info-icon-img"
+                            src={ewallets}
+                          ></IonImg>
+                          <IonLabel>E-Wallet</IonLabel>
+                        </div>
+                      </div>
                     </IonItem>
-                    {get_voucher?.description !== null &&
-                    get_voucher?.description !== "" ? (
-                      <div>
-                        <IonChip>
-                          <IonLabel>{get_voucher.description}</IonLabel>
-                          <IonIcon
-                            icon={close}
-                            onClick={() => handleRemoveVoucher()}
-                          ></IonIcon>
-                        </IonChip>
-                      </div>
-                    ) : null}
-                    <IonButton color="medium" onClick={() => handlePay("Cash")}>
-                      Pay now
-                    </IonButton>
-                  </div>
-                </IonAccordion>
-                <IonAccordion value="second" disabled>
-                  <IonItem slot="header" color="light">
-                    <div className="payment-info-card-content">
-                      <div className="payment-info-card-title-details">
-                        <IonImg
-                          color="danger"
-                          slot="start"
-                          className="payment-info-icon-img"
-                          src={ewallets}
-                        ></IonImg>
-                        <IonLabel>E-Wallet</IonLabel>
-                      </div>
+                    <div className="payment-info-cash" slot="content">
+                      <IonItem className="payment-info-item"></IonItem>
+                      <IonItem className="payment-info-item"></IonItem>
                     </div>
-                  </IonItem>
-                  <div className="payment-info-cash" slot="content">
-                    <IonItem className="payment-info-item"></IonItem>
-                    <IonItem className="payment-info-item"></IonItem>
-                  </div>
-                </IonAccordion>
-                <IonAccordion value="third" disabled>
-                  <IonItem slot="header" color="light">
-                    <div className="payment-info-card-content">
-                      <div className="payment-info-card-title-details">
-                        <IonImg
-                          color="danger"
-                          slot="start"
-                          className="payment-info-icon-img"
-                          src={card}
-                        ></IonImg>
-                        <IonLabel>Card</IonLabel>
+                  </IonAccordion>
+                  <IonAccordion value="third" disabled>
+                    <IonItem slot="header" color="light">
+                      <div className="payment-info-card-content">
+                        <div className="payment-info-card-title-details">
+                          <IonImg
+                            color="danger"
+                            slot="start"
+                            className="payment-info-icon-img"
+                            src={card}
+                          ></IonImg>
+                          <IonLabel>Card</IonLabel>
+                        </div>
                       </div>
+                    </IonItem>
+                    <div className="payment-info-cash" slot="content">
+                      <IonItem className="payment-info-item"></IonItem>
+                      <IonItem className="payment-info-item"></IonItem>
                     </div>
-                  </IonItem>
-                  <div className="payment-info-cash" slot="content">
-                    <IonItem className="payment-info-item"></IonItem>
-                    <IonItem className="payment-info-item"></IonItem>
-                  </div>
-                </IonAccordion>
-              </IonAccordionGroup>
-              {/* <IonCard
+                  </IonAccordion>
+                </IonAccordionGroup>
+                {/* <IonCard
                 className="payment-info-card-content"
                 onClick={() => handlePay("Cash")}
               >
@@ -330,27 +342,28 @@ const PaymentOptionsComponent = () => {
                   <IonLabel>Card</IonLabel>
                 </div>
               </IonCard> */}
-              <IonButton
-                color={"medium"}
-                className="payment-info-card-content-draft"
-                onClick={() => handlePay("Pending")}
-              >
-                <IonIcon slot="start" icon={draft}></IonIcon>
-                Save as Draft
-              </IonButton>
-              {user_login_information?.role.trim().toLowerCase() === "admin" ||
-              user_login_information?.role.trim().toLowerCase() ===
-                "super admin" ? (
                 <IonButton
                   color={"medium"}
                   className="payment-info-card-content-draft"
-                  onClick={() => handlePay("Quotation")}
+                  onClick={() => handlePay("Pending")}
                 >
                   <IonIcon slot="start" icon={draft}></IonIcon>
-                  Create a Quotation
+                  Save as Draft
                 </IonButton>
-              ) : null}
-              {/* <IonButton
+                {user_login_information?.role.trim().toLowerCase() ===
+                  "admin" ||
+                user_login_information?.role.trim().toLowerCase() ===
+                  "super admin" ? (
+                  <IonButton
+                    color={"medium"}
+                    className="payment-info-card-content-draft"
+                    onClick={() => handlePay("Quotation")}
+                  >
+                    <IonIcon slot="start" icon={draft}></IonIcon>
+                    Create a Quotation
+                  </IonButton>
+                ) : null}
+                {/* <IonButton
                 className="payment-info-card-content-draft"
                 onClick={() => handlePay("Pending")}
               >
@@ -364,42 +377,45 @@ const PaymentOptionsComponent = () => {
                   <IonLabel>Save as Draft</IonLabel>
                 </div>
               </IonButton> */}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="payment-info-footer-total-details">
-        <div className="payment-info-footer-total">
-          Total amount to be paid:{" "}
-        </div>
-
-        <div className="payment-info-footer-total-info">
-          <span>&#8369;</span>
-          {getOverallTotal > 0 ? getOverallTotal.toFixed() : getTotal.toFixed()}
-        </div>
-      </div>
-      {getDiscount > 0 ? (
         <div className="payment-info-footer-total-details">
-          <div className="payment-info-footer-total">Total Discount: </div>
+          <div className="payment-info-footer-total">
+            Total amount to be paid:{" "}
+          </div>
 
           <div className="payment-info-footer-total-info">
             <span>&#8369;</span>
-            {getDiscount.toFixed()}
+            {getOverallTotal > 0
+              ? getOverallTotal.toFixed()
+              : getTotal.toFixed()}
           </div>
         </div>
-      ) : null}
+        {getDiscount > 0 ? (
+          <div className="payment-info-footer-total-details">
+            <div className="payment-info-footer-total">Total Discount: </div>
 
-      <IonToast
-        isOpen={isOpenToast.type === "toast" ? isOpenToast?.isOpen : false}
-        message={isOpenToast.toastMessage}
-        color={"medium"}
-        position="middle"
-        duration={3000}
-        onDidDismiss={() =>
-          setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
-        }
-      ></IonToast>
+            <div className="payment-info-footer-total-info">
+              <span>&#8369;</span>
+              {getDiscount.toFixed()}
+            </div>
+          </div>
+        ) : null}
+
+        <IonToast
+          isOpen={isOpenToast.type === "toast" ? isOpenToast?.isOpen : false}
+          message={isOpenToast.toastMessage}
+          color={"medium"}
+          position="middle"
+          duration={3000}
+          onDidDismiss={() =>
+            setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
+          }
+        ></IonToast>
+      </div>
     </div>
   );
 };

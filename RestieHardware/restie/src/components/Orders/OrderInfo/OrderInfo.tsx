@@ -148,16 +148,19 @@ const OrderInfoComponent = () => {
         services: [printerId],
       });
       // Connect to the printer
-      await BleClient.connect(device.deviceId, (deviceId) =>
-        onDisconnect(deviceId)
+      const connectedDevice = await BleClient.connect(
+        device.deviceId,
+        (deviceId) => onDisconnect(deviceId)
       );
+      const chx = await BleClient.getServices(device.deviceId);
+      chx[0].characteristics[0].uuid;
       console.log("connected to device", device);
       // Send print data
       const printData = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]); // Example print data
       await BleClient.write(
         device.deviceId,
         printerId,
-        characteristics,
+        chx[0].characteristics[0].uuid,
         numbersToDataView([1, 0])
       );
       console.log("Print successful");
@@ -220,7 +223,6 @@ const OrderInfoComponent = () => {
           setTotalAmount(order_list_info.order_info?.total);
         }
       }
-      await printWithBluetooth();
     };
     initialize();
   }, [get_voucher, order_list_info]);

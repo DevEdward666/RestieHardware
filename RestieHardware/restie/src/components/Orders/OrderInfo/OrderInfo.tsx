@@ -17,6 +17,7 @@ import {
 } from "@ionic/react";
 import "@ionic/react/css/ionic-swiper.css";
 import { format } from "date-fns";
+import EscPosEncoder from "esc-pos-encoder-ionic";
 import {
   cashOutline,
   chevronForwardOutline,
@@ -68,6 +69,15 @@ import logo from "../../../assets/images/Icon@2.png";
 import breakline from "../../../assets/images/breakline.png";
 import "./OrderInfo.css";
 import { ResponseModel } from "../../../Models/Response/Commons/Commons";
+import {
+  BluetoothDeviceType,
+  BluetoothPrinter,
+} from "@kduma-autoid/capacitor-bluetooth-printer";
+import {
+  BleClient,
+  numberToUUID,
+  numbersToDataView,
+} from "@capacitor-community/bluetooth-le";
 const OrderInfoComponent = () => {
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
@@ -126,8 +136,73 @@ const OrderInfoComponent = () => {
 
     return formattedDate;
   };
+  const printWithBluetooth = async () => {
+    try {
+      await BleClient.initialize();
+      let isBtEnabled = await BleClient.isEnabled();
+      console.log(isBtEnabled);
+      // Request Bluetooth device
+      const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
+      const characteristics = numberToUUID(0x2a19);
+      const device = await BleClient.requestDevice({
+        services: [printerId],
+      });
+      // Connect to the printer
+      await BleClient.connect(device.deviceId, (deviceId) =>
+        onDisconnect(deviceId)
+      );
+      console.log("connected to device", device);
+      // Send print data
+      const printData = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]); // Example print data
+      await BleClient.write(
+        device.deviceId,
+        printerId,
+        characteristics,
+        numbersToDataView([1, 0])
+      );
+      console.log("Print successful");
+    } catch (error) {
+      console.error("Print error", error);
+    }
+  };
+  async function populateBluetoothDevices() {
+    const devicesSelect = document.querySelector("#devicesSelect");
+    try {
+      console.log("Getting existing permitted Bluetooth devices...");
+      const devices = await navigator.bluetooth.getDevices();
+
+      console.log("> Got " + devices.length + " Bluetooth devices.");
+      devicesSelect!.textContent = "";
+      for (const device of devices) {
+        const option = document.createElement("option");
+        option.value = device.id;
+        option.textContent = device?.name!;
+        devicesSelect?.appendChild(option);
+      }
+    } catch (error) {
+      console.log("Argh! " + error);
+    }
+  }
+  async function onRequestBluetoothDeviceButtonClick() {
+    try {
+      console.log("Requesting any Bluetooth device...");
+      const device = await navigator.bluetooth.requestDevice({
+        // filters: [...] <- Prefer filters to save energy & show relevant devices.
+        acceptAllDevices: true,
+      });
+
+      console.log("> Requested " + device.name + " (" + device.id + ")");
+      populateBluetoothDevices();
+    } catch (error) {
+      console.log("Argh! " + error);
+    }
+  }
+
+  function onDisconnect(deviceId: string): void {
+    console.log(`device ${deviceId} disconnected`);
+  }
   useEffect(() => {
-    const initialize = () => {
+    const initialize = async () => {
       if (get_voucher && get_voucher.description?.length > 0) {
         const totalDiscount =
           order_list_info.order_info?.total -
@@ -145,6 +220,7 @@ const OrderInfoComponent = () => {
           setTotalAmount(order_list_info.order_info?.total);
         }
       }
+      await printWithBluetooth();
     };
     initialize();
   }, [get_voucher, order_list_info]);
@@ -456,6 +532,7 @@ const OrderInfoComponent = () => {
   const downloadPDF = useCallback(async () => {
     setIsOpenToast({ isOpen: false, type: "receipt-email", toastMessage: "" });
 
+    await printWithBluetooth();
     const pages = document.getElementById("receipt");
     const width = pages?.clientWidth;
     const height = pages?.clientHeight;
@@ -480,6 +557,9 @@ const OrderInfoComponent = () => {
     const filename = `./invoice/${formattedDate}/${
       order_list_info.order_info?.transid?.split("-")[0]
     }.pdf`;
+
+    // await bluetoothSerial.write(printData);
+    // await bluetoothSerial.disconnect();
     const pdf = await html2PDF(pages!, {
       jsPDF: {
         unit: "px",
@@ -492,11 +572,19 @@ const OrderInfoComponent = () => {
     });
     const file = pdf.output("dataurlstring");
 
+    pdf.autoPrint();
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
 
     const mimeType = "application/pdf";
     const pdfFile = base64toFile(base64PDF, filename, mimeType);
 
+    // const encoder = new EscPosEncoder();
+    // const printData = encoder
+    //   .initialize()
+    //   .image(pdfFile, width, height)
+    //   .newline()
+    //   .encode().buffer;
+    // console.log("sending data to device...");
     if (getEmail !== "") {
       setIsOpenToast({ isOpen: true, type: "", toastMessage: "Sending Email" });
       await SendEmail(
@@ -525,7 +613,8 @@ const OrderInfoComponent = () => {
   
         <p>Restie Hardware</p>
         `,
-        pdfFile
+        // pdfFile
+        null
       );
       await UpdateCustomerEmail({
         customerid: order_list_info?.order_info.customerid!,

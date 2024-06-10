@@ -137,7 +137,7 @@ const OrderInfoComponent = () => {
     return formattedDate;
   };
 
-  const printWithBluetooth = async () => {
+  const printWithBluetooth = async (dataView: DataView) => {
     try {
       await BleClient.initialize();
       let isBtEnabled = await BleClient.isEnabled();
@@ -157,14 +157,16 @@ const OrderInfoComponent = () => {
       chx[0].characteristics[0].uuid;
       console.log("connected to device", device);
       // Send print data
-      // const printData = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]); // Example print data
-      // await BleClient.write(
-      //   device.deviceId,
-      //   printerId,
-      //   chx[0].characteristics[0].uuid,
-      //   numbersToDataView([1, 0])
-      // );
-      // console.log("Print successful");
+      const printData = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]); // Example print data
+      await BleClient.write(
+        device.deviceId,
+        printerId,
+        chx[0].characteristics[0].uuid,
+        dataView
+      );
+      console.log("Print successful");
+
+      // Send PDF data to printer
       return {
         printerId: printerId,
         deviceId: device.deviceId,
@@ -540,7 +542,6 @@ const OrderInfoComponent = () => {
   const downloadPDF = useCallback(async () => {
     setIsOpenToast({ isOpen: false, type: "receipt-email", toastMessage: "" });
 
-    const connections = await printWithBluetooth();
     const pages = document.getElementById("receipt");
     const width = pages?.clientWidth;
     const height = pages?.clientHeight;
@@ -580,33 +581,18 @@ const OrderInfoComponent = () => {
     });
     const file = pdf.output("dataurlstring");
     const bufferFile = pdf.output("arraybuffer");
+    const uint8Array = new Uint8Array(bufferFile);
 
+    // Convert Uint8Array to DataView
+    const dataView = new DataView(uint8Array.buffer);
+
+    const connections = await printWithBluetooth(dataView);
     pdf.autoPrint();
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
 
     const mimeType = "application/pdf";
     const pdfFile = base64toFile(base64PDF, filename, mimeType);
-    try {
-      // Establish Bluetooth connection with printer
-      const device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: [connections?.printerId!],
-      });
-      const gattServer = await device?.gatt!.connect();
-      const service = await gattServer.getPrimaryService(
-        connections?.printerId!
-      );
-      const characteristic = await service.getCharacteristic(
-        connections?.characteristicsId!
-      );
 
-      // Send PDF data to printer
-      await characteristic.writeValue(bufferFile);
-
-      console.log("Print successful");
-    } catch (error) {
-      console.error("Print error:", error);
-    }
     // const encoder = new EscPosEncoder();
     // const printData = encoder
     //   .initialize()

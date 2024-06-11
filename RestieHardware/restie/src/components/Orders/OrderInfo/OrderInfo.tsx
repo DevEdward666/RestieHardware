@@ -154,13 +154,18 @@ const OrderInfoComponent = () => {
       console.log("connected to device", device);
       const MAX_DATA_LENGTH = 512;
       let offset = 0;
-      const chunk = new DataView(dataView.buffer);
-      await BleClient.write(
-        device.deviceId,
-        printerId,
-        chx[0].characteristics[0].uuid,
-        chunk
-      );
+
+      while (offset < dataView.byteLength) {
+        const end = Math.min(offset + MAX_DATA_LENGTH, dataView.byteLength);
+        const chunk = new DataView(dataView.buffer, offset, end - offset);
+        await BleClient.write(
+          device.deviceId,
+          printerId,
+          chx[0].characteristics[0].uuid,
+          chunk
+        );
+        offset = end;
+      }
       console.log("Print successful");
 
       // Send PDF data to printer

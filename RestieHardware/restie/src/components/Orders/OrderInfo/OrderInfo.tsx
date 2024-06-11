@@ -154,12 +154,11 @@ const OrderInfoComponent = () => {
         (deviceId) => onDisconnect(deviceId)
       );
 
-      const mtu = await BleClient.getMtu(device.deviceId);
-      const MAX_DATA_LENGTH = Math.min(mtu - 3, 512); // Subtract header size (3 bytes)
       const chx = await BleClient.getServices(device.deviceId);
       chx[0].characteristics[0].uuid;
       console.log("connected to device", device);
       // Send print data
+      const MAX_DATA_LENGTH = 512;
       let offset = 0;
 
       while (offset < dataView.byteLength) {

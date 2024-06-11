@@ -586,7 +586,7 @@ const OrderInfoComponent = () => {
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
 
     const mimeType = "application/pdf";
-    const pdfFile = base64toFile(base64PDF, filename, mimeType);
+    // const pdfFile = base64toFile(base64PDF, filename, mimeType);
 
     // const encoder = new EscPosEncoder();
     // const printData = encoder

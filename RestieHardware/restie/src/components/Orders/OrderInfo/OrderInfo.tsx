@@ -167,47 +167,42 @@ const OrderInfoComponent = () => {
       console.log("Print successful");
 
       // Send PDF data to printer
-      return {
-        printerId: printerId,
-        deviceId: device.deviceId,
-        characteristicsId: chx[0].characteristics[0].uuid,
-      };
     } catch (error) {
       console.error("Print error", error);
     }
   };
-  async function populateBluetoothDevices() {
-    const devicesSelect = document.querySelector("#devicesSelect");
-    try {
-      console.log("Getting existing permitted Bluetooth devices...");
-      const devices = await navigator.bluetooth.getDevices();
+  // async function populateBluetoothDevices() {
+  //   const devicesSelect = document.querySelector("#devicesSelect");
+  //   try {
+  //     console.log("Getting existing permitted Bluetooth devices...");
+  //     const devices = await navigator.bluetooth.getDevices();
 
-      console.log("> Got " + devices.length + " Bluetooth devices.");
-      devicesSelect!.textContent = "";
-      for (const device of devices) {
-        const option = document.createElement("option");
-        option.value = device.id;
-        option.textContent = device?.name!;
-        devicesSelect?.appendChild(option);
-      }
-    } catch (error) {
-      console.log("Argh! " + error);
-    }
-  }
-  async function onRequestBluetoothDeviceButtonClick() {
-    try {
-      console.log("Requesting any Bluetooth device...");
-      const device = await navigator.bluetooth.requestDevice({
-        // filters: [...] <- Prefer filters to save energy & show relevant devices.
-        acceptAllDevices: true,
-      });
+  //     console.log("> Got " + devices.length + " Bluetooth devices.");
+  //     devicesSelect!.textContent = "";
+  //     for (const device of devices) {
+  //       const option = document.createElement("option");
+  //       option.value = device.id;
+  //       option.textContent = device?.name!;
+  //       devicesSelect?.appendChild(option);
+  //     }
+  //   } catch (error) {
+  //     console.log("Argh! " + error);
+  //   }
+  // }
+  // async function onRequestBluetoothDeviceButtonClick() {
+  //   try {
+  //     console.log("Requesting any Bluetooth device...");
+  //     const device = await navigator.bluetooth.requestDevice({
+  //       // filters: [...] <- Prefer filters to save energy & show relevant devices.
+  //       acceptAllDevices: true,
+  //     });
 
-      console.log("> Requested " + device.name + " (" + device.id + ")");
-      populateBluetoothDevices();
-    } catch (error) {
-      console.log("Argh! " + error);
-    }
-  }
+  //     console.log("> Requested " + device.name + " (" + device.id + ")");
+  //     populateBluetoothDevices();
+  //   } catch (error) {
+  //     console.log("Argh! " + error);
+  //   }
+  // }
 
   function onDisconnect(deviceId: string): void {
     console.log(`device ${deviceId} disconnected`);
@@ -586,8 +581,8 @@ const OrderInfoComponent = () => {
     // Convert Uint8Array to DataView
     const dataView = new DataView(uint8Array.buffer);
 
-    const connections = await printWithBluetooth(dataView);
-    pdf.autoPrint();
+    await printWithBluetooth(dataView);
+    // pdf.autoPrint();
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
 
     const mimeType = "application/pdf";

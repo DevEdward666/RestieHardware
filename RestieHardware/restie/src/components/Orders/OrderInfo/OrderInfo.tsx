@@ -137,7 +137,7 @@ const OrderInfoComponent = () => {
     return formattedDate;
   };
 
-  const printWithBluetooth = async (dataView: Uint8Array) => {
+  const printWithBluetooth = async (dataView: any) => {
     try {
       await BleClient.initialize();
       const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
@@ -154,18 +154,26 @@ const OrderInfoComponent = () => {
       console.log("connected to device", device);
       const MAX_DATA_LENGTH = 512;
       let offset = 0;
-
-      while (offset < dataView.byteLength) {
-        const end = Math.min(offset + MAX_DATA_LENGTH, dataView.byteLength);
-        const chunk = new DataView(dataView.buffer, offset, end - offset);
-        await BleClient.write(
-          device.deviceId,
-          printerId,
-          chx[0].characteristics[0].uuid,
-          chunk
-        );
-        offset = end;
-      }
+      await BleClient.write(
+        device.deviceId,
+        printerId,
+        chx[0].characteristics[0].uuid,
+        dataView
+      );
+      // while (offset < dataView.byteLength) {
+      //   const end = Math.min(
+      //     offset + MAX_DATA_LENGTH,
+      //     dataView.BYTES_PER_ELEMENT
+      //   );
+      //   const chunk = new DataView(dataView.buffer, offset, end - offset);
+      //   await BleClient.write(
+      //     device.deviceId,
+      //     printerId,
+      //     chx[0].characteristics[0].uuid,
+      //     chunk
+      //   );
+      //   offset = end;
+      // }
       console.log("Print successful");
 
       // Send PDF data to printer
@@ -583,20 +591,21 @@ const OrderInfoComponent = () => {
     // Convert Uint8Array to DataView
     const dataView = new DataView(uint8Array.buffer);
 
-    await printWithBluetooth(uint8Array);
     // pdf.autoPrint();
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
 
     const mimeType = "application/pdf";
-    // const pdfFile = base64toFile(base64PDF, filename, mimeType);
+    const pdfFile = base64toFile(base64PDF, filename, mimeType);
 
-    // const encoder = new EscPosEncoder();
-    // const printData = encoder
-    //   .initialize()
-    //   .image(pdfFile, width, height)
-    //   .newline()
-    //   .encode().buffer;
-    // console.log("sending data to device...");
+    const encoder = new EscPosEncoder();
+    const printData = encoder
+      .initialize()
+      .image(pdfFile, width, height)
+      .newline()
+      .encode().buffer;
+    console.log("sending data to device...");
+
+    await printWithBluetooth(printData);
     if (getEmail !== "") {
       setIsOpenToast({ isOpen: true, type: "", toastMessage: "Sending Email" });
       await SendEmail(

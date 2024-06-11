@@ -137,7 +137,7 @@ const OrderInfoComponent = () => {
     return formattedDate;
   };
 
-  const printWithBluetooth = async () => {
+  const printWithBluetooth = async (dataView: DataView) => {
     try {
       await BleClient.initialize();
       let isBtEnabled = await BleClient.isEnabled();
@@ -157,55 +157,52 @@ const OrderInfoComponent = () => {
       chx[0].characteristics[0].uuid;
       console.log("connected to device", device);
       // Send print data
-      // const printData = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]); // Example print data
-      // await BleClient.write(
-      //   device.deviceId,
-      //   printerId,
-      //   chx[0].characteristics[0].uuid,
-      //   numbersToDataView([1, 0])
-      // );
-      // console.log("Print successful");
-      return {
-        printerId: printerId,
-        deviceId: device.deviceId,
-        characteristicsId: chx[0].characteristics[0].uuid,
-      };
+      const printData = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]); // Example print data
+      await BleClient.write(
+        device.deviceId,
+        printerId,
+        chx[0].characteristics[0].uuid,
+        dataView
+      );
+      console.log("Print successful");
+
+      // Send PDF data to printer
     } catch (error) {
       console.error("Print error", error);
     }
   };
-  async function populateBluetoothDevices() {
-    const devicesSelect = document.querySelector("#devicesSelect");
-    try {
-      console.log("Getting existing permitted Bluetooth devices...");
-      const devices = await navigator.bluetooth.getDevices();
+  // async function populateBluetoothDevices() {
+  //   const devicesSelect = document.querySelector("#devicesSelect");
+  //   try {
+  //     console.log("Getting existing permitted Bluetooth devices...");
+  //     const devices = await navigator.bluetooth.getDevices();
 
-      console.log("> Got " + devices.length + " Bluetooth devices.");
-      devicesSelect!.textContent = "";
-      for (const device of devices) {
-        const option = document.createElement("option");
-        option.value = device.id;
-        option.textContent = device?.name!;
-        devicesSelect?.appendChild(option);
-      }
-    } catch (error) {
-      console.log("Argh! " + error);
-    }
-  }
-  async function onRequestBluetoothDeviceButtonClick() {
-    try {
-      console.log("Requesting any Bluetooth device...");
-      const device = await navigator.bluetooth.requestDevice({
-        // filters: [...] <- Prefer filters to save energy & show relevant devices.
-        acceptAllDevices: true,
-      });
+  //     console.log("> Got " + devices.length + " Bluetooth devices.");
+  //     devicesSelect!.textContent = "";
+  //     for (const device of devices) {
+  //       const option = document.createElement("option");
+  //       option.value = device.id;
+  //       option.textContent = device?.name!;
+  //       devicesSelect?.appendChild(option);
+  //     }
+  //   } catch (error) {
+  //     console.log("Argh! " + error);
+  //   }
+  // }
+  // async function onRequestBluetoothDeviceButtonClick() {
+  //   try {
+  //     console.log("Requesting any Bluetooth device...");
+  //     const device = await navigator.bluetooth.requestDevice({
+  //       // filters: [...] <- Prefer filters to save energy & show relevant devices.
+  //       acceptAllDevices: true,
+  //     });
 
-      console.log("> Requested " + device.name + " (" + device.id + ")");
-      populateBluetoothDevices();
-    } catch (error) {
-      console.log("Argh! " + error);
-    }
-  }
+  //     console.log("> Requested " + device.name + " (" + device.id + ")");
+  //     populateBluetoothDevices();
+  //   } catch (error) {
+  //     console.log("Argh! " + error);
+  //   }
+  // }
 
   function onDisconnect(deviceId: string): void {
     console.log(`device ${deviceId} disconnected`);
@@ -540,7 +537,6 @@ const OrderInfoComponent = () => {
   const downloadPDF = useCallback(async () => {
     setIsOpenToast({ isOpen: false, type: "receipt-email", toastMessage: "" });
 
-    const connections = await printWithBluetooth();
     const pages = document.getElementById("receipt");
     const width = pages?.clientWidth;
     const height = pages?.clientHeight;
@@ -580,33 +576,18 @@ const OrderInfoComponent = () => {
     });
     const file = pdf.output("dataurlstring");
     const bufferFile = pdf.output("arraybuffer");
+    const uint8Array = new Uint8Array(bufferFile);
 
-    pdf.autoPrint();
+    // Convert Uint8Array to DataView
+    const dataView = new DataView(uint8Array.buffer);
+
+    await printWithBluetooth(dataView);
+    // pdf.autoPrint();
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
 
     const mimeType = "application/pdf";
     const pdfFile = base64toFile(base64PDF, filename, mimeType);
-    try {
-      // Establish Bluetooth connection with printer
-      const device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: [connections?.printerId!],
-      });
-      const gattServer = await device?.gatt!.connect();
-      const service = await gattServer.getPrimaryService(
-        connections?.printerId!
-      );
-      const characteristic = await service.getCharacteristic(
-        connections?.characteristicsId!
-      );
 
-      // Send PDF data to printer
-      await characteristic.writeValue(bufferFile);
-
-      console.log("Print successful");
-    } catch (error) {
-      console.error("Print error:", error);
-    }
     // const encoder = new EscPosEncoder();
     // const printData = encoder
     //   .initialize()

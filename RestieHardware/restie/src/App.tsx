@@ -45,8 +45,8 @@ const App: React.FC = () => {
     const checkNetwork = async () => {
       const status = await Network.getStatus();
       setIsConnected(status.connected);
-      await populateBluetoothDevices();
-      await onRequestBluetoothDeviceButtonClick();
+      // await populateBluetoothDevices();
+      // await onRequestBluetoothDeviceButtonClick();
     };
 
     const handleNetworkChange = (status: any) => {
@@ -68,38 +68,38 @@ const App: React.FC = () => {
       router.push("/DeliverOffline");
     }
   }, [isConnected, history]);
-  async function populateBluetoothDevices() {
-    const devicesSelect = document.querySelector("#devicesSelect");
-    try {
-      console.log("Getting existing permitted Bluetooth devices...");
-      const devices = await navigator.bluetooth.getDevices();
+  // async function populateBluetoothDevices() {
+  //   const devicesSelect = document.querySelector("#devicesSelect");
+  //   try {
+  //     console.log("Getting existing permitted Bluetooth devices...");
+  //     const devices = await navigator.bluetooth.getDevices();
 
-      console.log("> Got " + devices.length + " Bluetooth devices.");
-      devicesSelect!.textContent = "";
-      for (const device of devices) {
-        const option = document.createElement("option");
-        option.value = device.id;
-        option.textContent = device?.name!;
-        devicesSelect?.appendChild(option);
-      }
-    } catch (error) {
-      console.log("Argh! " + error);
-    }
-  }
-  async function onRequestBluetoothDeviceButtonClick() {
-    try {
-      console.log("Requesting any Bluetooth device...");
-      const device = await navigator.bluetooth.requestDevice({
-        // filters: [...] <- Prefer filters to save energy & show relevant devices.
-        acceptAllDevices: true,
-      });
+  //     console.log("> Got " + devices.length + " Bluetooth devices.");
+  //     devicesSelect!.textContent = "";
+  //     for (const device of devices) {
+  //       const option = document.createElement("option");
+  //       option.value = device.id;
+  //       option.textContent = device?.name!;
+  //       devicesSelect?.appendChild(option);
+  //     }
+  //   } catch (error) {
+  //     console.log("Argh! " + error);
+  //   }
+  // }
+  // async function onRequestBluetoothDeviceButtonClick() {
+  //   try {
+  //     console.log("Requesting any Bluetooth device...");
+  //     const device = await navigator.bluetooth.requestDevice({
+  //       // filters: [...] <- Prefer filters to save energy & show relevant devices.
+  //       acceptAllDevices: true,
+  //     });
 
-      console.log("> Requested " + device.name + " (" + device.id + ")");
-      populateBluetoothDevices();
-    } catch (error) {
-      console.log("Argh! " + error);
-    }
-  }
+  //     console.log("> Requested " + device.name + " (" + device.id + ")");
+  //     populateBluetoothDevices();
+  //   } catch (error) {
+  //     console.log("Argh! " + error);
+  //   }
+  // }
   return (
     <IonApp>
       <Route path="/" render={() => <MainTab />} />

@@ -600,7 +600,7 @@ const OrderInfoComponent = () => {
     const encoder = new EscPosEncoder();
     const printData = encoder
       .initialize()
-      .image(pdfFile, 296, 300, "atkinson", 128) // Adjust width to 296 (multiple of 8)
+      .image(pdfFile, 296, 296, "atkinson", 128) // Adjust width to 296 (multiple of 8)
       .newline()
       .encode().buffer;
 

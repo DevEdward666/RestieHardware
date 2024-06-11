@@ -600,7 +600,7 @@ const OrderInfoComponent = () => {
     const encoder = new EscPosEncoder();
     const printData = encoder
       .initialize()
-      .image(pdfFile, width, height)
+      .image(pdfFile, 300, 300, "atkinson", 128)
       .newline()
       .encode().buffer;
     console.log("sending data to device...");

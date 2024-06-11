@@ -137,18 +137,13 @@ const OrderInfoComponent = () => {
     return formattedDate;
   };
 
-  const printWithBluetooth = async (dataView: DataView) => {
+  const printWithBluetooth = async (dataView: Uint8Array) => {
     try {
       await BleClient.initialize();
-      let isBtEnabled = await BleClient.isEnabled();
-      console.log(isBtEnabled);
-      // Request Bluetooth device
       const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
-      const characteristics = numberToUUID(0x2a19);
       const device = await BleClient.requestDevice({
         services: [printerId],
       });
-      // Connect to the printer
       const connectedDevice = await BleClient.connect(
         device.deviceId,
         (deviceId) => onDisconnect(deviceId)
@@ -157,7 +152,6 @@ const OrderInfoComponent = () => {
       const chx = await BleClient.getServices(device.deviceId);
       chx[0].characteristics[0].uuid;
       console.log("connected to device", device);
-      // Send print data
       const MAX_DATA_LENGTH = 512;
       let offset = 0;
 
@@ -589,7 +583,7 @@ const OrderInfoComponent = () => {
     // Convert Uint8Array to DataView
     const dataView = new DataView(uint8Array.buffer);
 
-    await printWithBluetooth(dataView);
+    await printWithBluetooth(uint8Array);
     // pdf.autoPrint();
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
 

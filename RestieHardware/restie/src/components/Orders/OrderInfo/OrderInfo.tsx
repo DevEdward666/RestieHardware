@@ -78,7 +78,9 @@ import {
   numberToUUID,
   numbersToDataView,
 } from "@capacitor-community/bluetooth-le";
+import { Plugins } from "@capacitor/core";
 const OrderInfoComponent = () => {
+  const { BluetoothPrinter } = Plugins;
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
   );
@@ -136,7 +138,17 @@ const OrderInfoComponent = () => {
 
     return formattedDate;
   };
-
+  const samplePrint = async () => {
+    const printerAddress = "60:6E:41:76:55:E2"; // Replace with your printer's address
+    try {
+      const printData = "This is a sample print";
+      await BluetoothPrinter.connect({ address: printerAddress });
+      await BluetoothPrinter.print({ data: printData });
+      console.log("Connected to printer:", printerAddress);
+    } catch (err) {
+      console.error("Error connecting to printer:", err);
+    }
+  };
   const printWithBluetooth = async (dataView: any) => {
     try {
       await BleClient.initialize();
@@ -602,8 +614,8 @@ const OrderInfoComponent = () => {
       .image(file, 296, 296, "atkinson", 128) // Adjust width to 296 (multiple of 8)
       .newline()
       .encode().buffer;
-
-    await printWithBluetooth(printData);
+    await samplePrint();
+    // await printWithBluetooth(printData);
     if (getEmail !== "") {
       setIsOpenToast({ isOpen: true, type: "", toastMessage: "Sending Email" });
       await SendEmail(

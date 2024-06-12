@@ -150,6 +150,7 @@ const OrderInfoComponent = () => {
 
       // Send print data
       const printData = "This is a sample print";
+
       await BluetoothPrinter.print({ data: printData });
       console.log("Print data sent successfully");
     } catch (err) {
@@ -614,15 +615,17 @@ const OrderInfoComponent = () => {
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
     const mimeType = "application/pdf";
     const pdfFile = base64toFile(base64PDF, filename, mimeType);
-
-    // const encoder = new EscPosEncoder();
-    // const printData = encoder
-    //   .initialize()
-    //   .image(file, 296, 296, "atkinson", 128) // Adjust width to 296 (multiple of 8)
-    //   .newline()
-    //   .encode().buffer;
-    await samplePrint();
-    // await printWithBluetooth(printData);
+    let img = new Image();
+    img.src =
+      "https://templatelab.com/wp-content/uploads/2021/02/purchase-receipt-01-scaled.jpg";
+    const encoder = new EscPosEncoder();
+    const printData = encoder
+      .initialize()
+      .image(img, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
+      .newline()
+      .encode().buffer;
+    // await samplePrint();
+    await printWithBluetooth(printData);
     if (getEmail !== "") {
       setIsOpenToast({ isOpen: true, type: "", toastMessage: "Sending Email" });
       await SendEmail(

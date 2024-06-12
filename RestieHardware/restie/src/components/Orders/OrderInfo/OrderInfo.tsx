@@ -624,7 +624,7 @@ const OrderInfoComponent = () => {
     const printData = encoder
       .initialize()
       // .image(logo, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
-      .text(receiptText, 296)
+      .text(receiptText, 100)
       .encode();
     // await samplePrint();
     await printWithBluetooth(printData);

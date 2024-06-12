@@ -608,12 +608,12 @@ const OrderInfoComponent = () => {
     const mimeType = "application/pdf";
     const pdfFile = base64toFile(base64PDF, filename, mimeType);
 
-    const encoder = new EscPosEncoder();
-    const printData = encoder
-      .initialize()
-      .image(file, 296, 296, "atkinson", 128) // Adjust width to 296 (multiple of 8)
-      .newline()
-      .encode().buffer;
+    // const encoder = new EscPosEncoder();
+    // const printData = encoder
+    //   .initialize()
+    //   .image(file, 296, 296, "atkinson", 128) // Adjust width to 296 (multiple of 8)
+    //   .newline()
+    //   .encode().buffer;
     await samplePrint();
     // await printWithBluetooth(printData);
     if (getEmail !== "") {

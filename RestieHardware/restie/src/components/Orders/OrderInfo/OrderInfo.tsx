@@ -620,13 +620,11 @@ const OrderInfoComponent = () => {
     img.src =
       "https://templatelab.com/wp-content/uploads/2021/02/purchase-receipt-01-scaled.jpg";
     const encoder = new EscPosEncoder();
-    const receiptText = generateReceipt(order_list_info);
+    const receiptText = generateReceipt(order_list_info, getOrderDate);
     const printData = encoder
       .initialize()
       // .image(logo, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
-      .text(receiptText, 20)
-
-      .newline()
+      .text(receiptText, 296)
       .encode();
     // await samplePrint();
     await printWithBluetooth(printData);
@@ -673,7 +671,7 @@ const OrderInfoComponent = () => {
     }
     setEmail("");
     setOpenSearchModal({ isOpen: false, modal: "receipt" });
-  }, [getEmail, order_list_info]);
+  }, [getEmail, order_list_info, getOrderDate]);
   const handleSetEmail = useCallback(
     async (ev: Event) => {
       if (order_list_info?.order_info.customer_email?.length! > 0) {
@@ -707,7 +705,10 @@ const OrderInfoComponent = () => {
     );
   }, [dispatch, order_list_info]);
 
-  const generateReceipt = (order_list_info: GetListOrderInfo) => {
+  const generateReceipt = (
+    order_list_info: GetListOrderInfo,
+    orderDate: string
+  ) => {
     let receiptText = "";
 
     // Check if there are items in the order
@@ -715,13 +716,14 @@ const OrderInfoComponent = () => {
       Array.isArray(order_list_info.order_item) &&
       order_list_info.order_item.length > 0
     ) {
-      receiptText += `Customer Name:${order_list_info.order_info?.name}\n\n`;
-      receiptText += `Address:${order_list_info.order_info?.address}\n\n`;
-      receiptText += `Contact No:${order_list_info.order_info?.contactno}\n\n`;
-      receiptText += `Order Type:${order_list_info.order_info?.type}\n\n`;
-      receiptText += `Order Created:${getOrderDate}\n\n`;
-      receiptText += `Cashier:${order_list_info.order_info.createdby}\n\n`;
-      receiptText += `Transaction ID:${order_list_info.order_info.transid}\n\n`;
+      receiptText += `Customer Name:${order_list_info.order_info?.name}\n`;
+      receiptText += `Address:${order_list_info.order_info?.address}\n`;
+      receiptText += `Contact No:${order_list_info.order_info?.contactno}\n`;
+      receiptText += `Order Type:${order_list_info.order_info?.type}\n`;
+      receiptText += `Order Created:${orderDate}\n`;
+      receiptText += `Cashier:${order_list_info.order_info.createdby}\n`;
+      receiptText += `Transaction ID:${order_list_info.order_info.transid}\n`;
+      receiptText += `------------------------------------------\n\n`;
       // Initialize chunks array
       const chunks: string[] = [];
       let chunk = "";
@@ -737,7 +739,7 @@ const OrderInfoComponent = () => {
         // Add item details to receipt
         chunk += `${item.item} - ${item.price.toFixed(2)} PHP\n`;
         chunk += `Qty: ${item.qty}\n`;
-        chunk += `--------------------------------------------\n\n`;
+        chunk += `------------------------------------------\n\n`;
 
         // Check if adding the current item exceeds the limit
         if (

@@ -725,6 +725,10 @@ const OrderInfoComponent = () => {
       receiptText += `Transaction ID:${order_list_info.order_info.transid}\n\n`;
       receiptText += `---------------------------------------------------------\n\n`;
 
+      // Initialize chunks array
+      const chunks: string[] = [];
+      let chunk = "";
+
       order_list_info.order_item.forEach((item, index) => {
         // Extract item details
         const correspondingReturn = order_list_info.return_item.find(
@@ -734,10 +738,24 @@ const OrderInfoComponent = () => {
           (returns) => returns.code === item.code
         );
         // Add item details to receipt
-        receiptText += `${item.item} - ${item.price.toFixed(2)} PHP\n`;
-        receiptText += `Qty: ${item.qty}\n`;
-        receiptText += `---------------------------------------------------------\n\n`;
+        chunk += `${item.item} - ${item.price.toFixed(2)} PHP\n`;
+        chunk += `Qty: ${item.qty}\n`;
+        chunk += `---------------------------------------------------------\n\n`;
+
+        // Check if adding the current item exceeds the limit
+        if (
+          index === order_list_info.order_item.length - 1 ||
+          chunk.length > 400
+        ) {
+          // Add the current chunk to chunks array
+          chunks.push(chunk);
+          // Reset chunk for the next iteration
+          chunk = "";
+        }
       });
+
+      // Join chunks with a newline
+      receiptText += chunks.join("\n");
     } else {
       receiptText = "No items to display";
     }

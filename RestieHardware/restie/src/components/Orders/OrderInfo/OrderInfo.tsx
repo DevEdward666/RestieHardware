@@ -721,10 +721,7 @@ const OrderInfoComponent = () => {
       receiptText += `Order Type:${order_list_info.order_info?.type}\n\n`;
       receiptText += `Order Created:${getOrderDate}\n\n`;
       receiptText += `Cashier:${order_list_info.order_info.createdby}\n\n`;
-      receiptText += `Order ID:${order_list_info.order_info.orderid}\n\n`;
       receiptText += `Transaction ID:${order_list_info.order_info.transid}\n\n`;
-      receiptText += `---------------------------------------------------------\n\n`;
-
       // Initialize chunks array
       const chunks: string[] = [];
       let chunk = "";
@@ -740,7 +737,7 @@ const OrderInfoComponent = () => {
         // Add item details to receipt
         chunk += `${item.item} - ${item.price.toFixed(2)} PHP\n`;
         chunk += `Qty: ${item.qty}\n`;
-        chunk += `---------------------------------------------------------\n\n`;
+        chunk += `--------------------------------------------\n\n`;
 
         // Check if adding the current item exceeds the limit
         if (

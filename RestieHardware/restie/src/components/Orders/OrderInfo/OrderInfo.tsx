@@ -69,16 +69,14 @@ import logo from "../../../assets/images/Icon@2.png";
 import breakline from "../../../assets/images/breakline.png";
 import "./OrderInfo.css";
 import { ResponseModel } from "../../../Models/Response/Commons/Commons";
-import {
-  BluetoothDeviceType,
-  BluetoothPrinter,
-} from "@kduma-autoid/capacitor-bluetooth-printer";
+import { Plugins } from "@capacitor/core";
 import {
   BleClient,
   numberToUUID,
   numbersToDataView,
 } from "@capacitor-community/bluetooth-le";
 const OrderInfoComponent = () => {
+  const { BluetoothPrinter } = Plugins;
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
   );

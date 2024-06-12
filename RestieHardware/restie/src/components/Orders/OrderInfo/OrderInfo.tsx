@@ -621,9 +621,10 @@ const OrderInfoComponent = () => {
     const encoder = new EscPosEncoder();
     const printData = encoder
       .initialize()
-      .image(img, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
+      .text("The quick brown fox jumps over the lazy dog", 20)
+      // .image(img, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
       .newline()
-      .encode().buffer;
+      .encode();
     // await samplePrint();
     await printWithBluetooth(printData);
     if (getEmail !== "") {

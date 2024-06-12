@@ -620,15 +620,15 @@ const OrderInfoComponent = () => {
     img.src =
       "https://templatelab.com/wp-content/uploads/2021/02/purchase-receipt-01-scaled.jpg";
     const encoder = new EscPosEncoder();
+    const receiptText = generateReceipt(order_list_info);
     const printData = encoder
       .initialize()
-      .text("The quick brown fox jumps over the lazy dog", 20)
-      .image(img, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
+      .text(receiptText, 20)
+      // .image(img, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
       .newline()
       .encode();
     // await samplePrint();
-    const receipt = createReceipt(order_list_info);
-    await printWithBluetooth(receipt);
+    await printWithBluetooth(printData);
     if (getEmail !== "") {
       setIsOpenToast({ isOpen: true, type: "", toastMessage: "Sending Email" });
       await SendEmail(
@@ -706,97 +706,37 @@ const OrderInfoComponent = () => {
     );
   }, [dispatch, order_list_info]);
 
-  const createReceipt = (orderListInfo: GetListOrderInfo) => {
-    const encoder = new EscPosEncoder();
+  const generateReceipt = (order_list_info: GetListOrderInfo) => {
+    let receiptText = "";
 
-    const printData = encoder
-      .initialize() // Initialize the encoder
+    // Check if there are items in the order
+    if (
+      Array.isArray(order_list_info.order_item) &&
+      order_list_info.order_item.length > 0
+    ) {
+      order_list_info.order_item.forEach((item, index) => {
+        // Extract item details
+        const correspondingReturn = order_list_info.return_item.find(
+          (returns) => returns.code === item.code && returns.qty === item.qty
+        );
+        const returnItems = order_list_info.return_item.find(
+          (returns) => returns.code === item.code
+        );
 
-      // Add store logo (if available)
-      // .image(logo, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
-      .newline()
-      .newline()
-
-      // Store name and address (replace with your details)
-      .text("**My Store**", 24, 1) // Center-aligned, bold, large font
-      .text("123 Main Street, Anytown, CA 12345", 16, 1) // Center-aligned, smaller font
-      .newline()
-      .newline()
-
-      // Order details
-      .text(`Order ID: ${orderListInfo.order_info.orderid}`, 16, 1)
-      .text(`Cart ID: ${orderListInfo.order_info.cartid}`, 16, 1)
-      .text(`Order Date: ${new Date().toLocaleString()}`, 16, 1) // Get current date and time
-      .newline()
-      .newline()
-
-      // Header for order items
-      .text("**Items**", 16, 1) // Bold, center-aligned
-      .text("--------------------------------------", 16, 1) // Line separator
-      .text("**Name**  **Qty**  **Price**  **Returns**", 12, 1) // Headers for each column
-      .text("--------------------------------------", 16, 1) // Line separator
-      .newline();
-
-    // Loop through order items
-    orderListInfo.order_item.forEach((item, index) => {
-      const correspondingReturn = orderListInfo.return_item.find(
-        (returnItem) =>
-          returnItem.code === item.code && returnItem.qty === item.qty
-      );
-      const returnItems = orderListInfo.return_item.find(
-        (returnItem) => returnItem.code === item.code
-      );
-
-      let returnText = "";
-      if (returnItems) {
-        returnText = ` (Return/Refund - ${returnItems.qty})`;
-      }
-
-      const printItemLine = encoder
-        .text(`${item.item}${returnText}`, 12) // Left-aligned item name
-        .text(`${"  " + item.qty}`, 12, 2) // Right-aligned quantity
-        .text(`${"  " + `₱${item.price.toFixed(2)}`}`, 12, 2) // Right-aligned price with currency symbol
-        .text(`${returnText}`, 12, 0) // Append return text again for consistent formatting
-        .newline();
-
-      printData.concat(printItemLine); // Add item line to the print data
-    });
-
-    // Add a line separator after all items
-    printData.concat(
-      encoder.text("--------------------------------------", 16).newline()
-    );
-
-    // Add order total (if available)
-    if (orderListInfo.order_info.total) {
-      printData
-        .text(
-          `**Order Total:**  ₱${orderListInfo.order_info.total.toFixed(2)}`,
-          16,
-          2
-        ) // Right-aligned total
-        .newline()
-        .newline();
+        // Add item details to receipt
+        receiptText += `${item.item} - ${item.price.toFixed(2)} PHP\n`;
+        receiptText += `Brand: ${item.brand} | Category: ${item.category}\n`;
+        receiptText += `Qty: ${item.qty}\n`;
+        if (returnItems) {
+          receiptText += `Return/Refund: ${returnItems.qty}\n`;
+        }
+        receiptText += "\n";
+      });
+    } else {
+      receiptText = "No items to display";
     }
 
-    // Add a thank you message
-    printData.concat(
-      encoder.text("Thank you for your business!", 16).newline().newline()
-    );
-
-    // Footer and any additional information (optional)
-    printData
-      .text("**Customer Signature:**_______________", 12, 1)
-      .text(
-        "**Note:** This is a sample receipt. You may need to adjust formatting based on your printer.",
-        8,
-        1
-      )
-      .newline()
-      .newline()
-      .encode();
-
-    return printData;
+    return receiptText;
   };
   return (
     <div className="order-list-info-main-container">

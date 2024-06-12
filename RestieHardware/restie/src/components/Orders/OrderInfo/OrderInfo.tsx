@@ -140,13 +140,15 @@ const OrderInfoComponent = () => {
     const printerAddress = "60:6E:41:76:55:E2"; // Replace with your printer's address
 
     try {
-      // Check for available devices before connecting (optional)
-      const devices = await BluetoothPrinter.list();
-      console.log("Available Bluetooth devices:", devices);
-
-      // Connect to the specific printer
-      await BluetoothPrinter.connect({ address: printerAddress });
-      console.log("Connected to printer:", printerAddress);
+      await BleClient.initialize();
+      const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
+      const device = await BleClient.requestDevice({
+        services: [printerId],
+      });
+      const connectedDevice = await BleClient.connect(
+        device.deviceId,
+        (deviceId) => onDisconnect(deviceId)
+      );
 
       // Send print data
       const printData = "This is a sample print";

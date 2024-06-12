@@ -78,9 +78,7 @@ import {
   numberToUUID,
   numbersToDataView,
 } from "@capacitor-community/bluetooth-le";
-import { Plugins } from "@capacitor/core";
 const OrderInfoComponent = () => {
-  const { BluetoothPrinter } = Plugins;
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
   );
@@ -140,13 +138,22 @@ const OrderInfoComponent = () => {
   };
   const samplePrint = async () => {
     const printerAddress = "60:6E:41:76:55:E2"; // Replace with your printer's address
+
     try {
-      const printData = "This is a sample print";
+      // Check for available devices before connecting (optional)
+      const devices = await BluetoothPrinter.list();
+      console.log("Available Bluetooth devices:", devices);
+
+      // Connect to the specific printer
       await BluetoothPrinter.connect({ address: printerAddress });
-      await BluetoothPrinter.print({ data: printData });
       console.log("Connected to printer:", printerAddress);
+
+      // Send print data
+      const printData = "This is a sample print";
+      await BluetoothPrinter.print({ data: printData });
+      console.log("Print data sent successfully");
     } catch (err) {
-      console.error("Error connecting to printer:", err);
+      console.error("Error:", err);
     }
   };
   const printWithBluetooth = async (dataView: any) => {

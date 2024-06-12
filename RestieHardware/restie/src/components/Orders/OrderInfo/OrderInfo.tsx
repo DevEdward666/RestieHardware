@@ -623,7 +623,7 @@ const OrderInfoComponent = () => {
     const receiptText = generateReceipt(order_list_info);
     const printData = encoder
       .initialize()
-      .image(logo, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
+      // .image(logo, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
       .text(receiptText, 20)
 
       .newline()

@@ -623,8 +623,9 @@ const OrderInfoComponent = () => {
     const receiptText = generateReceipt(order_list_info);
     const printData = encoder
       .initialize()
+      .image(logo, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
       .text(receiptText, 20)
-      // .image(img, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
+
       .newline()
       .encode();
     // await samplePrint();
@@ -714,6 +715,16 @@ const OrderInfoComponent = () => {
       Array.isArray(order_list_info.order_item) &&
       order_list_info.order_item.length > 0
     ) {
+      receiptText += `Customer Name:${order_list_info.order_info?.name}\n\n`;
+      receiptText += `Address:${order_list_info.order_info?.address}\n\n`;
+      receiptText += `Contact No:${order_list_info.order_info?.contactno}\n\n`;
+      receiptText += `Order Type:${order_list_info.order_info?.type}\n\n`;
+      receiptText += `Order Created:${getOrderDate}\n\n`;
+      receiptText += `Cashier:${order_list_info.order_info.createdby}\n\n`;
+      receiptText += `Order ID:${order_list_info.order_info.orderid}\n\n`;
+      receiptText += `Transaction ID:${order_list_info.order_info.transid}\n\n`;
+      receiptText += `---------------------------------------------------------\n\n`;
+
       order_list_info.order_item.forEach((item, index) => {
         // Extract item details
         const correspondingReturn = order_list_info.return_item.find(
@@ -722,15 +733,10 @@ const OrderInfoComponent = () => {
         const returnItems = order_list_info.return_item.find(
           (returns) => returns.code === item.code
         );
-
         // Add item details to receipt
         receiptText += `${item.item} - ${item.price.toFixed(2)} PHP\n`;
-        receiptText += `Brand: ${item.brand} | Category: ${item.category}\n`;
         receiptText += `Qty: ${item.qty}\n`;
-        if (returnItems) {
-          receiptText += `Return/Refund: ${returnItems.qty}\n`;
-        }
-        receiptText += "\n";
+        receiptText += `---------------------------------------------------------\n\n`;
       });
     } else {
       receiptText = "No items to display";

@@ -624,7 +624,7 @@ const OrderInfoComponent = () => {
     const printData = encoder
       .initialize()
       // .image(logo, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
-      .text(receiptText, 50)
+      .text(receiptText, 320)
       .encode();
     // await samplePrint();
     await printWithBluetooth(printData);
@@ -737,7 +737,7 @@ const OrderInfoComponent = () => {
           (returns) => returns.code === item.code
         );
         // Add item details to receipt
-        chunk += `${item.item} - ${item.price.toFixed(2)} PHP\n`;
+        chunk += `${item.item} - PHP${item.price.toFixed(2)}\n`;
         chunk += `Qty: ${item.qty}\n`;
         chunk += `--------------------------------\n`;
 
@@ -754,7 +754,7 @@ const OrderInfoComponent = () => {
       });
 
       // Join chunks with a newline
-      receiptText += chunks.join("\n");
+      receiptText += chunks.join("");
     } else {
       receiptText = "No items to display";
     }

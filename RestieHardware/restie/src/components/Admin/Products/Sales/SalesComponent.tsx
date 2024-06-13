@@ -22,8 +22,15 @@ import {
 import { PostDaysSalesModel } from "../../../../Models/Request/Inventory/InventoryModel";
 import { format } from "date-fns";
 import { FileResponse } from "../../../../Models/Response/Inventory/GetInventoryModel";
+import MyCalendar from "../../../../Hooks/MyCalendar";
+interface ISelectedDates {
+  startDate: Date;
+  endDate: Date;
+}
 const SalesComponent = () => {
   const [selectedDate, setSelectedDate] = useState<string[]>([]);
+  const [selectedDates, setSelectedDates] = useState<ISelectedDates>();
+
   const [getFile, setFile] = useState<FileResponse>();
   const [openPDFModal, setopenPDFModal] = useState({
     isOpen: false,
@@ -68,11 +75,11 @@ const SalesComponent = () => {
   const handleDownloaPdf = useCallback(async () => {
     const parsedDates = selectedDate.map((date) => new Date(date).getTime());
     parsedDates.sort((a, b) => a - b);
-    const lowestDate = selectedDate[0];
-    const highestDate = selectedDate[selectedDate.length - 1];
+    const lowestDate = selectedDates?.startDate.toISOString();
+    const highestDate = selectedDates?.endDate.toISOString();
     const payload: PostDaysSalesModel = {
-      fromDate: lowestDate,
-      toDate: highestDate,
+      fromDate: formatDate(lowestDate),
+      toDate: formatDate(highestDate),
     };
     setIsOpenToast({
       toastMessage: "Generating PDF",
@@ -127,7 +134,7 @@ const SalesComponent = () => {
     });
     // setopenPDFModal({ isOpen: true, modal: "pdf" });
     setFile(res);
-  }, [openPDFModal, selectedDate]);
+  }, [openPDFModal, selectedDates]);
   const handleGenerateInventory = async () => {
     setIsOpenToast({
       toastMessage: "Generating PDF",
@@ -150,6 +157,12 @@ const SalesComponent = () => {
       toastMessage: "",
       isOpen: false,
       type: "",
+    });
+  };
+  const handleDateRangeSelected = (start: Date, end: Date) => {
+    setSelectedDates({
+      startDate: start,
+      endDate: end,
     });
   };
   return (
@@ -223,13 +236,19 @@ const SalesComponent = () => {
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          <IonDatetime
+          <MyCalendar
+            onDateRangeSelected={(start, end) =>
+              handleDateRangeSelected(start, end)
+            }
+          />
+
+          {/* <IonDatetime
             multiple
             presentation="date"
             className="dateTimeComponent"
             onIonChange={handleWeekChange}
             value={selectedDate}
-          />
+          /> */}
         </IonContent>
       </IonModal>
       <IonToast

@@ -620,11 +620,16 @@ const OrderInfoComponent = () => {
     img.src =
       "https://templatelab.com/wp-content/uploads/2021/02/purchase-receipt-01-scaled.jpg";
     const encoder = new EscPosEncoder();
+    const receiptHeaderText = generateReceiptHeader(order_list_info);
     const receiptText = generateReceipt(order_list_info, getOrderDate);
     const printData = encoder
       .initialize()
+      .align("center")
+      .line(receiptHeaderText, 320)
+      .newline()
       // .image(logo, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
       .text(receiptText, 320)
+      .cut("partial")
       .encode();
     // await samplePrint();
     await printWithBluetooth(printData);
@@ -704,7 +709,20 @@ const OrderInfoComponent = () => {
       `/returnrefund?transid=${order_list_info?.order_info?.transid}&orderid=${order_list_info?.order_info?.orderid}&cartid=${order_list_info?.order_info?.cartid}`
     );
   }, [dispatch, order_list_info]);
+  const generateReceiptHeader = (order_list_info: GetListOrderInfo) => {
+    let receiptHeaderText = "";
+    receiptHeaderText += `Restie Hardware\n`;
+    receiptHeaderText += `Address: SIR Bucana 76-A\n`;
+    receiptHeaderText += `Sandawa Matina Davao City\n`;
+    receiptHeaderText += `Davao City, Philippines\n`;
+    receiptHeaderText += `Contact No.: (082) 224 1362\n`;
+    receiptHeaderText += `Invoice #:${
+      order_list_info.order_info?.transid?.split("-")[0]
+    }\n`;
+    receiptHeaderText += `--------------------------------\n`;
 
+    return receiptHeaderText;
+  };
   const generateReceipt = (
     order_list_info: GetListOrderInfo,
     orderDate: string
@@ -722,7 +740,6 @@ const OrderInfoComponent = () => {
       receiptText += `Order Type:${order_list_info.order_info?.type}\n`;
       receiptText += `Order Created:${orderDate}\n`;
       receiptText += `Cashier:${order_list_info.order_info.createdby}\n`;
-      receiptText += `Transaction ID:${order_list_info.order_info.transid}\n`;
       receiptText += `--------------------------------\n`;
       // Initialize chunks array
       const chunks: string[] = [];
@@ -744,7 +761,7 @@ const OrderInfoComponent = () => {
         // Check if adding the current item exceeds the limit
         if (
           index === order_list_info.order_item.length - 1 ||
-          chunk.length > 400
+          chunk.length > 512
         ) {
           // Add the current chunk to chunks array
           chunks.push(chunk);

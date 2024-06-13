@@ -621,17 +621,20 @@ const OrderInfoComponent = () => {
       "https://templatelab.com/wp-content/uploads/2021/02/purchase-receipt-01-scaled.jpg";
     const encoder = new EscPosEncoder();
     const receiptHeaderText = generateReceiptHeader(order_list_info);
-    const receiptText = generateReceipt(order_list_info, getOrderDate);
+    const receiptCustomerHeaderText = generateCustomerReceiptHeader(
+      order_list_info,
+      getOrderDate
+    );
+    const receiptText = generateReceipt(order_list_info);
     const printData = encoder
       .initialize()
       .align("center")
       .line(receiptHeaderText, 320)
-      .newline()
-      // .image(logo, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
+      .align("left")
+      .line(receiptCustomerHeaderText, 320)
       .align("left")
       .line(receiptText, 320)
-      .cut("partial")
-      .encode();
+      .encode().buffer;
     // await samplePrint();
     await printWithBluetooth(printData);
     if (getEmail !== "") {
@@ -724,55 +727,29 @@ const OrderInfoComponent = () => {
 
     return receiptHeaderText;
   };
-  const generateReceipt = (
+  const generateCustomerReceiptHeader = (
     order_list_info: GetListOrderInfo,
     orderDate: string
   ) => {
+    let receiptCustomerHeaderText = "";
+    receiptCustomerHeaderText += `Customer Name:${order_list_info.order_info?.name}\n`;
+    receiptCustomerHeaderText += `Address:${order_list_info.order_info?.address}\n`;
+    receiptCustomerHeaderText += `Contact No:${order_list_info.order_info?.contactno}\n`;
+    receiptCustomerHeaderText += `Order Type:${order_list_info.order_info?.type}\n`;
+    receiptCustomerHeaderText += `Order Created:${orderDate}\n`;
+    receiptCustomerHeaderText += `Cashier:${order_list_info.order_info.createdby}\n`;
+    receiptCustomerHeaderText += `--------------------------------\n`;
+
+    return receiptCustomerHeaderText;
+  };
+  const generateReceipt = (order_list_info: GetListOrderInfo) => {
     let receiptText = "";
 
-    // Check if there are items in the order
-    if (
-      Array.isArray(order_list_info.order_item) &&
-      order_list_info.order_item.length > 0
-    ) {
-      receiptText += `Customer Name:${order_list_info.order_info?.name}\n`;
-      receiptText += `Address:${order_list_info.order_info?.address}\n`;
-      receiptText += `Contact No:${order_list_info.order_info?.contactno}\n`;
-      receiptText += `Order Type:${order_list_info.order_info?.type}\n`;
-      receiptText += `Order Created:${orderDate}\n`;
-      receiptText += `Cashier:${order_list_info.order_info.createdby}\n`;
+    order_list_info.order_item.forEach((item, index) => {
+      receiptText += `${item.item} - PHP${item.price.toFixed(2)}\n`;
+      receiptText += `Qty: ${item.qty}\n`;
       receiptText += `--------------------------------\n`;
-      // Initialize chunks array
-      const chunks: string[] = [];
-      let chunk = "";
-
-      order_list_info.order_item.forEach((item, index) => {
-        // Extract item details
-        // const correspondingReturn = order_list_info.return_item.find(
-        //   (returns) => returns.code === item.code && returns.qty === item.qty
-        // );
-        // const returnItems = order_list_info.return_item.find(
-        //   (returns) => returns.code === item.code
-        // );
-        // Add item details to receipt
-        chunk += `${item.item} - PHP${item.price.toFixed(2)}\n`;
-        chunk += `Qty: ${item.qty}\n`;
-        chunk += `\n`;
-
-        // Check if adding the current item exceeds the limit
-        if (chunk.length > 512) {
-          // Add the current chunk to chunks array
-          chunks.push(chunk);
-          // Reset chunk for the next iteration
-          chunk = "";
-        }
-      });
-
-      // Join chunks with a newline
-      receiptText += chunks.join("");
-    } else {
-      receiptText = "No items to display";
-    }
+    });
 
     return receiptText;
   };

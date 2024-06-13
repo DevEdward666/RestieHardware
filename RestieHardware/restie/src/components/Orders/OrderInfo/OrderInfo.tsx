@@ -629,12 +629,12 @@ const OrderInfoComponent = () => {
     const printData = encoder
       .initialize()
       .align("center")
-      .line(receiptHeaderText, 320)
+      .raw(receiptHeaderText) // Use raw instead of line for multiline text
       .align("left")
-      .line(receiptCustomerHeaderText, 320)
+      .raw(receiptCustomerHeaderText) // Use raw instead of line for multiline text
       .align("left")
-      .line(receiptText, 320)
-      .encode().buffer;
+      .raw(receiptText) // Use raw instead of line for multiline text
+      .encode();
     // await samplePrint();
     await printWithBluetooth(printData);
     if (getEmail !== "") {
@@ -745,7 +745,7 @@ const OrderInfoComponent = () => {
   const generateReceipt = (order_list_info: GetListOrderInfo) => {
     let receiptText = "";
 
-    order_list_info.order_item.forEach((item, index) => {
+    order_list_info.order_item.map((item) => {
       receiptText += `${item.item} - PHP${item.price.toFixed(2)}\n`;
       receiptText += `Qty: ${item.qty}\n`;
       receiptText += `--------------------------------\n`;

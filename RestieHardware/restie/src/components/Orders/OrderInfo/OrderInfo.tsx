@@ -616,31 +616,40 @@ const OrderInfoComponent = () => {
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
     const mimeType = "application/pdf";
     const pdfFile = base64toFile(base64PDF, filename, mimeType);
-    const encoder = new EscPosEncoder();
-    const receiptHeaderText = generateReceiptHeader(order_list_info);
-    const receiptCustomerHeaderText = generateCustomerReceiptHeader(
-      order_list_info,
-      getOrderDate
-    );
-    const receiptText = generateReceipt(order_list_info);
-    const receiptFooter = generateReceiptFooter(order_list_info);
-    const printData = encoder
-      .initialize()
-      .line()
-      .align("center")
-      .text(receiptHeaderText)
-      .align("left")
-      .text(receiptCustomerHeaderText)
-      .align("left")
-      .text(receiptText)
-      .text("\n")
-      .align("left")
-      .text(receiptFooter)
-      .text("\n") // You can directly use text("\n") instead of text("\n", 320)
-      .cut("partial")
-      .encode();
+    let printData; // Declare printData in an outer scope
+
+    try {
+      const encoder = new EscPosEncoder();
+      const receiptHeaderText = generateReceiptHeader(order_list_info);
+      const receiptCustomerHeaderText = generateCustomerReceiptHeader(
+        order_list_info,
+        getOrderDate
+      );
+      const receiptText = generateReceipt(order_list_info);
+      const receiptFooter = generateReceiptFooter(order_list_info);
+
+      // Concatenate receipt parts
+      const fullReceipt = `${receiptHeaderText}\n${receiptCustomerHeaderText}\n${receiptText}\n${receiptFooter}`;
+
+      // Split receipt into chunks and send sequentially
+      const chunkSize = 512; // Maximum allowed size
+      let startIndex = 0;
+      const chunks = [];
+      while (startIndex < fullReceipt.length) {
+        const chunk = fullReceipt.substring(startIndex, startIndex + chunkSize);
+        const currentPrintData = encoder.initialize().text(chunk).encode();
+        chunks.push(currentPrintData);
+        startIndex += chunkSize;
+      }
+
+      // Send each chunk
+      for (const chunk of chunks) {
+        await printWithBluetooth(chunk);
+      }
+    } catch (error) {
+      console.error("Error printing:", error);
+    }
     // await samplePrint();
-    await printWithBluetooth(printData);
     if (getEmail !== "") {
       setIsOpenToast({ isOpen: true, type: "", toastMessage: "Sending Email" });
       await SendEmail(
@@ -717,52 +726,36 @@ const OrderInfoComponent = () => {
       `/returnrefund?transid=${order_list_info?.order_info?.transid}&orderid=${order_list_info?.order_info?.orderid}&cartid=${order_list_info?.order_info?.cartid}`
     );
   }, [dispatch, order_list_info]);
+  // Generate receipt header
   const generateReceiptHeader = (order_list_info: GetListOrderInfo) => {
-    let receiptHeaderText = "";
-    receiptHeaderText += `Restie Hardware\n`;
-    receiptHeaderText += `Address: SIR Bucana 76-A\n`;
-    receiptHeaderText += `Sandawa Matina Davao City\n`;
-    receiptHeaderText += `Davao City, Philippines\n`;
-    receiptHeaderText += `Contact No.: (082) 224 1362\n`;
-    receiptHeaderText += `Invoice #:${
+    return `Restie Hardware\nAddress: SIR Bucana 76-A\nSandawa Matina Davao City\nDavao City, Philippines\nContact No.: (082) 224 1362\nInvoice #: ${
       order_list_info.order_info?.transid?.split("-")[0]
-    }\n`;
-    receiptHeaderText += `--------------------------------\n`;
-
-    return receiptHeaderText;
+    }\n--------------------------------\n`;
   };
+
+  // Generate customer receipt header
   const generateCustomerReceiptHeader = (
     order_list_info: GetListOrderInfo,
     orderDate: string
   ) => {
     const orderInfo = order_list_info.order_info;
-    const { name, address, contactno, type, createdby } = orderInfo;
-    const headerLines = [
-      `Customer: ${name}`,
-      `Address: ${address}`,
-      `Contact: ${contactno}`,
-      `Order Type: ${type}`,
-      `Order Date: ${orderDate}`,
-      `Cashier: ${createdby}`,
-      `Item        Price       Qty`,
-    ];
-    return headerLines.join("\n") + "\n";
+    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nItem        Price       Qty\n`;
   };
+
+  // Generate receipt footer
   const generateReceiptFooter = (order_list_info: GetListOrderInfo) => {
     const totalAmount = order_list_info.order_info?.total.toFixed(2);
     const paidCash = order_list_info.order_info?.paidcash.toFixed(2);
     const change = (
       order_list_info.order_info?.paidcash - getTotalAmount
     ).toFixed(2);
-
     return `Amount Due: ${totalAmount}\nCash: ${paidCash}\nChange: ${change}\n`;
   };
+
+  // Generate receipt items
   const generateReceipt = (order_list_info: GetListOrderInfo) => {
     return order_list_info.order_item
-      .map((item) => {
-        const formattedPrice = `P${item.price.toFixed(2)}`;
-        return `${item.item} - ${formattedPrice} - ${item.qty}`;
-      })
+      .map((item) => `${item.item} - P${item.price.toFixed(2)} - ${item.qty}`)
       .join("\n");
   };
   return (

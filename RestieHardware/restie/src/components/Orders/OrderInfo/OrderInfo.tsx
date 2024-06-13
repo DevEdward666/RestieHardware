@@ -746,9 +746,7 @@ const OrderInfoComponent = () => {
     let receiptText = "";
 
     order_list_info.order_item.map((item) => {
-      receiptText += `${item.item} - PHP${item.price.toFixed(2)}\n`;
-      receiptText += `Qty: ${item.qty}\n`;
-      receiptText += `--------------------------------\n`;
+      receiptText += `${item.item} - P${item.price.toFixed(2)} - ${item.qty}\n`;
     });
 
     return receiptText;

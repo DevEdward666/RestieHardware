@@ -616,9 +616,6 @@ const OrderInfoComponent = () => {
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
     const mimeType = "application/pdf";
     const pdfFile = base64toFile(base64PDF, filename, mimeType);
-    let img = new Image();
-    img.src =
-      "https://templatelab.com/wp-content/uploads/2021/02/purchase-receipt-01-scaled.jpg";
     const encoder = new EscPosEncoder();
     const receiptHeaderText = generateReceiptHeader(order_list_info);
     const receiptCustomerHeaderText = generateCustomerReceiptHeader(
@@ -626,14 +623,17 @@ const OrderInfoComponent = () => {
       getOrderDate
     );
     const receiptText = generateReceipt(order_list_info);
+
     const printData = encoder
       .initialize()
       .align("center")
-      .text(receiptHeaderText, 320) // Use raw instead of line for multiline text
+      .text(receiptHeaderText)
       .align("left")
-      .text(receiptCustomerHeaderText, 320) // Use raw instead of line for multiline text
+      .text(receiptCustomerHeaderText)
       .align("left")
-      .text(receiptText, 320) // Use raw instead of line for multiline text
+      .text(receiptText)
+      .text("\n") // You can directly use text("\n") instead of text("\n", 320)
+      .cut("partial")
       .encode();
     // await samplePrint();
     await printWithBluetooth(printData);
@@ -743,13 +743,12 @@ const OrderInfoComponent = () => {
     return receiptCustomerHeaderText;
   };
   const generateReceipt = (order_list_info: GetListOrderInfo) => {
-    let receiptText = "";
-
-    order_list_info.order_item.map((item) => {
-      receiptText += `${item.item} - P${item.price.toFixed(2)} - ${item.qty}\n`;
-    });
-
-    return receiptText;
+    return order_list_info.order_item
+      .map((item) => {
+        const formattedPrice = `P${item.price.toFixed(2)}`;
+        return `${item.item} - ${formattedPrice} - ${item.qty}`;
+      })
+      .join("\n");
   };
   return (
     <div className="order-list-info-main-container">

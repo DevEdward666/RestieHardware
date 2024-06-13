@@ -735,28 +735,27 @@ const OrderInfoComponent = () => {
     order_list_info: GetListOrderInfo,
     orderDate: string
   ) => {
-    let receiptCustomerHeaderText = "";
-    receiptCustomerHeaderText += `Customer Name:${order_list_info.order_info?.name}\n`;
-    receiptCustomerHeaderText += `Address:${order_list_info.order_info?.address}\n`;
-    receiptCustomerHeaderText += `Contact No:${order_list_info.order_info?.contactno}\n`;
-    receiptCustomerHeaderText += `Order Type:${order_list_info.order_info?.type}\n`;
-    receiptCustomerHeaderText += `Order Created:${orderDate}\n`;
-    receiptCustomerHeaderText += `Cashier:${order_list_info.order_info.createdby}\n`;
-    receiptCustomerHeaderText += `--------------------------------\n`;
-
-    receiptCustomerHeaderText += `Item---------Price-----------Qty\n`;
-    return receiptCustomerHeaderText;
+    const orderInfo = order_list_info.order_info;
+    const { name, address, contactno, type, createdby } = orderInfo;
+    const headerLines = [
+      `Customer: ${name}`,
+      `Address: ${address}`,
+      `Contact: ${contactno}`,
+      `Order Type: ${type}`,
+      `Order Date: ${orderDate}`,
+      `Cashier: ${createdby}`,
+      `Item        Price       Qty`,
+    ];
+    return headerLines.join("\n") + "\n";
   };
   const generateReceiptFooter = (order_list_info: GetListOrderInfo) => {
-    let receiptCustomerHeaderText = "";
-    const change = order_list_info.order_info?.paidcash - getTotalAmount;
-    receiptCustomerHeaderText += `Amount Due:${order_list_info.order_info?.total}\n`;
-    receiptCustomerHeaderText += `Cash:${order_list_info.order_info?.paidcash.toFixed(
-      2
-    )}\n`;
-    receiptCustomerHeaderText += `Change:P${change.toFixed(2)}\n`;
-    receiptCustomerHeaderText += `\n`;
-    return receiptCustomerHeaderText;
+    const totalAmount = order_list_info.order_info?.total.toFixed(2);
+    const paidCash = order_list_info.order_info?.paidcash.toFixed(2);
+    const change = (
+      order_list_info.order_info?.paidcash - getTotalAmount
+    ).toFixed(2);
+
+    return `Amount Due: ${totalAmount}\nCash: ${paidCash}\nChange: ${change}\n`;
   };
   const generateReceipt = (order_list_info: GetListOrderInfo) => {
     return order_list_info.order_item

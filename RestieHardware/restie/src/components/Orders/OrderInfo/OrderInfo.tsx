@@ -629,11 +629,11 @@ const OrderInfoComponent = () => {
     const printData = encoder
       .initialize()
       .align("center")
-      .raw(receiptHeaderText) // Use raw instead of line for multiline text
+      .text(receiptHeaderText, 320) // Use raw instead of line for multiline text
       .align("left")
-      .raw(receiptCustomerHeaderText) // Use raw instead of line for multiline text
+      .text(receiptCustomerHeaderText, 320) // Use raw instead of line for multiline text
       .align("left")
-      .raw(receiptText) // Use raw instead of line for multiline text
+      .text(receiptText, 320) // Use raw instead of line for multiline text
       .encode();
     // await samplePrint();
     await printWithBluetooth(printData);

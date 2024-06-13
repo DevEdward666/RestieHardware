@@ -626,6 +626,7 @@ const OrderInfoComponent = () => {
 
     const printData = encoder
       .initialize()
+      .line()
       .align("center")
       .text(receiptHeaderText)
       .align("left")

@@ -758,7 +758,7 @@ const OrderInfoComponent = () => {
     receiptCustomerHeaderText += `Change:P${change.toFixed(2)}\n`;
     receiptCustomerHeaderText += `\n`;
     receiptCustomerHeaderText += `\n`;
-    receiptCustomerHeaderText += `We're grateful that you've selected us as your hardware provider.\n`;
+    receiptCustomerHeaderText += `Thank You!\n`;
     receiptCustomerHeaderText += `--------------------------------\n`;
     return receiptCustomerHeaderText;
   };

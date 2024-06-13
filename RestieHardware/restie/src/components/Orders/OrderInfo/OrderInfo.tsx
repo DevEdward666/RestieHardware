@@ -628,7 +628,8 @@ const OrderInfoComponent = () => {
       .line(receiptHeaderText, 320)
       .newline()
       // .image(logo, 296, 296, "atkinson") // Adjust width to 296 (multiple of 8)
-      .text(receiptText, 320)
+      .align("left")
+      .line(receiptText, 320)
       .cut("partial")
       .encode();
     // await samplePrint();
@@ -747,22 +748,19 @@ const OrderInfoComponent = () => {
 
       order_list_info.order_item.forEach((item, index) => {
         // Extract item details
-        const correspondingReturn = order_list_info.return_item.find(
-          (returns) => returns.code === item.code && returns.qty === item.qty
-        );
-        const returnItems = order_list_info.return_item.find(
-          (returns) => returns.code === item.code
-        );
+        // const correspondingReturn = order_list_info.return_item.find(
+        //   (returns) => returns.code === item.code && returns.qty === item.qty
+        // );
+        // const returnItems = order_list_info.return_item.find(
+        //   (returns) => returns.code === item.code
+        // );
         // Add item details to receipt
         chunk += `${item.item} - PHP${item.price.toFixed(2)}\n`;
         chunk += `Qty: ${item.qty}\n`;
-        chunk += `--------------------------------\n`;
+        chunk += `\n`;
 
         // Check if adding the current item exceeds the limit
-        if (
-          index === order_list_info.order_item.length - 1 ||
-          chunk.length > 512
-        ) {
+        if (chunk.length > 512) {
           // Add the current chunk to chunks array
           chunks.push(chunk);
           // Reset chunk for the next iteration

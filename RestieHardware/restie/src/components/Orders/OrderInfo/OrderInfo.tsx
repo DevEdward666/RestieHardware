@@ -623,7 +623,7 @@ const OrderInfoComponent = () => {
       getOrderDate
     );
     const receiptText = generateReceipt(order_list_info);
-
+    const receiptFooter = generateReceiptFooter(order_list_info);
     const printData = encoder
       .initialize()
       .line()
@@ -633,6 +633,10 @@ const OrderInfoComponent = () => {
       .text(receiptCustomerHeaderText)
       .align("left")
       .text(receiptText)
+      .text("\n")
+      .line()
+      .align("left")
+      .text(receiptFooter)
       .text("\n") // You can directly use text("\n") instead of text("\n", 320)
       .cut("partial")
       .encode();
@@ -741,6 +745,21 @@ const OrderInfoComponent = () => {
     receiptCustomerHeaderText += `Cashier:${order_list_info.order_info.createdby}\n`;
     receiptCustomerHeaderText += `--------------------------------\n`;
 
+    receiptCustomerHeaderText += `Item---------Price-----------Qty\n`;
+    return receiptCustomerHeaderText;
+  };
+  const generateReceiptFooter = (order_list_info: GetListOrderInfo) => {
+    let receiptCustomerHeaderText = "";
+    const change = order_list_info.order_info?.paidcash - getTotalAmount;
+    receiptCustomerHeaderText += `Amount Due:P${order_list_info.order_info?.total}\n`;
+    receiptCustomerHeaderText += `Cash:P${order_list_info.order_info?.paidcash.toFixed(
+      2
+    )}\n`;
+    receiptCustomerHeaderText += `Change:P${change.toFixed(2)}\n`;
+    receiptCustomerHeaderText += `\n`;
+    receiptCustomerHeaderText += `\n`;
+    receiptCustomerHeaderText += `We're grateful that you've selected us as your hardware provider.\n`;
+    receiptCustomerHeaderText += `--------------------------------\n`;
     return receiptCustomerHeaderText;
   };
   const generateReceipt = (order_list_info: GetListOrderInfo) => {

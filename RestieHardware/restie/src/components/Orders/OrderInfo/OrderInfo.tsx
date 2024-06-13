@@ -634,7 +634,6 @@ const OrderInfoComponent = () => {
       .align("left")
       .text(receiptText)
       .text("\n")
-      .line()
       .align("left")
       .text(receiptFooter)
       .text("\n") // You can directly use text("\n") instead of text("\n", 320)
@@ -751,15 +750,12 @@ const OrderInfoComponent = () => {
   const generateReceiptFooter = (order_list_info: GetListOrderInfo) => {
     let receiptCustomerHeaderText = "";
     const change = order_list_info.order_info?.paidcash - getTotalAmount;
-    receiptCustomerHeaderText += `Amount Due:P${order_list_info.order_info?.total}\n`;
-    receiptCustomerHeaderText += `Cash:P${order_list_info.order_info?.paidcash.toFixed(
+    receiptCustomerHeaderText += `Amount Due:${order_list_info.order_info?.total}\n`;
+    receiptCustomerHeaderText += `Cash:${order_list_info.order_info?.paidcash.toFixed(
       2
     )}\n`;
     receiptCustomerHeaderText += `Change:P${change.toFixed(2)}\n`;
     receiptCustomerHeaderText += `\n`;
-    receiptCustomerHeaderText += `\n`;
-    receiptCustomerHeaderText += `Thank You!\n`;
-    receiptCustomerHeaderText += `--------------------------------\n`;
     return receiptCustomerHeaderText;
   };
   const generateReceipt = (order_list_info: GetListOrderInfo) => {

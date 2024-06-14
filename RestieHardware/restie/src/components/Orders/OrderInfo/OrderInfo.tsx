@@ -712,39 +712,38 @@ const OrderInfoComponent = () => {
       // Split receipt parts into chunks and send sequentially
       const chunkSize = 512; // Maximum allowed size
       const chunks = [];
-
+      let startIndex = 0;
       // Center-aligned header
-      const centeredHeader = encoder
-        .initialize()
-        .align("center")
-        .text(ReceiptHeader)
-        .encode();
-      chunks.push(centeredHeader);
-
+      while (startIndex < ReceiptHeader.length) {
+        const centeredHeader = encoder
+          .initialize()
+          .align("center")
+          .text(ReceiptHeader)
+          .encode();
+        chunks.push(centeredHeader);
+        startIndex += chunkSize;
+      }
       // Left-aligned subheader
-      const subheader = encoder
-        .initialize()
-        .align("left")
-        .text(ReceiptSubHeader)
-        .encode();
-      chunks.push(subheader);
-
-      // Left-aligned body
-      const body = encoder
-        .initialize()
-        .align("left")
-        .text(ReceiptBody)
-        .encode();
-      chunks.push(body);
-
-      // Left-aligned footer
-      const footer = encoder
-        .initialize()
-        .align("left")
-        .text(ReceiptFooter)
-        .encode();
-      chunks.push(footer);
-
+      startIndex = 0;
+      while (startIndex < ReceiptSubHeader.length) {
+        const subheader = encoder.align("left").text(ReceiptSubHeader).encode();
+        chunks.push(subheader);
+        startIndex += chunkSize;
+      }
+      startIndex = 0;
+      while (startIndex < ReceiptBody.length) {
+        // Left-aligned body
+        const body = encoder.align("left").text(ReceiptBody).encode();
+        chunks.push(body);
+        startIndex += chunkSize;
+      }
+      startIndex = 0;
+      while (startIndex < ReceiptFooter.length) {
+        // Left-aligned footer
+        const footer = encoder.align("left").text(ReceiptFooter).encode();
+        chunks.push(footer);
+        startIndex += chunkSize;
+      }
       // Send each chunk
       for (const chunk of chunks) {
         await printWithBluetooth(chunk);

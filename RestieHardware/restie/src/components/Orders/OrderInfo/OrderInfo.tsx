@@ -576,63 +576,6 @@ const OrderInfoComponent = () => {
     const pdfFile = base64toFile(base64PDF, filename, mimeType);
     let printData; // Declare printData in an outer scope
 
-    try {
-      const encoder = new EscPosEncoder();
-      const receiptHeaderText = generateReceiptHeader(order_list_info);
-      const receiptCustomerHeaderText = generateCustomerReceiptHeader(
-        order_list_info,
-        getOrderDate
-      );
-      const receiptText = generateReceipt(order_list_info);
-      const receiptFooter = generateReceiptFooter(order_list_info);
-
-      // Concatenate receipt parts
-      const ReceiptHeader = `${receiptHeaderText}\n`;
-      const ReceiptSubHeader = `${receiptCustomerHeaderText}`;
-      const ReceiptBody = `${receiptText}\n`;
-      const ReceiptFooter = `${receiptFooter}\n`;
-
-      // Split receipt into chunks and send sequentially
-      const chunkSize = 512; // Maximum allowed size
-      let startIndex = 0;
-      const chunks = [];
-      while (startIndex < ReceiptBody.length) {
-        const header = ReceiptHeader.substring(
-          startIndex,
-          startIndex + chunkSize
-        );
-        const subheader = ReceiptSubHeader.substring(
-          startIndex,
-          startIndex + chunkSize
-        );
-        const body = ReceiptBody.substring(startIndex, startIndex + chunkSize);
-        const footer = ReceiptFooter.substring(
-          startIndex,
-          startIndex + chunkSize
-        );
-
-        const currentPrintData = encoder
-          .initialize()
-          .align("center")
-          .text(header)
-          .align("left")
-          .text(subheader)
-          .align("left")
-          .text(body)
-          .text(footer)
-          .newline()
-          .encode();
-        chunks.push(currentPrintData);
-        startIndex += chunkSize;
-      }
-
-      // Send each chunk
-      for (const chunk of chunks) {
-        await printWithBluetooth(chunk);
-      }
-    } catch (error) {
-      console.error("Error printing:", error);
-    }
     // await samplePrint();
     if (getEmail !== "") {
       setIsOpenToast({ isOpen: true, type: "", toastMessage: "Sending Email" });
@@ -748,6 +691,62 @@ const OrderInfoComponent = () => {
       .map((item) => `${item.item} - P${item.price.toFixed(2)} - ${item.qty}`)
       .join("\n");
   };
+  const handlePrintInvoice = useCallback(async () => {
+    try {
+      const encoder = new EscPosEncoder();
+      const receiptHeaderText = generateReceiptHeader(order_list_info);
+      const receiptCustomerHeaderText = generateCustomerReceiptHeader(
+        order_list_info,
+        getOrderDate
+      );
+      const receiptText = generateReceipt(order_list_info);
+      const receiptFooter = generateReceiptFooter(order_list_info);
+
+      // Concatenate receipt parts
+      const ReceiptHeader = `${receiptHeaderText}\n`;
+      const ReceiptSubHeader = `${receiptCustomerHeaderText}`;
+      const ReceiptBody = `${receiptText}\n`;
+      const ReceiptFooter = `${receiptFooter}\n`;
+
+      // Split receipt parts into chunks and send sequentially
+      const chunkSize = 512; // Maximum allowed size
+      const chunks = [];
+      let startIndex = 0;
+
+      // Center-aligned header
+      const centeredHeader = encoder
+        .initialize()
+        .align("center")
+        .text(ReceiptHeader)
+        .encode();
+      chunks.push(centeredHeader);
+
+      // Left-aligned subheader, body, and footer
+      const combinedParts = ReceiptSubHeader + ReceiptBody + ReceiptFooter;
+      while (startIndex < combinedParts.length) {
+        const currentChunk = combinedParts.substring(
+          startIndex,
+          startIndex + chunkSize
+        );
+        const currentPrintData = encoder
+          .initialize()
+          .align("left")
+          .text(currentChunk)
+          .encode();
+        chunks.push(currentPrintData);
+        startIndex += chunkSize;
+      }
+
+      // Send each chunk
+      for (const chunk of chunks) {
+        await printWithBluetooth(chunk);
+      }
+    } catch (error) {
+      console.error("Error printing:", error);
+    }
+
+    setOpenSearchModal({ isOpen: true, modal: "receipt" });
+  }, [order_list_info, getOrderDate]);
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
@@ -809,9 +808,7 @@ const OrderInfoComponent = () => {
                   <IonButton
                     size="small"
                     color="tertiary"
-                    onClick={() =>
-                      setOpenSearchModal({ isOpen: true, modal: "receipt" })
-                    }
+                    onClick={() => handlePrintInvoice()}
                   >
                     Print Invoice
                   </IonButton>

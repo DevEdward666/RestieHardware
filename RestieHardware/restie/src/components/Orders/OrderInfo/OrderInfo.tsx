@@ -153,22 +153,22 @@ const OrderInfoComponent = () => {
       });
       console.log("Bluetooth device permission granted:", device);
       setPermissionRequested(true);
+      return device.deviceId;
     } catch (error) {
       console.error("Error requesting Bluetooth device permission:", error);
+      return "";
     }
   };
-  const printWithBluetooth = async (dataView: any) => {
+  const printWithBluetooth = async (dataView: any, deviceId: any) => {
     try {
       // Connect to device
       const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
-      const device = await BleClient.getDevices([printerId]);
-      await BleClient.connect(device[0].deviceId);
-      console.log("Connected to Bluetooth device:", device);
+      await BleClient.connect(deviceId);
 
       // Get characteristics and write data
-      const chx = await BleClient.getServices(device[0].deviceId);
+      const chx = await BleClient.getServices(deviceId);
       await BleClient.write(
-        device[0].deviceId,
+        deviceId,
         printerId,
         chx[0].characteristics[0].uuid,
         dataView
@@ -725,14 +725,14 @@ const OrderInfoComponent = () => {
       if (!BleClient.initialize()) {
         await initializeBluetooth();
       }
-
+      let deviceId = "";
       // Request Bluetooth device permission if not already requested
       if (!isPermissionRequested()) {
-        await requestBluetoothPermission();
+        deviceId = await requestBluetoothPermission();
       }
 
       for (const chunk of chunks) {
-        await printWithBluetooth(chunk);
+        await printWithBluetooth(chunk, deviceId);
       }
     } catch (error) {
       console.error("Error printing:", error);

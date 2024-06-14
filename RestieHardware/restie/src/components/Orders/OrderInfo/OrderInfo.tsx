@@ -165,39 +165,23 @@ const OrderInfoComponent = () => {
       const device = await BleClient.requestDevice({
         services: [printerId],
       });
-      const connectedDevice = await BleClient.connect(
-        device.deviceId,
-        (deviceId) => onDisconnect(deviceId)
-      );
+      const isConnected = await BleClient.getDevices([device.deviceId]);
+      if (
+        isConnected.length <= 0 &&
+        isConnected[0].deviceId !== device.deviceId
+      ) {
+        await BleClient.connect(device.deviceId);
+      }
 
       const chx = await BleClient.getServices(device.deviceId);
       chx[0].characteristics[0].uuid;
-      console.log("connected to device", device);
-      const MAX_DATA_LENGTH = 512;
-      let offset = 0;
       await BleClient.write(
         device.deviceId,
         printerId,
         chx[0].characteristics[0].uuid,
         dataView
       );
-      // while (offset < dataView.byteLength) {
-      //   const end = Math.min(
-      //     offset + MAX_DATA_LENGTH,
-      //     dataView.BYTES_PER_ELEMENT
-      //   );
-      //   const chunk = new DataView(dataView.buffer, offset, end - offset);
-      //   await BleClient.write(
-      //     device.deviceId,
-      //     printerId,
-      //     chx[0].characteristics[0].uuid,
-      //     chunk
-      //   );
-      //   offset = end;
-      // }
       console.log("Print successful");
-
-      // Send PDF data to printer
     } catch (error) {
       console.error("Print error", error);
     }
@@ -630,7 +614,7 @@ const OrderInfoComponent = () => {
 
       // Concatenate receipt parts
       const ReceiptHeader = `${receiptHeaderText}\n`;
-      const ReceiptSubHeader = `${receiptCustomerHeaderText}\n`;
+      const ReceiptSubHeader = `${receiptCustomerHeaderText}`;
       const ReceiptBody = `${receiptText}\n`;
       const ReceiptFooter = `${receiptFooter}\n`;
 
@@ -661,7 +645,9 @@ const OrderInfoComponent = () => {
           .text(subheader)
           .align("left")
           .text(body)
+          .align("left")
           .text(footer)
+          .line("\n")
           .encode();
         chunks.push(currentPrintData);
         startIndex += chunkSize;
@@ -753,7 +739,13 @@ const OrderInfoComponent = () => {
   }, [dispatch, order_list_info]);
   // Generate receipt header
   const generateReceiptHeader = (order_list_info: GetListOrderInfo) => {
-    return `Restie Hardware\nAddress: SIR Bucana 76-A\nSandawa Matina Davao City\nDavao City, Philippines\nContact No.: (082) 224 1362\nInvoice #: ${
+    return `Restie Hardware
+    \n
+    Address: SIR Bucana 76-A
+    \nSandawa Matina Davao City
+    \nDavao City, Philippines
+    \nContact No.: (082) 224 1362
+    \nInvoice #: ${
       order_list_info.order_info?.transid?.split("-")[0]
     }\n--------------------------------\n`;
   };
@@ -764,7 +756,7 @@ const OrderInfoComponent = () => {
     orderDate: string
   ) => {
     const orderInfo = order_list_info.order_info;
-    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nItem        Price       Qty\n`;
+    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\n\nItem        Price       Qty`;
   };
 
   // Generate receipt footer

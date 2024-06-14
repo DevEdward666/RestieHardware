@@ -733,12 +733,12 @@ const OrderInfoComponent = () => {
 
       // Split encoded receipt parts into chunks and push into the array
       const chunkSize = 512; // Maximum allowed size
-      const chunks: any[] = [];
+      const chunks: string[] = [];
 
       // Function to split encoded data into chunks
-      const splitIntoChunks = (encodedData: string) => {
+      const splitIntoChunks = (encodedData: any) => {
         for (let i = 0; i < encodedData.length; i += chunkSize) {
-          const chunk = encodedData.substring(i, i + chunkSize);
+          const chunk = encodedData.slice(i, i + chunkSize);
           chunks.push(chunk);
         }
       };

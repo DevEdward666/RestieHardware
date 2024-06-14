@@ -629,15 +629,40 @@ const OrderInfoComponent = () => {
       const receiptFooter = generateReceiptFooter(order_list_info);
 
       // Concatenate receipt parts
-      const fullReceipt = `${receiptHeaderText}\n${receiptCustomerHeaderText}\n${receiptText}\n${receiptFooter}`;
+      const ReceiptHeader = `${receiptHeaderText}\n`;
+      const ReceiptSubHeader = `${receiptCustomerHeaderText}\n`;
+      const ReceiptBody = `${receiptText}\n`;
+      const ReceiptFooter = `${receiptFooter}\n`;
 
       // Split receipt into chunks and send sequentially
       const chunkSize = 512; // Maximum allowed size
       let startIndex = 0;
       const chunks = [];
-      while (startIndex < fullReceipt.length) {
-        const chunk = fullReceipt.substring(startIndex, startIndex + chunkSize);
-        const currentPrintData = encoder.initialize().text(chunk).encode();
+      while (startIndex < ReceiptBody.length) {
+        const header = ReceiptHeader.substring(
+          startIndex,
+          startIndex + chunkSize
+        );
+        const subheader = ReceiptSubHeader.substring(
+          startIndex,
+          startIndex + chunkSize
+        );
+        const body = ReceiptBody.substring(startIndex, startIndex + chunkSize);
+        const footer = ReceiptFooter.substring(
+          startIndex,
+          startIndex + chunkSize
+        );
+
+        const currentPrintData = encoder
+          .initialize()
+          .align("center")
+          .text(header)
+          .align("left")
+          .text(subheader)
+          .align("left")
+          .text(body)
+          .text(footer)
+          .encode();
         chunks.push(currentPrintData);
         startIndex += chunkSize;
       }

@@ -709,41 +709,46 @@ const OrderInfoComponent = () => {
       const ReceiptBody = `${receiptText}\n`;
       const ReceiptFooter = `${receiptFooter}\n`;
 
-      // Split receipt parts into chunks and send sequentially
+      // Encode receipt parts
+      const encodedHeader = encoder
+        .initialize()
+        .align("center")
+        .text(ReceiptHeader)
+        .encode();
+      const encodedSubHeader = encoder
+        .initialize()
+        .align("left")
+        .text(ReceiptSubHeader)
+        .encode();
+      const encodedBody = encoder
+        .initialize()
+        .align("left")
+        .text(ReceiptBody)
+        .encode();
+      const encodedFooter = encoder
+        .initialize()
+        .align("left")
+        .text(ReceiptFooter)
+        .encode();
+
+      // Split encoded receipt parts into chunks and push into the array
       const chunkSize = 512; // Maximum allowed size
-      const chunks = [];
-      let startIndex = 0;
-      // Center-aligned header
-      while (startIndex < ReceiptHeader.length) {
-        const centeredHeader = encoder
-          .initialize()
-          .align("center")
-          .text(ReceiptHeader)
-          .encode();
-        chunks.push(centeredHeader);
-        startIndex += chunkSize;
-      }
-      // Left-aligned subheader
-      startIndex = 0;
-      while (startIndex < ReceiptSubHeader.length) {
-        const subheader = encoder.align("left").text(ReceiptSubHeader).encode();
-        chunks.push(subheader);
-        startIndex += chunkSize;
-      }
-      startIndex = 0;
-      while (startIndex < ReceiptBody.length) {
-        // Left-aligned body
-        const body = encoder.align("left").text(ReceiptBody).encode();
-        chunks.push(body);
-        startIndex += chunkSize;
-      }
-      startIndex = 0;
-      while (startIndex < ReceiptFooter.length) {
-        // Left-aligned footer
-        const footer = encoder.align("left").text(ReceiptFooter).encode();
-        chunks.push(footer);
-        startIndex += chunkSize;
-      }
+      const chunks: any[] = [];
+
+      // Function to split encoded data into chunks
+      const splitIntoChunks = (encodedData: string) => {
+        for (let i = 0; i < encodedData.length; i += chunkSize) {
+          const chunk = encodedData.substring(i, i + chunkSize);
+          chunks.push(chunk);
+        }
+      };
+
+      // Push chunks for each part of the receipt
+      splitIntoChunks(encodedHeader);
+      splitIntoChunks(encodedSubHeader);
+      splitIntoChunks(encodedBody);
+      splitIntoChunks(encodedFooter);
+
       // Send each chunk
       for (const chunk of chunks) {
         await printWithBluetooth(chunk);

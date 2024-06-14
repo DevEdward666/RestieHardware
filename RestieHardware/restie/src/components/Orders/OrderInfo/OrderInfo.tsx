@@ -717,8 +717,7 @@ const OrderInfoComponent = () => {
       const centeredHeader = encoder
         .initialize()
         .align("center")
-        .text(ReceiptHeader)
-        .encode();
+        .text(ReceiptHeader);
       chunks.push(centeredHeader);
 
       // Left-aligned subheader, body, and footer
@@ -729,7 +728,6 @@ const OrderInfoComponent = () => {
           startIndex + chunkSize
         );
         const currentPrintData = encoder
-          .initialize()
           .align("left")
           .text(currentChunk)
           .encode();
@@ -830,9 +828,7 @@ const OrderInfoComponent = () => {
                   <IonButton
                     size="small"
                     color="tertiary"
-                    onClick={() =>
-                      setOpenSearchModal({ isOpen: true, modal: "receipt" })
-                    }
+                    onClick={() => handlePrintInvoice()}
                   >
                     Print Invoice
                   </IonButton>

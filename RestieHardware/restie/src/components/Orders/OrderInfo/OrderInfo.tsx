@@ -630,7 +630,7 @@ const OrderInfoComponent = () => {
 
       // Concatenate receipt parts
       const ReceiptHeader = `${receiptHeaderText}\n`;
-      const ReceiptSubHeader = `${receiptCustomerHeaderText}\n`;
+      const ReceiptSubHeader = `${receiptCustomerHeaderText}`;
       const ReceiptBody = `${receiptText}\n`;
       const ReceiptFooter = `${receiptFooter}\n`;
 
@@ -661,7 +661,9 @@ const OrderInfoComponent = () => {
           .text(subheader)
           .align("left")
           .text(body)
+          .align("left")
           .text(footer)
+          .line("\n")
           .encode();
         chunks.push(currentPrintData);
         startIndex += chunkSize;
@@ -753,7 +755,13 @@ const OrderInfoComponent = () => {
   }, [dispatch, order_list_info]);
   // Generate receipt header
   const generateReceiptHeader = (order_list_info: GetListOrderInfo) => {
-    return `Restie Hardware\nAddress: SIR Bucana 76-A\nSandawa Matina Davao City\nDavao City, Philippines\nContact No.: (082) 224 1362\nInvoice #: ${
+    return `Restie Hardware
+    \n
+    Address: SIR Bucana 76-A
+    \nSandawa Matina Davao City
+    \nDavao City, Philippines
+    \nContact No.: (082) 224 1362
+    \nInvoice #: ${
       order_list_info.order_info?.transid?.split("-")[0]
     }\n--------------------------------\n`;
   };
@@ -764,7 +772,7 @@ const OrderInfoComponent = () => {
     orderDate: string
   ) => {
     const orderInfo = order_list_info.order_info;
-    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nItem        Price       Qty\n`;
+    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\n\nItem        Price       Qty`;
   };
 
   // Generate receipt footer

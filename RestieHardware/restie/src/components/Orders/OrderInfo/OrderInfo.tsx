@@ -135,61 +135,50 @@ const OrderInfoComponent = () => {
 
     return formattedDate;
   };
-
-  const printWithBluetooth = async (dataView: any) => {
+  const initializeBluetooth = async () => {
     try {
       await BleClient.initialize();
+      console.log("Bluetooth initialized");
+    } catch (error) {
+      console.error("Error initializing Bluetooth:", error);
+    }
+  };
+
+  // Request Bluetooth device permission
+  const requestBluetoothPermission = async () => {
+    try {
       const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
       const device = await BleClient.requestDevice({
         services: [printerId],
       });
-      await BleClient.connect(device.deviceId);
+      console.log("Bluetooth device permission granted:", device);
+      setPermissionRequested(true);
+    } catch (error) {
+      console.error("Error requesting Bluetooth device permission:", error);
+    }
+  };
+  const printWithBluetooth = async (dataView: any) => {
+    try {
+      // Connect to device
+      const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
+      const device = await BleClient.getDevices([printerId]);
+      await BleClient.connect(device[0].deviceId);
+      console.log("Connected to Bluetooth device:", device);
 
-      const chx = await BleClient.getServices(device.deviceId);
-      chx[0].characteristics[0].uuid;
+      // Get characteristics and write data
+      const chx = await BleClient.getServices(device[0].deviceId);
       await BleClient.write(
-        device.deviceId,
+        device[0].deviceId,
         printerId,
         chx[0].characteristics[0].uuid,
         dataView
       );
+
       console.log("Print successful");
     } catch (error) {
-      console.error("Print error", error);
+      console.error("Print error:", error);
     }
   };
-  // async function populateBluetoothDevices() {
-  //   const devicesSelect = document.querySelector("#devicesSelect");
-  //   try {
-  //     console.log("Getting existing permitted Bluetooth devices...");
-  //     const devices = await navigator.bluetooth.getDevices();
-
-  //     console.log("> Got " + devices.length + " Bluetooth devices.");
-  //     devicesSelect!.textContent = "";
-  //     for (const device of devices) {
-  //       const option = document.createElement("option");
-  //       option.value = device.id;
-  //       option.textContent = device?.name!;
-  //       devicesSelect?.appendChild(option);
-  //     }
-  //   } catch (error) {
-  //     console.log("Argh! " + error);
-  //   }
-  // }
-  // async function onRequestBluetoothDeviceButtonClick() {
-  //   try {
-  //     console.log("Requesting any Bluetooth device...");
-  //     const device = await navigator.bluetooth.requestDevice({
-  //       // filters: [...] <- Prefer filters to save energy & show relevant devices.
-  //       acceptAllDevices: true,
-  //     });
-
-  //     console.log("> Requested " + device.name + " (" + device.id + ")");
-  //     populateBluetoothDevices();
-  //   } catch (error) {
-  //     console.log("Argh! " + error);
-  //   }
-  // }
 
   function onDisconnect(deviceId: string): void {
     console.log(`device ${deviceId} disconnected`);
@@ -708,13 +697,15 @@ const OrderInfoComponent = () => {
         .text(ReceiptHeader)
         .align("left")
         .text(ReceiptSubHeader)
+        .encode();
+      const encodedBody = encoder
+        .initialize()
         .align("left")
         .text(ReceiptBody)
         .align("left")
         .text(ReceiptFooter)
         .newline()
         .encode();
-
       // Split encoded receipt parts into chunks and push into the array
       const chunkSize = 512; // Maximum allowed size
       const chunks: string[] = [];
@@ -729,14 +720,37 @@ const OrderInfoComponent = () => {
 
       // Push chunks for each part of the receipt
       splitIntoChunks(encodedHeader);
+      splitIntoChunks(encodedBody);
 
-      await printWithBluetooth(chunks);
+      if (!BleClient.initialize()) {
+        await initializeBluetooth();
+      }
+
+      // Request Bluetooth device permission if not already requested
+      if (!isPermissionRequested()) {
+        await requestBluetoothPermission();
+      }
+
+      for (const chunk of chunks) {
+        await printWithBluetooth(chunk);
+      }
     } catch (error) {
       console.error("Error printing:", error);
     }
 
     setOpenSearchModal({ isOpen: true, modal: "receipt" });
   }, [order_list_info, getOrderDate]);
+  let permissionRequested = false;
+
+  // Function to check if permission has been requested
+  const isPermissionRequested = () => {
+    return permissionRequested;
+  };
+
+  // Function to set permissionRequested flag
+  const setPermissionRequested = (value: any) => {
+    permissionRequested = value;
+  };
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">

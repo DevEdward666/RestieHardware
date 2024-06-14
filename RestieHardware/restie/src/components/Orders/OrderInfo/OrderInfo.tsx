@@ -165,39 +165,23 @@ const OrderInfoComponent = () => {
       const device = await BleClient.requestDevice({
         services: [printerId],
       });
-      const connectedDevice = await BleClient.connect(
-        device.deviceId,
-        (deviceId) => onDisconnect(deviceId)
-      );
+      const isConnected = await BleClient.getDevices([device.deviceId]);
+      if (
+        isConnected.length <= 0 &&
+        isConnected[0].deviceId !== device.deviceId
+      ) {
+        await BleClient.connect(device.deviceId);
+      }
 
       const chx = await BleClient.getServices(device.deviceId);
       chx[0].characteristics[0].uuid;
-      console.log("connected to device", device);
-      const MAX_DATA_LENGTH = 512;
-      let offset = 0;
       await BleClient.write(
         device.deviceId,
         printerId,
         chx[0].characteristics[0].uuid,
         dataView
       );
-      // while (offset < dataView.byteLength) {
-      //   const end = Math.min(
-      //     offset + MAX_DATA_LENGTH,
-      //     dataView.BYTES_PER_ELEMENT
-      //   );
-      //   const chunk = new DataView(dataView.buffer, offset, end - offset);
-      //   await BleClient.write(
-      //     device.deviceId,
-      //     printerId,
-      //     chx[0].characteristics[0].uuid,
-      //     chunk
-      //   );
-      //   offset = end;
-      // }
       console.log("Print successful");
-
-      // Send PDF data to printer
     } catch (error) {
       console.error("Print error", error);
     }

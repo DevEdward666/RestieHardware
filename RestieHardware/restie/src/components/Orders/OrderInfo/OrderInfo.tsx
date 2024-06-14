@@ -145,7 +145,9 @@ const OrderInfoComponent = () => {
       });
       const isConnected = await BleClient.getDevices([device.deviceId]);
       console.log(isConnected);
-      await BleClient.connect(device.deviceId);
+      if (isConnected.length <= 0) {
+        await BleClient.connect(device.deviceId);
+      }
 
       const chx = await BleClient.getServices(device.deviceId);
       chx[0].characteristics[0].uuid;
@@ -682,7 +684,7 @@ const OrderInfoComponent = () => {
     const change = (
       order_list_info.order_info?.paidcash - getTotalAmount
     ).toFixed(2);
-    return `Amount Due: ${totalAmount}\nCash: ${paidCash}\nChange: ${change}\n`;
+    return `\nAmount Due: ${totalAmount}\nCash: ${paidCash}\nChange: ${change}\n\n`;
   };
 
   // Generate receipt items
@@ -719,9 +721,15 @@ const OrderInfoComponent = () => {
         .align("center")
         .text(ReceiptHeader);
       chunks.push(centeredHeader);
-
+      const subheader = encoder
+        .initialize()
+        .align("left")
+        .text(ReceiptSubHeader);
+      chunks.push(subheader);
+      const body = encoder.initialize().align("left").text(ReceiptBody);
+      chunks.push(body);
       // Left-aligned subheader, body, and footer
-      const combinedParts = ReceiptSubHeader + ReceiptBody + ReceiptFooter;
+      const combinedParts = ReceiptFooter;
       while (startIndex < combinedParts.length) {
         const currentChunk = combinedParts.substring(
           startIndex,

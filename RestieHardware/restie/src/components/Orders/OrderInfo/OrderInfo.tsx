@@ -143,7 +143,8 @@ const OrderInfoComponent = () => {
       const device = await BleClient.requestDevice({
         services: [printerId],
       });
-
+      const isConnected = await BleClient.getDevices([device.deviceId]);
+      console.log(isConnected);
       await BleClient.connect(device.deviceId);
 
       const chx = await BleClient.getServices(device.deviceId);
@@ -618,9 +619,8 @@ const OrderInfoComponent = () => {
           .text(subheader)
           .align("left")
           .text(body)
-          .align("left")
           .text(footer)
-          .line("\n")
+          .newline()
           .encode();
         chunks.push(currentPrintData);
         startIndex += chunkSize;

@@ -135,29 +135,7 @@ const OrderInfoComponent = () => {
 
     return formattedDate;
   };
-  const samplePrint = async () => {
-    const printerAddress = "60:6E:41:76:55:E2"; // Replace with your printer's address
 
-    try {
-      await BleClient.initialize();
-      const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
-      const device = await BleClient.requestDevice({
-        services: [printerId],
-      });
-      const connectedDevice = await BleClient.connect(
-        device.deviceId,
-        (deviceId) => onDisconnect(deviceId)
-      );
-
-      // Send print data
-      const printData = "This is a sample print";
-
-      await BluetoothPrinter.print({ data: printData });
-      console.log("Print data sent successfully");
-    } catch (err) {
-      console.error("Error:", err);
-    }
-  };
   const printWithBluetooth = async (dataView: any) => {
     try {
       await BleClient.initialize();
@@ -165,7 +143,6 @@ const OrderInfoComponent = () => {
       const device = await BleClient.requestDevice({
         services: [printerId],
       });
-      const isConnected = await BleClient.getDevices([device.deviceId]);
 
       await BleClient.connect(device.deviceId);
 

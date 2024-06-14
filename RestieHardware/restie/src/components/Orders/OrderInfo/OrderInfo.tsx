@@ -166,12 +166,8 @@ const OrderInfoComponent = () => {
         services: [printerId],
       });
       const isConnected = await BleClient.getDevices([device.deviceId]);
-      if (
-        isConnected.length <= 0 &&
-        isConnected[0].deviceId !== device.deviceId
-      ) {
-        await BleClient.connect(device.deviceId);
-      }
+
+      await BleClient.connect(device.deviceId);
 
       const chx = await BleClient.getServices(device.deviceId);
       chx[0].characteristics[0].uuid;

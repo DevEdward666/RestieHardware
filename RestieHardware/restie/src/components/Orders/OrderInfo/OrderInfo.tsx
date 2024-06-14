@@ -655,15 +655,9 @@ const OrderInfoComponent = () => {
   }, [dispatch, order_list_info]);
   // Generate receipt header
   const generateReceiptHeader = (order_list_info: GetListOrderInfo) => {
-    return `Restie Hardware
-    \n
-    Address: SIR Bucana 76-A
-    \nSandawa Matina Davao City
-    \nDavao City, Philippines
-    \nContact No.: (082) 224 1362
-    \nInvoice #: ${
+    return `Restie Hardware\nAddress: SIR Bucana 76-A\nSandawa Matina Davao City\nDavao City, Philippines\nContact No.: (082) 224 1362\nInvoice #: ${
       order_list_info.order_info?.transid?.split("-")[0]
-    }\n--------------------------------\n`;
+    }\n--------------------------------`;
   };
 
   // Generate customer receipt header
@@ -672,7 +666,7 @@ const OrderInfoComponent = () => {
     orderDate: string
   ) => {
     const orderInfo = order_list_info.order_info;
-    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\n\nItem        Price       Qty`;
+    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\n\nItem        Price       Qty\n\n`;
   };
 
   // Generate receipt footer
@@ -711,20 +705,18 @@ const OrderInfoComponent = () => {
       // Encode receipt parts
       const encodedHeader = encoder
         .initialize()
+        .newline()
         .align("center")
         .text(ReceiptHeader)
-
         .align("left")
         .text(ReceiptSubHeader)
-        .encode();
-      const encodedSubHeader = encoder
-        .initialize()
         .align("left")
         .text(ReceiptBody)
         .align("left")
         .text(ReceiptFooter)
-        .text("\n")
+        .newline()
         .encode();
+
       // Split encoded receipt parts into chunks and push into the array
       const chunkSize = 512; // Maximum allowed size
       const chunks: string[] = [];
@@ -739,7 +731,6 @@ const OrderInfoComponent = () => {
 
       // Push chunks for each part of the receipt
       splitIntoChunks(encodedHeader);
-      splitIntoChunks(encodedSubHeader);
       await BleClient.initialize();
       // Send each chunk
       for (const chunk of chunks) {

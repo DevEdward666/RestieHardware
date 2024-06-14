@@ -138,13 +138,11 @@ const OrderInfoComponent = () => {
 
   const printWithBluetooth = async (dataView: any) => {
     try {
+      await BleClient.initialize();
       const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
       const device = await BleClient.requestDevice({
         services: [printerId],
       });
-      const isConnected = await BleClient.getDevices([device.deviceId]);
-      console.log(isConnected.length);
-      console.log(device);
       await BleClient.connect(device.deviceId);
 
       const chx = await BleClient.getServices(device.deviceId);
@@ -666,7 +664,7 @@ const OrderInfoComponent = () => {
     orderDate: string
   ) => {
     const orderInfo = order_list_info.order_info;
-    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\n\nItem        Price       Qty\n\n`;
+    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\n\n--------------------------------\nItem--------Price--------Qty\n--------------------------------\n\n`;
   };
 
   // Generate receipt footer
@@ -676,7 +674,7 @@ const OrderInfoComponent = () => {
     const change = (
       order_list_info.order_info?.paidcash - getTotalAmount
     ).toFixed(2);
-    return `\nAmount Due: ${totalAmount}\nCash: ${paidCash}\nChange: ${change}\n\n`;
+    return `\nAmount Due: ${totalAmount}\nCash: ${paidCash}\nChange: ${change}\n\n-----------Thank you-----------\n\n`;
   };
 
   // Generate receipt items
@@ -697,7 +695,7 @@ const OrderInfoComponent = () => {
       const receiptFooter = generateReceiptFooter(order_list_info);
 
       // Concatenate receipt parts
-      const ReceiptHeader = `${receiptHeaderText}\n`;
+      const ReceiptHeader = `${receiptHeaderText}`;
       const ReceiptSubHeader = `${receiptCustomerHeaderText}`;
       const ReceiptBody = `${receiptText}\n`;
       const ReceiptFooter = `${receiptFooter}\n`;
@@ -731,11 +729,8 @@ const OrderInfoComponent = () => {
 
       // Push chunks for each part of the receipt
       splitIntoChunks(encodedHeader);
-      await BleClient.initialize();
-      // Send each chunk
-      for (const chunk of chunks) {
-        await printWithBluetooth(chunk);
-      }
+
+      await printWithBluetooth(chunks);
     } catch (error) {
       console.error("Error printing:", error);
     }

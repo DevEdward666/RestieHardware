@@ -138,7 +138,6 @@ const OrderInfoComponent = () => {
 
   const printWithBluetooth = async (dataView: any) => {
     try {
-      await BleClient.initialize();
       const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
       const device = await BleClient.requestDevice({
         services: [printerId],
@@ -714,23 +713,18 @@ const OrderInfoComponent = () => {
         .initialize()
         .align("center")
         .text(ReceiptHeader)
+
+        .align("left")
+        .text(ReceiptSubHeader)
         .encode();
       const encodedSubHeader = encoder
         .initialize()
         .align("left")
-        .text(ReceiptSubHeader)
-        .encode();
-      const encodedBody = encoder
-        .initialize()
-        .align("left")
         .text(ReceiptBody)
-        .encode();
-      const encodedFooter = encoder
-        .initialize()
         .align("left")
         .text(ReceiptFooter)
+        .text("\n")
         .encode();
-
       // Split encoded receipt parts into chunks and push into the array
       const chunkSize = 512; // Maximum allowed size
       const chunks: string[] = [];
@@ -746,9 +740,7 @@ const OrderInfoComponent = () => {
       // Push chunks for each part of the receipt
       splitIntoChunks(encodedHeader);
       splitIntoChunks(encodedSubHeader);
-      splitIntoChunks(encodedBody);
-      splitIntoChunks(encodedFooter);
-
+      await BleClient.initialize();
       // Send each chunk
       for (const chunk of chunks) {
         await printWithBluetooth(chunk);

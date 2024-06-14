@@ -146,10 +146,7 @@ const OrderInfoComponent = () => {
       const isConnected = await BleClient.getDevices([device.deviceId]);
       console.log(isConnected.length);
       console.log(device);
-
-      if (isConnected.length <= 0) {
-        await BleClient.connect(device.deviceId);
-      }
+      await BleClient.connect(device.deviceId);
 
       const chx = await BleClient.getServices(device.deviceId);
       chx[0].characteristics[0].uuid;

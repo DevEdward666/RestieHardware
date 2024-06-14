@@ -144,7 +144,9 @@ const OrderInfoComponent = () => {
         services: [printerId],
       });
       const isConnected = await BleClient.getDevices([device.deviceId]);
-      console.log(isConnected);
+      console.log(isConnected.length);
+      console.log(device);
+
       if (isConnected.length <= 0) {
         await BleClient.connect(device.deviceId);
       }
@@ -713,35 +715,38 @@ const OrderInfoComponent = () => {
       // Split receipt parts into chunks and send sequentially
       const chunkSize = 512; // Maximum allowed size
       const chunks = [];
-      let startIndex = 0;
 
       // Center-aligned header
       const centeredHeader = encoder
         .initialize()
         .align("center")
-        .text(ReceiptHeader);
+        .text(ReceiptHeader)
+        .encode();
       chunks.push(centeredHeader);
+
+      // Left-aligned subheader
       const subheader = encoder
         .initialize()
         .align("left")
-        .text(ReceiptSubHeader);
+        .text(ReceiptSubHeader)
+        .encode();
       chunks.push(subheader);
-      const body = encoder.initialize().align("left").text(ReceiptBody);
+
+      // Left-aligned body
+      const body = encoder
+        .initialize()
+        .align("left")
+        .text(ReceiptBody)
+        .encode();
       chunks.push(body);
-      // Left-aligned subheader, body, and footer
-      const combinedParts = ReceiptFooter;
-      while (startIndex < combinedParts.length) {
-        const currentChunk = combinedParts.substring(
-          startIndex,
-          startIndex + chunkSize
-        );
-        const currentPrintData = encoder
-          .align("left")
-          .text(currentChunk)
-          .encode();
-        chunks.push(currentPrintData);
-        startIndex += chunkSize;
-      }
+
+      // Left-aligned footer
+      const footer = encoder
+        .initialize()
+        .align("left")
+        .text(ReceiptFooter)
+        .encode();
+      chunks.push(footer);
 
       // Send each chunk
       for (const chunk of chunks) {

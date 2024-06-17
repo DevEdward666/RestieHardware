@@ -653,7 +653,7 @@ const OrderInfoComponent = () => {
     orderDate: string
   ) => {
     const orderInfo = order_list_info.order_info;
-    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\n\n--------------------------------\nCode----Item----Price----Qty----Total\n--------------------------------\n\n`;
+    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\n\n--------------------------------\nCode  Item  Price  Qty  Total\n--------------------------------\n\n`;
   };
 
   // Generate receipt footer
@@ -671,9 +671,9 @@ const OrderInfoComponent = () => {
     return order_list_info.order_item
       .map(
         (item) =>
-          `${item.code} - ${item.item.slice(0, 10)} - P${item.price.toFixed(
+          `${item.code}-${item.item.trim().slice(0, 10)}-P${item.price.toFixed(
             2
-          )} - ${item.qty} -  P${(item.price * item.qty).toFixed(2)}`
+          )}-${item.qty}-P${(item.price * item.qty).toFixed(2)}`
       )
       .join("\n");
   };

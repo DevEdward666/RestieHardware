@@ -17,6 +17,7 @@ import {
 } from "@ionic/react";
 import "@ionic/react/css/ionic-swiper.css";
 import { format } from "date-fns";
+import EscPosEncoder from "esc-pos-encoder-ionic";
 import {
   cashOutline,
   chevronForwardOutline,
@@ -45,6 +46,7 @@ import {
 import {
   FileResponse,
   GetDeliveryInfo,
+  GetListOrderInfo,
 } from "../../../Models/Response/Inventory/GetInventoryModel";
 import {
   GetDeliveryImage,
@@ -68,7 +70,14 @@ import logo from "../../../assets/images/Icon@2.png";
 import breakline from "../../../assets/images/breakline.png";
 import "./OrderInfo.css";
 import { ResponseModel } from "../../../Models/Response/Commons/Commons";
+import { Plugins } from "@capacitor/core";
+import {
+  BleClient,
+  numberToUUID,
+  numbersToDataView,
+} from "@capacitor-community/bluetooth-le";
 const OrderInfoComponent = () => {
+  const { BluetoothPrinter } = Plugins;
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
   );
@@ -126,8 +135,56 @@ const OrderInfoComponent = () => {
 
     return formattedDate;
   };
+  const initializeBluetooth = async () => {
+    try {
+      await BleClient.initialize();
+      console.log("Bluetooth initialized");
+    } catch (error) {
+      console.error("Error initializing Bluetooth:", error);
+    }
+  };
+
+  // Request Bluetooth device permission
+  const requestBluetoothPermission = async () => {
+    try {
+      const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
+      const device = await BleClient.requestDevice({
+        services: [printerId],
+      });
+      console.log("Bluetooth device permission granted:", device);
+      setPermissionRequested(true);
+      return device.deviceId;
+    } catch (error) {
+      console.error("Error requesting Bluetooth device permission:", error);
+      return "";
+    }
+  };
+  const printWithBluetooth = async (dataView: any, deviceId: any) => {
+    try {
+      // Connect to device
+      const printerId = "e7810a71-73ae-499d-8c15-faa9aef0c3f2";
+      await BleClient.connect(deviceId);
+
+      // Get characteristics and write data
+      const chx = await BleClient.getServices(deviceId);
+      await BleClient.write(
+        deviceId,
+        printerId,
+        chx[0].characteristics[0].uuid,
+        dataView
+      );
+
+      console.log("Print successful");
+    } catch (error) {
+      console.error("Print error:", error);
+    }
+  };
+
+  function onDisconnect(deviceId: string): void {
+    console.log(`device ${deviceId} disconnected`);
+  }
   useEffect(() => {
-    const initialize = () => {
+    const initialize = async () => {
       if (get_voucher && get_voucher.description?.length > 0) {
         const totalDiscount =
           order_list_info.order_info?.total -
@@ -480,6 +537,9 @@ const OrderInfoComponent = () => {
     const filename = `./invoice/${formattedDate}/${
       order_list_info.order_info?.transid?.split("-")[0]
     }.pdf`;
+
+    // await bluetoothSerial.write(printData);
+    // await bluetoothSerial.disconnect();
     const pdf = await html2PDF(pages!, {
       jsPDF: {
         unit: "px",
@@ -491,12 +551,18 @@ const OrderInfoComponent = () => {
       output: filename,
     });
     const file = pdf.output("dataurlstring");
+    const bufferFile = pdf.output("arraybuffer");
+    const uint8Array = new Uint8Array(bufferFile);
 
+    // Convert Uint8Array to DataView
+    const dataView = new DataView(uint8Array.buffer);
+
+    // pdf.autoPrint();
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
-
     const mimeType = "application/pdf";
     const pdfFile = base64toFile(base64PDF, filename, mimeType);
 
+    // await samplePrint();
     if (getEmail !== "") {
       setIsOpenToast({ isOpen: true, type: "", toastMessage: "Sending Email" });
       await SendEmail(
@@ -526,6 +592,7 @@ const OrderInfoComponent = () => {
         <p>Restie Hardware</p>
         `,
         pdfFile
+        // null
       );
       await UpdateCustomerEmail({
         customerid: order_list_info?.order_info.customerid!,
@@ -539,7 +606,7 @@ const OrderInfoComponent = () => {
     }
     setEmail("");
     setOpenSearchModal({ isOpen: false, modal: "receipt" });
-  }, [getEmail, order_list_info]);
+  }, [getEmail, order_list_info, getOrderDate]);
   const handleSetEmail = useCallback(
     async (ev: Event) => {
       if (order_list_info?.order_info.customer_email?.length! > 0) {
@@ -572,6 +639,120 @@ const OrderInfoComponent = () => {
       `/returnrefund?transid=${order_list_info?.order_info?.transid}&orderid=${order_list_info?.order_info?.orderid}&cartid=${order_list_info?.order_info?.cartid}`
     );
   }, [dispatch, order_list_info]);
+  // Generate receipt header
+  const generateReceiptHeader = (order_list_info: GetListOrderInfo) => {
+    return `Restie Hardware\nAddress: SIR Bucana 76-A\nSandawa Matina Davao City\nDavao City, Philippines\nContact No.: (082) 224 1362\nInvoice #: ${
+      order_list_info.order_info?.transid?.split("-")[0]
+    }\n--------------------------------`;
+  };
+
+  // Generate customer receipt header
+  const generateCustomerReceiptHeader = (
+    order_list_info: GetListOrderInfo,
+    orderDate: string
+  ) => {
+    const orderInfo = order_list_info.order_info;
+    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nOrder ID: ${orderInfo?.orderid}\n--------------------------------\nCode   Item  Price  Qty  Total\n--------------------------------\n\n`;
+  };
+
+  // Generate receipt footer
+  const generateReceiptFooter = (order_list_info: GetListOrderInfo) => {
+    const totalAmount = order_list_info.order_info?.total.toFixed(2);
+    const paidCash = order_list_info.order_info?.paidcash.toFixed(2);
+    const change = (
+      order_list_info.order_info?.paidcash - getTotalAmount
+    ).toFixed(2);
+    return `\nAmount Due: ${totalAmount}\nCash: ${paidCash}\nChange: ${change}\n\n-----------Thank you-----------\n\n`;
+  };
+
+  // Generate receipt items
+  const generateReceipt = (order_list_info: GetListOrderInfo) => {
+    return order_list_info.order_item
+      .map(
+        (item) =>
+          `${item.code}-${item.item.trim().slice(0, 10)}-P${item.price.toFixed(
+            2
+          )}-${item.qty}-P${(item.price * item.qty).toFixed(2)}`
+      )
+      .join("\n");
+  };
+  const handlePrintInvoice = useCallback(async () => {
+    try {
+      const encoder = new EscPosEncoder();
+      const receiptHeaderText = generateReceiptHeader(order_list_info);
+      const receiptCustomerHeaderText = generateCustomerReceiptHeader(
+        order_list_info,
+        getOrderDate
+      );
+      const receiptText = generateReceipt(order_list_info);
+      const receiptFooter = generateReceiptFooter(order_list_info);
+
+      // Concatenate receipt parts
+      const ReceiptHeader = `${receiptHeaderText}`;
+      const ReceiptSubHeader = `${receiptCustomerHeaderText}`;
+      const ReceiptBody = `${receiptText}\n`;
+      const ReceiptFooter = `${receiptFooter}\n`;
+
+      // Encode receipt parts
+      const encodedHeader = encoder
+        .initialize()
+        .newline()
+        .align("center")
+        .text(ReceiptHeader)
+        .align("left")
+        .text(ReceiptSubHeader)
+        .encode();
+      const encodedBody = encoder
+        .initialize()
+        .align("left")
+        .text(ReceiptBody)
+        .align("left")
+        .text(ReceiptFooter)
+        .newline()
+        .encode();
+      // Split encoded receipt parts into chunks and push into the array
+      const chunkSize = 512; // Maximum allowed size
+      const chunks: string[] = [];
+
+      // Function to split encoded data into chunks
+      const splitIntoChunks = (encodedData: any) => {
+        for (let i = 0; i < encodedData.length; i += chunkSize) {
+          const chunk = encodedData.slice(i, i + chunkSize);
+          chunks.push(chunk);
+        }
+      };
+
+      // Push chunks for each part of the receipt
+      splitIntoChunks(encodedHeader);
+      splitIntoChunks(encodedBody);
+
+      if (!BleClient.initialize()) {
+        await initializeBluetooth();
+      }
+      let deviceId = "";
+      // Request Bluetooth device permission if not already requested
+      if (!isPermissionRequested()) {
+        deviceId = await requestBluetoothPermission();
+      }
+
+      for (const chunk of chunks) {
+        await printWithBluetooth(chunk, deviceId);
+      }
+    } catch (error) {
+      console.error("Error printing:", error);
+    }
+  }, [order_list_info, getOrderDate]);
+  let permissionRequested = false;
+
+  // Function to check if permission has been requested
+  const isPermissionRequested = () => {
+    return permissionRequested;
+  };
+
+  // Function to set permissionRequested flag
+  const setPermissionRequested = (value: any) => {
+    permissionRequested = value;
+  };
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
@@ -633,11 +814,18 @@ const OrderInfoComponent = () => {
                   <IonButton
                     size="small"
                     color="tertiary"
+                    onClick={() => handlePrintInvoice()}
+                  >
+                    Print Invoice
+                  </IonButton>
+                  <IonButton
+                    size="small"
+                    color="tertiary"
                     onClick={() =>
                       setOpenSearchModal({ isOpen: true, modal: "receipt" })
                     }
                   >
-                    Print Invoice
+                    Invoice as PDF
                   </IonButton>
                   <IonButton
                     size="small"
@@ -657,11 +845,18 @@ const OrderInfoComponent = () => {
                   <IonButton
                     size="small"
                     color="tertiary"
+                    onClick={() => handlePrintInvoice()}
+                  >
+                    Print Invoice
+                  </IonButton>
+                  <IonButton
+                    size="small"
+                    color="tertiary"
                     onClick={() =>
                       setOpenSearchModal({ isOpen: true, modal: "receipt" })
                     }
                   >
-                    Print Invoice
+                    Invoice as PDF
                   </IonButton>
                   <IonButton
                     size="small"
@@ -1128,7 +1323,7 @@ const OrderInfoComponent = () => {
                   })
                 }
               >
-                Print
+                Save
               </IonButton>
             </IonButtons>
           </IonToolbar>

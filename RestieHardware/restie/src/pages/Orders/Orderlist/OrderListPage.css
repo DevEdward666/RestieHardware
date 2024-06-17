@@ -48,6 +48,9 @@ ion-toolbar .sc-ion-searchbar-ios-h{
     padding-bottom: 15px;
     min-height: 52px;
 }
+.react-calendar {
+    width: 100% !important;
+}
 .order-list-datetime{
     display: flex;
     max-width: 100%;

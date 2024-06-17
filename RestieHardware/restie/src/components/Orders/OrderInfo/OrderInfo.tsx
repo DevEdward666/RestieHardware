@@ -561,7 +561,6 @@ const OrderInfoComponent = () => {
     const base64PDF = file.split(",")[1]; // Replace 'base64PDFData' with your actual base64-encoded PDF data
     const mimeType = "application/pdf";
     const pdfFile = base64toFile(base64PDF, filename, mimeType);
-    let printData; // Declare printData in an outer scope
 
     // await samplePrint();
     if (getEmail !== "") {
@@ -592,8 +591,8 @@ const OrderInfoComponent = () => {
   
         <p>Restie Hardware</p>
         `,
-        // pdfFile
-        null
+        pdfFile
+        // null
       );
       await UpdateCustomerEmail({
         customerid: order_list_info?.order_info.customerid!,
@@ -742,8 +741,6 @@ const OrderInfoComponent = () => {
     } catch (error) {
       console.error("Error printing:", error);
     }
-
-    setOpenSearchModal({ isOpen: true, modal: "receipt" });
   }, [order_list_info, getOrderDate]);
   let permissionRequested = false;
 
@@ -825,6 +822,15 @@ const OrderInfoComponent = () => {
                     size="small"
                     color="tertiary"
                     onClick={() =>
+                      setOpenSearchModal({ isOpen: true, modal: "receipt" })
+                    }
+                  >
+                    Invoice as PDF
+                  </IonButton>
+                  <IonButton
+                    size="small"
+                    color="tertiary"
+                    onClick={() =>
                       setOpenSearchModal({ isOpen: true, modal: "" })
                     }
                   >
@@ -842,6 +848,15 @@ const OrderInfoComponent = () => {
                     onClick={() => handlePrintInvoice()}
                   >
                     Print Invoice
+                  </IonButton>
+                  <IonButton
+                    size="small"
+                    color="tertiary"
+                    onClick={() =>
+                      setOpenSearchModal({ isOpen: true, modal: "receipt" })
+                    }
+                  >
+                    Invoice as PDF
                   </IonButton>
                   <IonButton
                     size="small"
@@ -1308,7 +1323,7 @@ const OrderInfoComponent = () => {
                   })
                 }
               >
-                Print
+                Save
               </IonButton>
             </IonButtons>
           </IonToolbar>

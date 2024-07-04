@@ -653,7 +653,7 @@ const OrderInfoComponent = () => {
   ) => {
     const orderInfo = order_list_info.order_info;
     // return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nOrder ID: ${orderInfo?.orderid}\n--------------------------------\nCode   Item  Price  Qty  Total\n--------------------------------\n\n`;
-    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nOrder ID: ${orderInfo?.orderid}\n\n`;
+    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nOrder ID: ${orderInfo?.orderid}\n--------------------------------\n`;
   
   };
 
@@ -672,9 +672,7 @@ const OrderInfoComponent = () => {
     return order_list_info.order_item
       .map(
         (item) =>
-          `--------------------------------${item.code}\n${item.item.trim()}\n
-        Subtotal        Qty         Total\n
-        P ${item.price} | ${item.qty} | P ${item.price * item.qty}
+          `${item.code}\n${item.item.trim()}\nSubtotal     Qty      Total\nP${item.price}    | ${item.qty}    | P${item.price * item.qty}
         \n--------------------------------`
       )
       .join("\n");

@@ -19,7 +19,7 @@ import {
 } from "../../Models/Response/Customer/GetCustomerModel";
 import { GetOneCustomer } from "../../Service/Actions/Customer/CustomerActions";
 import { PostLogin } from "../../Models/Request/Login/LoginModel";
-import restie from "../../assets/images/Icon@3.png";
+import restie from "../../assets/images/Icon@3x.png";
 import {
   lockClosed,
   eyeOutline,

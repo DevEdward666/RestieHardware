@@ -18,8 +18,13 @@
         text-align: center;
         .manage-toolbar-logo{
             height: 100px;
-            width: 100%;
             margin: 10px;
+            display: block;
+            height: 100%;
+            -o-object-fit: inherit;
+            object-fit: fill;
+            -o-object-position: inherit;
+            object-position: inherit;
         }
     }
 }

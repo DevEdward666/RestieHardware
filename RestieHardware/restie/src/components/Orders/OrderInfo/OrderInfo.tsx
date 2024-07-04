@@ -672,7 +672,9 @@ const OrderInfoComponent = () => {
     return order_list_info.order_item
       .map(
         (item) =>
-          `${item.code}\n${item.item.trim()}\nP${item.price}\n${item.qty}\nP${item.price * item.qty}
+          `--------------------------------${item.code}\n${item.item.trim()}\n
+        Subtotal        Qty         Total\n
+        P ${item.price} | ${item.qty} | P ${item.price * item.qty}
         \n--------------------------------`
       )
       .join("\n");

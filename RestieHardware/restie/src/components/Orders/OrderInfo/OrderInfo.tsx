@@ -112,7 +112,7 @@ const OrderInfoComponent = () => {
   const [getTotalAmount, setTotalAmount] = useState<number>(0.0);
   const [getEmail, setEmail] = useState<string>("");
   const [getReturnsFromUrl, setReturnsFromUrl] = useState<string>("");
-
+  const [modalDismiss, setCanDismiss] = useState<boolean>(false);
   const [elapsedTime, setElapsedTime] = useState({
     hour: 0,
     minute: 0,
@@ -654,7 +654,6 @@ const OrderInfoComponent = () => {
     const orderInfo = order_list_info.order_info;
     // return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nOrder ID: ${orderInfo?.orderid}\n--------------------------------\nCode   Item  Price  Qty  Total\n--------------------------------\n\n`;
     return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nOrder ID: ${orderInfo?.orderid}\n--------------------------------\n`;
-  
   };
 
   // Generate receipt footer
@@ -672,7 +671,9 @@ const OrderInfoComponent = () => {
     return order_list_info.order_item
       .map(
         (item) =>
-          `${item.code}\n${item.item.trim()}\nPrice        Qty      Total\nP${item.price}       |    ${item.qty}    |  P${item.price * item.qty}
+          `${item.code}\n${item.item.trim()}\nPrice        Qty      Total\nP${
+            item.price
+          }       |    ${item.qty}    |  P${item.price * item.qty}
         \n--------------------------------`
       )
       .join("\n");
@@ -754,125 +755,23 @@ const OrderInfoComponent = () => {
   const setPermissionRequested = (value: any) => {
     permissionRequested = value;
   };
+  const handleReceivedPayment = () => {};
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
         <div className="order-list-info-footer-approved"> </div>
         {getReturnsFromUrl === "false" ? (
           <div>
-            {order_list_info.order_info?.paidthru?.toLowerCase() ===
-            "cancel" ? (
-              <div className="order-list-info-footer-approved-info">
-                <>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() => handleEdit(true)}
-                  >
-                    Reorder
-                  </IonButton>
-                </>
-              </div>
-            ) : null}
-
-            {order_list_info.order_info?.paidthru?.toLowerCase() ===
-              "pending" ||
-            order_list_info.order_info?.paidthru?.toLowerCase() ===
-              "quotation" ? (
-              <div className="order-list-info-footer-approved-info">
-                <>
-                  {order_list_info.order_info?.paidthru?.toLowerCase() ===
-                  "pending" ? (
-                    <IonButton
-                      size="small"
-                      color="tertiary"
-                      onClick={() => handleCancel()}
-                    >
-                      Cancel Order
-                    </IonButton>
-                  ) : null}
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() => handleEdit(false)}
-                  >
-                    Edit Order
-                  </IonButton>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() => handleApprove()}
-                  >
-                    Process Order
-                  </IonButton>
-                </>
-              </div>
-            ) : null}
-            {order_list_info.order_info?.status?.toLowerCase() ===
-            "delivered" ? (
-              <div className="order-list-info-footer-approved-info">
-                <>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() => handlePrintInvoice()}
-                  >
-                    Print Invoice
-                  </IonButton>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() =>
-                      setOpenSearchModal({ isOpen: true, modal: "receipt" })
-                    }
-                  >
-                    Invoice as PDF
-                  </IonButton>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() =>
-                      setOpenSearchModal({ isOpen: true, modal: "" })
-                    }
-                  >
-                    Open Delivery Info
-                  </IonButton>
-                </>
-              </div>
-            ) : null}
-            {order_list_info.order_info?.status === "approved" ? (
-              <div className="order-list-info-footer-approved-info">
-                <>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() => handlePrintInvoice()}
-                  >
-                    Print Invoice
-                  </IonButton>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() =>
-                      setOpenSearchModal({ isOpen: true, modal: "receipt" })
-                    }
-                  >
-                    Invoice as PDF
-                  </IonButton>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() =>
-                      router.push(
-                        `/deliveryInfo?orderid=${order_list_info.order_info.orderid}&transid=${order_list_info.order_info.transid}&cartid=${order_list_info.order_info.cartid}`
-                      )
-                    }
-                  >
-                    Process Item Delivered
-                  </IonButton>
-                </>
-              </div>
-            ) : null}
+            <IonButton
+              size="small"
+              color="tertiary"
+              onClick={() => {
+                setOpenSearchModal({ isOpen: true, modal: "process" });
+                setCanDismiss(false);
+              }}
+            >
+              Process
+            </IonButton>
           </div>
         ) : null}
       </div>
@@ -1230,7 +1129,149 @@ const OrderInfoComponent = () => {
       </div>
       <IonModal
         isOpen={
-          openSearchModal.modal !== "receipt" ? openSearchModal.isOpen : false
+          openSearchModal.modal === "process" ? openSearchModal.isOpen : false
+        }
+        initialBreakpoint={0.5}
+        breakpoints={[0, 1]}
+        canDismiss={modalDismiss}
+      >
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton
+                onClick={() => {
+                  setOpenSearchModal({ isOpen: false, modal: "process" });
+                  setCanDismiss(true);
+                }}
+              >
+                Close
+              </IonButton>
+            </IonButtons>
+            <IonTitle className="delivery-info-title"> Process</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent>
+          {getReturnsFromUrl === "false" ? (
+            <div className="list-of-process-button">
+              {order_list_info.order_info?.paidthru?.toLowerCase() ===
+              "cancel" ? (
+                <div className="order-list-info-footer-approved-info">
+                  <>
+                    <IonButton color="light" onClick={() => handleEdit(true)}>
+                      Reorder
+                    </IonButton>
+                  </>
+                </div>
+              ) : null}
+
+              {order_list_info.order_info?.paidthru?.toLowerCase() ===
+                "pending" ||
+              order_list_info.order_info?.paidthru?.toLowerCase() ===
+                "quotation" ? (
+                <div className="order-list-info-footer-approved-info">
+                  <>
+                    {order_list_info.order_info?.paidthru?.toLowerCase() ===
+                    "pending" ? (
+                      <IonButton color="light" onClick={() => handleCancel()}>
+                        Cancel Order
+                      </IonButton>
+                    ) : null}
+                    <IonButton color="light" onClick={() => handleEdit(false)}>
+                      Edit Order
+                    </IonButton>
+                    <IonButton color="light" onClick={() => handleApprove()}>
+                      Process Order
+                    </IonButton>
+                  </>
+                </div>
+              ) : null}
+              {order_list_info.order_info?.status?.toLowerCase() ===
+              "delivered" ? (
+                <div className="order-list-info-footer-approved-info">
+                  <>
+                    <IonButton
+                      color="light"
+                      onClick={() => handlePrintInvoice()}
+                    >
+                      Print Invoice
+                    </IonButton>
+                    <IonButton
+                      color="light"
+                      onClick={() =>
+                        setOpenSearchModal({ isOpen: true, modal: "receipt" })
+                      }
+                    >
+                      Invoice as PDF
+                    </IonButton>
+                    <IonButton
+                      color="light"
+                      onClick={() =>
+                        setOpenSearchModal({ isOpen: true, modal: "" })
+                      }
+                    >
+                      Open Delivery Info
+                    </IonButton>
+                    {order_list_info.order_info?.paidthru.toLowerCase() ===
+                    "debt" ? (
+                      <IonButton
+                        color="light"
+                        onClick={() => handleReceivedPayment()}
+                      >
+                        Receive Payment
+                      </IonButton>
+                    ) : null}
+                  </>
+                </div>
+              ) : null}
+              {order_list_info.order_info?.status === "approved" ? (
+                <div className="order-list-info-footer-approved-info">
+                  <>
+                    <IonButton
+                      color="light"
+                      onClick={() => handlePrintInvoice()}
+                    >
+                      Print Invoice
+                    </IonButton>
+                    <IonButton
+                      color="light"
+                      onClick={() =>
+                        setOpenSearchModal({ isOpen: true, modal: "receipt" })
+                      }
+                    >
+                      Invoice as PDF
+                    </IonButton>
+                    <IonButton
+                      color="light"
+                      onClick={() =>
+                        router.push(
+                          `/deliveryInfo?orderid=${order_list_info.order_info.orderid}&transid=${order_list_info.order_info.transid}&cartid=${order_list_info.order_info.cartid}`
+                        )
+                      }
+                    >
+                      Process Item Delivered
+                    </IonButton>
+                    {order_list_info.order_info?.paidthru.toLowerCase() ===
+                    "debt" ? (
+                      <IonButton
+                        color="light"
+                        onClick={() => handleReceivedPayment()}
+                      >
+                        Receive Payment
+                      </IonButton>
+                    ) : null}
+                  </>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </IonContent>
+      </IonModal>
+      <IonModal
+        isOpen={
+          openSearchModal.modal !== "receipt" &&
+          openSearchModal.modal !== "process"
+            ? openSearchModal.isOpen
+            : false
         }
         onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
         initialBreakpoint={1}

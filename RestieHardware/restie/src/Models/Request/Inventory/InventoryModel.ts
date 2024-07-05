@@ -62,6 +62,7 @@ export interface PostdOrderList {
   limit: number;
   offset: number;
   status: string;
+  paidThru:string;
   searchdate?: string;
   orderid?: string;
 }

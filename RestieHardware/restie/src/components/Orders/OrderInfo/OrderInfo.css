@@ -372,4 +372,10 @@ ion-modal#email-modal {
         padding-top: 10px;
         padding-left: 10px;
     }
+}  
+.order-list-info-footer-approved-info{
+    padding: 20px;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
 }

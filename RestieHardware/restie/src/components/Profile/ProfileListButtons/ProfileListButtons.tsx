@@ -53,6 +53,7 @@ const ProfileListButtons: React.FC = () => {
       status: "pending",
       searchdate: "",
       orderid: "",
+      paidThru: "",
     };
     dispatch(getOrderList(payload));
     router.push("/orders");

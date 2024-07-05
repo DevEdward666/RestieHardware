@@ -32,7 +32,8 @@
             margin-top: 14px; 
             margin-bottom: 0px;
             font-family: "Gotham-Medium";
-                font-size: 18px;
+            font-size: 18px;
+            width: 100%;
             .payment-info-card-draft-details{
                 display: flex;
                 font-family: "Gotham-Medium";
@@ -114,7 +115,11 @@
         font-size: 16px;
     }
 }
-
+.save-button-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
 .payment-info-footer-total-details{
     display: flex;
     font-size: 16px;

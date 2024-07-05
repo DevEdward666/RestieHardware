@@ -1308,6 +1308,17 @@ namespace RestieAPI.Service.Repo
                             ORDER BY ors.createdat desc LIMIT @limit OFFSET @offset;";
 
                 }
+            }else if (getUserOrder.paidThru == "debt")
+            {
+                if (getUserOrder.searchdate.Length <= 0)
+                {
+                    sql = @"select * from orders where paidthru = 'Debt' AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+                }
+                else if (getUserOrder.searchdate.Length > 0)
+                {
+                    sql = @"select * from orders where paidthru = 'Debt' AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') AND DATE(to_timestamp(createdat / 1000.0) AT TIME ZONE 'Asia/Manila')=@searchdate ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+                    searchDate = DateTime.Parse(getUserOrder.searchdate);
+                }
             }
             else
             {
@@ -1330,6 +1341,7 @@ namespace RestieAPI.Service.Repo
                 { "@status", getUserOrder.status },
                 { "@orderid", getUserOrder.orderid },
                 { "@searchdate", searchDate },
+                { "@paidThru", getUserOrder.paidThru},
                 { "@offset", getUserOrder.offset },
             };
 

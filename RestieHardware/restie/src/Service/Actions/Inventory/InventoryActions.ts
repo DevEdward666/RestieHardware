@@ -221,6 +221,8 @@ export const PostOrder =
         pending: "Pending",
         quotation: "Quotation",
         cancel: "Cancel",
+        debt: "Debt",
+
       };
       let orderid = "";
       if (post_orderid) {
@@ -278,10 +280,15 @@ export const PostOrder =
         } else {
           res = await SavedAndPayOrder(updatePayload);
         }
-      } else if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
+      } else if (method.toLowerCase() === paymentMethod.pending.toLowerCase() ) {
+
         await deleteCart(updatePayload);
         res = await addToCart(updatePayload);
-      } else if (
+      } else if (method.toLowerCase() === paymentMethod.debt.toLowerCase() ){
+        updatePayload[0].status ="approved";
+        await deleteCart(updatePayload);
+        res = await addToCart(updatePayload);
+      }else if (
         method.toLowerCase() === paymentMethod.quotation.toLowerCase()
       ) {
         await deleteCart(updatePayload);

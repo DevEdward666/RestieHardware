@@ -71,7 +71,6 @@ const PaymentOptionsComponent = () => {
   const handlePay = useCallback(
     async (type: string) => {
       const totalAmountToPay = getOverallTotal > 0 ? getOverallTotal : getTotal;
-
       if (
         type.toLowerCase() === "cash" &&
         customerPayemntInfo.cash < totalAmountToPay
@@ -91,7 +90,7 @@ const PaymentOptionsComponent = () => {
         await saveOrder(type);
       }
     },
-    [getOverallTotal, getTotal]
+    [getOverallTotal, getTotal, customerPayemntInfo]
   );
 
   const handlePostOrder = useCallback(

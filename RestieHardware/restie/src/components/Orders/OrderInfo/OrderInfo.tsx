@@ -232,40 +232,47 @@ const OrderInfoComponent = () => {
       };
       payload.push(newItem);
     });
-    setIsOpenToast({
-      toastMessage: "Loading",
-      isOpen: true,
-      type: "loader",
-    });
-    const addedOrder: ResponseModel = await dispatch(
-      PostOrder(
-        payload[0].orderid!,
-        payload,
-        customer_information,
-        new Date().getTime(),
-        "Cancel",
-        0.0,
-        user_login_information.name
-      )
-    );
-    if (addedOrder) {
-      const payload: PostSelectedOrder = {
-        orderid: addedOrder.result?.orderid!,
-        userid: "",
-        cartid: addedOrder.result?.cartid!,
-      };
-      dispatch(getOrderInfo(payload));
+    await saveOrder(payload, "Cancel", 0.0);
+  }, [dispatch, user_login_information, order_list_info]);
+  const saveOrder = useCallback(
+    async (payload: Addtocart[], method: string, cash: number) => {
       setIsOpenToast({
         toastMessage: "Loading",
-        isOpen: false,
+        isOpen: true,
         type: "loader",
       });
-      router.push(
-        `/orderInfo?orderid=${order_list_info.order_info.orderid!}&return=false`
+      const addedOrder: ResponseModel = await dispatch(
+        PostOrder(
+          payload[0].orderid!,
+          payload,
+          customer_information,
+          new Date().getTime(),
+          method,
+          cash,
+          user_login_information.name
+        )
       );
-    }
-  }, [dispatch, user_login_information, order_list_info]);
-  const handleApprove = () => {
+      if (addedOrder) {
+        const payload: PostSelectedOrder = {
+          orderid: addedOrder.result?.orderid!,
+          userid: "",
+          cartid: addedOrder.result?.cartid!,
+        };
+        dispatch(getOrderInfo(payload));
+        setIsOpenToast({
+          toastMessage: "Loading",
+          isOpen: false,
+          type: "loader",
+        });
+        router.push(
+          `/orderInfo?orderid=${order_list_info.order_info
+            .orderid!}&return=false`
+        );
+      }
+    },
+    [dispatch]
+  );
+  const handleApprove = useCallback(async () => {
     let newItem: Addtocart;
     let payload: Addtocart[] = [];
     order_list_info.order_item.map((val) => {
@@ -286,7 +293,7 @@ const OrderInfoComponent = () => {
 
     dispatch(addToCartAction(payload));
     router.push("/paymentoptions");
-  };
+  }, [dispatch, order_list_info]);
   const handleEdit = useCallback(
     (reorder: boolean) => {
       // let payload: Addtocart[] = []; // Initialize payload as an empty array
@@ -755,7 +762,28 @@ const OrderInfoComponent = () => {
   const setPermissionRequested = (value: any) => {
     permissionRequested = value;
   };
-  const handleReceivedPayment = () => {};
+  const handleReceivedPayment = useCallback(async () => {
+    let newItem: Addtocart;
+    let payload: Addtocart[] = [];
+    order_list_info.order_item.map((val) => {
+      newItem = {
+        onhandqty: val?.onhandqty!,
+        code: val.code,
+        item: val.item,
+        qty: val.qty,
+        price: val.price,
+        image: "",
+        orderid: order_list_info.order_info.orderid,
+        cartid: order_list_info.order_info.cartid,
+        createdAt: order_list_info.order_info.createdat,
+        status: order_list_info.order_info.status,
+      };
+      payload.push(newItem);
+    });
+    await saveOrder(payload, "Cash", 0.0);
+    setOpenSearchModal({ isOpen: false, modal: "process" });
+    setCanDismiss(true);
+  }, [order_list_info]);
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
@@ -1055,7 +1083,8 @@ const OrderInfoComponent = () => {
                 {getTotalAmount?.toFixed(2)}
               </div>
             </div>
-            {order_list_info.order_info?.paidcash > 0 ? (
+            {order_list_info.order_info?.paidcash > 0 ||
+            order_list_info.order_info?.paidthru === "Cash" ? (
               <>
                 <div className="order-list-info-footer-total-details">
                   <div className="order-list-info-footer-total">Cash: </div>
@@ -1070,9 +1099,11 @@ const OrderInfoComponent = () => {
 
                   <div className="order-list-info-footer-total-info">
                     <span>&#8369;</span>
-                    {(
-                      order_list_info.order_info?.paidcash - getTotalAmount
-                    ).toFixed(2)}
+                    {order_list_info.order_info?.paidcash - getTotalAmount > 0
+                      ? (
+                          order_list_info.order_info?.paidcash - getTotalAmount
+                        ).toFixed(2)
+                      : (0).toFixed(2)}
                   </div>
                 </div>
               </>

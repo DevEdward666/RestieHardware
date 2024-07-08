@@ -141,7 +141,6 @@ const Tab2: React.FC = () => {
     customer_information,
     existingOrder,
   ]);
-  console.log(selectedItemselector);
   return (
     <IonPage className="home-page-container">
       <IonHeader className="home-page-header">

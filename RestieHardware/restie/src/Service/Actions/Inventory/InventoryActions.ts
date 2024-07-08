@@ -159,9 +159,10 @@ const checkPayload = (
     pending: "Pending",
     quotation: "Quotation",
     cancel: "Cancel",
+    debt:"Debt"
   };
   let update_status = "";
-  if (method.toLowerCase() === paymentMethod.cash.toLowerCase()) {
+  if (method.toLowerCase() === paymentMethod.cash.toLowerCase() || method.toLowerCase() === paymentMethod.debt.toLowerCase()) {
     update_status = "approved";
   }
   if (method.toLowerCase() === paymentMethod.quotation.toLowerCase()) {
@@ -238,7 +239,7 @@ export const PostOrder =
         customerCash,
         cashierName
       );
-      if (method.toLowerCase() === paymentMethod.cash.toLowerCase()) {
+      if (method.toLowerCase() === paymentMethod.cash.toLowerCase() || method.toLowerCase() === paymentMethod.debt.toLowerCase()) {
         if (payload[0]?.orderid) {
           await deleteCart(updatePayload);
           await addToCart(updatePayload);
@@ -284,11 +285,7 @@ export const PostOrder =
 
         await deleteCart(updatePayload);
         res = await addToCart(updatePayload);
-      } else if (method.toLowerCase() === paymentMethod.debt.toLowerCase() ){
-        updatePayload[0].status ="approved";
-        await deleteCart(updatePayload);
-        res = await addToCart(updatePayload);
-      }else if (
+      } else if (
         method.toLowerCase() === paymentMethod.quotation.toLowerCase()
       ) {
         await deleteCart(updatePayload);

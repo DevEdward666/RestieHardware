@@ -152,7 +152,15 @@ const Tab2: React.FC = () => {
           color="tertiary"
           className="home-toolbar-logo-container"
         >
-          <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
+          <div
+            className={` ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? ""
+                : "web"
+            }`}
+          >
+            <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
+          </div>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen className="tab-cart-content">

@@ -6,6 +6,7 @@ import {
   IonCardContent,
   IonContent,
   IonHeader,
+  IonIcon,
   IonImg,
   IonItem,
   IonLabel,
@@ -40,6 +41,7 @@ import {
 } from "../../Service/Actions/Inventory/InventoryActions";
 import { GetBrandsModel } from "../../Models/Request/Inventory/InventoryModel";
 import { getPlatforms } from "@ionic/react";
+import { notifications } from "ionicons/icons";
 const queryClient = new QueryClient();
 const Tab1: React.FC = () => {
   const list_of_items = useSelector(
@@ -124,7 +126,9 @@ const Tab1: React.FC = () => {
     },
     [get_category_and_brand]
   );
-
+  const handleClickNotification = () => {
+    router.push("/notifications");
+  };
   return (
     <>
       <IonMenu type={"push"} contentId="main-content">
@@ -262,13 +266,24 @@ const Tab1: React.FC = () => {
               <IonMenuButton></IonMenuButton>
             </IonButtons>
             <IonTitle>Home</IonTitle>
+            <IonButtons slot="end" onClick={() => handleClickNotification()}>
+              <IonIcon size="large" aria-hidden="true" icon={notifications} />
+            </IonButtons>
           </IonToolbar>
           <IonToolbar
             mode="ios"
             color="tertiary"
             className="home-toolbar-logo-container"
           >
-            <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
+            <div
+              className={` ${
+                platform.includes("mobileweb") && !platform.includes("tablet")
+                  ? ""
+                  : "web"
+              }`}
+            >
+              <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
+            </div>
           </IonToolbar>
           <IonToolbar mode="ios" color="tertiary">
             <div

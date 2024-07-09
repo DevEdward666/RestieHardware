@@ -35,6 +35,7 @@ import SalesPage from "./pages/Products/Sales/SalesPage";
 import OnboardingPage from "./pages/Onboarding/OnboardingPage";
 import ReturnRefundPage from "./pages/Orders/ReturnRefund/ReturnRefundPage";
 import RefundSubmitPage from "./pages/Orders/ReturnRefund/RefundSubmitPage/RefundSubmitPage";
+import NotificationPage from "./pages/Notifications/NotificationPage";
 
 setupIonicReact({ mode: "ios" });
 
@@ -119,6 +120,7 @@ const App: React.FC = () => {
       <Route path="/deliveryInfo" render={() => <DeliveryInfoPage />} />
       <Route path="/home/cart" render={() => <MainTab />} />
 
+      <Route path="/notifications" render={() => <NotificationPage />} />
       {/* ADMIN */}
       <Route path="/admin/manageproduct" render={() => <ManageProductPage />} />
       <Route path="/admin/sales" render={() => <SalesPage />} />

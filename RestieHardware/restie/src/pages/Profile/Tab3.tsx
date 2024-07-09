@@ -1,4 +1,5 @@
 import {
+  getPlatforms,
   IonButtons,
   IonContent,
   IonHeader,
@@ -17,6 +18,7 @@ import ProfileListButtons from "../../components/Profile/ProfileListButtons/Prof
 import { arrowBack } from "ionicons/icons";
 import { selectedItem } from "../../Service/Actions/Inventory/InventoryActions";
 const Tab3: React.FC = () => {
+  const platform = getPlatforms();
   return (
     <IonPage className="profile-page-container">
       <IonHeader className="profile-page-header">
@@ -28,7 +30,15 @@ const Tab3: React.FC = () => {
           color="tertiary"
           className="profile-toolbar-logo-container"
         >
-          <IonImg src={restielogo} className="profile-toolbar-logo"></IonImg>
+          <div
+            className={` ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? ""
+                : "web"
+            }`}
+          >
+            <IonImg src={restielogo} className="profile-toolbar-logo"></IonImg>
+          </div>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>

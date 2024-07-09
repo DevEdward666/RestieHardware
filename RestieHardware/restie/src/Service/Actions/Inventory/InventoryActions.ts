@@ -10,6 +10,7 @@ import {
   LIST_OF_ITEMS,
   ORDER_LIST,
   ORDER_LIST_INFO,
+  RECEIVABLE_LIST,
   SELECTED_ITEM,
   SET_CATEGORY_AND_BRAND,
   SUBMIT_RETURN_REFUND,
@@ -20,6 +21,7 @@ import {
   GetItemsToRefund,
   GetVoucherInfo,
   InsertCustomerInfo,
+  ListAgedReceivable,
   ListOrder,
   PostGetDeliveryInfo,
   PostReturnItems,
@@ -43,6 +45,7 @@ import {
   GetItemToRefundRequest,
   InventoryModel,
   ItemReturns,
+  PostAgedReceivable,
   PostDeliveryInfo,
   PostDeliveryInfoModel,
   PostSelectedOrder,
@@ -327,6 +330,20 @@ export const getOrderList =
       dispatch({
         type: "ORDER_LIST",
         order_list: res,
+      });
+      return true;
+    } catch (error: any) {
+      console.log(error);
+      return false;
+    }
+  };
+  export const getReceivableList =
+  () => async (dispatch: Dispatch<RECEIVABLE_LIST>) => {
+    try {
+      const res: PostAgedReceivable[] = await ListAgedReceivable();
+      dispatch({
+        type: "RECEIVABLE_LIST",
+        receivable_list: res,
       });
       return true;
     } catch (error: any) {

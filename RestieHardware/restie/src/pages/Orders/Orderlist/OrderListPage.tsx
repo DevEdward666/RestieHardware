@@ -90,7 +90,18 @@ const OrderListPage = () => {
           color="tertiary"
           className="order-list-toolbar-logo-container"
         >
-          <IonImg src={restielogo} className="order-list-toolbar-logo"></IonImg>
+          <div
+            className={` ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? ""
+                : "web"
+            }`}
+          >
+            <IonImg
+              src={restielogo}
+              className="order-list-toolbar-logo"
+            ></IonImg>
+          </div>
         </IonToolbar>
         <IonToolbar mode="ios" color="tertiary">
           <div className="order-list-filter">

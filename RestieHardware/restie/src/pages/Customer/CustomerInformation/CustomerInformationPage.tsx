@@ -15,9 +15,11 @@ import OrderInfoComponent from "../../../components/Orders/OrderInfo/OrderInfo";
 import { arrowBack } from "ionicons/icons";
 import restielogo from "../../../assets/images/Icon@3.png";
 import "./CustomerInformation.css";
+import { getPlatforms } from "@ionic/react";
 import CustomerInformationComponent from "../../../components/Customer/CustomerInformation/CustomerInformationComponents";
 const CustomerInformationPage = () => {
   const router = useIonRouter();
+  const platform = getPlatforms();
   return (
     <IonPage className="customer-info-page-container">
       <IonHeader className="customer-info-page-header">
@@ -32,7 +34,15 @@ const CustomerInformationPage = () => {
           color="tertiary"
           className="customer-toolbar-logo-container"
         >
-          <IonImg src={restielogo} className="customer-toolbar-logo"></IonImg>
+          <div
+            className={` ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? ""
+                : "web"
+            }`}
+          >
+            <IonImg src={restielogo} className="customer-toolbar-logo"></IonImg>
+          </div>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen className="customer-info-content">

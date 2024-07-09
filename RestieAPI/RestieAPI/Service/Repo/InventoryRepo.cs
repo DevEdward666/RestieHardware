@@ -1324,7 +1324,16 @@ namespace RestieAPI.Service.Repo
             {
                 if (getUserOrder.searchdate.Length <= 0)
                 {
-                    sql = @"select * from orders where LOWER(status)=@status AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+                   if( getUserOrder.status == "approved")
+                    {
+                        sql = @"select * from orders where LOWER(status)=@status and paidThru!='Debt' AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+
+                    }
+                    else
+                    {
+                        sql = @"select * from orders where LOWER(status)=@status AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+
+                    }
                 }
                 else if (getUserOrder.searchdate.Length > 0)
                 {
@@ -1641,6 +1650,85 @@ namespace RestieAPI.Service.Repo
                     {
                         tran.Rollback();
                         return new SelectedOrderResponseModel
+                        {
+                            result = [],
+                            statusCode = 500,
+                            success = false,
+
+                        };
+                        throw;
+                    }
+                }
+            }
+
+
+        }
+        public AgedReceivableResponseModel GetAllAgedReceivable()
+        {
+            var sql = @"select tr.transid,ors.total,ors.createdat,
+                        tr.customer,ors.paidthru
+                        from transaction tr join orders ors on tr.orderid = ors.orderid
+                        where ors.paidthru ='Debt'
+                        AND DATE(to_timestamp(tr.createdat / 1000.0)AT TIME ZONE 'Asia/Manila') < CURRENT_TIMESTAMP - INTERVAL '1 days';
+                        ";
+
+            //var parameters = new Dictionary<string, object>
+            //    {
+            //        { "@orderid", getUserOrder.orderid },
+            //    };
+
+
+            var results = new List<AgedReceivableResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            //foreach (var param in parameters)
+                            //{
+                            //    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            //}
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var receivableResponse = new AgedReceivableResponse
+                                    {
+                                      
+                                        transid = reader.GetString(reader.GetOrdinal("transid")),
+                                        customer = reader.GetString(reader.GetOrdinal("customer")),
+                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                        paidthru = reader.GetString(reader.GetOrdinal("paidthru")),
+                                        total = reader.GetInt32(reader.GetOrdinal("total")),
+
+                                    };
+
+                                    results.Add(receivableResponse);
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new AgedReceivableResponseModel
+                        {
+                            result = results,
+                            statusCode = 200,
+                            success = true,
+
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new AgedReceivableResponseModel
                         {
                             result = [],
                             statusCode = 500,

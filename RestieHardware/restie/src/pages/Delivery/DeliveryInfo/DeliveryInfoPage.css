@@ -46,6 +46,14 @@
         -o-object-position: inherit;
         object-position: inherit;
     }
+    .web{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        height: 120px;
+        padding-bottom: 20px;
+      }
 }
 .delivery-info-content{
     --background:white;

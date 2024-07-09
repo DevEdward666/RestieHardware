@@ -4,6 +4,7 @@ import {
   CompleteReturnRefund,
   InventoryModel,
   ItemReturns,
+  PostAgedReceivable,
   SelectedItemToCart,
   SubmitReturnRefund,
 } from "../../../Models/Request/Inventory/InventoryModel";
@@ -67,6 +68,10 @@ export type CHECKED_RETURN_REFUND = {
   type: "CHECKED_RETURN_REFUND";
   checked_return_refund: ItemReturns[];
 };
+export type RECEIVABLE_LIST = {
+  type: "RECEIVABLE_LIST";
+  receivable_list: PostAgedReceivable[];
+};
 
 export type LIST_OF_PRODUCT_TYPE =
   | LIST_OF_ITEMS
@@ -81,7 +86,8 @@ export type LIST_OF_PRODUCT_TYPE =
   | GET_ITEM_RETURNS
   | SUBMIT_RETURN_REFUND
   | COMPLETE_RETURN_REFUND
-  | CHECKED_RETURN_REFUND;
+  | CHECKED_RETURN_REFUND
+  | RECEIVABLE_LIST;
 
 export interface InventoryTypesModel {
   list_of_items: InventoryModel[];
@@ -97,4 +103,5 @@ export interface InventoryTypesModel {
   submit_return_refund: SubmitReturnRefund;
   complete_return_refund: CompleteReturnRefund;
   checked_return_refund: ItemReturns[];
+  receivable_list:PostAgedReceivable[];
 }

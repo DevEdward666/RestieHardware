@@ -90,6 +90,14 @@ namespace RestieAPI.Models.Response
         public int statusCode { get; set; }
         public string message { get; set; }
     }
+    public class AgedReceivableResponseModel
+    {
+        public List<AgedReceivableResponse> result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string message { get; set; }
+
+    }
     public class InventoryItems
     {
         public string code { get; set; }
@@ -240,6 +248,15 @@ namespace RestieAPI.Models.Response
         public int soldqty { get; set; }
         public decimal cost { get; set; }
         public decimal price { get; set; }
+
+    }
+    public class AgedReceivableResponse
+    {
+        public string transid { get; set; }
+        public int total { get; set; }
+        public long createdat { get; set; }
+        public string customer { get; set; }
+        public string paidthru { get; set; }
 
     }
 }

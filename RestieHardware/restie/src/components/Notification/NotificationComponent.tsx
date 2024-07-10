@@ -1,11 +1,17 @@
-import { IonCard, IonCardContent, IonContent, IonPage } from "@ionic/react";
+import {
+  IonCard,
+  IonCardContent,
+  IonContent,
+  IonIcon,
+  IonPage,
+} from "@ionic/react";
 import React from "react";
 import OnboardingComponent from "../../components/Onboarding/OnboardingComponent";
 import { useSelector } from "react-redux";
 import { RootStore } from "../../Service/Store";
 import { formatDate } from "date-fns";
-import { filter } from "ionicons/icons";
-
+import { alertCircleSharp, filter } from "ionicons/icons";
+import "./NotificationComponent.css";
 const NotificationComponent: React.FC = () => {
   const receivable_list = useSelector(
     (store: RootStore) => store.InventoryReducer.receivable_list
@@ -31,24 +37,50 @@ const NotificationComponent: React.FC = () => {
       <div>
         {Array.isArray(receivable_list) && receivable_list.length > 0 ? (
           receivable_list?.map((value) => (
-            <IonCard className="order-list-card-container" key={value.transid}>
-              <div className="order-list-card-add-item-container">
-                <IonCardContent className="order-list-card-main-content">
-                  <div className="order-list-card-content">
-                    <div className="order-list-card-title-details">
-                      <div className="order-list-card-title">
-                        Transaction Id:{" "}
+            <IonCard
+              className="notification-list-card-container"
+              key={value.transid}
+            >
+              <div className="notification-list-card-add-item-container">
+                <IonCardContent className="notification-list-card-main-content">
+                  <div className="notification-list-card-icon">
+                    <IonIcon
+                      color="danger"
+                      size="large"
+                      icon={alertCircleSharp}
+                    ></IonIcon>
+                    <div className="notification-list-card-content">
+                      <div className="notification-list-card-price-details">
+                        <div className="notification-list-card-price">
+                          Customer:{" "}
+                        </div>
+                        {value.customer}
                       </div>
-                      {value.transid}
-                    </div>
-                    <div className="order-list-card-title-details">
-                      <div className="order-list-card-title">Order Date: </div>
-                      {formatDate(value.createdat)}
-                    </div>
-                    <div className="order-list-card-price-details">
-                      <div className="order-list-card-price">Total Debt: </div>
-                      <span>&#8369;</span>
-                      {value.total.toFixed(2)}
+                      <div className="notification-list-card-price-details">
+                        <div className="notification-list-card-price">
+                          Contact No.:{" "}
+                        </div>
+                        {value.contactno}
+                      </div>
+                      <div className="notification-list-card-price-details">
+                        <div className="notification-list-card-price">
+                          Customer Email:{" "}
+                        </div>
+                        {value.customer_email}
+                      </div>
+                      <div className="notification-list-card-title-details">
+                        <div className="notification-list-card-title">
+                          Order Date:{" "}
+                        </div>
+                        {formatDate(value.createdat)}
+                      </div>
+                      <div className="notification-list-card-price-details">
+                        <div className="notification-list-card-price">
+                          Total Debt:{" "}
+                        </div>
+                        <span>&#8369;</span>
+                        {value.total.toFixed(2)}
+                      </div>
                     </div>
                   </div>
                 </IonCardContent>

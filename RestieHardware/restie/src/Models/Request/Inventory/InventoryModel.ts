@@ -71,6 +71,8 @@ export interface PostAgedReceivable {
   createdat: number;
   customer: string;
   paidthru: string;
+  customer_email: string;
+  contactno: string;
   total:number;
 }
 export interface PostSelectedOrder {

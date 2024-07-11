@@ -12,7 +12,7 @@
         {
             public string supplierid { get; set; }
             public string company { get; set; }
-            public string contactno { get; set; }
+            public long contactno { get; set; }
             public string address { get; set; }
             public long createdat { get; set; }
         }

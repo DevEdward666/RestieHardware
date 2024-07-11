@@ -145,7 +145,7 @@ namespace RestieAPI.Service.Repo
                                     {
                                         supplierid = reader.GetString(reader.GetOrdinal("supplierid")),
                                         company = reader.GetString(reader.GetOrdinal("company")),
-                                        contactno = reader.GetString(reader.GetOrdinal("contactno")),
+                                        contactno = reader.GetInt64(reader.GetOrdinal("contactno")),
                                         address = reader.GetString(reader.GetOrdinal("address")),
                                     };
 
@@ -163,7 +163,7 @@ namespace RestieAPI.Service.Repo
                             statusCode = 200
                         };
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         tran.Rollback();
                         return new SupplierResponseModel
@@ -268,7 +268,98 @@ namespace RestieAPI.Service.Repo
             }
 
 
+        }  public PostInventoryAddResponse PostNewItemInventory(InventoryRequestModel.PostNewItemInventory postNewItem)
+        {   
+            var sql = @"insert into inventory (code,item,qty,category,brand,cost,price,createdat,status,image,updatedat,reorderqty) 
+                        values(@code,@item,@onhandqty,@category,@brand,@cost,@price,@createdat,@status,@image,@updatedat,0)";
+            var logsSql = @"insert into inventorylogs (logid,code,onhandqty,addedqty,supplierid,cost,price,createdat) values(@logid,@code,@onhandqty,@addedqty,@supplierid,@cost,@price,@createdat)";
+            var logid = Guid.NewGuid().ToString();
+
+            var results = new List<InventoryItems>();
+            var insert = 0;
+            var insertLogs = 0;
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            var parameters = new Dictionary<string, object>
+                            {
+                                { "@code", postNewItem.code },
+                                { "@item", postNewItem.item },
+                                { "@onhandqty", postNewItem.onhandqty },
+                                { "@category", postNewItem.category },
+                                { "@brand", postNewItem.brand },
+                                { "@image", postNewItem.image },
+                                { "@cost", postNewItem.cost },
+                                { "@price", postNewItem.price },
+                                { "@createdat", postNewItem.createdat },
+                                { "@status", postNewItem.status },
+                                { "@updatedat", postNewItem.updatedat },
+                                { "@supplierid", postNewItem.supplierid },
+                            };
+
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            insert = cmd.ExecuteNonQuery();
+                        }
+                        if (insert > 0)
+                        {
+                            using (var cmd = new NpgsqlCommand(logsSql, connection))
+                            {
+                                var logsParameters = new Dictionary<string, object>
+                                {
+                                    { "@logid", logid },
+                                    { "@code", postNewItem.code },
+                                    { "@onhandqty", postNewItem.onhandqty },
+                                    { "@addedqty", postNewItem.addedqty },
+                                    { "@supplierid", postNewItem.supplierid },
+                                    { "@cost", postNewItem.cost },
+                                    { "@price", postNewItem.price },
+                                    { "@createdat", postNewItem.createdat },
+                                };
+                                foreach (var param in logsParameters)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+
+                                insertLogs = cmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new PostInventoryAddResponse
+                        {
+                            message = "Successfully added",
+                            status = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostInventoryAddResponse
+                        {
+                            status = 500,
+                            message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+
+
         }
+
+
 
 
     }

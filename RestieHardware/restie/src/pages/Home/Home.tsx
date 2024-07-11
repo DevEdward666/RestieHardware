@@ -1,6 +1,8 @@
 import {
   IonAccordion,
   IonAccordionGroup,
+  IonBadge,
+  IonButton,
   IonButtons,
   IonCard,
   IonCardContent,
@@ -37,6 +39,7 @@ import paint from "../../assets/images/Categories/Paint.png";
 import categoryIcon from "../../assets/images/icons/category.png";
 import {
   get_brands_actions,
+  getReceivableList,
   set_category_and_brand,
 } from "../../Service/Actions/Inventory/InventoryActions";
 import { GetBrandsModel } from "../../Models/Request/Inventory/InventoryModel";
@@ -53,8 +56,14 @@ const Tab1: React.FC = () => {
   const get_category_and_brand = useSelector(
     (store: RootStore) => store.InventoryReducer.set_category_and_brand
   );
+  const receivable_list = useSelector(
+    (store: RootStore) => store.InventoryReducer.receivable_list
+  );
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
+  const [totalNotifs, setTotalNotifs] = useState<number>(
+    receivable_list.length
+  );
   const [isFetching, setFetching] = useState<boolean>(false);
   const [getCategoryAndBrand, setCategoryAndBrand] = useState({
     category: "",
@@ -98,9 +107,18 @@ const Tab1: React.FC = () => {
         category: getCategoryAndBrand.brand,
       };
       dispatch(get_brands_actions(payload));
+
+      dispatch(getReceivableList());
     };
     initializeBrand();
   }, []);
+  useEffect(() => {
+    const initializeNotification = () => {
+      setTotalNotifs(receivable_list.length);
+    };
+    initializeNotification();
+  }, [receivable_list]);
+
   const handleFilter = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
@@ -266,8 +284,22 @@ const Tab1: React.FC = () => {
               <IonMenuButton></IonMenuButton>
             </IonButtons>
             <IonTitle>Home</IonTitle>
-            <IonButtons slot="end" onClick={() => handleClickNotification()}>
-              <IonIcon size="large" aria-hidden="true" icon={notifications} />
+            <IonButtons
+              className="notification-button"
+              slot="end"
+              onClick={() => handleClickNotification()}
+            >
+              <IonIcon
+                className="notification-icon"
+                icon={notifications}
+                size="large"
+              ></IonIcon>
+              <IonBadge className="notification-badge" color="danger">
+                {totalNotifs}
+              </IonBadge>
+              {/* <IonIcon size="large" aria-hidden="true" icon={notifications}>
+                <IonBadge color="danger">1000</IonBadge>
+              </IonIcon> */}
             </IonButtons>
           </IonToolbar>
           <IonToolbar

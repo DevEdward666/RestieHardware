@@ -2,6 +2,7 @@ import { Dispatch } from "react";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 import {
   AddInventory,
+  AddNewItemInventory,
   searchInventory,
   searchSuppliers,
 } from "../../API/Admin/AdminApi";
@@ -10,7 +11,7 @@ import {
   ADMIN_LIST_OF_ITEMS,
   ADMIN_LIST_OF_SUPPLIERS,
 } from "../../Types/Admin/AdminTypes";
-import { PostInventoryModel } from "../../../Models/Request/Admin/AdminRequestModel";
+import { PostInventoryModel, PostNewItemInventoryModel } from "../../../Models/Request/Admin/AdminRequestModel";
 
 export const searchAdminInventoryList =
   (payload: SearchInventoryModel) =>
@@ -42,6 +43,11 @@ export const searchSupplier =
   };
 export const PostInventory = async (payload: PostInventoryModel) => {
   const res = await AddInventory(payload);
+  console.log(res);
+  return res;
+};
+export const PostNewItemInventory = async (payload: PostNewItemInventoryModel) => {
+  const res = await AddNewItemInventory(payload);
   console.log(res);
   return res;
 };

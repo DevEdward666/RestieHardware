@@ -36,6 +36,8 @@ import OnboardingPage from "./pages/Onboarding/OnboardingPage";
 import ReturnRefundPage from "./pages/Orders/ReturnRefund/ReturnRefundPage";
 import RefundSubmitPage from "./pages/Orders/ReturnRefund/RefundSubmitPage/RefundSubmitPage";
 import NotificationPage from "./pages/Notifications/NotificationPage";
+import AddNewItemPage from "./pages/Products/ManageProducts/AddNewItemPage";
+import MainProductPage from "./pages/Products/ManageProducts/MainProductPage";
 
 setupIonicReact({ mode: "ios" });
 
@@ -123,6 +125,12 @@ const App: React.FC = () => {
       <Route path="/notifications" render={() => <NotificationPage />} />
       {/* ADMIN */}
       <Route path="/admin/manageproduct" render={() => <ManageProductPage />} />
+      <Route path="/admin/addNewItem" render={() => <AddNewItemPage />} />
+      <Route
+        path="/admin/mainmanageproduct"
+        render={() => <MainProductPage />}
+      />
+
       <Route path="/admin/sales" render={() => <SalesPage />} />
 
       {/* 404 Page not found */}

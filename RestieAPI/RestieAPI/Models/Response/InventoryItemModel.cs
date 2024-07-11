@@ -255,6 +255,8 @@ namespace RestieAPI.Models.Response
         public string transid { get; set; }
         public int total { get; set; }
         public long createdat { get; set; }
+        public string contactno { get; set; }
+        public string customer_email { get; set; }
         public string customer { get; set; }
         public string paidthru { get; set; }
 

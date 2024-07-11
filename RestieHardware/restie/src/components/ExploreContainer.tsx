@@ -15,7 +15,7 @@ import {
   useIonRouter,
 } from "@ionic/react";
 import { cart, close } from "ionicons/icons";
-import { MouseEvent, useCallback, useEffect, useState } from "react";
+import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -50,6 +50,7 @@ interface SelectedItem {
 
 const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
   const dispatch = useTypedDispatch();
+  const cardRef = useRef(null);
   const router = useIonRouter();
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
@@ -117,6 +118,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       isOpen: true,
       type: "warning",
     });
+    scrollToElement(cardRef);
   };
   const addItem = (
     selectedItem: SelectedItemToCart,
@@ -187,6 +189,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     };
     return (
       <div
+        ref={cardRef}
         className="inventory-card-main-div"
         onClick={() => handleSelectedItem(payload)}
       >
@@ -336,6 +339,11 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     const newItems = await getMoreInventory();
     setItems(newItems.response);
     event.detail.complete();
+  };
+  const scrollToElement = (elementRef: any) => {
+    if (elementRef && elementRef.current) {
+      elementRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   };
   return (
     <IonContent>

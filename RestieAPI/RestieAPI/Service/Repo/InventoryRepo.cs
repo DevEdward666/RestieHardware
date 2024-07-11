@@ -245,7 +245,7 @@ namespace RestieAPI.Service.Repo
                             statusCode= 200
                         };
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         tran.Rollback();
                         return new InventoryItemModel
@@ -1665,9 +1665,10 @@ namespace RestieAPI.Service.Repo
         }
         public AgedReceivableResponseModel GetAllAgedReceivable()
         {
-            var sql = @"select tr.transid,ors.total,ors.createdat,
+            var sql = @"select tr.transid,ors.total,ors.createdat,cr.contactno,cr.customer_email,
                         tr.customer,ors.paidthru
                         from transaction tr join orders ors on tr.orderid = ors.orderid
+                        join customer cr on cr.customerid = ors.userid
                         where ors.paidthru ='Debt'
                         AND DATE(to_timestamp(tr.createdat / 1000.0)AT TIME ZONE 'Asia/Manila') < CURRENT_TIMESTAMP - INTERVAL '1 days';
                         ";
@@ -1706,6 +1707,8 @@ namespace RestieAPI.Service.Repo
                                         customer = reader.GetString(reader.GetOrdinal("customer")),
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                         paidthru = reader.GetString(reader.GetOrdinal("paidthru")),
+                                        customer_email = reader.GetString(reader.GetOrdinal("customer_email")),
+                                        contactno = reader.GetString(reader.GetOrdinal("contactno")),
                                         total = reader.GetInt32(reader.GetOrdinal("total")),
 
                                     };

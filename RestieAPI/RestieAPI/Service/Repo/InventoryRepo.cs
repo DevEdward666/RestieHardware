@@ -245,7 +245,7 @@ namespace RestieAPI.Service.Repo
                             statusCode= 200
                         };
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         tran.Rollback();
                         return new InventoryItemModel

@@ -16,7 +16,8 @@ import "./ManageProductPage.css";
 import { arrowBack } from "ionicons/icons";
 import { useSelector } from "react-redux";
 import PageNotFoundComponent from "../../../components/PageNotFound/PageNotFoundComponent";
-const ManageProductPage = () => {
+import AddNewItemComponent from "../../../components/Admin/Products/ManageProducts/AddNewItemComponent";
+const AddNewItemPage = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
@@ -33,9 +34,6 @@ const ManageProductPage = () => {
       router.push("/pageNotFound");
     }
   }, [user_login_information]);
-  console.log(
-    user_login_information?.role.trim().toLowerCase() === "super admin"
-  );
   return isLoaded ? (
     <IonPage className="manage-page-container">
       <IonHeader className="manage-page-header">
@@ -43,7 +41,7 @@ const ManageProductPage = () => {
           <IonButtons slot="start" onClick={() => router.goBack()}>
             <IonIcon slot="icon-only" icon={arrowBack}></IonIcon>
           </IonButtons>
-          <IonTitle>Update Item</IonTitle>
+          <IonTitle>Add Item</IonTitle>
         </IonToolbar>
         <IonToolbar
           mode="ios"
@@ -53,11 +51,11 @@ const ManageProductPage = () => {
           <IonImg src={restielogo} className="manage-toolbar-logo"></IonImg>
         </IonToolbar>
       </IonHeader>
-      <ManageProductComponent />
+      <AddNewItemComponent />
     </IonPage>
   ) : (
     <PageNotFoundComponent />
   );
 };
 
-export default ManageProductPage;
+export default AddNewItemPage;

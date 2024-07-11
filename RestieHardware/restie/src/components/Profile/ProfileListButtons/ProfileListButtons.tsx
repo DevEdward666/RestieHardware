@@ -106,7 +106,7 @@ const ProfileListButtons: React.FC = () => {
               <>
                 <div
                   className="profile-list-button-list"
-                  onClick={() => router.push("/admin/manageproduct")}
+                  onClick={() => router.push("/admin/mainmanageproduct")}
                 >
                   <IonButton fill="clear" className="profile-button-order">
                     <IonIcon icon={bagOutline}></IonIcon>

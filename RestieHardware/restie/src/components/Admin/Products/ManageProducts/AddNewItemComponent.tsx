@@ -16,19 +16,23 @@ import {
 import { saveOutline } from "ionicons/icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { PostInventoryModel } from "../../../../Models/Request/Admin/AdminRequestModel";
+import {
+  PostInventoryModel,
+  PostNewItemInventoryModel,
+} from "../../../../Models/Request/Admin/AdminRequestModel";
 import { InventoryModel } from "../../../../Models/Request/Inventory/InventoryModel";
 import { SearchInventoryModel } from "../../../../Models/Request/searchInventory";
 import { SuppliersModel } from "../../../../Models/Response/Admin/AdminModelResponse";
 import {
   PostInventory,
+  PostNewItemInventory,
   searchAdminInventoryList,
   searchSupplier,
 } from "../../../../Service/Actions/Admin/AdminActions";
 import { set_toast } from "../../../../Service/Actions/Commons/CommonsActions";
 import { RootStore, useTypedDispatch } from "../../../../Service/Store";
 import "./ManageProductComponent.css";
-const ManageProductComponent = () => {
+const AddNewItemComponent = () => {
   const admin_list_of_items =
     useSelector((store: RootStore) => store.AdminReducer.admin_list_of_items) ||
     [];
@@ -52,7 +56,7 @@ const ManageProductComponent = () => {
     limit: 50,
     searchTerm: "",
   });
-  const [productInfo, setProductInfo] = useState<PostInventoryModel>({
+  const [productInfo, setProductInfo] = useState<PostNewItemInventoryModel>({
     code: "",
     item: "",
     category: "",
@@ -61,21 +65,14 @@ const ManageProductComponent = () => {
     addedqty: 0,
     supplierid: "",
     supplierName: "",
-
+    image: "",
     cost: 0,
     price: 0.0,
     createdat: 0,
+    status: "Active",
     updatedAt: 0,
   });
   const initialize = () => {
-    dispatch(
-      searchAdminInventoryList({
-        page: 1,
-        offset: 0,
-        limit: 50,
-        searchTerm: "",
-      })
-    );
     dispatch(
       searchSupplier({
         page: 1,
@@ -89,15 +86,10 @@ const ManageProductComponent = () => {
     initialize();
   }, [dispatch]);
   useEffect(() => {
-    const searchInventory = () => {
-      dispatch(searchAdminInventoryList(fetchList));
-    };
     const searchSuppliers = () => {
       dispatch(searchSupplier(fetchList));
     };
-    if (openSearchModal.modal === "products") {
-      searchInventory();
-    } else {
+    if (openSearchModal.modal === "supplier") {
       searchSuppliers();
     }
   }, [dispatch, fetchList, openSearchModal]);
@@ -122,30 +114,7 @@ const ManageProductComponent = () => {
     },
     []
   );
-  const handleSelectedProduct = (val: InventoryModel) => {
-    setOpenSearchModal({ isOpen: false, modal: "" });
-    setFetchList({
-      page: 1,
-      offset: 1,
-      limit: 50,
-      searchTerm: "",
-    });
-    setProductInfo({
-      item: val.item,
-      category: val.category,
-      brand: val.brand!,
-      code: val.code,
-      onhandqty: val.qty,
-      addedqty: 0,
-      supplierid: "",
-      supplierName: "",
 
-      cost: parseInt(val.cost),
-      price: val.price,
-      createdat: val.createdat,
-      updatedAt: new Date().getTime(),
-    });
-  };
   const handleSelectedSupplier = (val: SuppliersModel) => {
     setOpenSearchModal({ isOpen: false, modal: "" });
     setProductInfo((prev) => ({
@@ -155,7 +124,7 @@ const ManageProductComponent = () => {
     }));
   };
   const handleSaveProduct = useCallback(async () => {
-    const payload: PostInventoryModel = {
+    const payload: PostNewItemInventoryModel = {
       item: productInfo.item,
       category: productInfo.category,
       brand: productInfo.brand,
@@ -165,10 +134,12 @@ const ManageProductComponent = () => {
       addedqty: productInfo.addedqty,
       supplierid: productInfo.supplierid,
       supplierName: productInfo.supplierName,
+      image: productInfo.image,
 
       cost: productInfo.cost,
       price: productInfo.price,
       createdat: productInfo.createdat,
+      status: productInfo.status,
       updatedAt: productInfo.updatedAt,
     };
     if (payload.addedqty > 0 && payload.supplierid.length <= 0) {
@@ -198,12 +169,12 @@ const ManageProductComponent = () => {
       );
       return;
     } else {
-      const res = await PostInventory(payload);
+      const res = await PostNewItemInventory(payload);
       if (res.status === 200) {
         dispatch(
           set_toast({
             isOpen: true,
-            message: "Successfully updated",
+            message: "Successfully Added",
             position: "middle",
             color: "#125B8C",
           })
@@ -218,10 +189,12 @@ const ManageProductComponent = () => {
           addedqty: 0,
           supplierid: "",
           supplierName: "",
+          image: "",
 
           cost: 0,
           price: 0.0,
           createdat: 0,
+          status: "",
           updatedAt: 0,
         });
       }
@@ -229,11 +202,6 @@ const ManageProductComponent = () => {
   }, [dispatch, productInfo]);
   return (
     <IonContent>
-      <IonSearchbar
-        onClick={() => setOpenSearchModal({ isOpen: true, modal: "products" })}
-        placeholder="Search Product"
-        autocapitalize={"words"}
-      ></IonSearchbar>
       <IonModal
         isOpen={openSearchModal.isOpen}
         onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
@@ -252,32 +220,7 @@ const ManageProductComponent = () => {
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          {openSearchModal.modal === "products" ? (
-            <>
-              <IonSearchbar
-                placeholder="Search Product"
-                onIonInput={(e) => handleSearch(e)}
-                autocapitalize={"words"}
-                debounce={1500}
-              ></IonSearchbar>
-              <IonList>
-                {admin_list_of_items.map((val, index) => (
-                  <IonItem
-                    onClick={() => handleSelectedProduct(val)}
-                    key={index}
-                  >
-                    {/* <IonAvatar slot="start">
-                  <IonImg src="https://i.pravatar.cc/300?u=b" />
-                </IonAvatar> */}
-                    <IonLabel>
-                      <h2>{val.item}</h2>
-                      <p>QTY {val.qty}</p>
-                    </IonLabel>
-                  </IonItem>
-                ))}
-              </IonList>
-            </>
-          ) : (
+          {openSearchModal.modal === "supplier" ? (
             <>
               <IonSearchbar
                 placeholder="Search Supplier"
@@ -292,8 +235,8 @@ const ManageProductComponent = () => {
                     key={index}
                   >
                     {/* <IonAvatar slot="start">
-                  <IonImg src="https://i.pravatar.cc/300?u=b" />
-                </IonAvatar> */}
+                <IonImg src="https://i.pravatar.cc/300?u=b" />
+              </IonAvatar> */}
                     <IonLabel>
                       <h2>{val.company}</h2>
                       <p>{val.address}</p>
@@ -302,14 +245,23 @@ const ManageProductComponent = () => {
                 ))}
               </IonList>
             </>
-          )}
+          ) : null}
         </IonContent>
       </IonModal>
       <div className="manage-product-input-container">
         <IonInput
           labelPlacement="floating"
+          label="Product code"
+          name="code"
+          type="text"
+          onIonInput={(e: any) => handleInfoChange(e)}
+          class="product-input"
+          value={productInfo.code}
+        ></IonInput>
+        <IonInput
+          labelPlacement="floating"
           label="Product Name"
-          name="name"
+          name="item"
           type="text"
           onIonInput={(e: any) => handleInfoChange(e)}
           class="product-input"
@@ -346,23 +298,13 @@ const ManageProductComponent = () => {
           value={productInfo.supplierName}
         ></IonInput>
         <IonInput
-          readonly
           labelPlacement="floating"
           label="Quantity"
-          name="qty"
+          name="onhandqty"
           type="number"
           onIonInput={(e: any) => handleInfoChange(e)}
           class="product-input"
           value={productInfo.onhandqty}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Add Quantity"
-          name="addedqty"
-          type="number"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.addedqty}
         ></IonInput>
         <IonInput
           labelPlacement="floating"
@@ -388,11 +330,11 @@ const ManageProductComponent = () => {
           onClick={() => handleSaveProduct()}
         >
           <IonIcon slot="start" icon={saveOutline}></IonIcon>
-          Update Product
+          Add Product
         </IonButton>
       </div>
     </IonContent>
   );
 };
 
-export default ManageProductComponent;
+export default AddNewItemComponent;

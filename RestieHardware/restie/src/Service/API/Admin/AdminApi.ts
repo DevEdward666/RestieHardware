@@ -1,6 +1,6 @@
 import baseUrl from "../../../Helpers/environment";
 import { post } from "../../../Helpers/useAxios";
-import { PostInventoryModel } from "../../../Models/Request/Admin/AdminRequestModel";
+import { PostInventoryModel, PostNewItemInventoryModel } from "../../../Models/Request/Admin/AdminRequestModel";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 
 export const searchInventory = async (payload: SearchInventoryModel) => {
@@ -41,6 +41,21 @@ export const AddInventory = async (payload: PostInventoryModel) => {
   }
   const response = await post(
     `${baseUrl}api/admin/AddInventory`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  return response;
+};
+export const AddNewItemInventory = async (payload: PostNewItemInventoryModel) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const response = await post(
+    `${baseUrl}api/admin/NewItemInventory`,
     {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getToken}`,

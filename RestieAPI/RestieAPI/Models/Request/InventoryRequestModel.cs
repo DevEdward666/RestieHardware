@@ -55,6 +55,22 @@ namespace RestieAPI.Models.Request
 
 
         }
+        public class PostNewSupplier
+        {
+            public string company { get; set; }
+            public long contactno { get; set; }
+            public string address { get; set; }
+            public long createdat { get; set; }
+
+        }
+        public class PutSupplier
+        {
+            public string supplierid { get; set; }
+            public string company { get; set; }
+            public long contactno { get; set; }
+            public string address { get; set; }
+
+        }
         public class PostCustomerInfo
         {
             public string customerid { get; set; }

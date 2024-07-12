@@ -41,6 +41,18 @@ namespace RestieAPI.Controllers.Admin
         public ActionResult<PostResponse> PostNewItemInventory(PostNewItemInventory postNewItem)
         {
             return Ok(_adminRepo.PostNewItemInventory(postNewItem));
+        }          
+        [Authorize]
+        [HttpPost("AddNewSupplier")]
+        public ActionResult<PostResponse> PostNewSupplier(PostNewSupplier postNewSupplier)
+        {
+            return Ok(_adminRepo.PostNewSupplier(postNewSupplier));
+        }        
+        [Authorize]
+        [HttpPost("UpdateSupplier")]
+        public ActionResult<PostResponse> PutSupplier(PutSupplier putSupplier)
+        {
+            return Ok(_adminRepo.PutSupplier(putSupplier));
         }  
         [Authorize]
         [HttpPost("searchSupplier/{pageNumber}")]

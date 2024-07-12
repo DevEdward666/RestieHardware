@@ -10,17 +10,23 @@ import {
   IonList,
   IonModal,
   IonSearchbar,
+  IonText,
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
 import { saveOutline } from "ionicons/icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import attachmentDeleteIcon from "../../../../assets//images/icons/cross_screenshot_button.svg";
+
 import {
   PostInventoryModel,
   PostNewItemInventoryModel,
 } from "../../../../Models/Request/Admin/AdminRequestModel";
-import { InventoryModel } from "../../../../Models/Request/Inventory/InventoryModel";
+import {
+  InventoryModel,
+  PostDeliveryImage,
+} from "../../../../Models/Request/Inventory/InventoryModel";
 import { SearchInventoryModel } from "../../../../Models/Request/searchInventory";
 import { SuppliersModel } from "../../../../Models/Response/Admin/AdminModelResponse";
 import {
@@ -31,7 +37,11 @@ import {
 } from "../../../../Service/Actions/Admin/AdminActions";
 import { set_toast } from "../../../../Service/Actions/Commons/CommonsActions";
 import { RootStore, useTypedDispatch } from "../../../../Service/Store";
-import "./ManageProductComponent.css";
+import "./AddNewItemComponent.css";
+import attachmentIcon from "../../../../assets//images/icons/attchment-icon.svg";
+import { usePhotoGallery } from "../../../../Hooks/usePhotoGallery";
+import { UploadDeliveryImages } from "../../../../Service/API/Inventory/InventoryApi";
+import { base64toFile, productFilename } from "./ProductComponentsService";
 const AddNewItemComponent = () => {
   const admin_list_of_items =
     useSelector((store: RootStore) => store.AdminReducer.admin_list_of_items) ||
@@ -43,6 +53,7 @@ const AddNewItemComponent = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
+  const fileInput = useRef(null);
   const modal = useRef<HTMLIonModalElement>(null);
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
@@ -56,6 +67,9 @@ const AddNewItemComponent = () => {
     limit: 50,
     searchTerm: "",
   });
+  const [base64Image, setBase64Image] = useState("");
+  const [getFile, setFile] = useState<File>();
+  const { file, takePhoto } = usePhotoGallery();
   const [productInfo, setProductInfo] = useState<PostNewItemInventoryModel>({
     code: "",
     item: "",
@@ -169,6 +183,24 @@ const AddNewItemComponent = () => {
       );
       return;
     } else {
+      const imageName = productFilename(payload.code, "png");
+      const fileImage = base64toFile(base64Image, imageName, "image/png");
+      const imagePayload: PostDeliveryImage = {
+        FileName: imageName,
+        FolderName: "Inventory",
+        FormFile: fileImage!,
+      };
+      const uploaded = await UploadDeliveryImages(imagePayload);
+      if (uploaded.status !== 201) {
+        dispatch(
+          set_toast({
+            isOpen: true,
+            message: "Image not uploaded",
+            position: "top",
+            color: "#125B8C",
+          })
+        );
+      }
       const res = await PostNewItemInventory(payload);
       if (res.status === 200) {
         dispatch(
@@ -200,6 +232,27 @@ const AddNewItemComponent = () => {
       }
     }
   }, [dispatch, productInfo]);
+  const onSelectFile = (e: any) => {
+    const selectedFiles = e.target.files;
+    const newFiles = selectedFiles[0];
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      if (typeof reader.result === "string") {
+        setBase64Image(reader.result);
+      }
+    };
+    reader.readAsDataURL(newFiles);
+
+    setFile(newFiles);
+  };
+  const handleTakePhoto = async () => {
+    await takePhoto();
+  };
+  const deleteAttachment = (e: File) => {
+    setFile(undefined);
+  };
+
   return (
     <IonContent>
       <IonModal
@@ -248,7 +301,84 @@ const AddNewItemComponent = () => {
           ) : null}
         </IonContent>
       </IonModal>
-      <div className="manage-product-input-container">
+      <div className="add-new-product-input-container">
+        {getFile !== undefined ? (
+          getFile && (
+            <div className="selected-files-list">
+              <div className="selected-file">
+                {getFile && (
+                  <div
+                    className="file-delete"
+                    onClick={() => deleteAttachment(getFile!)}
+                  >
+                    <IonIcon
+                      size="large"
+                      className="file-delete-icon"
+                      icon={attachmentDeleteIcon}
+                    />
+                  </div>
+                )}
+                <div className="file-thumbnail">
+                  {/* You can render a thumbnail of the file here */}
+                  {getFile &&
+                    getFile.type &&
+                    getFile.type.startsWith("image/") && (
+                      <div className="image-container">
+                        <img
+                          className="support-image"
+                          src={URL.createObjectURL(getFile)}
+                          alt={`Thumbnail ${getFile.name}`}
+                        />
+                      </div>
+                    )}
+                </div>
+              </div>
+            </div>
+          )
+        ) : (
+          <IonText className="file-info-text">
+            To select image choose attach image. If you want to capture image
+            choose open camera
+          </IonText>
+        )}
+        <div className="capture-images-buttons">
+          <div
+            className="offline-delivery-attachment-button"
+            onClick={() => handleTakePhoto()}
+          >
+            <IonIcon
+              className="offline-delivery-attachment-button-icon"
+              icon={attachmentIcon}
+            ></IonIcon>
+            Open Camera
+          </div>
+          <>
+            <input
+              ref={fileInput}
+              hidden
+              type="file"
+              accept="image/*"
+              onChange={(e) => onSelectFile(e)}
+            />
+
+            <div
+              className="offline-delivery-attachment-button"
+              onClick={() => {
+                // @ts-ignore
+                fileInput?.current?.click();
+                // setBackgroundOption(BackgroundOptionType.Gradient);
+              }}
+            >
+              <IonIcon
+                className="offline-delivery-attachment-button-icon"
+                icon={attachmentIcon}
+              ></IonIcon>
+              Attach Image
+            </div>
+          </>
+        </div>
+      </div>
+      <div className="add-new-product-container">
         <IonInput
           labelPlacement="floating"
           label="Product code"

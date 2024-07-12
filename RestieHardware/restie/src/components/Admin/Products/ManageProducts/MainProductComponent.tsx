@@ -52,6 +52,21 @@ const MainProductComponent: React.FC = () => {
                 <IonIcon icon={chevronForwardOutline}></IonIcon>
               </IonButton>
             </div>
+            <div
+              className="main-manage-list-button-list"
+              onClick={() => router.push("/admin/addnewsupplier")}
+            >
+              <IonButton fill="clear" className="main-manage-button-order">
+                <IonIcon icon={bagOutline}></IonIcon>
+                <IonText className="main-manage-button-text">
+                  Add New Supplier
+                </IonText>
+              </IonButton>
+
+              <IonButton fill="clear" className="main-manage-button-order">
+                <IonIcon icon={chevronForwardOutline}></IonIcon>
+              </IonButton>
+            </div>
           </>
         ) : null}
       </div>

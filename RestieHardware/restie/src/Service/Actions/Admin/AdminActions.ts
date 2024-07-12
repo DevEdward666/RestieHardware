@@ -3,15 +3,17 @@ import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 import {
   AddInventory,
   AddNewItemInventory,
+  AddNewSupplier,
   searchInventory,
   searchSuppliers,
+  UpdateSupplier,
 } from "../../API/Admin/AdminApi";
 import { LIST_OF_ITEMS } from "../../Types/Inventory/InventoryTypes";
 import {
   ADMIN_LIST_OF_ITEMS,
   ADMIN_LIST_OF_SUPPLIERS,
 } from "../../Types/Admin/AdminTypes";
-import { PostInventoryModel, PostNewItemInventoryModel } from "../../../Models/Request/Admin/AdminRequestModel";
+import { PostInventoryModel, PostNewItemInventoryModel, PostNewSupplierModel } from "../../../Models/Request/Admin/AdminRequestModel";
 
 export const searchAdminInventoryList =
   (payload: SearchInventoryModel) =>
@@ -48,6 +50,16 @@ export const PostInventory = async (payload: PostInventoryModel) => {
 };
 export const PostNewItemInventory = async (payload: PostNewItemInventoryModel) => {
   const res = await AddNewItemInventory(payload);
+  console.log(res);
+  return res;
+};
+export const PostNewSupplier = async (payload: PostNewSupplierModel) => {
+  const res = await AddNewSupplier(payload);
+  console.log(res);
+  return res;
+};
+export const PostUpdateSupplier = async (payload: PostNewSupplierModel) => {
+  const res = await UpdateSupplier(payload);
   console.log(res);
   return res;
 };

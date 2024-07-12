@@ -268,7 +268,8 @@ namespace RestieAPI.Service.Repo
             }
 
 
-        }  public PostInventoryAddResponse PostNewItemInventory(InventoryRequestModel.PostNewItemInventory postNewItem)
+        }  
+        public PostInventoryAddResponse PostNewItemInventory(InventoryRequestModel.PostNewItemInventory postNewItem)
         {   
             var sql = @"insert into inventory (code,item,qty,category,brand,cost,price,createdat,status,image,updatedat,reorderqty) 
                         values(@code,@item,@onhandqty,@category,@brand,@cost,@price,@createdat,@status,@image,@updatedat,0)";
@@ -358,9 +359,118 @@ namespace RestieAPI.Service.Repo
 
 
         }
+        public PostInventoryAddResponse PostNewSupplier(InventoryRequestModel.PostNewSupplier postNewSupplier)
+        {
+            var sql = @"insert into supplier (supplierid,company,contactno,address,createdat) 
+                        values(@supplierid,@company,@contactno,@address,@createdat)";
+             var supplierId = Guid.NewGuid().ToString();
 
+            var results = new List<InventoryItems>();
+            var insert = 0;
+            var insertLogs = 0;
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
 
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            var parameters = new Dictionary<string, object>
+                            {
+                                { "@supplierid", supplierId },
+                                { "@company", postNewSupplier.company },
+                                { "@contactno", postNewSupplier.contactno },
+                                { "@address", postNewSupplier.address },
+                                { "@createdat", postNewSupplier.createdat },
+                            };
 
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            insert = cmd.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new PostInventoryAddResponse
+                        {
+                            message = "Successfully added",
+                            status = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostInventoryAddResponse
+                        {
+                            status = 500,
+                            message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
+
+        public PostInventoryAddResponse PutSupplier(InventoryRequestModel.PutSupplier putSupplier)
+        {
+            var updatesql = @"update  supplier set company=@company,contactno=@contactno,
+                            address=@address where supplierid = @supplierid";
+
+            var results = new List<InventoryItems>();
+            var update = 0;
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(updatesql, connection))
+                        {
+                            var parameters = new Dictionary<string, object>
+                            {
+                                { "@supplierid", putSupplier.supplierid },
+                                { "@company", putSupplier.company },
+                                { "@contactno", putSupplier.contactno },
+                                { "@address", putSupplier.address },
+                            };
+
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            update = cmd.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new PostInventoryAddResponse
+                        {
+                            message = "Successfully added",
+                            status = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostInventoryAddResponse
+                        {
+                            status = 500,
+                            message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
 
     }
 }

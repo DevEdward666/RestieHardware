@@ -33,3 +33,11 @@ export interface PostNewItemInventoryModel {
   status:string;
   updatedAt: number;
 }
+
+export interface PostNewSupplierModel {
+  company: string;
+  contactno: number;
+  address: string;
+  createdat:number;
+  supplierid?:string;
+}

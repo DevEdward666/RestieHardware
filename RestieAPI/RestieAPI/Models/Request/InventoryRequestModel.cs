@@ -106,6 +106,11 @@ namespace RestieAPI.Models.Request
             public string category { get; set; }
 
         }
+        public class GetQty
+        {
+            public string code { get; set; }
+
+        }
         public class GetCustomer
         {
             public string customerid { get; set; }

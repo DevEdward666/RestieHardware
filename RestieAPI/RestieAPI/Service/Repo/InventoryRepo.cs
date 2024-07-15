@@ -3093,7 +3093,7 @@ namespace RestieAPI.Service.Repo
                 Paragraph Total = new Paragraph();
                 Total.Alignment = Element.ALIGN_RIGHT;
                 Total.Add(Chunk.NEWLINE);
-                Total.Add(new Chunk($"Overall Total {totalSales.ToString("N2")}", FontFactory.GetFont(FontFactory.HELVETICA, 18,Font.BOLD)));
+                Total.Add(new Chunk($"Overall Total {totalSales.ToString("N2")}", FontFactory.GetFont(FontFactory.HELVETICA, 18,iTextSharp.text.Font.BOLD)));
                 doc.Add(Total);
 
                 Paragraph Terms = new Paragraph();

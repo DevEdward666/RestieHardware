@@ -53,6 +53,18 @@ namespace RestieAPI.Controllers.Admin
         public ActionResult<PostResponse> PutSupplier(PutSupplier putSupplier)
         {
             return Ok(_adminRepo.PutSupplier(putSupplier));
+        }     
+        //[Authorize]
+        [HttpPost("ImportDataFromExcel")]
+        public ActionResult<PostInventoryAddResponse> ImportDataFromExcel(FileForExcel forExcel)
+        {
+            if (forExcel.File == null || forExcel.File.Length == 0)
+            {
+                return BadRequest("File is empty or not provided.");
+            }
+
+            var response = _adminRepo.ImportDataFromExcel(forExcel.File);
+            return Ok(response);
         }  
         [Authorize]
         [HttpPost("searchSupplier/{pageNumber}")]

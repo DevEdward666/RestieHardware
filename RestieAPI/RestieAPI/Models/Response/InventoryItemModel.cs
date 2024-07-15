@@ -153,6 +153,11 @@ namespace RestieAPI.Models.Response
     {
         public string brand { get; set; }
     }
+    public class QTYResponse
+    {
+        public Int32 qty { get; set; }
+        public bool success { get; set; } 
+    }
     public class OrderInfoResponse
     {
         public string? transid { get; set; }

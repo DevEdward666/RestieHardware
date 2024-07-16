@@ -1,6 +1,7 @@
 import baseUrl from "../../../Helpers/environment";
 import { post } from "../../../Helpers/useAxios";
 import { PostInventoryModel, PostNewItemInventoryModel, PostNewSupplierModel } from "../../../Models/Request/Admin/AdminRequestModel";
+import { UploadSalesReportFile } from "../../../Models/Request/Inventory/InventoryModel";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 
 export const searchInventory = async (payload: SearchInventoryModel) => {
@@ -93,6 +94,25 @@ export const UpdateSupplier = async (payload: PostNewSupplierModel) => {
       Authorization: `Bearer ${getToken}`,
     },
     JSON.stringify(payload)
+  );
+  return response;
+};
+
+export const UploadSales = async (payload: UploadSalesReportFile) => {
+
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const formData = new FormData();
+  formData.append(`SalesFile`, payload.SalesFile);
+  const response = await post(
+    `${baseUrl}api/admin/ImportDataFromExcel`,
+    {
+      "Content-Type": "application/form-data",
+      Authorization: `Bearer ${getToken}`,
+    },
+    formData
   );
   return response;
 };

@@ -154,3 +154,7 @@ export interface SubmitReturnRefund {
 export interface CompleteReturnRefund {
   complete: boolean;
 }
+export interface UploadSalesReportFile {
+  SalesFile: File;
+
+}

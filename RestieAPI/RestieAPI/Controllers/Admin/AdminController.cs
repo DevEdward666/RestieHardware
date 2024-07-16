@@ -58,12 +58,12 @@ namespace RestieAPI.Controllers.Admin
         [HttpPost("ImportDataFromExcel")]
         public ActionResult<PostInventoryAddResponse> ImportDataFromExcel(FileForExcel forExcel)
         {
-            if (forExcel.File == null || forExcel.File.Length == 0)
+            if (forExcel.SalesFile == null || forExcel.SalesFile.Length == 0)
             {
                 return BadRequest("File is empty or not provided.");
             }
 
-            var response = _adminRepo.ImportDataFromExcel(forExcel.File);
+            var response = _adminRepo.ImportDataFromExcel(forExcel.SalesFile);
             return Ok(response);
         }  
         [Authorize]

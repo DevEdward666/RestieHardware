@@ -21,3 +21,38 @@
     align-items: center;
     text-align: center;
 }
+.file-upload-container {
+    position: relative;
+  
+    .file-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 1;
+    }
+  
+    ion-button {
+      position: relative; /* Ensure button can contain the icon properly */
+      z-index: 0; /* Ensure button is below the file input */
+  
+      ion-icon {
+        margin-right: 8px; /* Adjust margin between icon and text */
+      }
+    }
+  }
+  .file-name {
+    margin-top: 10px;
+    font-size: 18px;
+    color: #555;
+  }
+  .file-upload-label {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }

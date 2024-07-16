@@ -4,6 +4,7 @@ import {
   IonContent,
   IonDatetime,
   IonHeader,
+  IonIcon,
   IonImg,
   IonLoading,
   IonModal,
@@ -23,6 +24,8 @@ import { PostDaysSalesModel } from "../../../../Models/Request/Inventory/Invento
 import { format } from "date-fns";
 import { FileResponse } from "../../../../Models/Response/Inventory/GetInventoryModel";
 import MyCalendar from "../../../../Hooks/MyCalendar";
+import { UploadSales } from "../../../../Service/API/Admin/AdminApi";
+import { cloudUploadOutline } from "ionicons/icons";
 interface ISelectedDates {
   startDate: Date;
   endDate: Date;
@@ -30,6 +33,7 @@ interface ISelectedDates {
 const SalesComponent = () => {
   const [selectedDate, setSelectedDate] = useState<string[]>([]);
   const [selectedDates, setSelectedDates] = useState<ISelectedDates>();
+  const [salesFile, setSalesFile] = useState<File | null>(null);
 
   const [getFile, setFile] = useState<FileResponse>();
   const [openPDFModal, setopenPDFModal] = useState({
@@ -37,6 +41,7 @@ const SalesComponent = () => {
     modal: "",
     type: "",
   });
+  const [openUploadModal, setOpenUploadModal] = useState<boolean>(false);
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
     isOpen: false,
@@ -46,16 +51,6 @@ const SalesComponent = () => {
     toastMessage: "",
     isOpen: false,
   });
-  const handleWeekChange = (event: Event) => {
-    const target = event.target as HTMLIonDatetimeElement;
-    const value = target.value;
-    if (Array.isArray(value)) {
-      setSelectedDate(value);
-    } else {
-      // setSelectedDate(value);
-      formatDate(value!);
-    }
-  };
 
   const formatDate = (dateStr?: string) => {
     const dateTimeString = dateStr;
@@ -165,6 +160,62 @@ const SalesComponent = () => {
       endDate: end,
     });
   };
+  const handleUploadFile = useCallback(async () => {
+    try {
+      setIsOpenToast({
+        toastMessage: "Uploading Sales. Don't close this window",
+        isOpen: true,
+        type: "SALES",
+      });
+      const response = await UploadSales({ SalesFile: salesFile! });
+
+      if (response.status === 200) {
+        setMessageToast({ toastMessage: "Upload successful", isOpen: true });
+        setIsOpenToast({
+          toastMessage: "Upload successful",
+          isOpen: false,
+          type: "SALES",
+        });
+
+        // Handle response as needed
+      } else {
+        console.error("Upload failed:", response.statusText);
+        setMessageToast({
+          toastMessage: "Upload Failed. Please call the administrator",
+          isOpen: true,
+        });
+        setIsOpenToast({
+          toastMessage: "Upload Failed. Please call the administrator",
+          isOpen: false,
+          type: "SALES",
+        });
+        // Handle error
+      }
+      setOpenUploadModal(false);
+      setFile(undefined);
+    } catch (error) {
+      setIsOpenToast({
+        toastMessage: "",
+        isOpen: false,
+        type: "SALES",
+      });
+      setOpenUploadModal(false);
+      setFile(undefined);
+      console.log(`Something went Wrong: ${error}`);
+    }
+  }, [salesFile]);
+  const handleFileChange = async (event: any) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const File = event.target.files[0];
+      if (!File) {
+        console.error("No file selected");
+        return;
+      } else {
+        setSalesFile(File);
+      }
+    }
+  };
+
   return (
     <IonContent className="generate-sales-main-content">
       <IonText className="generate-sales-title">Generate PDF</IonText>
@@ -194,6 +245,15 @@ const SalesComponent = () => {
         >
           Generate Inventory Report
         </IonButton>
+        <div>
+          <IonButton
+            color={"medium"}
+            expand="block"
+            onClick={() => setOpenUploadModal(true)}
+          >
+            Upload Sales Report
+          </IonButton>
+        </div>
       </div>
       <IonLoading
         isOpen={isOpenToast?.isOpen}
@@ -241,14 +301,47 @@ const SalesComponent = () => {
               handleDateRangeSelected(start, end)
             }
           />
-
-          {/* <IonDatetime
-            multiple
-            presentation="date"
-            className="dateTimeComponent"
-            onIonChange={handleWeekChange}
-            value={selectedDate}
-          /> */}
+        </IonContent>
+      </IonModal>
+      <IonModal
+        isOpen={openUploadModal ? openUploadModal : false}
+        onDidDismiss={() => setOpenUploadModal(false)}
+        initialBreakpoint={0.25}
+        breakpoints={[0, 0.25, 0.5, 0.75, 1]}
+      >
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton onClick={() => setOpenUploadModal(false)}>
+                Close
+              </IonButton>
+            </IonButtons>
+            <IonButtons slot="end">
+              <IonButton onClick={handleUploadFile}>Upload</IonButton>
+            </IonButtons>
+            <IonTitle className="delivery-info-title">
+              Upload Sales File
+            </IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent className="ion-padding">
+          <div className="file-upload-container">
+            <label htmlFor="file-upload" className="file-upload-label">
+              {salesFile && (
+                <p className="file-name">Selected file: {salesFile.name}</p>
+              )}{" "}
+            </label>
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleFileChange}
+              className="file-input"
+            />
+            <IonButton color="medium" expand="block">
+              <IonIcon icon={cloudUploadOutline} slot="start" />
+              Choose File (.xlsx, .xls)
+            </IonButton>
+          </div>
         </IonContent>
       </IonModal>
       <IonToast

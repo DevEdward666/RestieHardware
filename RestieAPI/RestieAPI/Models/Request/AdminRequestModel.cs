@@ -31,7 +31,7 @@
             public string cartid { get; set; }
             public string code { get; set; }
             public string item { get; set; }
-            public Int64 qty { get; set; }
+            public Int16 qty { get; set; }
             public float price { get; set; }
             public float total { get; set; }
             public long createdat { get; set; }
@@ -40,7 +40,7 @@
         }
         public class FileForExcel
         {
-            public IFormFile File { get; set; }
+            public IFormFile SalesFile { get; set; }
         }
     }
 }

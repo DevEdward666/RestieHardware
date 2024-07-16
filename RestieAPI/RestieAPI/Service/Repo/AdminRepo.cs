@@ -490,7 +490,7 @@ namespace RestieAPI.Service.Repo
 
                     List<ImportOrderFromExcel> orderEntities = new List<ImportOrderFromExcel>();
 
-                    for (int row = 2; row <= 2; row++) // Assuming first row is header
+                    for (int row = 3; row <= 3; row++) // Assuming first row is header
                     {
                         ImportOrderFromExcel entity = new ImportOrderFromExcel
                         {
@@ -500,11 +500,9 @@ namespace RestieAPI.Service.Repo
                             paidthru = worksheet.Cells[row, 4].Value.ToString(),
                             paidcash = Convert.ToInt64(worksheet.Cells[row, 5].Value),
                             createdby = worksheet.Cells[row, 6].Value.ToString(),
-                            createdat = Convert.ToInt64(worksheet.Cells[row, 7].Value),
-                            status = worksheet.Cells[row, 8].Value.ToString(),
-                            userid = worksheet.Cells[row, 9].Value.ToString(),
-                            updateat = Convert.ToInt64(worksheet.Cells[row, 10].Value),
-                            type = worksheet.Cells[row, 11].Value.ToString(),
+                            status = worksheet.Cells[row, 7].Value.ToString(),
+                            userid = worksheet.Cells[row, 8].Value.ToString(),
+                            type = worksheet.Cells[row, 9].Value.ToString(),
                            
                            
                         };
@@ -515,24 +513,78 @@ namespace RestieAPI.Service.Repo
                     List<ImportCartFromExcel> cartEntities = new List<ImportCartFromExcel>();
 
                     int rowCount = worksheet.Dimension.Rows;
-                    for (int row = 4; row <= rowCount; row++) // Assuming first row is header
+                    for (int row = 7; row <= rowCount; row++) // Assuming first row is header
                     {
-                        ImportCartFromExcel entity = new ImportCartFromExcel
+                        ImportCartFromExcel entity = new ImportCartFromExcel();
+
+                        // Assuming cartid, code, item, and status cannot be null
+                        entity.cartid = (worksheet.Cells[row, 1].Value ?? string.Empty).ToString();
+                        entity.code = (worksheet.Cells[row, 2].Value ?? string.Empty).ToString();
+                        entity.item = (worksheet.Cells[row, 3].Value ?? string.Empty).ToString();
+                        entity.status = (worksheet.Cells[row, 7].Value ?? string.Empty).ToString();
+
+                        // Handle nullable columns (qty, price, total)
+                        if (worksheet.Cells[row, 4].Value != null && !string.IsNullOrWhiteSpace(worksheet.Cells[row, 4].Value.ToString()))
                         {
-                            cartid = worksheet.Cells[row, 1].Value.ToString(),
-                            code = worksheet.Cells[row, 2].Value.ToString(),
-                            item = worksheet.Cells[row, 3].Value.ToString(),
-                            qty = Convert.ToInt64(worksheet.Cells[row, 4].Value.ToString()),
-                            price = Convert.ToInt64(worksheet.Cells[row, 5].Value.ToString()),
-                            total = Convert.ToInt64(worksheet.Cells[row, 6].Value.ToString()),
-                            createdat = Convert.ToInt64(worksheet.Cells[row, 7].Value),
-                            status = worksheet.Cells[row, 8].Value.ToString(),
-                            updateat = Convert.ToInt64(worksheet.Cells[row, 9].Value),
-                        };
+                            if (short.TryParse(worksheet.Cells[row, 4].Value.ToString(), out short qtyValue))
+                            {
+                                entity.qty = qtyValue;
+                            }
+                            else
+                            {
+                                // Handle invalid format for qty
+                                entity.qty = 0; // or any other default value or error handling logic
+                            }
+                        }
+                        else
+                        {
+                            // Handle null or empty value for qty
+                            entity.qty = 0; // or any other default value
+                        }
+
+                        if (worksheet.Cells[row, 5].Value != null && !string.IsNullOrWhiteSpace(worksheet.Cells[row, 5].Value.ToString()))
+                        {
+                            if (long.TryParse(worksheet.Cells[row, 5].Value.ToString(), out long priceValue))
+                            {
+                                entity.price = priceValue;
+                            }
+                            else
+                            {
+                                // Handle invalid format for price
+                                entity.price = 0; // or any other default value or error handling logic
+                            }
+                        }
+                        else
+                        {
+                            // Handle null or empty value for price
+                            entity.price = 0; // or any other default value
+                        }
+
+                        if (worksheet.Cells[row, 6].Value != null && !string.IsNullOrWhiteSpace(worksheet.Cells[row, 6].Value.ToString()))
+                        {
+                            if (long.TryParse(worksheet.Cells[row, 6].Value.ToString(), out long totalValue))
+                            {
+                                entity.total = totalValue;
+                            }
+                            else
+                            {
+                                // Handle invalid format for total
+                                entity.total = 0; // or any other default value or error handling logic
+                            }
+                        }
+                        else
+                        {
+                            // Handle null or empty value for total
+                            entity.total = 0; // or any other default value
+                        }
 
                         cartEntities.Add(entity);
                     }
+                    DateTime dateTime = DateTime.UtcNow; // Use DateTime.Now for local time
 
+                    // Convert DateTime to Unix timestamp (milliseconds)
+                    long unixTimestampMilliseconds = (long)(dateTime.ToUniversalTime() -
+                        new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
                     var sql = @"insert into orders (orderid,cartid,total,paidthru,paidcash,createdby,createdat,updateat,status,userid,type) 
                         values(@orderid,@cartid,@total,@paidthru,@paidcash,@createdby,@createdat,@updateat,@status,@userid,@type)";
                     var cartsql = @"insert into cart (cartid,code,item,qty,price,total,createdat,status) 
@@ -560,9 +612,9 @@ namespace RestieAPI.Service.Repo
                                         cmd.Parameters.AddWithValue("@status", item.status);
                                         cmd.Parameters.AddWithValue("@type", item.type);
                                         cmd.Parameters.AddWithValue("@userid", item.userid);
-                                        cmd.Parameters.AddWithValue("@createdat", item.createdat);
+                                        cmd.Parameters.AddWithValue("@createdat", unixTimestampMilliseconds);
                                         cmd.Parameters.AddWithValue("@createdby", item.createdby);
-                                        cmd.Parameters.AddWithValue("@updateat", item.updateat);
+                                        cmd.Parameters.AddWithValue("@updateat", 0);
 
                                         cmd.ExecuteNonQuery();
                                     }
@@ -577,7 +629,7 @@ namespace RestieAPI.Service.Repo
                                         cmd.Parameters.AddWithValue("@customer", "automate");
                                         cmd.Parameters.AddWithValue("@cashier", "automate");
                                         cmd.Parameters.AddWithValue("@status", item.status);
-                                        cmd.Parameters.AddWithValue("@createdat", item.createdat);
+                                        cmd.Parameters.AddWithValue("@createdat", unixTimestampMilliseconds);
 
                                         cmd.ExecuteNonQuery();
                                     }
@@ -592,7 +644,7 @@ namespace RestieAPI.Service.Repo
                                         cmd.Parameters.AddWithValue("@qty", item.qty);
                                         cmd.Parameters.AddWithValue("@price", item.price);
                                         cmd.Parameters.AddWithValue("@total", item.total);
-                                        cmd.Parameters.AddWithValue("@createdat", item.total);
+                                        cmd.Parameters.AddWithValue("@createdat", unixTimestampMilliseconds);
                                         cmd.Parameters.AddWithValue("@status", item.status);
 
                                         cmd.ExecuteNonQuery();

@@ -1,4 +1,5 @@
 import {
+  getPlatforms,
   IonButtons,
   IonContent,
   IonHeader,
@@ -21,6 +22,7 @@ import { get_voucher_actions } from "../../../Service/Actions/Inventory/Inventor
 const PaymentOptionsPage = () => {
   const router = useIonRouter();
   const dispatch = useTypedDispatch();
+  const platform = getPlatforms();
   return (
     <IonPage className="payment-options-page-container">
       <IonHeader className="payment-options-page-header">
@@ -41,10 +43,18 @@ const PaymentOptionsPage = () => {
           color="tertiary"
           className="payment-options-toolbar-logo-container"
         >
-          <IonImg
-            src={restielogo}
-            className="payment-options-toolbar-logo"
-          ></IonImg>
+          <div
+            className={` ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? ""
+                : "web"
+            }`}
+          >
+            <IonImg
+              src={restielogo}
+              className="payment-options-toolbar-logo"
+            ></IonImg>
+          </div>
         </IonToolbar>
       </IonHeader>
       <IonContent>

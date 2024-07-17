@@ -62,8 +62,19 @@ export interface PostdOrderList {
   limit: number;
   offset: number;
   status: string;
+  paidThru:string;
   searchdate?: string;
   orderid?: string;
+}
+export interface PostAgedReceivable {
+  transid: string;
+  orderid:string;
+  createdat: number;
+  customer: string;
+  paidthru: string;
+  customer_email: string;
+  contactno: string;
+  total:number;
 }
 export interface PostSelectedOrder {
   orderid: string;
@@ -143,4 +154,8 @@ export interface SubmitReturnRefund {
 }
 export interface CompleteReturnRefund {
   complete: boolean;
+}
+export interface UploadSalesReportFile {
+  SalesFile: File;
+
 }

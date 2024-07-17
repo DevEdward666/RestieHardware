@@ -37,6 +37,40 @@ namespace RestieAPI.Models.Request
           
 
         }
+        public class PostNewItemInventory
+        {
+            public string code { get; set; }
+            public string item { get; set; }
+            public string category { get; set; }
+            public string brand { get; set; }
+            public long onhandqty { get; set; }
+            public long addedqty { get; set; }
+            public string supplierid { get; set; }
+            public float cost { get; set; }
+            public float price { get; set; }
+            public string status { get; set; }
+            public string image { get; set; }
+            public long createdat { get; set; }
+            public long updatedat { get; set; }
+
+
+        }
+        public class PostNewSupplier
+        {
+            public string company { get; set; }
+            public long contactno { get; set; }
+            public string address { get; set; }
+            public long createdat { get; set; }
+
+        }
+        public class PutSupplier
+        {
+            public string supplierid { get; set; }
+            public string company { get; set; }
+            public long contactno { get; set; }
+            public string address { get; set; }
+
+        }
         public class PostCustomerInfo
         {
             public string customerid { get; set; }
@@ -59,6 +93,8 @@ namespace RestieAPI.Models.Request
         {
             public string userid { get; set; }
             public string status { get; set; }
+            public string? paidThru { get; set; }
+
             public string? orderid { get; set; }
             public string? searchdate { get; set; }
             public Int32 limit { get; set; }
@@ -68,6 +104,11 @@ namespace RestieAPI.Models.Request
         public class GetBrand
         {
             public string category { get; set; }
+
+        }
+        public class GetQty
+        {
+            public string code { get; set; }
 
         }
         public class GetCustomer

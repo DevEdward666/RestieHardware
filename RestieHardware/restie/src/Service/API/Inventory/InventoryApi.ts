@@ -7,6 +7,7 @@ import {
   GetItemImageRequest,
   GetItemToRefundRequest,
   ItemReturns,
+  PostAgedReceivable,
   PostDaysSalesModel,
   PostDeliveryImage,
   PostDeliveryInfo,
@@ -151,6 +152,7 @@ export const updateCartOrder = async (payload: Addtocart[]) => {
   return response;
 };
 export const ListOrder = async (payload: PostdOrderList) => {
+
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {
     throw new Error("Token not found");
@@ -162,6 +164,22 @@ export const ListOrder = async (payload: PostdOrderList) => {
       Authorization: `Bearer ${getToken}`,
     },
     JSON.stringify(payload)
+  );
+  return response.result.$values;
+};
+export const ListAgedReceivable = async () => {
+
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const response = await post(
+    `${baseUrl}api/Inventory/GetAllAgedReceivable`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    null
   );
   return response.result.$values;
 };

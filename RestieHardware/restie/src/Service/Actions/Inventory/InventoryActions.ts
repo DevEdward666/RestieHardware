@@ -10,6 +10,7 @@ import {
   LIST_OF_ITEMS,
   ORDER_LIST,
   ORDER_LIST_INFO,
+  RECEIVABLE_LIST,
   SELECTED_ITEM,
   SET_CATEGORY_AND_BRAND,
   SUBMIT_RETURN_REFUND,
@@ -20,6 +21,7 @@ import {
   GetItemsToRefund,
   GetVoucherInfo,
   InsertCustomerInfo,
+  ListAgedReceivable,
   ListOrder,
   PostGetDeliveryInfo,
   PostReturnItems,
@@ -43,6 +45,7 @@ import {
   GetItemToRefundRequest,
   InventoryModel,
   ItemReturns,
+  PostAgedReceivable,
   PostDeliveryInfo,
   PostDeliveryInfoModel,
   PostSelectedOrder,
@@ -159,9 +162,10 @@ const checkPayload = (
     pending: "Pending",
     quotation: "Quotation",
     cancel: "Cancel",
+    debt:"Debt"
   };
   let update_status = "";
-  if (method.toLowerCase() === paymentMethod.cash.toLowerCase()) {
+  if (method.toLowerCase() === paymentMethod.cash.toLowerCase() || method.toLowerCase() === paymentMethod.debt.toLowerCase()) {
     update_status = "approved";
   }
   if (method.toLowerCase() === paymentMethod.quotation.toLowerCase()) {
@@ -221,6 +225,8 @@ export const PostOrder =
         pending: "Pending",
         quotation: "Quotation",
         cancel: "Cancel",
+        debt: "Debt",
+
       };
       let orderid = "";
       if (post_orderid) {
@@ -236,7 +242,7 @@ export const PostOrder =
         customerCash,
         cashierName
       );
-      if (method.toLowerCase() === paymentMethod.cash.toLowerCase()) {
+      if (method.toLowerCase() === paymentMethod.cash.toLowerCase() || method.toLowerCase() === paymentMethod.debt.toLowerCase()) {
         if (payload[0]?.orderid) {
           await deleteCart(updatePayload);
           await addToCart(updatePayload);
@@ -278,7 +284,8 @@ export const PostOrder =
         } else {
           res = await SavedAndPayOrder(updatePayload);
         }
-      } else if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
+      } else if (method.toLowerCase() === paymentMethod.pending.toLowerCase() ) {
+
         await deleteCart(updatePayload);
         res = await addToCart(updatePayload);
       } else if (
@@ -323,6 +330,20 @@ export const getOrderList =
       dispatch({
         type: "ORDER_LIST",
         order_list: res,
+      });
+      return true;
+    } catch (error: any) {
+      console.log(error);
+      return false;
+    }
+  };
+  export const getReceivableList =
+  () => async (dispatch: Dispatch<RECEIVABLE_LIST>) => {
+    try {
+      const res: PostAgedReceivable[] = await ListAgedReceivable();
+      dispatch({
+        type: "RECEIVABLE_LIST",
+        receivable_list: res,
       });
       return true;
     } catch (error: any) {

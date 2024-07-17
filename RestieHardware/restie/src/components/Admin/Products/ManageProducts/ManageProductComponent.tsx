@@ -1,11 +1,9 @@
 import {
-  IonAvatar,
   IonButton,
   IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
-  IonImg,
   IonInput,
   IonItem,
   IonLabel,
@@ -15,23 +13,21 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
+import { saveOutline } from "ionicons/icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { searchInventoryList } from "../../../../Service/Actions/Inventory/InventoryActions";
-import { RootStore, useTypedDispatch } from "../../../../Service/Store";
+import { useSelector } from "react-redux";
+import { PostInventoryModel } from "../../../../Models/Request/Admin/AdminRequestModel";
+import { InventoryModel } from "../../../../Models/Request/Inventory/InventoryModel";
+import { SearchInventoryModel } from "../../../../Models/Request/searchInventory";
+import { SuppliersModel } from "../../../../Models/Response/Admin/AdminModelResponse";
 import {
   PostInventory,
   searchAdminInventoryList,
   searchSupplier,
 } from "../../../../Service/Actions/Admin/AdminActions";
-import { useSelector } from "react-redux";
-import { SearchInventoryModel } from "../../../../Models/Request/searchInventory";
-import { mail, saveOutline } from "ionicons/icons";
-import { PostInventoryModel } from "../../../../Models/Request/Admin/AdminRequestModel";
-import "./ManageProductComponent.css";
-import { InventoryModel } from "../../../../Models/Request/Inventory/InventoryModel";
-import { IonicSelectableComponent } from "ionic-selectable";
-import { SuppliersModel } from "../../../../Models/Response/Admin/AdminModelResponse";
 import { set_toast } from "../../../../Service/Actions/Commons/CommonsActions";
+import { RootStore, useTypedDispatch } from "../../../../Service/Store";
+import "./ManageProductComponent.css";
 const ManageProductComponent = () => {
   const admin_list_of_items =
     useSelector((store: RootStore) => store.AdminReducer.admin_list_of_items) ||

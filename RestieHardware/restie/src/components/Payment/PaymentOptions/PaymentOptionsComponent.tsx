@@ -31,7 +31,6 @@ import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import cash from "../../../assets/images/icons/Cash.png";
 import ewallets from "../../../assets/images/icons/E-Wallets.png";
 import card from "../../../assets/images/icons/card.png";
-import draft from "../../../assets/images/icons/draft.png";
 import "./PaymentOptionsComponent.css";
 const PaymentOptionsComponent = () => {
   const add_to_cart = useSelector(
@@ -65,78 +64,67 @@ const PaymentOptionsComponent = () => {
       voucher: "",
     });
 
+  const saveOrder = async (type: string) => {
+    await handlePostOrder(type);
+  };
+
   const handlePay = useCallback(
     async (type: string) => {
       const totalAmountToPay = getOverallTotal > 0 ? getOverallTotal : getTotal;
       if (
-        customerPayemntInfo.cash < totalAmountToPay &&
-        type.toLowerCase() === "cash"
+        type.toLowerCase() === "cash" &&
+        customerPayemntInfo.cash < totalAmountToPay
       ) {
         setIsOpenToast({
           toastMessage: "Not enough cash",
           isOpen: true,
           type: "toast",
         });
-      } else if (type.toLowerCase() === "quotation") {
-        setIsOpenToast({
-          toastMessage: "Loading",
-          isOpen: true,
-          type: "loader",
-        });
-        const addedOrder: ResponseModel = await dispatch(
-          PostOrder(
-            add_to_cart[0].orderid!,
-            add_to_cart,
-            customer_information,
-            new Date().getTime(),
-            type,
-            type.toLowerCase() === "cash" ? customerPayemntInfo.cash : 0.0,
-            user_login_information.name
-          )
-        );
-        if (addedOrder) {
-          const payload: PostSelectedOrder = {
-            orderid: addedOrder.result?.orderid!,
-            userid: "",
-            cartid: addedOrder.result?.cartid!,
-          };
-          dispatch(getOrderInfo(payload));
-          router.push(
-            `/orderInfo?orderid=${addedOrder.result?.orderid!}&return=false`
-          );
-        }
       } else {
         setIsOpenToast({
           toastMessage: "Loading",
           isOpen: true,
           type: "loader",
         });
-        const addedOrder: ResponseModel = await dispatch(
-          PostOrder(
-            add_to_cart[0].orderid!,
-            add_to_cart,
-            customer_information,
-            new Date().getTime(),
-            type,
-            type.toLowerCase() === "cash" ? customerPayemntInfo.cash : 0.0,
-            user_login_information.name
-          )
-        );
-        if (addedOrder) {
-          const payload: PostSelectedOrder = {
-            orderid: addedOrder.result?.orderid!,
-            userid: "",
-            cartid: addedOrder.result?.cartid!,
-          };
-          dispatch(getOrderInfo(payload));
-          router.push(
-            `/orderInfo?orderid=${addedOrder.result?.orderid!}&return=false`
-          );
-        }
+
+        await saveOrder(type);
       }
     },
-    [dispatch, add_to_cart, customer_information, customerPayemntInfo, getTotal]
+    [getOverallTotal, getTotal, customerPayemntInfo]
   );
+
+  const handlePostOrder = useCallback(
+    async (type: string) => {
+      const addedOrder: ResponseModel = await dispatch(
+        PostOrder(
+          add_to_cart[0].orderid!,
+          add_to_cart,
+          customer_information,
+          new Date().getTime(),
+          type,
+          type.toLowerCase() === "cash" ? customerPayemntInfo.cash : 0.0,
+          user_login_information.name
+        )
+      );
+
+      if (addedOrder) {
+        const payload: PostSelectedOrder = {
+          orderid: addedOrder.result?.orderid!,
+          userid: "",
+          cartid: addedOrder.result?.cartid!,
+        };
+
+        dispatch(getOrderInfo(payload));
+
+        router.push(
+          `/orderInfo?orderid=${addedOrder.result
+            ?.orderid!}&return=false&notification=false`
+        );
+      }
+    },
+    [dispatch, add_to_cart, customer_information, customerPayemntInfo]
+  );
+
   useEffect(() => {
     let totalAmount = 0;
     add_to_cart.forEach((val: any) => {
@@ -342,14 +330,22 @@ const PaymentOptionsComponent = () => {
                   <IonLabel>Card</IonLabel>
                 </div>
               </IonCard> */}
-                <IonButton
-                  color={"medium"}
-                  className="payment-info-card-content-draft"
-                  onClick={() => handlePay("Pending")}
-                >
-                  <IonIcon slot="start" icon={draft}></IonIcon>
-                  Save as Draft
-                </IonButton>
+                <div className="save-button-container">
+                  <IonButton
+                    color={"medium"}
+                    className="payment-info-card-content-draft"
+                    onClick={() => handlePay("Pending")}
+                  >
+                    Save as Draft
+                  </IonButton>
+                  <IonButton
+                    color={"medium"}
+                    className="payment-info-card-content-draft"
+                    onClick={() => handlePay("Debt")}
+                  >
+                    Save as Terms
+                  </IonButton>
+                </div>
                 {user_login_information?.role.trim().toLowerCase() ===
                   "admin" ||
                 user_login_information?.role.trim().toLowerCase() ===
@@ -359,7 +355,6 @@ const PaymentOptionsComponent = () => {
                     className="payment-info-card-content-draft"
                     onClick={() => handlePay("Quotation")}
                   >
-                    <IonIcon slot="start" icon={draft}></IonIcon>
                     Create a Quotation
                   </IonButton>
                 ) : null}

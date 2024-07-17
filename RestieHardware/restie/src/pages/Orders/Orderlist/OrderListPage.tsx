@@ -39,6 +39,10 @@ const OrderListPage = () => {
     new Date().toISOString()
   );
   const handleSelectFilter = (val: CustomEvent<SegmentChangeEventDetail>) => {
+    let statusValue = "";
+    if (statusValue === "debt") {
+      statusValue = "approved";
+    }
     setSelectedFilter((prev) => ({
       ...prev,
       status: val.detail.value?.toString()!,
@@ -86,7 +90,18 @@ const OrderListPage = () => {
           color="tertiary"
           className="order-list-toolbar-logo-container"
         >
-          <IonImg src={restielogo} className="order-list-toolbar-logo"></IonImg>
+          <div
+            className={` ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? ""
+                : "web"
+            }`}
+          >
+            <IonImg
+              src={restielogo}
+              className="order-list-toolbar-logo"
+            ></IonImg>
+          </div>
         </IonToolbar>
         <IonToolbar mode="ios" color="tertiary">
           <div className="order-list-filter">
@@ -107,6 +122,9 @@ const OrderListPage = () => {
               </IonSegmentButton>
               <IonSegmentButton value="delivered">
                 <IonLabel>Delivered</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="debt">
+                <IonLabel>Debts</IonLabel>
               </IonSegmentButton>
               <IonSegmentButton value="cancel">
                 <IonLabel>Cancelled</IonLabel>

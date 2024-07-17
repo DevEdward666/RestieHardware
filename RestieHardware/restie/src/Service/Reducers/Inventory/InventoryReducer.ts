@@ -54,6 +54,7 @@ const defaultState: InventoryTypesModel = {
   submit_return_refund: { submit: false },
   checked_return_refund: [],
   complete_return_refund: { complete: false },
+  receivable_list: []
 };
 
 const InventoryReducer = (
@@ -137,6 +138,12 @@ const InventoryReducer = (
       return {
         ...state,
         checked_return_refund: action.checked_return_refund,
+      };
+    }
+    case "RECEIVABLE_LIST": {
+      return {
+        ...state,
+        receivable_list: action.receivable_list,
       };
     }
     default:

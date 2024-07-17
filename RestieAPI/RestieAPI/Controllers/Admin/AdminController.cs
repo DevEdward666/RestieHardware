@@ -35,6 +35,36 @@ namespace RestieAPI.Controllers.Admin
         public ActionResult<PostResponse> PostInventory(PostInventory postInventory)
         {
             return Ok(_adminRepo.PostInventory(postInventory));
+        }       
+        [Authorize]
+        [HttpPost("NewItemInventory")]
+        public ActionResult<PostResponse> PostNewItemInventory(PostNewItemInventory postNewItem)
+        {
+            return Ok(_adminRepo.PostNewItemInventory(postNewItem));
+        }          
+        [Authorize]
+        [HttpPost("AddNewSupplier")]
+        public ActionResult<PostResponse> PostNewSupplier(PostNewSupplier postNewSupplier)
+        {
+            return Ok(_adminRepo.PostNewSupplier(postNewSupplier));
+        }        
+        [Authorize]
+        [HttpPost("UpdateSupplier")]
+        public ActionResult<PostResponse> PutSupplier(PutSupplier putSupplier)
+        {
+            return Ok(_adminRepo.PutSupplier(putSupplier));
+        }     
+        //[Authorize]
+        [HttpPost("ImportDataFromExcel")]
+        public ActionResult<PostInventoryAddResponse> ImportDataFromExcel(FileForExcel forExcel)
+        {
+            if (forExcel.SalesFile == null || forExcel.SalesFile.Length == 0)
+            {
+                return BadRequest("File is empty or not provided.");
+            }
+
+            var response = _adminRepo.ImportDataFromExcel(forExcel.SalesFile);
+            return Ok(response);
         }  
         [Authorize]
         [HttpPost("searchSupplier/{pageNumber}")]

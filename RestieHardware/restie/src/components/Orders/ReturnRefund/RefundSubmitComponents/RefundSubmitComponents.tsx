@@ -100,7 +100,9 @@ const RefundSubmitComponents: React.FC = () => {
             isOpen: true,
             toastMessage: res.message,
           });
-          router.push(`/orderInfo?orderid=${orderId}&return=false`);
+          router.push(
+            `/orderInfo?orderid=${orderId}&return=false&notification=false`
+          );
         } else {
           setIsOpenToast({
             isOpen: true,

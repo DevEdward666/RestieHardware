@@ -43,7 +43,7 @@ const ManageProductPage = () => {
           <IonButtons slot="start" onClick={() => router.goBack()}>
             <IonIcon slot="icon-only" icon={arrowBack}></IonIcon>
           </IonButtons>
-          <IonTitle>Manage Products</IonTitle>
+          <IonTitle>Update Item</IonTitle>
         </IonToolbar>
         <IonToolbar
           mode="ios"

@@ -207,7 +207,12 @@ namespace RestieAPI.Controllers.Inventory
         {
             return Ok(_inventoryRepo.PostReturnItems(returnItems));
         }
-  
+        [Authorize]
+        [HttpPost("GetAllAgedReceivable")]
+        public ActionResult<AgedReceivableResponseModel> GetAllAgedReceivable()
+        {
+            return Ok(_inventoryRepo.GetAllAgedReceivable());
+        }
         [Authorize]
         [HttpPost("UploadFile")]
         public async Task<ActionResult<PostImageResponse>> Post([FromForm] FileModel file)

@@ -245,7 +245,7 @@ namespace RestieAPI.Service.Repo
                             statusCode= 200
                         };
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         tran.Rollback();
                         return new InventoryItemModel
@@ -1308,12 +1308,32 @@ namespace RestieAPI.Service.Repo
                             ORDER BY ors.createdat desc LIMIT @limit OFFSET @offset;";
 
                 }
+            }else if (getUserOrder.paidThru == "debt")
+            {
+                if (getUserOrder.searchdate.Length <= 0)
+                {
+                    sql = @"select * from orders where paidthru = 'Debt' AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+                }
+                else if (getUserOrder.searchdate.Length > 0)
+                {
+                    sql = @"select * from orders where paidthru = 'Debt' AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') AND DATE(to_timestamp(createdat / 1000.0) AT TIME ZONE 'Asia/Manila')=@searchdate ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+                    searchDate = DateTime.Parse(getUserOrder.searchdate);
+                }
             }
             else
             {
                 if (getUserOrder.searchdate.Length <= 0)
                 {
-                    sql = @"select * from orders where LOWER(status)=@status AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+                   if( getUserOrder.status == "approved")
+                    {
+                        sql = @"select * from orders where LOWER(status)=@status and paidThru!='Debt' AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+
+                    }
+                    else
+                    {
+                        sql = @"select * from orders where LOWER(status)=@status AND orderid LIKE CONCAT('%', LOWER(@orderid), '%') ORDER BY createdat desc LIMIT @limit OFFSET @offset;";
+
+                    }
                 }
                 else if (getUserOrder.searchdate.Length > 0)
                 {
@@ -1330,6 +1350,7 @@ namespace RestieAPI.Service.Repo
                 { "@status", getUserOrder.status },
                 { "@orderid", getUserOrder.orderid },
                 { "@searchdate", searchDate },
+                { "@paidThru", getUserOrder.paidThru},
                 { "@offset", getUserOrder.offset },
             };
 
@@ -1402,21 +1423,20 @@ namespace RestieAPI.Service.Repo
         }
         public OrderInfoResponseModel GetOrderInfo(InventoryRequestModel.GetSelectedOrder getUserOrder)
         {
-            var sql = @"
-                        SELECT COALESCE(cts.customerid, '') AS customerid, COALESCE(cts.customer_email, '') AS customer_email, inv.category, inv.brand, trans.transid, 
-                                inv.qty AS onhandqty, COALESCE(cts.name, '') AS name, COALESCE(cts.address, '') AS address, COALESCE(cts.contactno, '') AS contactno, ct.cartid, ors.orderid, 
-                                ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code, ct.item, ct.price, 
-                                ct.qty, ors.status, ors.createdby, ors.type
-                        FROM orders AS ors 
-                        JOIN cart AS ct ON ors.cartid = ct.cartid 
-                        LEFT JOIN customer cts ON cts.customerid = ors.userid 
-                        JOIN inventory AS inv ON inv.code = ct.code
-                        LEFT JOIN transaction AS trans ON trans.orderid = ors.orderid
-                        WHERE ors.orderid = @orderid 
-                        group by cts.customerid, cts.customer_email, inv.category, inv.brand, trans.transid,
-                                 ct.cartid, ors.orderid, cts.contactno, cts.address, ct.price, ct.item, ct.code,
-                                 ors.createdat, ors.type, ors.createdby, ors.total, cts.name, ors.paidthru, ors.status,
-                                 ct.status, ct.qty, ors.paidcash, inv.qty";
+            var sql = @"SELECT COALESCE((SELECT cts.customerid from customer cts where cts.customerid =ors.userid  limit 1),'') as customerid ,
+                        COALESCE((SELECT cts.customer_email from customer cts where cts.customerid =ors.userid  limit 1),'') as customer_email ,
+                           inv.category, inv.brand, COALESCE((SELECT tr.transid  from transaction tr where tr.orderid = ors.orderid limit 1),'') as transid,
+                           COALESCE(inv.qty, 0) AS onhandqty,
+                        COALESCE((SELECT cts.name from customer cts where cts.customerid =ors.userid  limit 1),'') as name,
+                        COALESCE((SELECT cts.address from customer cts where cts.customerid =ors.userid  limit 1),'') as address,
+                        COALESCE((SELECT cts.contactno from customer cts where cts.customerid =ors.userid  limit 1),'') as contactno,
+                           ct.cartid, ors.orderid,
+                           ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code,
+                           ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type
+                    FROM orders AS ors
+                    left JOIN cart AS ct ON ors.cartid = ct.cartid
+                    LEFT JOIN inventory AS inv ON inv.code = ct.code
+                    WHERE ors.orderid = @orderid;";
 
             var parameters = new Dictionary<string, object>
             {
@@ -1629,6 +1649,89 @@ namespace RestieAPI.Service.Repo
                     {
                         tran.Rollback();
                         return new SelectedOrderResponseModel
+                        {
+                            result = [],
+                            statusCode = 500,
+                            success = false,
+
+                        };
+                        throw;
+                    }
+                }
+            }
+
+
+        }
+        public AgedReceivableResponseModel GetAllAgedReceivable()
+        {
+            var sql = @"select ors.orderid,tr.transid,ors.total,ors.createdat,cr.contactno,cr.customer_email,
+                        tr.customer,ors.paidthru
+                        from transaction tr join orders ors on tr.orderid = ors.orderid
+                        join customer cr on cr.customerid = ors.userid
+                        where ors.paidthru ='Debt'
+                        AND DATE(to_timestamp(tr.createdat / 1000.0)AT TIME ZONE 'Asia/Manila') < CURRENT_TIMESTAMP - INTERVAL '1 days';
+                        ";
+
+            //var parameters = new Dictionary<string, object>
+            //    {
+            //        { "@orderid", getUserOrder.orderid },
+            //    };
+
+
+            var results = new List<AgedReceivableResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            //foreach (var param in parameters)
+                            //{
+                            //    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            //}
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var receivableResponse = new AgedReceivableResponse
+                                    {
+                                      
+                                        transid = reader.GetString(reader.GetOrdinal("transid")),
+                                        orderid = reader.GetString(reader.GetOrdinal("orderid")),
+                                        customer = reader.GetString(reader.GetOrdinal("customer")),
+                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                        paidthru = reader.GetString(reader.GetOrdinal("paidthru")),
+                                        customer_email = reader.GetString(reader.GetOrdinal("customer_email")),
+                                        contactno = reader.GetString(reader.GetOrdinal("contactno")),
+                                        total = reader.GetInt32(reader.GetOrdinal("total")),
+
+                                    };
+
+                                    results.Add(receivableResponse);
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new AgedReceivableResponseModel
+                        {
+                            result = results,
+                            statusCode = 200,
+                            success = true,
+
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new AgedReceivableResponseModel
                         {
                             result = [],
                             statusCode = 500,
@@ -2212,11 +2315,18 @@ namespace RestieAPI.Service.Repo
         }
         public SalesResponseModel getByDaySales(GetSales getSales)
         {
-            var sql = @"select  ct.code, TRIM(ct.item) as item, SUM(ct.qty) as qty, TO_CHAR(SUM(ct.total), 'FM999,999,999.00') AS total_sales
-                from transaction as tr join orders as ors on tr.orderid = ors.orderid
-                join cart as ct on ct.cartid = ors.cartid where LOWER(ors.status) = 'approved'   and LOWER(ct.status) = 'approved'
-                AND DATE(to_timestamp(tr.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
-                group by ct.item, ct.code;";
+            var sql = @"select  ct.code, TRIM(ct.item) as item, SUM(ct.qty) as qty, it.cost , it.price,
+                TO_CHAR(SUM(it.cost * ct.qty), 'FM999,999,999.00') AS total_cost,
+                TO_CHAR(SUM(ct.total), 'FM999,999,999.00') AS total_sales,
+               TO_CHAR(SUM(ct.total) - SUM(it.cost * ct.qty), 'FM999,999,999.00') AS profit
+                from transaction as tr
+                right join orders as ors on tr.orderid = ors.orderid
+                join cart as ct on ct.cartid = ors.cartid
+                join inventory it on it.code = ct.code
+                where
+                (LOWER(ors.status)  IN ('approved', 'delivered') OR LOWER(ct.status) IN ('approved', 'delivered'))
+                AND DATE(to_timestamp(ors.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
+                group by ct.item, ct.code,it.cost,it.price;";
 
             DateTime fromDate = DateTime.Parse(getSales.fromDate);
             DateTime toDate = DateTime.Parse(getSales.toDate); 
@@ -2253,7 +2363,11 @@ namespace RestieAPI.Service.Repo
                                         code = reader.GetString(reader.GetOrdinal("code")),
                                         item = reader.GetString(reader.GetOrdinal("item")),
                                         qty = reader.GetInt16(reader.GetOrdinal("qty")),
+                                        price = reader.GetInt16(reader.GetOrdinal("price")),
+                                        cost = reader.GetInt16(reader.GetOrdinal("cost")),
+                                        total_cost = reader.GetString(reader.GetOrdinal("total_cost")),
                                         total_sales = reader.GetString(reader.GetOrdinal("total_sales")),
+                                        profit = reader.GetString(reader.GetOrdinal("profit")),
                                     };
 
                                     results.Add(salesResponse);
@@ -2293,7 +2407,7 @@ namespace RestieAPI.Service.Repo
         public SalesResponseModel GenerateSalesReturn(GetSales getSales)
         {
             var sql = @" select  ct.code, TRIM(ct.item) as item, SUM(ret.price) as price, SUM(ret.qty) as qty, TO_CHAR(SUM(ret.qty* ret.price), 'FM999,999,999.00') AS total_sales
-                from transaction as tr join orders as ors on tr.orderid = ors.orderid
+                from transaction as tr right join orders as ors on tr.orderid = ors.orderid
                 join cart as ct on ct.cartid = ors.cartid
                 join returns ret on ret.orderid = ors.orderid
                 where LOWER(ors.status) = 'approved' and LOWER(ct.status) = 'return'
@@ -2813,35 +2927,66 @@ namespace RestieAPI.Service.Repo
                     doc.Add(title);
 
                     // Add table
-                    PdfPTable table = new PdfPTable(4);
+                    PdfPTable table = new PdfPTable(8);
                     table.WidthPercentage = 100;
-                    table.SetWidths(new float[] { 1, 3, 1, 2 });
+                    table.SetWidths(new float[] { 1, 3, 1, 1, 1, 1.5f, 1.5f, 1.5f });
                     table.SpacingBefore = 20f; // Add spacing before the table
                                                // Add table headers
                     table.AddCell(new PdfPCell(new Phrase("Code", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase("Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase("Qty", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                    table.AddCell(new PdfPCell(new Phrase("Total", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase("Cost", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase("Price", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase("Total Cost", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase("Total Sales", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase("Profit", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
       
 
                     // Add table data
                     decimal totalSales = 0;
+                    decimal totalCost = 0;
+                    decimal profit = 0;
                     foreach (var sale in sales)
                     {
                   
                     table.AddCell(sale.code);
                     table.AddCell(sale.item);
                     table.AddCell(new PdfPCell(new Phrase(sale.qty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.cost.ToString()).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.price.ToString()).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.total_cost).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.total_sales).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.profit).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     totalSales += Decimal.Parse(sale.total_sales);
+                    totalCost += Decimal.Parse(sale.total_cost);
+                    profit += Decimal.Parse(sale.profit);
                     }
 
                     // Add total row
-                    PdfPCell totalCell = new PdfPCell(new Phrase("Overall Total", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
-                    totalCell.Colspan = 3;
-                    totalCell.HorizontalAlignment = Element.ALIGN_RIGHT;
-                    table.AddCell(totalCell);
-                    table.AddCell(new PdfPCell(new Phrase(totalSales.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    PdfPCell totalCellCost = new PdfPCell(new Phrase("Overall Total Cost", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    PdfPCell totalCellPrice = new PdfPCell(new Phrase("Overall Total Sales", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    PdfPCell totalCellProfit = new PdfPCell(new Phrase("Overall Profit", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    totalCellCost.Colspan = 3;
+                    totalCellCost.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    totalCellPrice.Colspan = 3;
+                    totalCellPrice.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    totalCellProfit.Colspan = 3;
+                    totalCellProfit.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    table.AddCell(totalCellCost);
+                    table.AddCell(totalCellPrice);
+                    table.AddCell(totalCellProfit);
+                    PdfPCell totalCostData = new PdfPCell(new Phrase(totalCost.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    PdfPCell totalPriceData = new PdfPCell(new Phrase(totalSales.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    PdfPCell totalProfitData = new PdfPCell(new Phrase(profit.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                totalCostData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                totalCostData.Colspan = 3;
+                totalPriceData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                totalPriceData.Colspan = 3;
+                totalProfitData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                totalProfitData.Colspan = 3;
+                table.AddCell(totalCostData);
+                    table.AddCell(totalPriceData);
+                    table.AddCell(totalProfitData);
                     doc.Add(table);
                     doc.Close();
 
@@ -2948,7 +3093,7 @@ namespace RestieAPI.Service.Repo
                 Paragraph Total = new Paragraph();
                 Total.Alignment = Element.ALIGN_RIGHT;
                 Total.Add(Chunk.NEWLINE);
-                Total.Add(new Chunk($"Overall Total {totalSales.ToString("N2")}", FontFactory.GetFont(FontFactory.HELVETICA, 18,Font.BOLD)));
+                Total.Add(new Chunk($"Overall Total {totalSales.ToString("N2")}", FontFactory.GetFont(FontFactory.HELVETICA, 18,iTextSharp.text.Font.BOLD)));
                 doc.Add(Total);
 
                 Paragraph Terms = new Paragraph();

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "../pages/Orders/Orderlist/OrderListPage.css";
+import "./MyCalendar.css";
 interface IDateRange {
   onDateRangeSelected: (startDate: Date, endDate: Date) => void;
 }

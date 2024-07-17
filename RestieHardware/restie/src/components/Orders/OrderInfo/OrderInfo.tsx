@@ -1,4 +1,6 @@
+import { BleClient } from "@capacitor-community/bluetooth-le";
 import { Clipboard } from "@capacitor/clipboard";
+import { Plugins } from "@capacitor/core";
 import {
   IonButton,
   IonButtons,
@@ -12,22 +14,14 @@ import {
   IonModal,
   IonText,
   IonTitle,
+  IonToast,
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
 import "@ionic/react/css/ionic-swiper.css";
 import { format } from "date-fns";
 import EscPosEncoder from "esc-pos-encoder-ionic";
-import {
-  cashOutline,
-  chevronForwardOutline,
-  close,
-  closeCircle,
-  closeCircleOutline,
-  closeCircleSharp,
-  copy,
-  print,
-} from "ionicons/icons";
+import { cashOutline, close, copy, print } from "ionicons/icons";
 import html2PDF from "jspdf-html2canvas";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
@@ -43,6 +37,7 @@ import {
   PostDeliveryInfoModel,
   PostSelectedOrder,
 } from "../../../Models/Request/Inventory/InventoryModel";
+import { ResponseModel } from "../../../Models/Response/Commons/Commons";
 import {
   FileResponse,
   GetDeliveryInfo,
@@ -62,21 +57,14 @@ import {
   getInventory,
   getOrderInfo,
   get_item_returns,
-  selectedOrder,
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import { GetLoginUser } from "../../../Service/Actions/Login/LoginActions";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import logo from "../../../assets/images/Icon@2.png";
 import breakline from "../../../assets/images/breakline.png";
 import "./OrderInfo.css";
-import { ResponseModel } from "../../../Models/Response/Commons/Commons";
-import { Plugins } from "@capacitor/core";
-import {
-  BleClient,
-  numberToUUID,
-  numbersToDataView,
-} from "@capacitor-community/bluetooth-le";
-const OrderInfoComponent = () => {
+
+const OrderInfoComponent: React.FC = () => {
   const { BluetoothPrinter } = Plugins;
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
@@ -97,6 +85,12 @@ const OrderInfoComponent = () => {
     deliverydate: 0,
     path: "",
   });
+  const [openCashModal, setOpenCashModal] = useState<boolean>(false);
+  const [totalCash, setTotalCash] = useState<number>(0);
+  const [isOpenMessageToast, setMessageToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+  });
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
     isOpen: false,
@@ -113,6 +107,7 @@ const OrderInfoComponent = () => {
   const [getEmail, setEmail] = useState<string>("");
   const [getReturnsFromUrl, setReturnsFromUrl] = useState<string>("");
 
+  const [modalDismiss, setCanDismiss] = useState<boolean>(false);
   const [elapsedTime, setElapsedTime] = useState({
     hour: 0,
     minute: 0,
@@ -194,7 +189,7 @@ const OrderInfoComponent = () => {
       } else {
         if (getReturnsFromUrl === "true") {
           let total = 0;
-          order_list_info.return_item.map((val) => {
+          order_list_info?.return_item.map((val) => {
             total += val.total;
           });
           setTotalAmount(total);
@@ -204,7 +199,7 @@ const OrderInfoComponent = () => {
       }
     };
     initialize();
-  }, [get_voucher, order_list_info]);
+  }, [get_voucher, order_list_info, getReturnsFromUrl]);
   const handleSelectOrder = (orderid: string, cartid: string) => {
     const payload: PostSelectedOrder = {
       orderid: orderid,
@@ -232,40 +227,47 @@ const OrderInfoComponent = () => {
       };
       payload.push(newItem);
     });
-    setIsOpenToast({
-      toastMessage: "Loading",
-      isOpen: true,
-      type: "loader",
-    });
-    const addedOrder: ResponseModel = await dispatch(
-      PostOrder(
-        payload[0].orderid!,
-        payload,
-        customer_information,
-        new Date().getTime(),
-        "Cancel",
-        0.0,
-        user_login_information.name
-      )
-    );
-    if (addedOrder) {
-      const payload: PostSelectedOrder = {
-        orderid: addedOrder.result?.orderid!,
-        userid: "",
-        cartid: addedOrder.result?.cartid!,
-      };
-      dispatch(getOrderInfo(payload));
+    await saveOrder(payload, "Cancel", 0.0);
+  }, [dispatch, user_login_information, order_list_info]);
+  const saveOrder = useCallback(
+    async (payload: Addtocart[], method: string, cash: number) => {
       setIsOpenToast({
         toastMessage: "Loading",
-        isOpen: false,
+        isOpen: true,
         type: "loader",
       });
-      router.push(
-        `/orderInfo?orderid=${order_list_info.order_info.orderid!}&return=false`
+      const addedOrder: ResponseModel = await dispatch(
+        PostOrder(
+          payload[0].orderid!,
+          payload,
+          customer_information,
+          new Date().getTime(),
+          method,
+          cash,
+          user_login_information.name
+        )
       );
-    }
-  }, [dispatch, user_login_information, order_list_info]);
-  const handleApprove = () => {
+      if (addedOrder) {
+        const payload: PostSelectedOrder = {
+          orderid: addedOrder.result?.orderid!,
+          userid: "",
+          cartid: addedOrder.result?.cartid!,
+        };
+        dispatch(getOrderInfo(payload));
+        setIsOpenToast({
+          toastMessage: "Loading",
+          isOpen: false,
+          type: "loader",
+        });
+        router.push(
+          `/orderInfo?orderid=${order_list_info.order_info
+            .orderid!}&return=false&notification=false`
+        );
+      }
+    },
+    [dispatch]
+  );
+  const handleApprove = useCallback(async () => {
     let newItem: Addtocart;
     let payload: Addtocart[] = [];
     order_list_info.order_item.map((val) => {
@@ -286,7 +288,7 @@ const OrderInfoComponent = () => {
 
     dispatch(addToCartAction(payload));
     router.push("/paymentoptions");
-  };
+  }, [dispatch, order_list_info]);
   const handleEdit = useCallback(
     (reorder: boolean) => {
       // let payload: Addtocart[] = []; // Initialize payload as an empty array
@@ -351,6 +353,7 @@ const OrderInfoComponent = () => {
     const isreturn = url.searchParams.get("return");
     setReturnsFromUrl(isreturn!);
   };
+
   useEffect(() => {
     const initialize = async () => {
       const orderid = getOrderIDFromURL();
@@ -641,7 +644,7 @@ const OrderInfoComponent = () => {
   }, [dispatch, order_list_info]);
   // Generate receipt header
   const generateReceiptHeader = (order_list_info: GetListOrderInfo) => {
-    return `Restie Hardware\nAddress: SIR Bucana 76-A\nSandawa Matina Davao City\nDavao City, Philippines\nContact No.: (082) 224 1362\nInvoice #: ${
+    return `Delivery Receipt\nRestie Hardware\nAddress: SIR Bucana 76-A\nSandawa Matina Davao City\nDavao City, Philippines\nContact No.: (082) 224 1362\nInvoice #: ${
       order_list_info.order_info?.transid?.split("-")[0]
     }\n--------------------------------`;
   };
@@ -652,7 +655,8 @@ const OrderInfoComponent = () => {
     orderDate: string
   ) => {
     const orderInfo = order_list_info.order_info;
-    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nOrder ID: ${orderInfo?.orderid}\n--------------------------------\nCode   Item  Price  Qty  Total\n--------------------------------\n\n`;
+    // return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nOrder ID: ${orderInfo?.orderid}\n--------------------------------\nCode   Item  Price  Qty  Total\n--------------------------------\n\n`;
+    return `Customer: ${orderInfo?.name}\nAddress: ${orderInfo?.address}\nContact: ${orderInfo?.contactno}\nOrder Type: ${orderInfo?.type}\nOrder Date: ${orderDate}\nCashier: ${orderInfo?.createdby}\nOrder ID: ${orderInfo?.orderid}\n--------------------------------\n`;
   };
 
   // Generate receipt footer
@@ -670,9 +674,10 @@ const OrderInfoComponent = () => {
     return order_list_info.order_item
       .map(
         (item) =>
-          `${item.code}-${item.item.trim().slice(0, 10)}-P${item.price.toFixed(
-            2
-          )}-${item.qty}-P${(item.price * item.qty).toFixed(2)}`
+          `${item.code}\n${item.item.trim()}\nPrice        Qty      Total\nP${
+            item.price
+          }       |    ${item.qty}    |  P${item.price * item.qty}
+        \n--------------------------------`
       )
       .join("\n");
   };
@@ -753,125 +758,69 @@ const OrderInfoComponent = () => {
   const setPermissionRequested = (value: any) => {
     permissionRequested = value;
   };
+  const handleReceivedPayment = () => {
+    setOpenSearchModal({ isOpen: false, modal: "process" });
+    setCanDismiss(true);
+    setOpenCashModal(true);
+  };
+  const handleCloseModal = () => {
+    setOpenSearchModal({ isOpen: false, modal: "receipt" });
+  };
+  const handleCash = (ev: Event) => {
+    const target = ev.target as HTMLIonInputElement;
+    const query = target.value?.toString() ?? "";
+    const cashinput = parseInt(query);
+
+    setTotalCash(cashinput);
+  };
+  const handleSubmitPayment = useCallback(async () => {
+    if (totalCash < getTotalAmount) {
+      setTotalCash(0);
+      setMessageToast({
+        toastMessage: "Credit is not enough",
+        isOpen: true,
+      });
+      return;
+    }
+    let newItem: Addtocart;
+    let payload: Addtocart[] = [];
+    order_list_info.order_item.map((val) => {
+      newItem = {
+        onhandqty: val?.onhandqty!,
+        code: val.code,
+        item: val.item,
+        qty: val.qty,
+        price: val.price,
+        image: "",
+        orderid: order_list_info.order_info.orderid,
+        cartid: order_list_info.order_info.cartid,
+        createdAt: order_list_info.order_info.createdat,
+        status: order_list_info.order_info.status,
+      };
+      payload.push(newItem);
+    });
+    await saveOrder(payload, "Cash", totalCash);
+    setOpenSearchModal({ isOpen: false, modal: "process" });
+    setCanDismiss(true);
+    setOpenCashModal(false);
+  }, [order_list_info, getTotalAmount, totalCash]);
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
         <div className="order-list-info-footer-approved"> </div>
         {getReturnsFromUrl === "false" ? (
           <div>
-            {order_list_info.order_info?.paidthru?.toLowerCase() ===
-            "cancel" ? (
-              <div className="order-list-info-footer-approved-info">
-                <>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() => handleEdit(true)}
-                  >
-                    Reorder
-                  </IonButton>
-                </>
-              </div>
-            ) : null}
-
-            {order_list_info.order_info?.paidthru?.toLowerCase() ===
-              "pending" ||
-            order_list_info.order_info?.paidthru?.toLowerCase() ===
-              "quotation" ? (
-              <div className="order-list-info-footer-approved-info">
-                <>
-                  {order_list_info.order_info?.paidthru?.toLowerCase() ===
-                  "pending" ? (
-                    <IonButton
-                      size="small"
-                      color="tertiary"
-                      onClick={() => handleCancel()}
-                    >
-                      Cancel Order
-                    </IonButton>
-                  ) : null}
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() => handleEdit(false)}
-                  >
-                    Edit Order
-                  </IonButton>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() => handleApprove()}
-                  >
-                    Process Order
-                  </IonButton>
-                </>
-              </div>
-            ) : null}
-            {order_list_info.order_info?.status?.toLowerCase() ===
-            "delivered" ? (
-              <div className="order-list-info-footer-approved-info">
-                <>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() => handlePrintInvoice()}
-                  >
-                    Print Invoice
-                  </IonButton>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() =>
-                      setOpenSearchModal({ isOpen: true, modal: "receipt" })
-                    }
-                  >
-                    Invoice as PDF
-                  </IonButton>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() =>
-                      setOpenSearchModal({ isOpen: true, modal: "" })
-                    }
-                  >
-                    Open Delivery Info
-                  </IonButton>
-                </>
-              </div>
-            ) : null}
-            {order_list_info.order_info?.status === "approved" ? (
-              <div className="order-list-info-footer-approved-info">
-                <>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() => handlePrintInvoice()}
-                  >
-                    Print Invoice
-                  </IonButton>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() =>
-                      setOpenSearchModal({ isOpen: true, modal: "receipt" })
-                    }
-                  >
-                    Invoice as PDF
-                  </IonButton>
-                  <IonButton
-                    size="small"
-                    color="tertiary"
-                    onClick={() =>
-                      router.push(
-                        `/deliveryInfo?orderid=${order_list_info.order_info.orderid}&transid=${order_list_info.order_info.transid}&cartid=${order_list_info.order_info.cartid}`
-                      )
-                    }
-                  >
-                    Process Item Delivered
-                  </IonButton>
-                </>
-              </div>
-            ) : null}
+            <IonButton
+              size="small"
+              expand="block"
+              color="tertiary"
+              onClick={() => {
+                setOpenSearchModal({ isOpen: true, modal: "process" });
+                setCanDismiss(false);
+              }}
+            >
+              Process
+            </IonButton>
           </div>
         ) : null}
       </div>
@@ -1155,7 +1104,8 @@ const OrderInfoComponent = () => {
                 {getTotalAmount?.toFixed(2)}
               </div>
             </div>
-            {order_list_info.order_info?.paidcash > 0 ? (
+            {order_list_info.order_info?.paidcash > 0 ||
+            order_list_info.order_info?.paidthru === "Cash" ? (
               <>
                 <div className="order-list-info-footer-total-details">
                   <div className="order-list-info-footer-total">Cash: </div>
@@ -1170,9 +1120,11 @@ const OrderInfoComponent = () => {
 
                   <div className="order-list-info-footer-total-info">
                     <span>&#8369;</span>
-                    {(
-                      order_list_info.order_info?.paidcash - getTotalAmount
-                    ).toFixed(2)}
+                    {order_list_info.order_info?.paidcash - getTotalAmount > 0
+                      ? (
+                          order_list_info.order_info?.paidcash - getTotalAmount
+                        ).toFixed(2)
+                      : (0).toFixed(2)}
                   </div>
                 </div>
               </>
@@ -1229,7 +1181,149 @@ const OrderInfoComponent = () => {
       </div>
       <IonModal
         isOpen={
-          openSearchModal.modal !== "receipt" ? openSearchModal.isOpen : false
+          openSearchModal.modal === "process" ? openSearchModal.isOpen : false
+        }
+        initialBreakpoint={0.5}
+        breakpoints={[0, 1]}
+        canDismiss={modalDismiss}
+      >
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton
+                onClick={() => {
+                  setOpenSearchModal({ isOpen: false, modal: "process" });
+                  setCanDismiss(true);
+                }}
+              >
+                Close
+              </IonButton>
+            </IonButtons>
+            <IonTitle className="delivery-info-title"> Process</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent>
+          {getReturnsFromUrl === "false" ? (
+            <div className="list-of-process-button">
+              {order_list_info.order_info?.paidthru?.toLowerCase() ===
+              "cancel" ? (
+                <div className="order-list-info-footer-approved-info">
+                  <>
+                    <IonButton color="light" onClick={() => handleEdit(true)}>
+                      Reorder
+                    </IonButton>
+                  </>
+                </div>
+              ) : null}
+
+              {order_list_info.order_info?.paidthru?.toLowerCase() ===
+                "pending" ||
+              order_list_info.order_info?.paidthru?.toLowerCase() ===
+                "quotation" ? (
+                <div className="order-list-info-footer-approved-info">
+                  <>
+                    {order_list_info.order_info?.paidthru?.toLowerCase() ===
+                    "pending" ? (
+                      <IonButton color="light" onClick={() => handleCancel()}>
+                        Cancel Order
+                      </IonButton>
+                    ) : null}
+                    <IonButton color="light" onClick={() => handleEdit(false)}>
+                      Edit Order
+                    </IonButton>
+                    <IonButton color="light" onClick={() => handleApprove()}>
+                      Process Order
+                    </IonButton>
+                  </>
+                </div>
+              ) : null}
+              {order_list_info.order_info?.status?.toLowerCase() ===
+              "delivered" ? (
+                <div className="order-list-info-footer-approved-info">
+                  <>
+                    <IonButton
+                      color="light"
+                      onClick={() => handlePrintInvoice()}
+                    >
+                      Print Invoice
+                    </IonButton>
+                    <IonButton
+                      color="light"
+                      onClick={() =>
+                        setOpenSearchModal({ isOpen: true, modal: "receipt" })
+                      }
+                    >
+                      Invoice as PDF
+                    </IonButton>
+                    <IonButton
+                      color="light"
+                      onClick={() =>
+                        setOpenSearchModal({ isOpen: true, modal: "" })
+                      }
+                    >
+                      Open Delivery Info
+                    </IonButton>
+                    {order_list_info.order_info?.paidthru.toLowerCase() ===
+                    "debt" ? (
+                      <IonButton
+                        color="light"
+                        onClick={() => handleReceivedPayment()}
+                      >
+                        Receive Payment
+                      </IonButton>
+                    ) : null}
+                  </>
+                </div>
+              ) : null}
+              {order_list_info.order_info?.status === "approved" ? (
+                <div className="order-list-info-footer-approved-info">
+                  <>
+                    <IonButton
+                      color="light"
+                      onClick={() => handlePrintInvoice()}
+                    >
+                      Print Invoice
+                    </IonButton>
+                    <IonButton
+                      color="light"
+                      onClick={() =>
+                        setOpenSearchModal({ isOpen: true, modal: "receipt" })
+                      }
+                    >
+                      Invoice as PDF
+                    </IonButton>
+                    <IonButton
+                      color="light"
+                      onClick={() =>
+                        router.push(
+                          `/deliveryInfo?orderid=${order_list_info.order_info.orderid}&transid=${order_list_info.order_info.transid}&cartid=${order_list_info.order_info.cartid}`
+                        )
+                      }
+                    >
+                      Process Item Delivered
+                    </IonButton>
+                    {order_list_info.order_info?.paidthru.toLowerCase() ===
+                    "debt" ? (
+                      <IonButton
+                        color="light"
+                        onClick={() => handleReceivedPayment()}
+                      >
+                        Receive Payment
+                      </IonButton>
+                    ) : null}
+                  </>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </IonContent>
+      </IonModal>
+      <IonModal
+        isOpen={
+          openSearchModal.modal !== "receipt" &&
+          openSearchModal.modal !== "process"
+            ? openSearchModal.isOpen
+            : false
         }
         onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
         initialBreakpoint={1}
@@ -1238,13 +1332,7 @@ const OrderInfoComponent = () => {
         <IonHeader>
           <IonToolbar>
             <IonButtons slot="start">
-              <IonButton
-                onClick={() =>
-                  setOpenSearchModal({ isOpen: false, modal: "receipt" })
-                }
-              >
-                Close
-              </IonButton>
+              <IonButton onClick={() => handleCloseModal()}>Close</IonButton>
             </IonButtons>
             <IonTitle className="delivery-info-title">
               {" "}
@@ -1565,6 +1653,46 @@ const OrderInfoComponent = () => {
           </IonButton>
         </div>
       </IonModal>
+      <IonModal
+        isOpen={openCashModal ? openCashModal : false}
+        onDidDismiss={() => setOpenCashModal(false)}
+        initialBreakpoint={0.5}
+        breakpoints={[0, 0.25, 0.5, 0.75, 1]}
+      >
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton onClick={() => setOpenCashModal(false)}>
+                Close
+              </IonButton>
+            </IonButtons>
+            <IonButtons slot="end">
+              <IonButton onClick={handleSubmitPayment}>Pay</IonButton>
+            </IonButtons>
+            <IonTitle className="delivery-info-title">Cash</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent className="ion-padding">
+          <div className="order-list-info-footer-total-details">
+            <div className="order-list-info-footer-total">Amount Due: </div>
+
+            <div className="order-list-info-footer-total-info">
+              <span>&#8369;</span>
+              {getTotalAmount?.toFixed(2)}
+            </div>
+          </div>
+          <div className="order-info-cash-input-container">
+            <IonInput
+              className="order-info-cash-input"
+              label="Cash"
+              type="number"
+              value={totalCash}
+              placeholder="0.00"
+              onIonInput={(e) => handleCash(e)}
+            ></IonInput>
+          </div>
+        </IonContent>
+      </IonModal>
       <IonLoading
         isOpen={
           isOpenToast?.type === "receipt-email" ||
@@ -1581,6 +1709,16 @@ const OrderInfoComponent = () => {
           }))
         }
       />
+      <IonToast
+        isOpen={isOpenMessageToast?.isOpen}
+        message={isOpenMessageToast.toastMessage}
+        position="middle"
+        color={"medium"}
+        duration={3000}
+        onDidDismiss={() =>
+          setMessageToast({ toastMessage: "", isOpen: false })
+        }
+      ></IonToast>
     </div>
   );
 };

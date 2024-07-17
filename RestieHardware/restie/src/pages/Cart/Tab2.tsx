@@ -121,7 +121,8 @@ const Tab2: React.FC = () => {
               };
               dispatch(getOrderInfo(payload));
               router.push(
-                `/orderInfo?orderid=${addedOrder.result?.orderid!}&return=false`
+                `/orderInfo?orderid=${addedOrder.result
+                  ?.orderid!}&return=false&notification=false`
               );
             }
           }
@@ -141,7 +142,6 @@ const Tab2: React.FC = () => {
     customer_information,
     existingOrder,
   ]);
-  console.log(selectedItemselector);
   return (
     <IonPage className="home-page-container">
       <IonHeader className="home-page-header">
@@ -153,7 +153,15 @@ const Tab2: React.FC = () => {
           color="tertiary"
           className="home-toolbar-logo-container"
         >
-          <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
+          <div
+            className={` ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? ""
+                : "web"
+            }`}
+          >
+            <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
+          </div>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen className="tab-cart-content">

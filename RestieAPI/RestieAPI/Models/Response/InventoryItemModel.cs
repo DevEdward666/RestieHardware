@@ -90,6 +90,14 @@ namespace RestieAPI.Models.Response
         public int statusCode { get; set; }
         public string message { get; set; }
     }
+    public class AgedReceivableResponseModel
+    {
+        public List<AgedReceivableResponse> result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string message { get; set; }
+
+    }
     public class InventoryItems
     {
         public string code { get; set; }
@@ -144,6 +152,11 @@ namespace RestieAPI.Models.Response
     public class BrandResponse
     {
         public string brand { get; set; }
+    }
+    public class QTYResponse
+    {
+        public Int32 qty { get; set; }
+        public bool success { get; set; } 
     }
     public class OrderInfoResponse
     {
@@ -217,8 +230,11 @@ namespace RestieAPI.Models.Response
         public string code { get; set; }
         public string item { get; set; }
         public int qty { get; set; }
-
+        public int cost { get; set; }
+        public int price { get; set; }
+        public string total_cost { get; set; }
         public string total_sales { get; set; }
+        public string profit { get; set; }
     }
     public class ReturnSalesResponse
     {
@@ -237,6 +253,18 @@ namespace RestieAPI.Models.Response
         public int soldqty { get; set; }
         public decimal cost { get; set; }
         public decimal price { get; set; }
+
+    }
+    public class AgedReceivableResponse
+    {
+        public string orderid { get; set; }
+        public string transid { get; set; }
+        public int total { get; set; }
+        public long createdat { get; set; }
+        public string contactno { get; set; }
+        public string customer_email { get; set; }
+        public string customer { get; set; }
+        public string paidthru { get; set; }
 
     }
 }

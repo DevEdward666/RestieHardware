@@ -51,6 +51,8 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
         limit: 100,
         offset: 0,
         userid: user_id!,
+        paidThru:
+          filter.filter.status.trim().toLowerCase() === "debt" ? "debt" : "",
         status: filter.filter.status.trim().toLowerCase(),
         searchdate: filter.filter.date,
         orderid: filter.filter.search,
@@ -83,13 +85,19 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
       };
       if (status.toLowerCase() === statusList.pending.toLowerCase()) {
         dispatch(getOrderInfo(payload));
-        router.push(`/orderInfo?orderid=${payload.orderid}&return=false`);
+        router.push(
+          `/orderInfo?orderid=${payload.orderid}&return=false&notification=false`
+        );
       } else {
         dispatch(getOrderInfo(payload));
         if (return_status === "returns") {
-          router.push(`/orderInfo?orderid=${payload.orderid}&return=true`);
+          router.push(
+            `/orderInfo?orderid=${payload.orderid}&return=true&notification=false`
+          );
         } else {
-          router.push(`/orderInfo?orderid=${payload.orderid}&return=false`);
+          router.push(
+            `/orderInfo?orderid=${payload.orderid}&return=false&notification=false`
+          );
         }
       }
     },
@@ -146,6 +154,8 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
                     className={`order-list-card-qty ${
                       filter.filter.status.toLowerCase() === "returns"
                         ? "returns"
+                        : orders?.paidthru.toLowerCase() === "debt"
+                        ? orders?.paidthru.toLowerCase()
                         : orders?.status.trim().toLowerCase()
                     }`}
                   >
@@ -153,7 +163,9 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
                     {filter.filter.status.toLowerCase() === "returns"
                       ? "Return/Refund".toUpperCase()
                       : orders?.status.toLowerCase() === "approved"
-                      ? "Completed".toUpperCase()
+                      ? orders?.paidthru.toLowerCase() === "debt"
+                        ? "Receivable".toUpperCase()
+                        : "Completed".toUpperCase()
                       : orders?.status.toUpperCase()}
                   </div>
                 </div>

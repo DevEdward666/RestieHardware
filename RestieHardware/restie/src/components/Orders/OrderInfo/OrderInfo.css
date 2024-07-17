@@ -104,27 +104,9 @@
 .order-list-info-footer-total-main{
     display: flex;
     flex-direction: column;
-    .order-list-info-footer-total-details{
-    display: flex;
-    font-size: 24px;
-    flex-direction: row;
-    font-weight: bolder;
-    gap: 5px;
-    justify-content: space-between;
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 5px;
-    .order-list-info-footer-total{
-        font-family: "Gotham-Medium";
-        font-size: 24px;
-    }
-    .order-list-info-footer-total-info{
-        font-family: "Gotham-Black";
-        color: #f02b2b;
-        font-size: 24px;
-    }
+
 }
-}
+
 .order-list-info-footer-approved-details{
     display: flex;
     font-size: 24px;
@@ -341,6 +323,7 @@ ion-modal#email-modal {
         
     }
 }
+
 .order-info-footer-button{
     display: flex;
     flex-direction: row;
@@ -378,4 +361,39 @@ ion-modal#email-modal {
     gap: 10px;
     display: flex;
     flex-direction: column;
+}
+.order-list-info-footer-total-details{
+    display: flex;
+    font-size: 24px;
+    flex-direction: row;
+    font-weight: bolder;
+    gap: 5px;
+    justify-content: space-between;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    .order-list-info-footer-total{
+        font-family: "Gotham-Medium";
+        font-size: 24px;
+    }
+    .order-list-info-footer-total-info{
+        font-family: "Gotham-Black";
+        color: #f02b2b;
+        font-size: 24px;
+    }
+}
+.order-info-cash-input {
+    border: 1px solid #383737;
+    border-radius: 5px;
+    padding: 10px !important;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.order-info-cash-input-container{
+    padding: 10px;
+}
+.order-info-cash-input:focus {
+    outline: none;
+    border-color: #5c91f3; /* Example focus color */
 }

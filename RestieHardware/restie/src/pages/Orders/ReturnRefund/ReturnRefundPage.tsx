@@ -36,7 +36,7 @@ const ReturnRefundPage: React.FC = () => {
             slot="start"
             onClick={() =>
               router.push(
-                `/orderInfo?orderid=${getOrderIDFromURL()!}&return=false`
+                `/orderInfo?orderid=${getOrderIDFromURL()!}&return=false&notification=false`
               )
             }
           >

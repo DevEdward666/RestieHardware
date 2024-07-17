@@ -121,7 +121,8 @@ const Tab2: React.FC = () => {
               };
               dispatch(getOrderInfo(payload));
               router.push(
-                `/orderInfo?orderid=${addedOrder.result?.orderid!}&return=false`
+                `/orderInfo?orderid=${addedOrder.result
+                  ?.orderid!}&return=false&notification=false`
               );
             }
           }

@@ -1423,21 +1423,20 @@ namespace RestieAPI.Service.Repo
         }
         public OrderInfoResponseModel GetOrderInfo(InventoryRequestModel.GetSelectedOrder getUserOrder)
         {
-            var sql = @"
-                        SELECT COALESCE(cts.customerid, '') AS customerid, COALESCE(cts.customer_email, '') AS customer_email, inv.category, inv.brand, trans.transid, 
-                                inv.qty AS onhandqty, COALESCE(cts.name, '') AS name, COALESCE(cts.address, '') AS address, COALESCE(cts.contactno, '') AS contactno, ct.cartid, ors.orderid, 
-                                ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code, ct.item, ct.price, 
-                                ct.qty, ors.status, ors.createdby, ors.type
-                        FROM orders AS ors 
-                        JOIN cart AS ct ON ors.cartid = ct.cartid 
-                        LEFT JOIN customer cts ON cts.customerid = ors.userid 
-                        JOIN inventory AS inv ON inv.code = ct.code
-                        LEFT JOIN transaction AS trans ON trans.orderid = ors.orderid
-                        WHERE ors.orderid = @orderid 
-                        group by cts.customerid, cts.customer_email, inv.category, inv.brand, trans.transid,
-                                 ct.cartid, ors.orderid, cts.contactno, cts.address, ct.price, ct.item, ct.code,
-                                 ors.createdat, ors.type, ors.createdby, ors.total, cts.name, ors.paidthru, ors.status,
-                                 ct.status, ct.qty, ors.paidcash, inv.qty";
+            var sql = @"SELECT COALESCE((SELECT cts.customerid from customer cts where cts.customerid =ors.userid  limit 1),'') as customerid ,
+                        COALESCE((SELECT cts.customer_email from customer cts where cts.customerid =ors.userid  limit 1),'') as customer_email ,
+                           inv.category, inv.brand, COALESCE((SELECT tr.transid  from transaction tr where tr.orderid = ors.orderid limit 1),'') as transid,
+                           COALESCE(inv.qty, 0) AS onhandqty,
+                        COALESCE((SELECT cts.name from customer cts where cts.customerid =ors.userid  limit 1),'') as name,
+                        COALESCE((SELECT cts.address from customer cts where cts.customerid =ors.userid  limit 1),'') as address,
+                        COALESCE((SELECT cts.contactno from customer cts where cts.customerid =ors.userid  limit 1),'') as contactno,
+                           ct.cartid, ors.orderid,
+                           ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code,
+                           ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type
+                    FROM orders AS ors
+                    left JOIN cart AS ct ON ors.cartid = ct.cartid
+                    LEFT JOIN inventory AS inv ON inv.code = ct.code
+                    WHERE ors.orderid = @orderid;";
 
             var parameters = new Dictionary<string, object>
             {
@@ -1665,7 +1664,7 @@ namespace RestieAPI.Service.Repo
         }
         public AgedReceivableResponseModel GetAllAgedReceivable()
         {
-            var sql = @"select tr.transid,ors.total,ors.createdat,cr.contactno,cr.customer_email,
+            var sql = @"select ors.orderid,tr.transid,ors.total,ors.createdat,cr.contactno,cr.customer_email,
                         tr.customer,ors.paidthru
                         from transaction tr join orders ors on tr.orderid = ors.orderid
                         join customer cr on cr.customerid = ors.userid
@@ -1704,6 +1703,7 @@ namespace RestieAPI.Service.Repo
                                     {
                                       
                                         transid = reader.GetString(reader.GetOrdinal("transid")),
+                                        orderid = reader.GetString(reader.GetOrdinal("orderid")),
                                         customer = reader.GetString(reader.GetOrdinal("customer")),
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                         paidthru = reader.GetString(reader.GetOrdinal("paidthru")),

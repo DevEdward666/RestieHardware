@@ -1,4 +1,6 @@
+import { BleClient } from "@capacitor-community/bluetooth-le";
 import { Clipboard } from "@capacitor/clipboard";
+import { Plugins } from "@capacitor/core";
 import {
   IonButton,
   IonButtons,
@@ -12,22 +14,14 @@ import {
   IonModal,
   IonText,
   IonTitle,
+  IonToast,
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
 import "@ionic/react/css/ionic-swiper.css";
 import { format } from "date-fns";
 import EscPosEncoder from "esc-pos-encoder-ionic";
-import {
-  cashOutline,
-  chevronForwardOutline,
-  close,
-  closeCircle,
-  closeCircleOutline,
-  closeCircleSharp,
-  copy,
-  print,
-} from "ionicons/icons";
+import { cashOutline, close, copy, print } from "ionicons/icons";
 import html2PDF from "jspdf-html2canvas";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
@@ -43,6 +37,7 @@ import {
   PostDeliveryInfoModel,
   PostSelectedOrder,
 } from "../../../Models/Request/Inventory/InventoryModel";
+import { ResponseModel } from "../../../Models/Response/Commons/Commons";
 import {
   FileResponse,
   GetDeliveryInfo,
@@ -62,21 +57,14 @@ import {
   getInventory,
   getOrderInfo,
   get_item_returns,
-  selectedOrder,
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import { GetLoginUser } from "../../../Service/Actions/Login/LoginActions";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import logo from "../../../assets/images/Icon@2.png";
 import breakline from "../../../assets/images/breakline.png";
 import "./OrderInfo.css";
-import { ResponseModel } from "../../../Models/Response/Commons/Commons";
-import { Plugins } from "@capacitor/core";
-import {
-  BleClient,
-  numberToUUID,
-  numbersToDataView,
-} from "@capacitor-community/bluetooth-le";
-const OrderInfoComponent = () => {
+
+const OrderInfoComponent: React.FC = () => {
   const { BluetoothPrinter } = Plugins;
   const order_list_info = useSelector(
     (store: RootStore) => store.InventoryReducer.order_list_info
@@ -97,6 +85,12 @@ const OrderInfoComponent = () => {
     deliverydate: 0,
     path: "",
   });
+  const [openCashModal, setOpenCashModal] = useState<boolean>(false);
+  const [totalCash, setTotalCash] = useState<number>(0);
+  const [isOpenMessageToast, setMessageToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+  });
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
     isOpen: false,
@@ -112,6 +106,7 @@ const OrderInfoComponent = () => {
   const [getTotalAmount, setTotalAmount] = useState<number>(0.0);
   const [getEmail, setEmail] = useState<string>("");
   const [getReturnsFromUrl, setReturnsFromUrl] = useState<string>("");
+
   const [modalDismiss, setCanDismiss] = useState<boolean>(false);
   const [elapsedTime, setElapsedTime] = useState({
     hour: 0,
@@ -194,7 +189,7 @@ const OrderInfoComponent = () => {
       } else {
         if (getReturnsFromUrl === "true") {
           let total = 0;
-          order_list_info.return_item.map((val) => {
+          order_list_info?.return_item.map((val) => {
             total += val.total;
           });
           setTotalAmount(total);
@@ -204,7 +199,7 @@ const OrderInfoComponent = () => {
       }
     };
     initialize();
-  }, [get_voucher, order_list_info]);
+  }, [get_voucher, order_list_info, getReturnsFromUrl]);
   const handleSelectOrder = (orderid: string, cartid: string) => {
     const payload: PostSelectedOrder = {
       orderid: orderid,
@@ -266,7 +261,7 @@ const OrderInfoComponent = () => {
         });
         router.push(
           `/orderInfo?orderid=${order_list_info.order_info
-            .orderid!}&return=false`
+            .orderid!}&return=false&notification=false`
         );
       }
     },
@@ -358,6 +353,7 @@ const OrderInfoComponent = () => {
     const isreturn = url.searchParams.get("return");
     setReturnsFromUrl(isreturn!);
   };
+
   useEffect(() => {
     const initialize = async () => {
       const orderid = getOrderIDFromURL();
@@ -762,7 +758,30 @@ const OrderInfoComponent = () => {
   const setPermissionRequested = (value: any) => {
     permissionRequested = value;
   };
-  const handleReceivedPayment = useCallback(async () => {
+  const handleReceivedPayment = () => {
+    setOpenSearchModal({ isOpen: false, modal: "process" });
+    setCanDismiss(true);
+    setOpenCashModal(true);
+  };
+  const handleCloseModal = () => {
+    setOpenSearchModal({ isOpen: false, modal: "receipt" });
+  };
+  const handleCash = (ev: Event) => {
+    const target = ev.target as HTMLIonInputElement;
+    const query = target.value?.toString() ?? "";
+    const cashinput = parseInt(query);
+
+    setTotalCash(cashinput);
+  };
+  const handleSubmitPayment = useCallback(async () => {
+    if (totalCash < getTotalAmount) {
+      setTotalCash(0);
+      setMessageToast({
+        toastMessage: "Credit is not enough",
+        isOpen: true,
+      });
+      return;
+    }
     let newItem: Addtocart;
     let payload: Addtocart[] = [];
     order_list_info.order_item.map((val) => {
@@ -780,10 +799,11 @@ const OrderInfoComponent = () => {
       };
       payload.push(newItem);
     });
-    await saveOrder(payload, "Cash", 0.0);
+    await saveOrder(payload, "Cash", totalCash);
     setOpenSearchModal({ isOpen: false, modal: "process" });
     setCanDismiss(true);
-  }, [order_list_info]);
+    setOpenCashModal(false);
+  }, [order_list_info, getTotalAmount, totalCash]);
   return (
     <div className="order-list-info-main-container">
       <div className="order-list-info-footer-approved-details">
@@ -792,6 +812,7 @@ const OrderInfoComponent = () => {
           <div>
             <IonButton
               size="small"
+              expand="block"
               color="tertiary"
               onClick={() => {
                 setOpenSearchModal({ isOpen: true, modal: "process" });
@@ -1311,13 +1332,7 @@ const OrderInfoComponent = () => {
         <IonHeader>
           <IonToolbar>
             <IonButtons slot="start">
-              <IonButton
-                onClick={() =>
-                  setOpenSearchModal({ isOpen: false, modal: "receipt" })
-                }
-              >
-                Close
-              </IonButton>
+              <IonButton onClick={() => handleCloseModal()}>Close</IonButton>
             </IonButtons>
             <IonTitle className="delivery-info-title">
               {" "}
@@ -1638,6 +1653,46 @@ const OrderInfoComponent = () => {
           </IonButton>
         </div>
       </IonModal>
+      <IonModal
+        isOpen={openCashModal ? openCashModal : false}
+        onDidDismiss={() => setOpenCashModal(false)}
+        initialBreakpoint={0.5}
+        breakpoints={[0, 0.25, 0.5, 0.75, 1]}
+      >
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonButton onClick={() => setOpenCashModal(false)}>
+                Close
+              </IonButton>
+            </IonButtons>
+            <IonButtons slot="end">
+              <IonButton onClick={handleSubmitPayment}>Pay</IonButton>
+            </IonButtons>
+            <IonTitle className="delivery-info-title">Cash</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent className="ion-padding">
+          <div className="order-list-info-footer-total-details">
+            <div className="order-list-info-footer-total">Amount Due: </div>
+
+            <div className="order-list-info-footer-total-info">
+              <span>&#8369;</span>
+              {getTotalAmount?.toFixed(2)}
+            </div>
+          </div>
+          <div className="order-info-cash-input-container">
+            <IonInput
+              className="order-info-cash-input"
+              label="Cash"
+              type="number"
+              value={totalCash}
+              placeholder="0.00"
+              onIonInput={(e) => handleCash(e)}
+            ></IonInput>
+          </div>
+        </IonContent>
+      </IonModal>
       <IonLoading
         isOpen={
           isOpenToast?.type === "receipt-email" ||
@@ -1654,6 +1709,16 @@ const OrderInfoComponent = () => {
           }))
         }
       />
+      <IonToast
+        isOpen={isOpenMessageToast?.isOpen}
+        message={isOpenMessageToast.toastMessage}
+        position="middle"
+        color={"medium"}
+        duration={3000}
+        onDidDismiss={() =>
+          setMessageToast({ toastMessage: "", isOpen: false })
+        }
+      ></IonToast>
     </div>
   );
 };

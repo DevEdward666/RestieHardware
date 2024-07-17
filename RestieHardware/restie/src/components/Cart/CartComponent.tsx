@@ -141,6 +141,7 @@ const CartComponent: React.FC = () => {
   };
 
   const CardList = (card: Addtocart) => {
+    console.log(selectedItemselector);
     return (
       <div>
         <IonItemSliding>
@@ -251,6 +252,7 @@ const CartComponent: React.FC = () => {
               createdAt={card.createdAt}
               status={card.status}
               image={card.image}
+              onhandqty={card.onhandqty}
             />
           ))
         ) : (

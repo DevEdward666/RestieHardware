@@ -68,6 +68,7 @@ export interface PostdOrderList {
 }
 export interface PostAgedReceivable {
   transid: string;
+  orderid:string;
   createdat: number;
   customer: string;
   paidthru: string;

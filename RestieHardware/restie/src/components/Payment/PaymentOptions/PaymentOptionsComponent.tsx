@@ -117,7 +117,8 @@ const PaymentOptionsComponent = () => {
         dispatch(getOrderInfo(payload));
 
         router.push(
-          `/orderInfo?orderid=${addedOrder.result?.orderid!}&return=false`
+          `/orderInfo?orderid=${addedOrder.result
+            ?.orderid!}&return=false&notification=false`
         );
       }
     },

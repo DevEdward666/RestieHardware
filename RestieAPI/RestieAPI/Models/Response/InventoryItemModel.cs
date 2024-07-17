@@ -257,6 +257,7 @@ namespace RestieAPI.Models.Response
     }
     public class AgedReceivableResponse
     {
+        public string orderid { get; set; }
         public string transid { get; set; }
         public int total { get; set; }
         public long createdat { get; set; }

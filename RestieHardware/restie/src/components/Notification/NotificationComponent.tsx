@@ -4,6 +4,7 @@ import {
   IonContent,
   IonIcon,
   IonPage,
+  useIonRouter,
 } from "@ionic/react";
 import React from "react";
 import OnboardingComponent from "../../components/Onboarding/OnboardingComponent";
@@ -12,11 +13,12 @@ import { RootStore } from "../../Service/Store";
 import { formatDate } from "date-fns";
 import { alertCircleSharp, filter } from "ionicons/icons";
 import "./NotificationComponent.css";
+import { PostAgedReceivable } from "../../Models/Request/Inventory/InventoryModel";
 const NotificationComponent: React.FC = () => {
   const receivable_list = useSelector(
     (store: RootStore) => store.InventoryReducer.receivable_list
   );
-  console.log(receivable_list);
+  const router = useIonRouter();
   const formatDate = (datetime: number) => {
     const timestamp = datetime;
     const date = new Date(timestamp);
@@ -32,6 +34,11 @@ const NotificationComponent: React.FC = () => {
 
     return formattedDate;
   };
+  const handleReceivable = (value: PostAgedReceivable) => {
+    router.push(
+      `/orderInfo?orderid=${value.orderid}&return=false&notification=true`
+    );
+  };
   return (
     <IonContent>
       <div>
@@ -40,6 +47,7 @@ const NotificationComponent: React.FC = () => {
             <IonCard
               className="notification-list-card-container"
               key={value.transid}
+              onClick={() => handleReceivable(value)}
             >
               <div className="notification-list-card-add-item-container">
                 <IonCardContent className="notification-list-card-main-content">

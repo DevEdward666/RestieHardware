@@ -85,13 +85,19 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
       };
       if (status.toLowerCase() === statusList.pending.toLowerCase()) {
         dispatch(getOrderInfo(payload));
-        router.push(`/orderInfo?orderid=${payload.orderid}&return=false`);
+        router.push(
+          `/orderInfo?orderid=${payload.orderid}&return=false&notification=false`
+        );
       } else {
         dispatch(getOrderInfo(payload));
         if (return_status === "returns") {
-          router.push(`/orderInfo?orderid=${payload.orderid}&return=true`);
+          router.push(
+            `/orderInfo?orderid=${payload.orderid}&return=true&notification=false`
+          );
         } else {
-          router.push(`/orderInfo?orderid=${payload.orderid}&return=false`);
+          router.push(
+            `/orderInfo?orderid=${payload.orderid}&return=false&notification=false`
+          );
         }
       }
     },

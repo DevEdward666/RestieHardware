@@ -35,6 +35,7 @@ const Tab2: React.FC = () => {
   const selectedItemselector =
     useSelector((store: RootStore) => store.InventoryReducer.add_to_cart) || [];
   const [getTotal, setTotal] = useState<number>(0);
+  const [getTotalDiscount, setTotalDiscount] = useState<number>(0);
   const [existingOrder, setExistingOrder] = useState<boolean>(false);
   const customer_information = useSelector(
     (store: RootStore) => store.CustomerReducer.customer_information
@@ -46,21 +47,23 @@ const Tab2: React.FC = () => {
   useEffect(() => {
     const getTotal = () => {
       let totalPrice = 0; // Initialize total price
-
+      let totalDiscount = 0;
       // Check if selectedItemselector is an array
       if (Array.isArray(selectedItemselector)) {
         // Iterate over each item in the cart
         selectedItemselector.forEach((item) => {
-          const itemTotal = item.price * item.qty; // Calculate total price for the item
+          const discount = item.discount ?? 0;
+          const itemTotal = item.price * item.qty - discount; // Calculate total price for the item
+          totalDiscount += discount;
           totalPrice += itemTotal; // Add item total to overall total
         });
       }
 
+      setTotalDiscount(totalDiscount);
       setTotal(totalPrice); // Set the total price
       const existingOrder = selectedItemselector.findIndex(
         (item) => item.orderid?.length! > 0
       );
-      console.log(existingOrder);
       if (existingOrder > -1) {
         setExistingOrder(true);
         dispatch(
@@ -91,13 +94,26 @@ const Tab2: React.FC = () => {
       } else {
         const date = new Date().getTime();
         if (existingOrder) {
-          console.log(existingOrder);
           if (
             (selectedItemselector.length > 0 &&
               selectedItemselector[0].status === "quotation") ||
             selectedItemselector[0].status === "pending" ||
             selectedItemselector[0].status === "cancel"
           ) {
+            const updatedCartItems = selectedItemselector.map((item, index) => {
+              // Assuming you're using some updated values for discount and voucher_code
+              const updatedDiscount = item.discount; // Use a new value if needed
+              const updatedVoucherCode = item.voucher_code; // Use a new value if needed
+
+              return {
+                ...item,
+                discount: updatedDiscount,
+                voucher_code: updatedVoucherCode,
+                voucher: item.voucher,
+                voucher_id: item.voucher?.id,
+                total_discount: getTotalDiscount, // Make sure getTotalDiscount is defined correctly
+              };
+            });
             let status =
               selectedItemselector[0].status === "cancel"
                 ? "pending"
@@ -105,7 +121,7 @@ const Tab2: React.FC = () => {
             const addedOrder: ResponseModel = await dispatch(
               PostOrder(
                 selectedItemselector[0].orderid!,
-                selectedItemselector,
+                updatedCartItems,
                 customer_information,
                 new Date().getTime(),
                 status,

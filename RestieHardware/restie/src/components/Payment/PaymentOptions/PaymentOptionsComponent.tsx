@@ -95,10 +95,25 @@ const PaymentOptionsComponent = () => {
 
   const handlePostOrder = useCallback(
     async (type: string) => {
+      const updatedCartItems = add_to_cart.map((item, index) => {
+        // Assuming you're using some updated values for discount and voucher_code
+        const updatedDiscount = item.discount; // Use a new value if needed
+        const updatedVoucherCode = item.voucher_code; // Use a new value if needed
+        let totalDiscount: number = 0;
+        totalDiscount += item.discount ?? 0;
+        return {
+          ...item,
+          discount: updatedDiscount ?? 0,
+          voucher_code: updatedVoucherCode,
+          voucher: item.voucher,
+          voucher_id: item.voucher?.id ?? 0,
+          total_discount: totalDiscount ?? 0, // Make sure getTotalDiscount is defined correctly
+        };
+      });
       const addedOrder: ResponseModel = await dispatch(
         PostOrder(
           add_to_cart[0].orderid!,
-          add_to_cart,
+          updatedCartItems,
           customer_information,
           new Date().getTime(),
           type,

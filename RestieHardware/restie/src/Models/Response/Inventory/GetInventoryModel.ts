@@ -80,10 +80,14 @@ export interface FileResponse {
   lastModified: number;
 }
 export interface GetVouhcerResponse {
+  vouchercode:string;
   name: string;
   description: string;
   maxredemption: string;
   discount: number;
+  type: string;
+  voucher_for: string;
+
 }
 export interface GetBrandsModel {
   brand: string;

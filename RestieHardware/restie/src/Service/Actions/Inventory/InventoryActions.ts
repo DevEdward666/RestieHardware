@@ -7,6 +7,7 @@ import {
   GET_DELIVERY_INFO,
   GET_ITEM_RETURNS,
   GET_VOUCHER,
+  GET_VOUCHER_LIST,
   LIST_OF_ITEMS,
   ORDER_LIST,
   ORDER_LIST_INFO,
@@ -22,6 +23,7 @@ import {
   GetVoucherInfo,
   InsertCustomerInfo,
   ListAgedReceivable,
+  ListOfVouchers,
   ListOrder,
   PostGetDeliveryInfo,
   PostReturnItems,
@@ -449,6 +451,20 @@ export const get_voucher_actions =
         get_voucher: res.result,
       });
       return res.result;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+  export const get_all_voucher_actions =
+  () =>
+  async (dispatch: Dispatch<GET_VOUCHER_LIST>) => {
+    try {
+      const res = await ListOfVouchers();
+      dispatch({
+        type: "GET_VOUCHER_LIST",
+        get_voucher_list: res.result.$values,
+      });
+      return res.result.$values;
     } catch (error: any) {
       console.log(error);
     }

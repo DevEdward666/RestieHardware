@@ -49,12 +49,16 @@ const defaultState: InventoryTypesModel = {
     description: "",
     maxredemption: "",
     discount: 0,
+    type: "",
+    voucher_for: "",
+    vouchercode: ""
   },
   get_item_returns: [],
   submit_return_refund: { submit: false },
   checked_return_refund: [],
   complete_return_refund: { complete: false },
-  receivable_list: []
+  receivable_list: [],
+  get_voucher_list: []
 };
 
 const InventoryReducer = (
@@ -114,6 +118,12 @@ const InventoryReducer = (
       return {
         ...state,
         get_voucher: action.get_voucher,
+      };
+    }
+    case "GET_VOUCHER_LIST": {
+      return {
+        ...state,
+        get_voucher_list: action.get_voucher_list,
       };
     }
     case "GET_ITEM_RETURNS": {

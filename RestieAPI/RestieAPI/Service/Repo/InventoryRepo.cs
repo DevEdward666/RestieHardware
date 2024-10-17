@@ -464,8 +464,8 @@ namespace RestieAPI.Service.Repo
         public PostResponse AddToCart(InventoryRequestModel.AddToCart[] addToCartItems)
         {
             var orderid = Guid.NewGuid();
-            var sql = @"insert into cart (cartid,code,item,qty,price,total,createdat,status) 
-                values(@cartid,@code,@item,@qty,@price,@total,@createdat,@status)";
+            var sql = @"insert into cart (cartid,code,item,qty,price,total,createdat,status,voucher_id,discount_price,total_discount) 
+                values(@cartid,@code,@item,@qty,@price,@total,@createdat,@status,@voucher_id,@discount,@total_discount)";
             var insertOrder = "";
             if (addToCartItems[0].orderid.Length > 0) 
             {
@@ -499,6 +499,9 @@ namespace RestieAPI.Service.Repo
                                 { "@total", addToCart.qty * addToCart.price },
                                 { "@createdat", addToCart.createdat },
                                 { "@status", addToCart.status },
+                                { "@voucher_id", addToCart.voucher_id },
+                                { "@discount", addToCart.discount },
+                                { "@total_discount", addToCart.total_discount },
                             };
                             
                           
@@ -1945,7 +1948,7 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
-        public VoucherResponseModel getVouchers(InventoryRequestModel.GetVoucher getVoucher)
+        public SingleVoucherResponseModel getVouchers(InventoryRequestModel.GetVoucher getVoucher)
         {
             var sql = @"select * from vouchers where vouchercode=@vouchercode";
             var parameters = new Dictionary<string, object>
@@ -1978,10 +1981,73 @@ namespace RestieAPI.Service.Repo
                                         name = reader.GetString(reader.GetOrdinal("name")),
                                         description = reader.GetString(reader.GetOrdinal("description")),
                                         maxredemption = reader.GetInt16(reader.GetOrdinal("maxredemption")),
-                                        discount = reader.GetDecimal(reader.GetOrdinal("discount")),
+                                        discount = reader.GetDouble(reader.GetOrdinal("discount")),
                                     };
 
                                     results = orderResponse;
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new SingleVoucherResponseModel
+                        {
+                            result = results,
+                            statusCode = 200,
+                            success = true,
+
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new SingleVoucherResponseModel
+                        {
+                            result = null,
+                            statusCode = 500,
+                            success = false,
+                            message = ex.Message,
+
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
+        public VoucherResponseModel ListOfVouchers()
+        {
+            var sql = @"select * from vouchers where voucher_for='single'";
+      
+            var results = new List<VoucherResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var orderResponse = new VoucherResponse
+                                    {
+                                        id = reader.GetInt32(reader.GetOrdinal("voucher_seq")),
+                                        vouchercode = reader.GetString(reader.GetOrdinal("vouchercode")),
+                                        name = reader.GetString(reader.GetOrdinal("name")),
+                                        description = reader.GetString(reader.GetOrdinal("description")),
+                                        maxredemption = reader.GetInt16(reader.GetOrdinal("maxredemption")),
+                                        discount = reader.GetDouble(reader.GetOrdinal("discount")),
+                                        voucher_for = reader.GetString(reader.GetOrdinal("voucher_for")),
+                                        type = reader.GetString(reader.GetOrdinal("type")),
+                                    };
+
+                                    results.Add(orderResponse);
                                 }
                             }
                         }

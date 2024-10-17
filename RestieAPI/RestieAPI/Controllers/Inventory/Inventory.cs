@@ -166,6 +166,12 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<PostResponse> GetVouchers(GetVoucher getVoucher)
         {
             return Ok(_inventoryRepo.getVouchers(getVoucher));
+        } 
+        [Authorize]
+        [HttpGet("ListOfVouchers")]
+        public ActionResult<PostResponse> ListOfVouchers()
+        {
+            return Ok(_inventoryRepo.ListOfVouchers());
         }
         [Authorize]
         [HttpPost("GetByDaySales")]

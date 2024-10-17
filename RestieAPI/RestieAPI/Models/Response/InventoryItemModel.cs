@@ -61,10 +61,17 @@ namespace RestieAPI.Models.Response
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string message { get; set; }
-    }   
-    public class VoucherResponseModel
+    }
+    public class SingleVoucherResponseModel
     {
         public VoucherResponse result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string message { get; set; }
+    }
+    public class VoucherResponseModel
+    {
+        public List<VoucherResponse> result { get; set; }
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string message { get; set; }
@@ -220,10 +227,17 @@ namespace RestieAPI.Models.Response
     }
     public class VoucherResponse
     {
+        public int id { get; set; }
+
+        public string vouchercode { get; set; }
         public string name { get; set; }
         public string description { get; set; }
-        public decimal discount { get; set; }
+        public double discount { get; set; }
         public int maxredemption { get; set; }
+        public string type { get; set; }
+        public string voucher_for { get; set; }
+
+
     }
     public class SalesResponse
     {   

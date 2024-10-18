@@ -269,12 +269,12 @@ const Tab1: React.FC = () => {
               </IonSelectOption>
             </IonSelect>
           </IonItem>
-          <IonItem
+          {/* <IonItem
             className="onboarding"
             onClick={() => router.push("/Onboarding")}
           >
             Onboarding
-          </IonItem>
+          </IonItem> */}
         </IonContent>
       </IonMenu>
       <IonPage className="home-page-container" id="main-content">

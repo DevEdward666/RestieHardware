@@ -52,8 +52,8 @@ const Tab2: React.FC = () => {
       if (Array.isArray(selectedItemselector)) {
         // Iterate over each item in the cart
         selectedItemselector.forEach((item) => {
-          const discount = item.discount ?? 0;
-          const itemTotal = item.price * item.qty - discount; // Calculate total price for the item
+          const discount = item.qty * (item.discount ?? 0);
+          const itemTotal = (item.price - discount) * item.qty;
           totalDiscount += discount;
           totalPrice += itemTotal; // Add item total to overall total
         });
@@ -111,7 +111,7 @@ const Tab2: React.FC = () => {
                 voucher_code: updatedVoucherCode,
                 voucher: item.voucher,
                 voucher_id: item.voucher?.id,
-                total_discount: getTotalDiscount, // Make sure getTotalDiscount is defined correctly
+                total_discount: getTotalDiscount,
               };
             });
             let status =
@@ -157,6 +157,7 @@ const Tab2: React.FC = () => {
     selectedItemselector,
     customer_information,
     existingOrder,
+    getTotalDiscount,
   ]);
   return (
     <IonPage className="home-page-container">
@@ -164,7 +165,7 @@ const Tab2: React.FC = () => {
         <IonToolbar mode="ios" color="tertiary">
           <IonTitle>Cart</IonTitle>
         </IonToolbar>
-        <IonToolbar
+        {/* <IonToolbar
           mode="ios"
           color="tertiary"
           className="home-toolbar-logo-container"
@@ -178,7 +179,7 @@ const Tab2: React.FC = () => {
           >
             <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
           </div>
-        </IonToolbar>
+        </IonToolbar> */}
       </IonHeader>
       <IonContent fullscreen className="tab-cart-content">
         <CartComponent />

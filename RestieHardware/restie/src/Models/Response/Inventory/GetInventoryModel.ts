@@ -20,6 +20,7 @@ export interface GetOrderInfo {
   orderid: string;
   cartid: string;
   total: number;
+  totaldiscount: number;
   paidthru: string;
   paidcash: number;
   createdby: string;

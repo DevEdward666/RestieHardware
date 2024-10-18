@@ -71,6 +71,7 @@ const PaymentOptionsComponent = () => {
   const handlePay = useCallback(
     async (type: string) => {
       const totalAmountToPay = getOverallTotal > 0 ? getOverallTotal : getTotal;
+
       if (
         type.toLowerCase() === "cash" &&
         customerPayemntInfo.cash < totalAmountToPay
@@ -80,17 +81,22 @@ const PaymentOptionsComponent = () => {
           isOpen: true,
           type: "toast",
         });
+      } else if (type.toLowerCase() === "pending" && getDiscount > 0) {
+        setIsOpenToast({
+          toastMessage: "You can't save an order as draft if it has a voucher",
+          isOpen: true,
+          type: "toast",
+        });
       } else {
         setIsOpenToast({
           toastMessage: "Loading",
           isOpen: true,
           type: "loader",
         });
-
         await saveOrder(type);
       }
     },
-    [getOverallTotal, getTotal, customerPayemntInfo]
+    [getOverallTotal, getTotal, customerPayemntInfo, getDiscount]
   );
 
   const handlePostOrder = useCallback(
@@ -100,7 +106,7 @@ const PaymentOptionsComponent = () => {
         const updatedDiscount = item.discount; // Use a new value if needed
         const updatedVoucherCode = item.voucher_code; // Use a new value if needed
         let totalDiscount: number = 0;
-        totalDiscount += item.discount ?? 0;
+        totalDiscount += item.qty * (item.discount ?? 0);
         return {
           ...item,
           discount: updatedDiscount ?? 0,
@@ -142,10 +148,16 @@ const PaymentOptionsComponent = () => {
 
   useEffect(() => {
     let totalAmount = 0;
+    let totalDiscount: number = 0;
+    let OverAllTotal: number = 0;
     add_to_cart.forEach((val: any) => {
-      totalAmount += val.qty * val.price;
+      totalDiscount += val.qty * (val.discount ?? 0);
+      totalAmount += val.price * val.qty;
+      OverAllTotal = totalAmount - (totalDiscount ?? 0);
     });
-    setTotal(totalAmount);
+    setTotal(OverAllTotal);
+    setDiscount(totalDiscount);
+    setOverallTotal(OverAllTotal);
   }, [add_to_cart]);
   const handleInfoChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

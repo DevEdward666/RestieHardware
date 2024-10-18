@@ -194,7 +194,11 @@ const OrderInfoComponent: React.FC = () => {
           });
           setTotalAmount(total);
         } else {
-          setTotalAmount(order_list_info.order_info?.total);
+          setTotalAmount(
+            order_list_info.order_info?.total -
+              (order_list_info.order_info.totaldiscount ?? 0)
+          );
+          setDiscount(order_list_info.order_info.totaldiscount);
         }
       }
     };
@@ -1043,9 +1047,11 @@ const OrderInfoComponent: React.FC = () => {
           <div className="order-list-info-footer-details">
             <div className="order-list-info-footer">Discount & Vouchers: </div>
 
-            <div className="order-list-info-footer-info">{`${
-              getDiscount > 0 ? getDiscount + "%" : 0
-            }`}</div>
+            <div className="order-list-info-footer-info">
+              {" "}
+              <span>&#8369;</span>
+              {`${getDiscount > 0 ? getDiscount : 0}`}
+            </div>
           </div>
           <IonImg className="breakline" src={breakline} />
           <div className="order-list-info-footer-total-main">
@@ -1090,9 +1096,11 @@ const OrderInfoComponent: React.FC = () => {
           <div className="order-list-info-footer-details">
             <div className="order-list-info-footer">Discount & Vouchers: </div>
 
-            <div className="order-list-info-footer-info">{`${
-              getDiscount > 0 ? getDiscount + "%" : 0
-            }`}</div>
+            <div className="order-list-info-footer-info">
+              {" "}
+              <span>&#8369;</span>
+              {`${getDiscount > 0 ? getDiscount : 0}`}
+            </div>
           </div>
           <IonImg className="breakline" src={breakline} />
           <div className="order-list-info-footer-total-main">

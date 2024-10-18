@@ -184,6 +184,7 @@ namespace RestieAPI.Models.Response
         public string? customer_email { get; set; }
         public string? customerid { get; set; }
         public float total { get; set; }
+        public float totaldiscount { get; set; }
     }
 
     public class ItemOrders
@@ -248,6 +249,7 @@ namespace RestieAPI.Models.Response
         public int price { get; set; }
         public string total_cost { get; set; }
         public string total_sales { get; set; }
+        public string total_discount { get; set; }
         public string profit { get; set; }
     }
     public class ReturnSalesResponse

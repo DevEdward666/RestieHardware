@@ -85,7 +85,7 @@ const OrderListPage = () => {
           </IonButtons>
           <IonTitle>Order List</IonTitle>
         </IonToolbar>
-        <IonToolbar
+        {/* <IonToolbar
           mode="ios"
           color="tertiary"
           className="order-list-toolbar-logo-container"
@@ -102,7 +102,7 @@ const OrderListPage = () => {
               className="order-list-toolbar-logo"
             ></IonImg>
           </div>
-        </IonToolbar>
+        </IonToolbar> */}
         <IonToolbar mode="ios" color="tertiary">
           <div className="order-list-filter">
             <IonSegment

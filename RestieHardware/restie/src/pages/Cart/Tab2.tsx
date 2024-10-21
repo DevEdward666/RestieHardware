@@ -5,10 +5,12 @@ import {
   IonFooter,
   IonHeader,
   IonImg,
+  IonLoading,
   IonMenuButton,
   IonPage,
   IonText,
   IonTitle,
+  IonToast,
   IonToolbar,
   getPlatforms,
   useIonRouter,
@@ -43,6 +45,11 @@ const Tab2: React.FC = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
+  const [isOpenToast, setIsOpenToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+    type: "",
+  });
   const platform = getPlatforms();
   useEffect(() => {
     const getTotal = () => {
@@ -53,7 +60,7 @@ const Tab2: React.FC = () => {
         // Iterate over each item in the cart
         selectedItemselector.forEach((item) => {
           const discount = item.qty * (item.discount ?? 0);
-          const itemTotal = (item.price - discount) * item.qty;
+          const itemTotal = (item.price - (item.discount ?? 0)) * item.qty;
           totalDiscount += discount;
           totalPrice += itemTotal; // Add item total to overall total
         });
@@ -101,46 +108,55 @@ const Tab2: React.FC = () => {
             selectedItemselector[0].status === "cancel"
           ) {
             const updatedCartItems = selectedItemselector.map((item, index) => {
-              // Assuming you're using some updated values for discount and voucher_code
-              const updatedDiscount = item.discount; // Use a new value if needed
-              const updatedVoucherCode = item.voucher_code; // Use a new value if needed
+              const updatedDiscount = item.discount ?? 0;
+              const updatedVoucherCode = item.voucher_code ?? "";
 
               return {
                 ...item,
                 discount: updatedDiscount,
                 voucher_code: updatedVoucherCode,
                 voucher: item.voucher,
-                voucher_id: item.voucher?.id,
+                voucher_id: item.voucher_id ?? 0,
                 total_discount: getTotalDiscount,
               };
             });
+            // if (getTotalDiscount > 0) {
+            //   setIsOpenToast({
+            //     toastMessage:
+            //       "You can't save an order as draft if it has a voucher",
+            //     isOpen: true,
+            //     type: "toast",
+            //   });
+            //   return;
+            // }
             let status =
               selectedItemselector[0].status === "cancel"
                 ? "pending"
                 : selectedItemselector[0].status;
-            const addedOrder: ResponseModel = await dispatch(
-              PostOrder(
-                selectedItemselector[0].orderid!,
-                updatedCartItems,
-                customer_information,
-                new Date().getTime(),
-                status,
-                0.0,
-                user_login_information.name
-              )
-            );
-            if (addedOrder) {
-              const payload: PostSelectedOrder = {
-                orderid: addedOrder.result?.orderid!,
-                userid: "",
-                cartid: addedOrder.result?.cartid!,
-              };
-              dispatch(getOrderInfo(payload));
-              router.push(
-                `/orderInfo?orderid=${addedOrder.result
-                  ?.orderid!}&return=false&notification=false`
-              );
-            }
+            // const addedOrder: ResponseModel = await dispatch(
+            //   PostOrder(
+            //     selectedItemselector[0].orderid!,
+            //     updatedCartItems,
+            //     customer_information,
+            //     new Date().getTime(),
+            //     status,
+            //     0.0,
+            //     user_login_information.name
+            //   )
+            // );
+            // if (addedOrder) {
+            //   const payload: PostSelectedOrder = {
+            //     orderid: addedOrder.result?.orderid!,
+            //     userid: "",
+            //     cartid: addedOrder.result?.cartid!,
+            //   };
+            //   dispatch(getOrderInfo(payload));
+            //   router.push(
+            //     `/orderInfo?orderid=${addedOrder.result
+            //       ?.orderid!}&return=false&notification=false`
+            //   );
+            // }
+            router.push("/customerInformation");
           }
         } else {
           // await dispatch(saveOrder(selectedItemselector, date));
@@ -181,6 +197,16 @@ const Tab2: React.FC = () => {
           </div>
         </IonToolbar> */}
       </IonHeader>
+      <IonToast
+        isOpen={isOpenToast.type === "toast" ? isOpenToast?.isOpen : false}
+        message={isOpenToast.toastMessage}
+        color={"medium"}
+        position="middle"
+        duration={3000}
+        onDidDismiss={() =>
+          setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
+        }
+      ></IonToast>
       <IonContent fullscreen className="tab-cart-content">
         <CartComponent />
       </IonContent>

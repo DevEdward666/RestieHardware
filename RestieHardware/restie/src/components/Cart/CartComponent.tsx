@@ -180,11 +180,10 @@ const CartComponent: React.FC = () => {
     const { value } = e.detail;
     if (value) {
       const selectedVoucher = value;
-
       const updatedItem = {
         ...selectedItem,
-        discount: selectedVoucher.discount,
-        voucher_code: selectedVoucher.vouchercode,
+        discount: JSON.parse(selectedVoucher).discount,
+        voucher_code: JSON.parse(selectedVoucher).vouchercode,
         voucher: selectedVoucher,
       };
 
@@ -194,7 +193,6 @@ const CartComponent: React.FC = () => {
     }
   };
   const CardList = (card: Addtocart) => {
-    console.log(card);
     return (
       <div>
         <IonItemSliding>
@@ -282,8 +280,11 @@ const CartComponent: React.FC = () => {
                         value={card.voucher}
                       >
                         {voucher_list?.map((val, index) => (
-                          <IonSelectOption key={index} value={val}>
-                            {val?.vouchercode}
+                          <IonSelectOption
+                            key={index}
+                            value={JSON.stringify(val)}
+                          >
+                            {val.vouchercode}
                           </IonSelectOption>
                         ))}
                       </IonSelect>

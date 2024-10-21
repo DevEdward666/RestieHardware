@@ -183,6 +183,7 @@ namespace RestieAPI.Models.Response
         public string type { get; set; }
         public string? customer_email { get; set; }
         public string? customerid { get; set; }
+        public string? voucher {  get; set; }
         public float total { get; set; }
         public float totaldiscount { get; set; }
     }
@@ -197,6 +198,7 @@ namespace RestieAPI.Models.Response
         public long onhandqty { get; set; }
         public float cost { get; set; }
         public float price { get; set; }
+        public float discount_price { get; set; }
     }
     public class SelectedOrderResponse
     {

@@ -33,6 +33,7 @@ export interface Addtocart {
   voucher_id?:number;
 
   total_discount?:number;
+  order_voucher?:string;
   type?: string;
   transid?: string;
   cashier?: string;

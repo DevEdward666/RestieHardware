@@ -52,6 +52,7 @@ export interface GetOrderItems {
   onhandqty?: number;
   category: string;
   brand: string;
+  discount_price:number;
 }
 export interface SelectedOrder {
   cartid: string;

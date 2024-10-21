@@ -469,7 +469,7 @@ namespace RestieAPI.Service.Repo
             var insertOrder = "";
             if (addToCartItems[0].orderid.Length > 0) 
             {
-                insertOrder = @"update orders set totaldiscount=@totaldiscount total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat,status=@status,createdat=@createdat  where orderid = @orderid";
+                insertOrder = @"update orders set voucher=@order_voucher, totaldiscount=@totaldiscount, total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat,status=@status,createdat=@createdat  where orderid = @orderid";
             }
             else
             {
@@ -499,9 +499,9 @@ namespace RestieAPI.Service.Repo
                                 { "@total", addToCart.qty * addToCart.price },
                                 { "@createdat", addToCart.createdat },
                                 { "@status", addToCart.status },
-                                { "@voucher_id", addToCart.voucher_id },
-                                { "@discount", addToCart.discount },
-                                { "@total_discount", addToCart.total_discount },
+                                { "@voucher_id", addToCart.voucher_id ?? (object)DBNull.Value },
+                                { "@discount", addToCart.discount?? (object)DBNull.Value},
+                                { "@total_discount", addToCart.total_discount ?? (object)DBNull.Value },
                             };
                             
                           
@@ -528,12 +528,13 @@ namespace RestieAPI.Service.Repo
                                 {
                                     { "@orderid", addToCartItems[0].orderid },
                                     { "@total",  total},
-                                    { "@totaldiscount",  addToCartItems[0].total_discount},
+                                    { "@totaldiscount",  addToCartItems[0].total_discount?? 0},
                                     { "@paidthru", addToCartItems[0].paidthru },
                                     { "@paidcash", addToCartItems[0].paidcash },
                                     { "@updateat", addToCartItems[0].updateat },
                                     { "@createdat", addToCartItems[0].createdat },
                                     { "@status", addToCartItems[0].status },
+                                     { "@order_voucher", addToCartItems[0].order_voucher ?? (object)DBNull.Value }, 
                                 };
                             }
                             else
@@ -591,8 +592,8 @@ namespace RestieAPI.Service.Repo
         {
             var sql = @"insert into cart (cartid,code,item,qty,price,total,createdat,status,voucher_id,discount_price,total_discount) 
                 values(@cartid,@code,@item,@qty,@price,@total,@createdat,@status,@voucher_id,@discount,@total_discount)";
-            var insertOrder = @"insert into orders (orderid,cartid,total,paidthru,paidcash,createdby,createdat,status,userid,type,totaldiscount) 
-                        values(@orderid,@cartid,@total,@paidthru,@paidcash,@createdby,@createdat,@status,@userid,@type,@totaldiscount)";
+            var insertOrder = @"insert into orders (orderid,cartid,total,paidthru,paidcash,createdby,createdat,status,userid,type,totaldiscount,voucher) 
+                        values(@orderid,@cartid,@total,@paidthru,@paidcash,@createdby,@createdat,@status,@userid,@type,@totaldiscount,@order_voucher)";
             //var updatecart = @"update cart set status=@status,qty=@qty,total=@total,updateat=@updateat where cartid=@cartid";
             //var updateOrder = @"update orders set total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat  where orderid = @orderid";
             var updatesql = @"update  inventory set qty=@onhandqty where code=@code";
@@ -646,6 +647,7 @@ namespace RestieAPI.Service.Repo
                                     { "@cartid", addToCartItems[0].cartid },
                                     { "@total",  total},
                                     { "@totaldiscount",  addToCartItems[0].total_discount},
+                                    { "@order_voucher",  addToCartItems[0].order_voucher},
                                     { "@paidthru", addToCartItems[0].paidthru },
                                     { "@paidcash", addToCartItems[0].paidcash },
                                     { "@createdby", addToCartItems[0].createdby },
@@ -1007,7 +1009,7 @@ namespace RestieAPI.Service.Repo
         {
 
             var updatecart = @"update cart set status=@status,qty=@qty,total=@total,updateat=@updateat where cartid=@cartid and code=@code";
-            var updateOrder = @"update orders set total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat,status=@status  where orderid = @orderid";
+            var updateOrder = @"update orders set total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat,status=@status,totaldiscount=@totaldiscount,voucher=@order_voucher  where orderid = @orderid";
             var updatesql = @"update  inventory set qty=@onhandqty where code=@code";
             var InsertTransaction = @"insert into transaction (transid,orderid,customer,cashier,status,createdat,updateat) 
                                     values(@transid,@orderid,@customer,@cashier,@status,@createdat,@updateat)";
@@ -1060,6 +1062,8 @@ namespace RestieAPI.Service.Repo
                                     { "@paidcash", addToCartItems[0].paidcash },
                                     { "@updateat", addToCartItems[0].updateat },
                                     { "@status", addToCartItems[0].status },
+                                    { "@order_voucher", addToCartItems[0].order_voucher ?? (object)DBNull.Value},
+                                    { "@totaldiscount", addToCartItems[0].total_discount ?? 0 },
                                 };
                                 foreach (var param in insertOrderParams)
                                 {
@@ -1441,7 +1445,7 @@ namespace RestieAPI.Service.Repo
                         COALESCE((SELECT cts.contactno from customer cts where cts.customerid =ors.userid  limit 1),'') as contactno,
                            ct.cartid, ors.orderid,
                            ors.paidcash, ors.paidthru, ors.total,ors.totaldiscount, ors.createdat, ct.code,
-                           ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type
+                           ct.item, ct.price, ct.qty,ct.discount_price,ors.voucher,ors.status, ors.createdby, ors.type
                     FROM orders AS ors
                     left JOIN cart AS ct ON ors.cartid = ct.cartid
                     LEFT JOIN inventory AS inv ON inv.code = ct.code
@@ -1538,6 +1542,7 @@ namespace RestieAPI.Service.Repo
                                         type = reader.GetString(reader.GetOrdinal("type")),
                                         total = reader.GetFloat(reader.GetOrdinal("total")),
                                         totaldiscount = reader.GetFloat(reader.GetOrdinal("totaldiscount")),
+                                        voucher = !reader.IsDBNull(reader.GetOrdinal("voucher")) ? reader.GetString(reader.GetOrdinal("voucher")) : null,
                                     };
 
                                     var orderItemResponse = new ItemOrders
@@ -1547,7 +1552,7 @@ namespace RestieAPI.Service.Repo
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
                                         qty = reader.GetInt32(reader.GetOrdinal("qty")),
                                         onhandqty = reader.GetInt32(reader.GetOrdinal("onhandqty")),
-
+                                        discount_price = !reader.IsDBNull(reader.GetOrdinal("discount_price")) ? reader.GetFloat(reader.GetOrdinal("discount_price")) :0,
                                         brand = reader.GetString(reader.GetOrdinal("brand")),
                                         category = reader.GetString(reader.GetOrdinal("category")),
                                     };

@@ -47,8 +47,11 @@ const PaymentOptionsComponent = () => {
   );
   const [getTotal, setTotal] = useState<number>(0.0);
   const [getOverallTotal, setOverallTotal] = useState<number>(0.0);
+  const [getOverallTotalWithDiscount, setOverallTotalWithDiscount] =
+    useState<number>(0.0);
 
   const [getDiscount, setDiscount] = useState<number>(0.0);
+  const [getDiscountPerItem, setDiscountPerItem] = useState<number>(0.0);
 
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
@@ -70,7 +73,10 @@ const PaymentOptionsComponent = () => {
 
   const handlePay = useCallback(
     async (type: string) => {
-      const totalAmountToPay = getOverallTotal > 0 ? getOverallTotal : getTotal;
+      const totalAmountToPay =
+        getOverallTotalWithDiscount > 0
+          ? getOverallTotalWithDiscount
+          : getOverallTotal;
 
       if (
         type.toLowerCase() === "cash" &&
@@ -81,7 +87,7 @@ const PaymentOptionsComponent = () => {
           isOpen: true,
           type: "toast",
         });
-      } else if (type.toLowerCase() === "pending" && getDiscount > 0) {
+      } else if (type.toLowerCase() === "pending" && getDiscountPerItem > 0) {
         setIsOpenToast({
           toastMessage: "You can't save an order as draft if it has a voucher",
           isOpen: true,
@@ -94,26 +100,28 @@ const PaymentOptionsComponent = () => {
           type: "loader",
         });
         await saveOrder(type);
+        setCustomerPaymentInfo({
+          cash: 0,
+          voucher: "",
+        });
       }
     },
-    [getOverallTotal, getTotal, customerPayemntInfo, getDiscount]
+    [getOverallTotal, getTotal, customerPayemntInfo, getDiscountPerItem]
   );
 
   const handlePostOrder = useCallback(
     async (type: string) => {
       const updatedCartItems = add_to_cart.map((item, index) => {
-        // Assuming you're using some updated values for discount and voucher_code
-        const updatedDiscount = item.discount; // Use a new value if needed
-        const updatedVoucherCode = item.voucher_code; // Use a new value if needed
-        let totalDiscount: number = 0;
-        totalDiscount += item.qty * (item.discount ?? 0);
+        const updatedDiscount = item.discount;
+        const updatedVoucherCode = item.voucher_code;
         return {
           ...item,
           discount: updatedDiscount ?? 0,
           voucher_code: updatedVoucherCode,
           voucher: item.voucher,
+          order_voucher: customerPayemntInfo.voucher ?? "",
           voucher_id: item.voucher?.id ?? 0,
-          total_discount: totalDiscount ?? 0, // Make sure getTotalDiscount is defined correctly
+          total_discount: getDiscountPerItem ?? 0,
         };
       });
       const addedOrder: ResponseModel = await dispatch(
@@ -143,7 +151,13 @@ const PaymentOptionsComponent = () => {
         );
       }
     },
-    [dispatch, add_to_cart, customer_information, customerPayemntInfo]
+    [
+      dispatch,
+      add_to_cart,
+      customer_information,
+      customerPayemntInfo,
+      getDiscountPerItem,
+    ]
   );
 
   useEffect(() => {
@@ -153,12 +167,12 @@ const PaymentOptionsComponent = () => {
     add_to_cart.forEach((val: any) => {
       totalDiscount += val.qty * (val.discount ?? 0);
       totalAmount += val.price * val.qty;
-      OverAllTotal = totalAmount - (totalDiscount ?? 0);
+      OverAllTotal = totalAmount - (totalDiscount ?? 0) + (getDiscount ?? 0);
     });
     setTotal(OverAllTotal);
-    setDiscount(totalDiscount);
+    setDiscountPerItem(totalDiscount + getDiscount);
     setOverallTotal(OverAllTotal);
-  }, [add_to_cart]);
+  }, [add_to_cart, getDiscount]);
   const handleInfoChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -178,13 +192,13 @@ const PaymentOptionsComponent = () => {
         customerPayemntInfo.voucher.length > 0
       ) {
         const res = await dispatch(get_voucher_actions(payload));
-        const totalWithDiscount = getTotal - res.discount * getTotal;
-        setDiscount(res.discount * getTotal);
-        setOverallTotal(totalWithDiscount);
+        const totalDiscount = res.discount * getTotal;
+        setDiscount(totalDiscount);
+        setOverallTotalWithDiscount(getTotal - totalDiscount);
       }
     };
     initialize();
-  }, [customerPayemntInfo, dispatch]);
+  }, [customerPayemntInfo.voucher, dispatch]);
 
   const handleRemoveVoucher = useCallback(() => {
     dispatch(get_voucher_actions({ vouchercode: "" }));
@@ -194,6 +208,7 @@ const PaymentOptionsComponent = () => {
     });
     setTotal(totalAmount);
     setDiscount(0);
+    setOverallTotalWithDiscount(0);
   }, [dispatch, add_to_cart]);
 
   return (
@@ -411,18 +426,18 @@ const PaymentOptionsComponent = () => {
 
           <div className="payment-info-footer-total-info">
             <span>&#8369;</span>
-            {getOverallTotal > 0
-              ? getOverallTotal.toFixed()
-              : getTotal.toFixed()}
+            {getOverallTotalWithDiscount > 0
+              ? getOverallTotalWithDiscount.toFixed(2)
+              : getOverallTotal.toFixed(2)}
           </div>
         </div>
-        {getDiscount > 0 ? (
+        {getDiscountPerItem > 0 ? (
           <div className="payment-info-footer-total-details">
             <div className="payment-info-footer-total">Total Discount: </div>
 
             <div className="payment-info-footer-total-info">
               <span>&#8369;</span>
-              {getDiscount.toFixed()}
+              {getDiscountPerItem.toFixed(2)}
             </div>
           </div>
         ) : null}

@@ -5,10 +5,12 @@ import {
   IonFooter,
   IonHeader,
   IonImg,
+  IonLoading,
   IonMenuButton,
   IonPage,
   IonText,
   IonTitle,
+  IonToast,
   IonToolbar,
   getPlatforms,
   useIonRouter,
@@ -35,6 +37,7 @@ const Tab2: React.FC = () => {
   const selectedItemselector =
     useSelector((store: RootStore) => store.InventoryReducer.add_to_cart) || [];
   const [getTotal, setTotal] = useState<number>(0);
+  const [getTotalDiscount, setTotalDiscount] = useState<number>(0);
   const [existingOrder, setExistingOrder] = useState<boolean>(false);
   const customer_information = useSelector(
     (store: RootStore) => store.CustomerReducer.customer_information
@@ -42,25 +45,32 @@ const Tab2: React.FC = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
+  const [isOpenToast, setIsOpenToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+    type: "",
+  });
   const platform = getPlatforms();
   useEffect(() => {
     const getTotal = () => {
       let totalPrice = 0; // Initialize total price
-
+      let totalDiscount = 0;
       // Check if selectedItemselector is an array
       if (Array.isArray(selectedItemselector)) {
         // Iterate over each item in the cart
         selectedItemselector.forEach((item) => {
-          const itemTotal = item.price * item.qty; // Calculate total price for the item
+          const discount = item.qty * (item.discount ?? 0);
+          const itemTotal = (item.price - (item.discount ?? 0)) * item.qty;
+          totalDiscount += discount;
           totalPrice += itemTotal; // Add item total to overall total
         });
       }
 
+      setTotalDiscount(totalDiscount);
       setTotal(totalPrice); // Set the total price
       const existingOrder = selectedItemselector.findIndex(
         (item) => item.orderid?.length! > 0
       );
-      console.log(existingOrder);
       if (existingOrder > -1) {
         setExistingOrder(true);
         dispatch(
@@ -91,40 +101,62 @@ const Tab2: React.FC = () => {
       } else {
         const date = new Date().getTime();
         if (existingOrder) {
-          console.log(existingOrder);
           if (
             (selectedItemselector.length > 0 &&
               selectedItemselector[0].status === "quotation") ||
             selectedItemselector[0].status === "pending" ||
             selectedItemselector[0].status === "cancel"
           ) {
+            const updatedCartItems = selectedItemselector.map((item, index) => {
+              const updatedDiscount = item.discount ?? 0;
+              const updatedVoucherCode = item.voucher_code ?? "";
+
+              return {
+                ...item,
+                discount: updatedDiscount,
+                voucher_code: updatedVoucherCode,
+                voucher: item.voucher,
+                voucher_id: item.voucher_id ?? 0,
+                total_discount: getTotalDiscount,
+              };
+            });
+            // if (getTotalDiscount > 0) {
+            //   setIsOpenToast({
+            //     toastMessage:
+            //       "You can't save an order as draft if it has a voucher",
+            //     isOpen: true,
+            //     type: "toast",
+            //   });
+            //   return;
+            // }
             let status =
               selectedItemselector[0].status === "cancel"
                 ? "pending"
                 : selectedItemselector[0].status;
-            const addedOrder: ResponseModel = await dispatch(
-              PostOrder(
-                selectedItemselector[0].orderid!,
-                selectedItemselector,
-                customer_information,
-                new Date().getTime(),
-                status,
-                0.0,
-                user_login_information.name
-              )
-            );
-            if (addedOrder) {
-              const payload: PostSelectedOrder = {
-                orderid: addedOrder.result?.orderid!,
-                userid: "",
-                cartid: addedOrder.result?.cartid!,
-              };
-              dispatch(getOrderInfo(payload));
-              router.push(
-                `/orderInfo?orderid=${addedOrder.result
-                  ?.orderid!}&return=false&notification=false`
-              );
-            }
+            // const addedOrder: ResponseModel = await dispatch(
+            //   PostOrder(
+            //     selectedItemselector[0].orderid!,
+            //     updatedCartItems,
+            //     customer_information,
+            //     new Date().getTime(),
+            //     status,
+            //     0.0,
+            //     user_login_information.name
+            //   )
+            // );
+            // if (addedOrder) {
+            //   const payload: PostSelectedOrder = {
+            //     orderid: addedOrder.result?.orderid!,
+            //     userid: "",
+            //     cartid: addedOrder.result?.cartid!,
+            //   };
+            //   dispatch(getOrderInfo(payload));
+            //   router.push(
+            //     `/orderInfo?orderid=${addedOrder.result
+            //       ?.orderid!}&return=false&notification=false`
+            //   );
+            // }
+            router.push("/customerInformation");
           }
         } else {
           // await dispatch(saveOrder(selectedItemselector, date));
@@ -141,6 +173,7 @@ const Tab2: React.FC = () => {
     selectedItemselector,
     customer_information,
     existingOrder,
+    getTotalDiscount,
   ]);
   return (
     <IonPage className="home-page-container">
@@ -148,7 +181,7 @@ const Tab2: React.FC = () => {
         <IonToolbar mode="ios" color="tertiary">
           <IonTitle>Cart</IonTitle>
         </IonToolbar>
-        <IonToolbar
+        {/* <IonToolbar
           mode="ios"
           color="tertiary"
           className="home-toolbar-logo-container"
@@ -162,8 +195,18 @@ const Tab2: React.FC = () => {
           >
             <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
           </div>
-        </IonToolbar>
+        </IonToolbar> */}
       </IonHeader>
+      <IonToast
+        isOpen={isOpenToast.type === "toast" ? isOpenToast?.isOpen : false}
+        message={isOpenToast.toastMessage}
+        color={"medium"}
+        position="middle"
+        duration={3000}
+        onDidDismiss={() =>
+          setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
+        }
+      ></IonToast>
       <IonContent fullscreen className="tab-cart-content">
         <CartComponent />
       </IonContent>

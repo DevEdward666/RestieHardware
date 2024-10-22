@@ -162,6 +162,11 @@ namespace RestieAPI.Models.Request
             public long? updateat { get; set; }
             public string? userid { get; set; }
             public string status { get; set; }
+            public int? voucher_id { get; set; }
+            public float? discount { get; set; }
+            public float? total_discount{ get; set; }
+            public string? order_voucher{ get; set; }
+            public string? voucher { get; set; }
             public string? type { get; set; }
             public string? transid { get; set; }
             public string? cashier { get; set; }

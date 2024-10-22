@@ -1,7 +1,7 @@
 .container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, .5fr));
-  max-width: calc(190px* 6);
+  grid-template-columns: repeat(auto-fit, minmax(170px, .5fr));
+  max-width: calc(150px* 6);
   margin: 0 auto;
   justify-content: center;
 

@@ -41,3 +41,22 @@ export interface PostNewSupplierModel {
   createdat:number;
   supplierid?:string;
 }
+
+export interface PostNewVoucherModel {
+  voucher_seq: number;
+  vouchercode: string;
+  name: string;
+  description: string;
+  type: string;
+  discount: number;
+  voucher_for: string;
+  createdby:string;
+}
+
+export interface PostAddNewUser{
+  id: string;
+  name: string;
+  username: string;
+  password: string;
+  role: string;
+}

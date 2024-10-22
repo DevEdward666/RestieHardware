@@ -39,6 +39,8 @@ import NotificationPage from "./pages/Notifications/NotificationPage";
 import AddNewItemPage from "./pages/Products/ManageProducts/AddNewItemPage";
 import MainProductPage from "./pages/Products/ManageProducts/MainProductPage";
 import AddNewSupplierPage from "./pages/Products/ManageProducts/AddNewSupplierPage";
+import AddUpdateVoucherPage from "./pages/Products/ManageProducts/AddUpdateVoucher";
+import AddUserPage from "./pages/Users/AddUserPage";
 
 setupIonicReact({ mode: "ios" });
 
@@ -135,6 +137,11 @@ const App: React.FC = () => {
         path="/admin/addnewsupplier"
         render={() => <AddNewSupplierPage />}
       />
+      <Route
+        path="/admin/add-update-voucher"
+        render={() => <AddUpdateVoucherPage />}
+      />
+      <Route path="/admin/add-new-user" render={() => <AddUserPage />} />
 
       <Route path="/admin/sales" render={() => <SalesPage />} />
 

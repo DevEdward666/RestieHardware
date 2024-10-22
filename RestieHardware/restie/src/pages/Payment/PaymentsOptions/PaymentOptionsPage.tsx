@@ -38,7 +38,7 @@ const PaymentOptionsPage = () => {
           </IonButtons>
           <IonTitle>Payment Options</IonTitle>
         </IonToolbar>
-        <IonToolbar
+        {/* <IonToolbar
           mode="ios"
           color="tertiary"
           className="payment-options-toolbar-logo-container"
@@ -55,7 +55,7 @@ const PaymentOptionsPage = () => {
               className="payment-options-toolbar-logo"
             ></IonImg>
           </div>
-        </IonToolbar>
+        </IonToolbar> */}
       </IonHeader>
       <IonContent>
         <div>

@@ -2,6 +2,16 @@
 {
     public class AdminRequestModel
     {
+        public class GetAllVoucher
+        {
+
+            public Int32 offset { get; set; }
+
+            public Int32 page { get; set; }
+            public Int32 limit { get; set; }
+            public string searchTerm { get; set; }
+
+        }
         public class GetAllSupplier
         {
 
@@ -41,6 +51,19 @@
         public class FileForExcel
         {
             public IFormFile SalesFile { get; set; }
+        }
+        public class PostVouchers
+        {
+            public int voucher_seq{ get; set; }
+            public string vouchercode { get; set; }
+            public string name { get; set; }
+            public string description { get; set; }
+            public string voucher_for { get; set; }
+            public string type { get; set; }
+            public float discount { get; set; }
+            public string createdby { get; set; }
+            public long createdat { get; set; }
+            public long maxredemption { get; set; }
         }
     }
 }

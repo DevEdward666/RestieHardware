@@ -17,6 +17,9 @@ import {
   IonText,
   IonImg,
   getPlatforms,
+  IonLabel,
+  IonSelect,
+  IonSelectOption,
 } from "@ionic/react";
 import { removeCircle, addCircle, card } from "ionicons/icons";
 import { useSelector } from "react-redux";
@@ -26,6 +29,7 @@ import {
 } from "../../Models/Request/Inventory/InventoryModel";
 import {
   addToCartAction,
+  get_all_voucher_actions,
   selectedItem,
 } from "../../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../../Service/Store";
@@ -38,6 +42,10 @@ import { GetItemImage } from "../../Service/API/Inventory/InventoryApi";
 const CartComponent: React.FC = () => {
   const selectedItemselector =
     useSelector((store: RootStore) => store.InventoryReducer.add_to_cart) || [];
+  const voucher_list =
+    useSelector(
+      (store: RootStore) => store.InventoryReducer.get_voucher_list
+    ) || [];
   const dispatch = useTypedDispatch();
   const [getItem, setItem] = useState<SelectedItemToCart>();
   const [getOnhand, setOnhand] = useState<number>(0);
@@ -46,6 +54,26 @@ const CartComponent: React.FC = () => {
     toastMessage: "",
     isOpen: false,
   });
+  const updateItem = (
+    selectedItem: SelectedItemToCart,
+    cartItems: Addtocart[]
+  ) => {
+    const existingItemIndex = cartItems.findIndex(
+      (item) => item.code === selectedItem.code
+    );
+    const updatedCartItems = cartItems.map((item, index) => {
+      if (index === existingItemIndex) {
+        return {
+          ...item,
+          discount: selectedItem.discount,
+          voucher_code: selectedItem.voucher_code,
+          voucher: selectedItem.voucher,
+        };
+      }
+      return item;
+    });
+    return updatedCartItems;
+  };
   const addItem = (
     qtyChange: number,
     selectedItem: SelectedItemToCart,
@@ -139,9 +167,48 @@ const CartComponent: React.FC = () => {
     );
     await dispatch(addToCartAction(addeditems));
   };
+  useEffect(() => {
+    const handleGetAllVoucehers = async () => {
+      await dispatch(get_all_voucher_actions());
+    };
+    handleGetAllVoucehers();
+  }, [dispatch]);
+  const toPercentage = (value: number) => {
+    return value + "%";
+  };
+  const toDecimal = (percentage: string) => {
+    return parseFloat(percentage) / 100;
+  };
+  const handleSelectVoucher = async (
+    e: CustomEvent<HTMLIonSelectElement>,
+    selectedItem: SelectedItemToCart
+  ) => {
+    const { value } = e.detail;
+    if (value) {
+      const selectedVoucher = value;
+      let totalDiscount = 0;
+      if (JSON.parse(selectedVoucher).type === "percentage") {
+        const discount = toPercentage(
+          parseInt(JSON.parse(selectedVoucher).discount)
+        );
+        let discountDecimal = toDecimal(discount);
+        totalDiscount = selectedItem.price * discountDecimal;
+      } else {
+        totalDiscount = JSON.parse(selectedVoucher).discount;
+      }
+      const updatedItem = {
+        ...selectedItem,
+        discount: totalDiscount,
+        voucher_code: JSON.parse(selectedVoucher).vouchercode,
+        voucher: selectedVoucher,
+      };
 
+      const updateItems = updateItem(updatedItem, selectedItemselector);
+
+      await dispatch(addToCartAction(updateItems));
+    }
+  };
   const CardList = (card: Addtocart) => {
-    console.log(selectedItemselector);
     return (
       <div>
         <IonItemSliding>
@@ -218,6 +285,26 @@ const CartComponent: React.FC = () => {
                     <div className="main-cart-card-qty">
                       {card?.onhandqty} pcs
                     </div>
+                    <IonItem>
+                      <IonLabel>Voucher</IonLabel>
+                      <IonSelect
+                        name="Voucher"
+                        onIonChange={(e: any) => handleSelectVoucher(e, card)}
+                        aria-label="Voucher"
+                        className="info-input"
+                        placeholder="Select Voucher"
+                        value={card.voucher}
+                      >
+                        {voucher_list?.map((val, index) => (
+                          <IonSelectOption
+                            key={index}
+                            value={JSON.stringify(val)}
+                          >
+                            {val.vouchercode}
+                          </IonSelectOption>
+                        ))}
+                      </IonSelect>
+                    </IonItem>
                   </IonCardContent>
                 </div>
               </IonCard>
@@ -253,6 +340,9 @@ const CartComponent: React.FC = () => {
               status={card.status}
               image={card.image}
               onhandqty={card.onhandqty}
+              voucher_code={card.voucher_code}
+              discount={card.discount}
+              voucher={card.voucher}
             />
           ))
         ) : (

@@ -2,7 +2,9 @@
 using RestieAPI.Configs;
 using RestieAPI.Models.Request;
 using RestieAPI.Models.Response;
+using static RestieAPI.Models.Request.AdminRequestModel;
 using static RestieAPI.Models.Request.UserRequestModel;
+using static RestieAPI.Models.Response.UserResponseModel;
 
 namespace RestieAPI.Service.Repo
 {
@@ -74,6 +76,66 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
+        public PostAddUserResponse AddNewUser(Adduser adduser)
+        {
+            var sql = @"INSERT INTO useraccount (id, username, name, password, role) 
+                        VALUES (@id, @username, @name, crypt(@password, gen_salt('bf')), @role)";
 
+
+            var results = new List<PostVouchers>();
+            var insert = 0;
+            DateTime dateTime = DateTime.UtcNow;
+            long unixTimestampMilliseconds = (long)(dateTime.ToUniversalTime() -
+            new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
+            var id = Guid.NewGuid().ToString();
+            adduser.id = id;
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            var parameters = new Dictionary<string, object>
+                            {
+                                { "@id", adduser.id },
+                                { "@username", adduser.username },
+                                { "@name", adduser.name },
+                                { "@password", adduser.password },
+                                { "@role", adduser.role },
+                            };
+
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            insert = cmd.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new PostAddUserResponse
+                        {
+                            message = "Successfully added",
+                            status = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostAddUserResponse
+                        {
+                            status = 500,
+                            message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
     }
 }

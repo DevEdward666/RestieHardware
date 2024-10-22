@@ -29,7 +29,7 @@ const CustomerInformationPage = () => {
           </IonButtons>
           <IonTitle>Customer Information</IonTitle>
         </IonToolbar>
-        <IonToolbar
+        {/* <IonToolbar
           mode="ios"
           color="tertiary"
           className="customer-toolbar-logo-container"
@@ -43,7 +43,7 @@ const CustomerInformationPage = () => {
           >
             <IonImg src={restielogo} className="customer-toolbar-logo"></IonImg>
           </div>
-        </IonToolbar>
+        </IonToolbar> */}
       </IonHeader>
       <IonContent fullscreen className="customer-info-content">
         <CustomerInformationComponent />

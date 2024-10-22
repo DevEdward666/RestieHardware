@@ -7,6 +7,7 @@ import {
   GET_DELIVERY_INFO,
   GET_ITEM_RETURNS,
   GET_VOUCHER,
+  GET_VOUCHER_LIST,
   LIST_OF_ITEMS,
   ORDER_LIST,
   ORDER_LIST_INFO,
@@ -22,6 +23,7 @@ import {
   GetVoucherInfo,
   InsertCustomerInfo,
   ListAgedReceivable,
+  ListOfVouchers,
   ListOrder,
   PostGetDeliveryInfo,
   PostReturnItems,
@@ -177,6 +179,7 @@ const checkPayload = (
   if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
     update_status = "pending";
   }
+  console.log(payload)
   const updatedPayload = payload.map((val) => ({
     ...val,
     orderid: orderid,
@@ -194,6 +197,7 @@ const checkPayload = (
     customer: customer_payload.name,
     cashier: cashier,
   }));
+  console.log(updatedPayload)
   return updatedPayload;
 };
 export const PostOrder =
@@ -255,6 +259,8 @@ export const PostOrder =
           let newItem: Addtocart;
           payload = [];
           resOrderInfo.order_item.$values?.map((val: GetOrderItems) => {
+            let totalDiscount = 0;
+            totalDiscount += val.discount_price;
             newItem = {
               onhandqty: val?.onhandqty!,
               code: val.code,
@@ -262,6 +268,8 @@ export const PostOrder =
               qty: val.qty,
               image: "",
               price: val.price,
+              discount:val.discount_price,
+              total_discount:totalDiscount,
               orderid: resOrderInfo.order_info.orderid,
               cartid: resOrderInfo.order_info.cartid,
               createdAt: isReorder
@@ -449,6 +457,20 @@ export const get_voucher_actions =
         get_voucher: res.result,
       });
       return res.result;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+  export const get_all_voucher_actions =
+  () =>
+  async (dispatch: Dispatch<GET_VOUCHER_LIST>) => {
+    try {
+      const res = await ListOfVouchers();
+      dispatch({
+        type: "GET_VOUCHER_LIST",
+        get_voucher_list: res.result.$values,
+      });
+      return res.result.$values;
     } catch (error: any) {
       console.log(error);
     }

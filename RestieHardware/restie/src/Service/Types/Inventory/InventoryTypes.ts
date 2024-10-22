@@ -52,6 +52,10 @@ export type GET_VOUCHER = {
   type: "GET_VOUCHER";
   get_voucher: GetVouhcerResponse;
 };
+export type GET_VOUCHER_LIST = {
+  type: "GET_VOUCHER_LIST";
+  get_voucher_list: GetVouhcerResponse[];
+};
 export type GET_ITEM_RETURNS = {
   type: "GET_ITEM_RETURNS";
   get_item_returns: ItemReturns[];
@@ -83,6 +87,7 @@ export type LIST_OF_PRODUCT_TYPE =
   | SET_CATEGORY_AND_BRAND
   | GET_BRANDS
   | GET_VOUCHER
+  | GET_VOUCHER_LIST
   | GET_ITEM_RETURNS
   | SUBMIT_RETURN_REFUND
   | COMPLETE_RETURN_REFUND
@@ -100,6 +105,8 @@ export interface InventoryTypesModel {
   set_category_and_brand: CategoryAndBrandModel;
   get_brands: GetBrandsModel[];
   get_voucher: GetVouhcerResponse;
+  get_voucher_list: GetVouhcerResponse[];
+
   submit_return_refund: SubmitReturnRefund;
   complete_return_refund: CompleteReturnRefund;
   checked_return_refund: ItemReturns[];

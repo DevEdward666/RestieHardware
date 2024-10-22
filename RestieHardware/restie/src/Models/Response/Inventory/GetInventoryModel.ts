@@ -20,6 +20,7 @@ export interface GetOrderInfo {
   orderid: string;
   cartid: string;
   total: number;
+  totaldiscount: number;
   paidthru: string;
   paidcash: number;
   createdby: string;
@@ -51,6 +52,7 @@ export interface GetOrderItems {
   onhandqty?: number;
   category: string;
   brand: string;
+  discount_price:number;
 }
 export interface SelectedOrder {
   cartid: string;
@@ -80,10 +82,14 @@ export interface FileResponse {
   lastModified: number;
 }
 export interface GetVouhcerResponse {
+  vouchercode:string;
   name: string;
   description: string;
   maxredemption: string;
   discount: number;
+  type: string;
+  voucher_for: string;
+
 }
 export interface GetBrandsModel {
   brand: string;

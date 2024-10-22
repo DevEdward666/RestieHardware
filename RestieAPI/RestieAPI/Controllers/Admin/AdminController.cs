@@ -77,5 +77,28 @@ namespace RestieAPI.Controllers.Admin
             getAllSupplier.limit = itemsPerPage;
             return Ok(_adminRepo.searchSupplier(getAllSupplier));
         }
+        [Authorize]
+        [HttpPost("searchVouchers/{pageNumber}")]
+        public ActionResult<SupplierResponseModel> searchVouchers(int pageNumber, [FromBody] GetAllVoucher getAllVoucher)
+        {
+            int itemsPerPage = getAllVoucher.limit; // Or any desired number of items per page
+            int offset = (pageNumber - 1) * itemsPerPage;
+
+            getAllVoucher.offset = offset;
+            getAllVoucher.limit = itemsPerPage;
+            return Ok(_adminRepo.searchVoucher(getAllVoucher));
+        }
+        [Authorize]
+        [HttpPost("AddNewVoucher")]
+        public ActionResult<PostResponse> AddNewVoucher(PostVouchers postVouchers)
+        {
+            return Ok(_adminRepo.AddNewVoucher(postVouchers));
+        }      
+        [Authorize]
+        [HttpPost("PutVoucher")]
+        public ActionResult<PostResponse> PutVoucher(PostVouchers postVouchers)
+        {
+            return Ok(_adminRepo.PutVoucher(postVouchers));
+        }
     }
 }

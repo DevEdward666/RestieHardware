@@ -397,3 +397,6 @@ ion-modal#email-modal {
     outline: none;
     border-color: #5c91f3; /* Example focus color */
 }
+.order-list-price-with-discount{
+    text-decoration: line-through;
+}

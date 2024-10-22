@@ -27,11 +27,30 @@ export interface Addtocart {
   image: string;
   createdby?: string;
   userid?: string;
+  discount?: number;
+  voucher_code?: string;
+  voucher?:VoucherModel;
+  voucher_id?:number;
+
+  total_discount?:number;
+  order_voucher?:string;
   type?: string;
   transid?: string;
   cashier?: string;
   customer?: string;
   reorder?: boolean;
+}
+export interface VoucherModel {
+  id:number,
+  voucher_seq?:number,
+  vouchercode:string;
+  name: string;
+  description: string;
+  maxredemption: string;
+  discount: number;
+  type: string;
+  voucher_for: string;
+  createdby?:string;
 }
 export interface ItemReturns {
   transid: string;
@@ -56,6 +75,9 @@ export interface SelectedItemToCart {
   category?: string;
   brand?: string;
   image: string;
+  discount?: number;
+  voucher_code?:string;
+  voucher?:VoucherModel;
 }
 export interface PostdOrderList {
   userid: string;

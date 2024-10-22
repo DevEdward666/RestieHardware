@@ -179,6 +179,7 @@ const checkPayload = (
   if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
     update_status = "pending";
   }
+  console.log(payload)
   const updatedPayload = payload.map((val) => ({
     ...val,
     orderid: orderid,
@@ -196,6 +197,7 @@ const checkPayload = (
     customer: customer_payload.name,
     cashier: cashier,
   }));
+  console.log(updatedPayload)
   return updatedPayload;
 };
 export const PostOrder =
@@ -257,6 +259,8 @@ export const PostOrder =
           let newItem: Addtocart;
           payload = [];
           resOrderInfo.order_item.$values?.map((val: GetOrderItems) => {
+            let totalDiscount = 0;
+            totalDiscount += val.discount_price;
             newItem = {
               onhandqty: val?.onhandqty!,
               code: val.code,
@@ -264,6 +268,8 @@ export const PostOrder =
               qty: val.qty,
               image: "",
               price: val.price,
+              discount:val.discount_price,
+              total_discount:totalDiscount,
               orderid: resOrderInfo.order_info.orderid,
               cartid: resOrderInfo.order_info.cartid,
               createdAt: isReorder

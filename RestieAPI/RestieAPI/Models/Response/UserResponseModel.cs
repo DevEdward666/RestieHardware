@@ -15,5 +15,10 @@
             public string name { get; set; }
             public string role { get; set; }
         }
+        public class PostAddUserResponse
+        {
+            public int status { get; set; }
+            public string message { get; set; }
+        }
     }
 }

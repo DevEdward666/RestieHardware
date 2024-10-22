@@ -173,6 +173,12 @@ const CartComponent: React.FC = () => {
     };
     handleGetAllVoucehers();
   }, [dispatch]);
+  const toPercentage = (value: number) => {
+    return value + "%";
+  };
+  const toDecimal = (percentage: string) => {
+    return parseFloat(percentage) / 100;
+  };
   const handleSelectVoucher = async (
     e: CustomEvent<HTMLIonSelectElement>,
     selectedItem: SelectedItemToCart
@@ -180,9 +186,19 @@ const CartComponent: React.FC = () => {
     const { value } = e.detail;
     if (value) {
       const selectedVoucher = value;
+      let totalDiscount = 0;
+      if (JSON.parse(selectedVoucher).type === "percentage") {
+        const discount = toPercentage(
+          parseInt(JSON.parse(selectedVoucher).discount)
+        );
+        let discountDecimal = toDecimal(discount);
+        totalDiscount = selectedItem.price * discountDecimal;
+      } else {
+        totalDiscount = JSON.parse(selectedVoucher).discount;
+      }
       const updatedItem = {
         ...selectedItem,
-        discount: JSON.parse(selectedVoucher).discount,
+        discount: totalDiscount,
         voucher_code: JSON.parse(selectedVoucher).vouchercode,
         voucher: selectedVoucher,
       };

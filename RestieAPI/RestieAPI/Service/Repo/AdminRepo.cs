@@ -8,6 +8,8 @@ using static RestieAPI.Models.Response.AdminResponseModel;
 using OfficeOpenXml;
 using static RestieAPI.Models.Request.InventoryRequestModel;
 using MailKit.Search;
+using System.Data;
+using System;
 namespace RestieAPI.Service.Repo
 {
     public class AdminRepo
@@ -169,6 +171,82 @@ namespace RestieAPI.Service.Repo
                     {
                         tran.Rollback();
                         return new SupplierResponseModel
+                        {
+                            result = [],
+                            success = false,
+                            statusCode = 500
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
+        public AdminVoucherResponseModel searchVoucher(AdminRequestModel.GetAllVoucher getAllVoucher)
+        {
+            var sql = @"SELECT * FROM vouchers 
+                        WHERE LOWER(vouchercode) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
+                              LOWER(name) LIKE CONCAT('%', LOWER(@searchTerm), '%') 
+                        ORDER BY vouchercode 
+                        LIMIT @limit;";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@limit", getAllVoucher.limit },
+                { "@searchTerm", getAllVoucher.searchTerm }
+            };
+
+
+            var results = new List<Vouchers>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var inventoryItem = new Vouchers
+                                    {
+                                        voucher_seq = reader.GetInt16(reader.GetOrdinal("voucher_seq")),
+                                        vouchercode = reader.GetString(reader.GetOrdinal("vouchercode")),
+                                        name = reader.GetString(reader.GetOrdinal("name")),
+                                        description = reader.GetString(reader.GetOrdinal("description")),
+                                        maxredemption = reader.GetInt64(reader.GetOrdinal("maxredemption")),
+                                        type = reader.GetString(reader.GetOrdinal("type")),
+                                        voucher_for = reader.GetString(reader.GetOrdinal("voucher_for")),
+                                        discount = reader.GetFloat(reader.GetOrdinal("discount")),
+                                    };
+
+                                    results.Add(inventoryItem);
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new AdminVoucherResponseModel
+                        {
+                            result = results,
+                            success = true,
+                            statusCode = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new AdminVoucherResponseModel
                         {
                             result = [],
                             success = false,
@@ -473,7 +551,125 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
+        public PostInventoryAddResponse AddNewVoucher(PostVouchers postVouchers)
+        {
+            var sql = @"insert into vouchers (voucher_seq,vouchercode,name,description,maxredemption,discount,type,voucher_for,createdat,createdby) 
+                        values(nextval('voucher_seq_seq'), @vouchercode,@name,@description,@maxredemption,@discount,@type,@voucher_for,@createdat,@createdby)";
 
+            var results = new List<PostVouchers>();
+            var insert = 0;
+            DateTime dateTime = DateTime.UtcNow;
+            long unixTimestampMilliseconds = (long)(dateTime.ToUniversalTime() -
+            new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            var parameters = new Dictionary<string, object>
+                            {
+                                { "@vouchercode", postVouchers.vouchercode },
+                                { "@name", postVouchers.name },
+                                { "@description", postVouchers.description },
+                                { "@maxredemption", 999 },
+                                { "@discount", postVouchers.discount },
+                                { "@type", postVouchers.type },
+                                { "@voucher_for", postVouchers.voucher_for },
+                                { "@createdat", unixTimestampMilliseconds },
+                                { "@createdby", postVouchers.createdby },
+                            };
+
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            insert = cmd.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new PostInventoryAddResponse
+                        {
+                            message = "Successfully added",
+                            status = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostInventoryAddResponse
+                        {
+                            status = 500,
+                            message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
+        public PostInventoryAddResponse PutVoucher(PostVouchers postVouchers)
+        {
+            var updatesql = @"update  vouchers set vouchercode=@vouchercode,name=@name,
+                            description=@description,discount=@discount,type=@type,voucher_for=@voucher_for where voucher_seq = @voucher_seq";
+
+            var results = new List<InventoryItems>();
+            var update = 0;
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(updatesql, connection))
+                        {
+                            var parameters = new Dictionary<string, object>
+                            {
+                                { "@voucher_seq", postVouchers.voucher_seq },
+                                { "@vouchercode", postVouchers.vouchercode },
+                                { "@name", postVouchers.name },
+                                { "@description", postVouchers.description },
+                                { "@discount", postVouchers.discount },
+                                { "@type", postVouchers.type },
+                                { "@voucher_for", postVouchers.voucher_for },
+                            };
+
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            update = cmd.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new PostInventoryAddResponse
+                        {
+                            message = "Successfully updated",
+                            status = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostInventoryAddResponse
+                        {
+                            status = 500,
+                            message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
         public PostInventoryAddResponse ImportDataFromExcel(IFormFile forExcel)
         {
             //FileInfo file = new FileInfo(forExcel);

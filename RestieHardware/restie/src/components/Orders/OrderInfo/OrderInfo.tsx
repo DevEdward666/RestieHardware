@@ -762,6 +762,7 @@ const OrderInfoComponent: React.FC = () => {
     permissionRequested = value;
   };
   const handleReceivedPayment = () => {
+    // console.log(order_list_info);
     setOpenSearchModal({ isOpen: false, modal: "process" });
     setCanDismiss(true);
     setOpenCashModal(true);
@@ -788,12 +789,17 @@ const OrderInfoComponent: React.FC = () => {
     let newItem: Addtocart;
     let payload: Addtocart[] = [];
     order_list_info.order_item.map((val) => {
+      let totalDiscount: number = 0.0;
+      totalDiscount += val.discount_price;
+      console.log(totalDiscount);
       newItem = {
         onhandqty: val?.onhandqty!,
         code: val.code,
         item: val.item,
         qty: val.qty,
         price: val.price,
+        discount: val.discount_price ?? 0,
+        total_discount: totalDiscount,
         image: "",
         orderid: order_list_info.order_info.orderid,
         cartid: order_list_info.order_info.cartid,

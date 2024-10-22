@@ -7,7 +7,11 @@ import {
   useIonRouter,
 } from "@ionic/react";
 import "./MainProductComponent.css";
-import { bagOutline, chevronForwardOutline } from "ionicons/icons";
+import {
+  bagOutline,
+  barcodeOutline,
+  chevronForwardOutline,
+} from "ionicons/icons";
 import { useSelector } from "react-redux";
 import { RootStore } from "../../../../Service/Store";
 const MainProductComponent: React.FC = () => {
@@ -67,6 +71,24 @@ const MainProductComponent: React.FC = () => {
                 <IonIcon icon={chevronForwardOutline}></IonIcon>
               </IonButton>
             </div>
+            {user_login_information?.role.trim().toLowerCase() ===
+            "super admin" ? (
+              <div
+                className="main-manage-list-button-list"
+                onClick={() => router.push("/admin/add-update-voucher")}
+              >
+                <IonButton fill="clear" className="main-manage-button-order">
+                  <IonIcon icon={barcodeOutline}></IonIcon>
+                  <IonText className="main-manage-button-text">
+                    Add/Update Voucher
+                  </IonText>
+                </IonButton>
+
+                <IonButton fill="clear" className="main-manage-button-order">
+                  <IonIcon icon={chevronForwardOutline}></IonIcon>
+                </IonButton>
+              </div>
+            ) : null}
           </>
         ) : null}
       </div>

@@ -14,7 +14,7 @@ import {
   useIonRouter,
 } from "@ionic/react";
 import { saveOutline } from "ionicons/icons";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { usePhotoGallery } from "../../../../Hooks/usePhotoGallery";
@@ -24,6 +24,7 @@ import { SuppliersModel } from "../../../../Models/Response/Admin/AdminModelResp
 import {
   PostNewSupplier,
   PostUpdateSupplier,
+  searchSupplier,
 } from "../../../../Service/Actions/Admin/AdminActions";
 import { set_toast } from "../../../../Service/Actions/Commons/CommonsActions";
 import { RootStore, useTypedDispatch } from "../../../../Service/Store";
@@ -74,6 +75,12 @@ const AddNewSupplierComponent = () => {
     },
     []
   );
+  useEffect(() => {
+    const searchSuppliers = () => {
+      dispatch(searchSupplier(fetchList));
+    };
+    searchSuppliers();
+  }, [dispatch, fetchList]);
   const handleSaveSupplier = useCallback(
     async (update: boolean) => {
       const payload: PostNewSupplierModel = {

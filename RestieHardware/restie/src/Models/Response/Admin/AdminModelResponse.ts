@@ -17,3 +17,13 @@ export interface SuppliersModel {
   address: string;
   createdat: number;
 }
+export interface VouchersModel {
+  voucher_seq: number;
+  vouchercode: string;
+  name: string;
+  description: string;
+  discount: number;
+  type: string;
+  voucher_for: string;
+  createdby:string;
+}

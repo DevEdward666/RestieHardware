@@ -42,6 +42,7 @@ export interface Addtocart {
 }
 export interface VoucherModel {
   id:number,
+  voucher_seq?:number,
   vouchercode:string;
   name: string;
   description: string;
@@ -49,6 +50,7 @@ export interface VoucherModel {
   discount: number;
   type: string;
   voucher_for: string;
+  createdby?:string;
 }
 export interface ItemReturns {
   transid: string;

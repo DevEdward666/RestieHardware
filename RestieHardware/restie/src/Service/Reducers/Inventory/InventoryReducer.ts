@@ -29,6 +29,7 @@ const defaultState: InventoryTypesModel = {
       name: "",
       address: "",
       contactno: 0,
+      totaldiscount: 0
     },
     return_item: [],
   },

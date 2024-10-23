@@ -256,8 +256,80 @@ namespace RestieAPI.Service.Repo
                     }
                 }
             }
+        } 
+        public AdminUsersResponseModel searchUser(AdminRequestModel.GetAllUser getAllUser)
+        {
+            var sql = @"SELECT * FROM useraccount 
+                        WHERE LOWER(name) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
+                              LOWER(username) LIKE CONCAT('%', LOWER(@searchTerm), '%') 
+                        ORDER BY name 
+                        LIMIT @limit;";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@limit", getAllUser.limit },
+                { "@searchTerm", getAllUser.searchTerm }
+            };
+
+
+            var results = new List<Users>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var inventoryItem = new Users
+                                    {
+                                        id = reader.GetString(reader.GetOrdinal("id")),
+                                        username = reader.GetString(reader.GetOrdinal("username")),
+                                        name = reader.GetString(reader.GetOrdinal("name")),
+                                        role = reader.GetString(reader.GetOrdinal("role")),
+                                    };
+
+                                    results.Add(inventoryItem);
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new AdminUsersResponseModel
+                        {
+                            result = results,
+                            success = true,
+                            statusCode = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new AdminUsersResponseModel
+                        {
+                            result = [],
+                            success = false,
+                            statusCode = 500
+                        };
+                        throw;
+                    }
+                }
+            }
         }
-        public PostInventoryAddResponse PostInventory(InventoryRequestModel.PostInventory postInventory)
+        public PostInventoryAddResponse PostInventory(InventoryRequestModel.PostInventoryItems postInventory)
         {   
             var sql = @"insert into inventorylogs (logid,code,onhandqty,addedqty,supplierid,cost,price,createdat) values(@logid,@code,@onhandqty,@addedqty,@supplierid,@cost,@price,@createdat)";
            
@@ -348,7 +420,88 @@ namespace RestieAPI.Service.Repo
             }
 
 
-        }  
+        }
+        public PostInventoryAddResponse PostMultipleInventory(InventoryRequestModel.PostInventory postInventory)
+        {
+            var sql = @"INSERT INTO inventorylogs (logid, code, onhandqty, addedqty, supplierid, cost, price, createdat) 
+                VALUES (@logid, @code, @onhandqty, @addedqty, @supplierid, @cost, @price, @createdat)";
+
+            var updatesql = @"UPDATE inventory 
+                      SET category = @category, brand = @brand, item = @item, qty = qty + @addedqty, 
+                          cost = @cost, price = @price, updatedat = @updatedat 
+                      WHERE code = @code";
+
+            var logid = Guid.NewGuid().ToString();
+            var results = new List<InventoryItems>();
+            DateTime dateTime = DateTime.UtcNow;
+            long unixTimestampMilliseconds = (long)(dateTime.ToUniversalTime() -
+            new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        foreach (var item in postInventory.items)
+                        {
+                            var parameters = new Dictionary<string, object>
+                    {
+                        { "@logid", logid },
+                        { "@code", item.code },
+                        { "@onhandqty", item.onhandqty },
+                        { "@addedqty", item.addedqty },
+                        { "@supplierid", postInventory.supplierId },
+                        { "@cost", item.cost },
+                        { "@price", item.price },
+                        { "@createdat", unixTimestampMilliseconds }, 
+                        { "@updatedat",unixTimestampMilliseconds }, 
+                        { "@category", item.category },
+                        { "@brand", item.brand },
+                        { "@item", item.item }
+                    };
+
+                            using (var cmd = new NpgsqlCommand(sql, connection))
+                            {
+                                foreach (var param in parameters)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Update the inventory
+                            using (var cmd = new NpgsqlCommand(updatesql, connection))
+                            {
+                                foreach (var param in parameters)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        // Commit the transaction
+                        tran.Commit();
+                        return new PostInventoryAddResponse
+                        {
+                            message = "Successfully added",
+                            status = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostInventoryAddResponse
+                        {
+                            status = 500,
+                            message = ex.Message
+                        };
+                    }
+                }
+            }
+        }
+
         public PostInventoryAddResponse PostNewItemInventory(InventoryRequestModel.PostNewItemInventory postNewItem)
         {   
             var sql = @"insert into inventory (code,item,qty,category,brand,cost,price,createdat,status,image,updatedat,reorderqty) 

@@ -15,6 +15,24 @@ export interface PostInventoryModel {
   updatedAt: number;
 }
 
+export interface PostDeliveryReceipt {
+  items:ProductInfo[],
+  supplierId:string,
+}
+export interface ProductInfo {
+  item: string;
+  category: string;
+  brand: string;
+
+  code: string;
+  onhandqty: number;
+  addedqty: number;
+  supplierid: string;
+  supplierName: string;
+
+  cost: number;
+  price: number;
+}
 export interface PostNewItemInventoryModel {
   image: string;
   code: string;

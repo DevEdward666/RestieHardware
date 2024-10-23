@@ -23,6 +23,12 @@ namespace RestieAPI.Models.Request
         }
         public class PostInventory
         {
+            public PostInventoryItems[] items { get; set; }
+            public string supplierId { get; set; }
+
+        }      
+        public class PostInventoryItems
+        {
             public string item { get; set; }
             public string category { get; set; }
             public string brand { get; set; }
@@ -34,7 +40,6 @@ namespace RestieAPI.Models.Request
             public float price { get; set; }
             public long createdat { get; set; }
             public long updatedat { get; set; }
-          
 
         }
         public class PostNewItemInventory

@@ -14,6 +14,12 @@
             public Boolean success { get; set; }
             public int statusCode { get; set; }
         }
+        public class AdminUsersResponseModel
+        {
+            public List<Users> result { get; set; }
+            public Boolean success { get; set; }
+            public int statusCode { get; set; }
+        }
         public class Suppliers
         {
             public string supplierid { get; set; }
@@ -35,6 +41,13 @@
             public string createdby { get; set; }
             public long createdat { get; set; }
             public long maxredemption { get; set; }
+        }
+        public class Users
+        {
+            public string id { get; set; }
+            public string name { get; set; }
+            public string username { get; set; }
+            public string role { get; set; }
         }
     }
 }

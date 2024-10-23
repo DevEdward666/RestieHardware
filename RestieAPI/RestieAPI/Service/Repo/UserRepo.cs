@@ -136,6 +136,61 @@ namespace RestieAPI.Service.Repo
                     }
                 }
             }
+        }   
+        public PostAddUserResponse UpdateNewUser(Adduser adduser)
+        {
+            var sql = @"update  useraccount set  username=@username, name=@name, password=crypt(@password, gen_salt('bf')), role=@role where id=@id";
+
+
+            var results = new List<PostVouchers>();
+            var insert = 0;
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            var parameters = new Dictionary<string, object>
+                            {
+                                { "@id", adduser.id },
+                                { "@username", adduser.username },
+                                { "@name", adduser.name },
+                                { "@password", adduser.password },
+                                { "@role", adduser.role },
+                            };
+
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            insert = cmd.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new PostAddUserResponse
+                        {
+                            message = "Successfully Updated",
+                            status = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostAddUserResponse
+                        {
+                            status = 500,
+                            message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
         }
     }
 }

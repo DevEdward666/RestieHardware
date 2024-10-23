@@ -227,13 +227,22 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
 
           <div className="inventory-card-addtocart">
             <IonButton
-              size="default"
+              fill="clear"
+              className="inventory-card-addtocart-button"
               disabled={card?.qty > 0 ? false : true}
-              color="medium"
               onClick={(event: any) => handleAddToCart(payload, event)}
             >
-              {card?.qty > 0 ? "Add to cart" : "Sold Out"}
-              <IonIcon color="light" slot="icon-only" icon={cart}></IonIcon>
+              {card?.qty > 0 ? (
+                <span className="addtocart-btn-text">Add to cart</span>
+              ) : (
+                <span className="addtocart-btn-text">Sold Out</span>
+              )}
+              <IonIcon
+                color="light"
+                slot="icon-only"
+                size="small"
+                icon={cart}
+              ></IonIcon>
             </IonButton>
           </div>
         </IonCard>

@@ -48,6 +48,12 @@ namespace RestieAPI.Controllers.Inventory
      
             return Ok(_inventoryRepo.getBrands(getBrand));
         }
+        [HttpPost("fetchCategory")]
+        public ActionResult<CategoryResponseModel> FetchCategory( [FromBody] GetBrand getBrand)
+        {
+     
+            return Ok(_inventoryRepo.getCategory(getBrand));
+        }
         [HttpPost("searchInventory/{pageNumber}")]
         public ActionResult<InventoryItemModel> SearchInventory(int pageNumber, [FromBody] GetAllInventory getAllInventory)
         {
@@ -168,10 +174,10 @@ namespace RestieAPI.Controllers.Inventory
             return Ok(_inventoryRepo.getVouchers(getVoucher));
         } 
         [Authorize]
-        [HttpGet("ListOfVouchers")]
-        public ActionResult<PostResponse> ListOfVouchers()
+        [HttpPost("ListOfVouchers")]
+        public ActionResult<PostResponse> ListOfVouchers(GetVoucherType getVoucher)
         {
-            return Ok(_inventoryRepo.ListOfVouchers());
+            return Ok(_inventoryRepo.ListOfVouchers(getVoucher));
         }
         [Authorize]
         [HttpPost("GetByDaySales")]

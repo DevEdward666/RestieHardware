@@ -128,8 +128,12 @@ namespace RestieAPI.Models.Request
         }
         public class GetVoucher
         {
-            public string vouchercode { get; set; }
-
+            public string? vouchercode { get; set; }
+            public string? vouchertype { get; set; }
+        }
+        public class GetVoucherType
+        {
+            public string? voucher_for { get; set; }
         }
         public class GetDeliveryImage
         {

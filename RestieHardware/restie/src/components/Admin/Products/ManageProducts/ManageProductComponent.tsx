@@ -58,14 +58,22 @@ const ManageProductComponent = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
+  const DRtype: TypeOfDeliveryReceipt[] = [
+    {
+      id: 1,
+      name: "Single",
+      type: "single",
+    },
+    {
+      id: 2,
+      name: "Multiple",
+      type: "multiple",
+    },
+  ];
   const modal = useRef<HTMLIonModalElement>(null);
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
-  const [getdrType, setdrType] = useState<TypeOfDeliveryReceipt>({
-    id: 0,
-    type: "",
-    name: "",
-  });
+  const [getdrType, setdrType] = useState<string>("single");
   const [openSearchModal, setOpenSearchModal] = useState({
     isOpen: false,
     modal: "",
@@ -109,19 +117,10 @@ const ManageProductComponent = () => {
         searchTerm: "",
       })
     );
+
+    setdrType("single");
   };
-  const DRtype: TypeOfDeliveryReceipt[] = [
-    {
-      id: 1,
-      name: "Single",
-      type: "single",
-    },
-    {
-      id: 2,
-      name: "Multiple",
-      type: "multiple",
-    },
-  ];
+
   const compareWith = (
     o1: TypeOfDeliveryReceipt,
     o2: TypeOfDeliveryReceipt
@@ -134,20 +133,7 @@ const ManageProductComponent = () => {
     let value = e.detail.value;
     setdrType(value);
   };
-  const [products, setProducts] = useState<ProductInfo[]>([
-    {
-      brand: "",
-      code: "",
-      cost: 0,
-      price: 0,
-      category: "",
-      item: "",
-      addedqty: 1,
-      onhandqty: 0,
-      supplierid: "",
-      supplierName: "",
-    },
-  ]);
+  const [products, setProducts] = useState<ProductInfo[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAlert, setShowAlert] = useState({ isOpen: false, message: "" });
   const [selectedProductIndex, setSelectedProductIndex] = useState<
@@ -165,8 +151,26 @@ const ManageProductComponent = () => {
     setProducts(newProducts);
   };
 
-  const addNewProduct = () => {
-    setProducts([
+  const addNewProduct = (is_submit: boolean) => {
+    if (is_submit) {
+      setProducts([
+        {
+          item: "",
+          addedqty: 1,
+          category: "",
+          brand: "",
+          code: "",
+          onhandqty: 0,
+          supplierid: "",
+          supplierName: "",
+          cost: 0,
+          price: 0,
+        },
+      ]);
+      return;
+    }
+    setProducts((prev) => [
+      ...prev,
       {
         item: "",
         addedqty: 1,
@@ -180,6 +184,8 @@ const ManageProductComponent = () => {
         price: 0,
       },
     ]);
+    setSelectedProductIndex(products.length);
+    setShowModal({ isOpen: true, type: "product" });
   };
 
   const removeProduct = (index: number) => {
@@ -193,7 +199,7 @@ const ManageProductComponent = () => {
       supplierId: productInfo.supplierid,
     });
     if (res.status === 200) {
-      addNewProduct();
+      addNewProduct(true);
       setProductInfo({
         code: "",
         item: "",
@@ -402,18 +408,30 @@ const ManageProductComponent = () => {
     <IonContent>
       <IonList>
         <IonRadioGroup
-          compareWith={compareWith}
+          value={getdrType}
           onIonChange={(ev) => handleRadioChange(ev)}
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-around",
+          }}
         >
           {DRtype.map((val) => (
-            <IonItem key={val.id}>
-              <IonLabel> {val.name}</IonLabel>
-              <IonRadio key={val.id} value={val}></IonRadio>
+            <IonItem
+              key={val.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                padding: "0 10px",
+              }}
+            >
+              <IonRadio mode="ios" value={val.type} />
+              <IonLabel>{val.name}</IonLabel>
             </IonItem>
           ))}
         </IonRadioGroup>
       </IonList>
-      {getdrType.type === "single" ? (
+      {getdrType === "single" ? (
         <div>
           {" "}
           <IonSearchbar
@@ -595,40 +613,47 @@ const ManageProductComponent = () => {
               class="product-input"
               value={productInfo.supplierName}
             ></IonInput>
-            <IonButton color="medium" expand="block" onClick={addNewProduct}>
+            <IonButton
+              color="medium"
+              expand="block"
+              onClick={() => addNewProduct(false)}
+            >
               Add New Product
             </IonButton>
-
-            {products.map((product, index) => (
-              <IonItem key={index}>
-                <IonIcon
-                  className="product-add-icon"
-                  onClick={() => {
-                    setSelectedProductIndex(index);
-                    setShowModal({ isOpen: true, type: "product" });
-                  }}
-                  icon={addCircle}
-                ></IonIcon>
-                <IonLabel className="product-name-selected">
-                  {product.item || "No item selected"}
-                </IonLabel>
-                <IonInput
-                  type="number"
-                  class="product-input-qty"
-                  value={product.addedqty || 1}
-                  placeholder="Qty"
-                  onIonChange={handleQuantityChange(index)}
-                />
-                <IonIcon
-                  className="product-remove-icon"
-                  icon={closeCircle}
-                  onClick={() => removeProduct(index)}
-                  color="danger"
-                >
-                  Remove
-                </IonIcon>
-              </IonItem>
-            ))}
+            {products.length > 0 ? (
+              products.map((product, index) => (
+                <IonItem key={index}>
+                  <IonIcon
+                    className="product-add-icon"
+                    onClick={() => {
+                      setSelectedProductIndex(index);
+                      setShowModal({ isOpen: true, type: "product" });
+                    }}
+                    icon={addCircle}
+                  ></IonIcon>
+                  <IonLabel className="product-name-selected">
+                    {product.item || "No item selected"}
+                  </IonLabel>
+                  <IonInput
+                    type="number"
+                    class="product-input-qty"
+                    value={product.addedqty || 1}
+                    placeholder="Qty"
+                    onIonChange={handleQuantityChange(index)}
+                  />
+                  <IonIcon
+                    className="product-remove-icon"
+                    icon={closeCircle}
+                    onClick={() => removeProduct(index)}
+                    color="danger"
+                  >
+                    Remove
+                  </IonIcon>
+                </IonItem>
+              ))
+            ) : (
+              <span className="not-yet-span"> No item yet</span>
+            )}
 
             <IonButton color="medium" expand="block" onClick={handleSubmit}>
               Submit Products
@@ -708,17 +733,6 @@ const ManageProductComponent = () => {
                 )}
               </IonContent>
             </IonModal>
-
-            {/* <div>
-              <h3>Selected Products:</h3>
-              <ul>
-                {products.map((product, index) => (
-                  <li key={index}>
-                    {product.item} - Quantity: {product.quantity}
-                  </li>
-                ))}
-              </ul>
-            </div> */}
           </div>
         </div>
       )}

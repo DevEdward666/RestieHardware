@@ -326,24 +326,27 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     };
     initializeItems();
   }, [searchItem]);
+  const handleRemove = useCallback(
+    (newCategory: string, newBrand: string) => {
+      const { filter } = get_category_and_brand;
+      dispatch(
+        set_category_and_brand({
+          category: newCategory,
+          brand: newBrand,
+          filter,
+        })
+      );
+    },
+    [dispatch, get_category_and_brand]
+  );
+
   const handleRemoveCategory = useCallback(() => {
-    dispatch(
-      set_category_and_brand({
-        category: "",
-        brand: get_category_and_brand.brand,
-        filter: get_category_and_brand.filter,
-      })
-    );
-  }, [dispatch, get_category_and_brand]);
+    handleRemove("", get_category_and_brand.brand);
+  }, [get_category_and_brand.brand]);
+
   const handleRemoveBrand = useCallback(() => {
-    dispatch(
-      set_category_and_brand({
-        category: get_category_and_brand.category,
-        brand: "",
-        filter: get_category_and_brand.filter,
-      })
-    );
-  }, [dispatch, get_category_and_brand]);
+    handleRemove(get_category_and_brand.category, "");
+  }, [get_category_and_brand.category]);
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
     const newItems = await getMoreInventory();
     setItems(newItems.response);

@@ -6,6 +6,7 @@ import {
   GetDeliveryImagePath,
   GetItemImageRequest,
   GetItemToRefundRequest,
+  GetVoucherType,
   ItemReturns,
   PostAgedReceivable,
   PostDaysSalesModel,
@@ -52,6 +53,16 @@ export const searchInventory = async (payload: SearchInventoryModel) => {
 export const fetchBrands = async (payload: GetBrandsModel) => {
   const response = await post(
     `${baseUrl}api/Inventory/fetchBrands`,
+    {
+      "Content-Type": "application/json",
+    },
+    JSON.stringify(payload)
+  );
+  return response.result.$values;
+};
+export const fetchCategory = async (payload: GetBrandsModel) => {
+  const response = await post(
+    `${baseUrl}api/Inventory/fetchCategory`,
     {
       "Content-Type": "application/json",
     },
@@ -414,18 +425,19 @@ export const GetVoucherInfo = async (payload: PostVoucherInfoModel) => {
   );
   return response;
 };
-export const ListOfVouchers = async () => {
+export const ListOfVouchers = async (payload:GetVoucherType) => {
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {
     throw new Error("Token not found");
   }
 
-  const response = await get(
+  const response = await post(
     `${baseUrl}api/Inventory/ListOfVouchers`,
     {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getToken}`,
-    }
+    },
+    JSON.stringify(payload)
   );
   return response;
 };

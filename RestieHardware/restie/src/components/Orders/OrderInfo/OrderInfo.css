@@ -275,19 +275,19 @@ ion-modal#email-modal {
     background-color: white;
     text-align: center;
     font-family: Gotham-Book;
-    font-size: 16px;
+    font-size: 14px;
     font-style: normal;
     font-weight: 400;
     line-height: 24px;
     align-items: center;
-    border-radius: 20px;
+    border-radius: 30px;
     border-color: #125B8C;
     border-style: solid;
     border-width: 2px;
     width: 100%;
     .order-info-button-order{
         font-family: Gotham-Book;
-        font-size: 16px;
+        font-size: 14px;
         --color:#125B8C;
     }
     .order-info-button-text{
@@ -301,12 +301,12 @@ ion-modal#email-modal {
     background-color: white;
     text-align: center;
     font-family: Gotham-Book;
-    font-size: 16px;
+    font-size: 14px;
     font-style: normal;
     font-weight: 400;
     line-height: 24px;
     align-items: center;
-    border-radius: 20px;
+    border-radius: 30px;
     border-color: #125B8C;
     border-style: solid;
     border-width: 2px;
@@ -314,7 +314,7 @@ ion-modal#email-modal {
     background-color: #125B8C;
     .order-info-button-order{
         font-family: Gotham-Book;
-        font-size: 16px;
+        font-size: 14px;
         --color:white;
     }
     .order-info-button-text{

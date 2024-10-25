@@ -54,3 +54,13 @@ ion-input.product-input {
     font-size: 14px;
     font-family: 'Gotham-Light';
 }
+.not-yet-span{
+  display: flex;
+  text-align: center;
+  font-size: 16px;
+  font-family: 'Gotham-Light';
+  flex-direction: row;
+  align-content: center;
+  justify-content: center;
+  padding: 10px;
+}

@@ -26,6 +26,7 @@ import { useSelector } from "react-redux";
 import {
   SelectedItemToCart,
   Addtocart,
+  GetVoucherType,
 } from "../../Models/Request/Inventory/InventoryModel";
 import {
   addToCartAction,
@@ -169,7 +170,10 @@ const CartComponent: React.FC = () => {
   };
   useEffect(() => {
     const handleGetAllVoucehers = async () => {
-      await dispatch(get_all_voucher_actions());
+      const payload: GetVoucherType = {
+        voucher_for: "single",
+      };
+      await dispatch(get_all_voucher_actions(payload));
     };
     handleGetAllVoucehers();
   }, [dispatch]);

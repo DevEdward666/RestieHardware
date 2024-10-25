@@ -32,9 +32,15 @@ namespace RestieAPI.Controllers.Admin
         }
         [Authorize]
         [HttpPost("AddInventory")]
-        public ActionResult<PostResponse> PostInventory(PostInventory postInventory)
+        public ActionResult<PostResponse> PostInventory(PostInventoryItems postInventory)
         {
             return Ok(_adminRepo.PostInventory(postInventory));
+        }
+        [Authorize]
+        [HttpPost("PostMultipleInventory")]
+        public ActionResult<PostResponse> PostMultipleInventory(PostInventory postInventory)
+        {
+            return Ok(_adminRepo.PostMultipleInventory(postInventory));
         }       
         [Authorize]
         [HttpPost("NewItemInventory")]
@@ -87,6 +93,17 @@ namespace RestieAPI.Controllers.Admin
             getAllVoucher.offset = offset;
             getAllVoucher.limit = itemsPerPage;
             return Ok(_adminRepo.searchVoucher(getAllVoucher));
+        }     
+        [Authorize]
+        [HttpPost("searchUser/{pageNumber}")]
+        public ActionResult<AdminUsersResponseModel> searchUser(int pageNumber, [FromBody] GetAllUser getAllUser)
+        {
+            int itemsPerPage = getAllUser.limit; // Or any desired number of items per page
+            int offset = (pageNumber - 1) * itemsPerPage;
+
+            getAllUser.offset = offset;
+            getAllUser.limit = itemsPerPage;
+            return Ok(_adminRepo.searchUser(getAllUser));
         }
         [Authorize]
         [HttpPost("AddNewVoucher")]

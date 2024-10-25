@@ -9,6 +9,8 @@ import {
   IonItem,
   IonLabel,
   IonLoading,
+  IonSelect,
+  IonSelectOption,
   IonToast,
   getPlatforms,
   useIonRouter,
@@ -17,6 +19,7 @@ import { close } from "ionicons/icons";
 import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import {
+  GetVoucherType,
   PostSelectedOrder,
   PostVoucherInfoModel,
 } from "../../../Models/Request/Inventory/InventoryModel";
@@ -25,7 +28,10 @@ import { GetPaymentInfo } from "../../../Models/Response/Customer/GetCustomerMod
 import {
   PostOrder,
   getOrderInfo,
+  get_all_voucher_actions,
+  get_list_of_voucher_actions,
   get_voucher_actions,
+  remove_voucher_actions,
 } from "../../../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import cash from "../../../assets/images/icons/Cash.png";
@@ -45,10 +51,11 @@ const PaymentOptionsComponent = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
-  const [getTotal, setTotal] = useState<number>(0.0);
+  const get_list_voucher =
+    useSelector(
+      (store: RootStore) => store.InventoryReducer.get_list_voucher
+    ) || [];
   const [getOverallTotal, setOverallTotal] = useState<number>(0.0);
-  const [getOverallTotalWithDiscount, setOverallTotalWithDiscount] =
-    useState<number>(0.0);
 
   const [getDiscount, setDiscount] = useState<number>(0.0);
   const [getDiscountPerItem, setDiscountPerItem] = useState<number>(0.0);
@@ -63,7 +70,7 @@ const PaymentOptionsComponent = () => {
   });
   const [customerPayemntInfo, setCustomerPaymentInfo] =
     useState<GetPaymentInfo>({
-      cash: 0,
+      cash: 0.0,
       voucher: "",
     });
 
@@ -73,15 +80,11 @@ const PaymentOptionsComponent = () => {
 
   const handlePay = useCallback(
     async (type: string) => {
-      const totalAmountToPay =
-        getOverallTotalWithDiscount > 0
-          ? getOverallTotalWithDiscount
-          : getOverallTotal;
-
-      if (
-        type.toLowerCase() === "cash" &&
-        customerPayemntInfo.cash < totalAmountToPay
-      ) {
+      const totalAmountToPay = getOverallTotal;
+      const customerCash = Math.round(customerPayemntInfo.cash * 100);
+      const totalCashRequired = Math.round(totalAmountToPay * 100);
+      alert(customerPayemntInfo.cash);
+      if (type.toLowerCase() === "cash" && customerCash < totalCashRequired) {
         setIsOpenToast({
           toastMessage: "Not enough cash",
           isOpen: true,
@@ -106,7 +109,7 @@ const PaymentOptionsComponent = () => {
         });
       }
     },
-    [getOverallTotal, getTotal, customerPayemntInfo, getDiscountPerItem]
+    [getOverallTotal, customerPayemntInfo.cash, getDiscountPerItem]
   );
 
   const handlePostOrder = useCallback(
@@ -159,18 +162,28 @@ const PaymentOptionsComponent = () => {
       getDiscountPerItem,
     ]
   );
-
+  useEffect(() => {
+    const handleGetAllVoucehers = () => {
+      const payload: GetVoucherType = {
+        voucher_for: "all",
+      };
+      dispatch(get_list_of_voucher_actions(payload));
+    };
+    handleGetAllVoucehers();
+  }, [dispatch]);
   useEffect(() => {
     let totalAmount = 0;
     let totalDiscount: number = 0;
     let OverAllTotal: number = 0;
+    let OverAllDiscount: number = 0;
+
     add_to_cart.forEach((val: any) => {
       totalDiscount += val.qty * (val.discount ?? 0);
       totalAmount += val.price * val.qty;
-      OverAllTotal = totalAmount - (totalDiscount ?? 0) + (getDiscount ?? 0);
     });
-    setTotal(OverAllTotal);
-    setDiscountPerItem(totalDiscount + getDiscount);
+    OverAllDiscount = (totalDiscount ?? 0) + (getDiscount ?? 0);
+    OverAllTotal = totalAmount - OverAllDiscount;
+    setDiscountPerItem(OverAllDiscount);
     setOverallTotal(OverAllTotal);
   }, [add_to_cart, getDiscount]);
   const handleInfoChange = (
@@ -179,37 +192,48 @@ const PaymentOptionsComponent = () => {
     const { name, value } = e.target;
     setCustomerPaymentInfo((prevState) => ({
       ...prevState,
-      [name]: name === "cash" ? parseInt(value, 10) : value,
+      [name]: name === "cash" ? parseFloat(value) : value,
     }));
   };
-  useEffect(() => {
-    const initialize = async () => {
-      const payload: PostVoucherInfoModel = {
-        vouchercode: customerPayemntInfo.voucher!,
-      };
-      if (
-        customerPayemntInfo.voucher &&
-        customerPayemntInfo.voucher.length > 0
-      ) {
-        const res = await dispatch(get_voucher_actions(payload));
-        const totalDiscount = res.discount * getTotal;
+  // useEffect(() => {
+  //   const initialize = async () => {
+  //     const payload: PostVoucherInfoModel = {
+  //       vouchercode: customerPayemntInfo.voucher!,
+  //     };
+  //     if (
+  //       customerPayemntInfo.voucher &&
+  //       customerPayemntInfo.voucher.length > 0
+  //     ) {
+  //       const res = await dispatch(get_voucher_actions(payload));
+  //       const totalDiscount = res.discount * getTotal;
+  //       setDiscount(totalDiscount);
+  //       setOverallTotalWithDiscount(getTotal - totalDiscount);
+  //     }
+  //   };
+  //   initialize();
+  // }, [customerPayemntInfo.voucher, dispatch]);
+  const handleSelectVoucher = useCallback(
+    async (val: CustomEvent<HTMLIonSelectElement>) => {
+      const { value } = val.detail;
+      if (value) {
+        const selectedVoucher = value;
+        const totalDiscount =
+          JSON.parse(selectedVoucher).discount * getOverallTotal;
         setDiscount(totalDiscount);
-        setOverallTotalWithDiscount(getTotal - totalDiscount);
       }
-    };
-    initialize();
-  }, [customerPayemntInfo.voucher, dispatch]);
-
-  const handleRemoveVoucher = useCallback(() => {
-    dispatch(get_voucher_actions({ vouchercode: "" }));
-    let totalAmount = 0;
-    add_to_cart.forEach((val: any) => {
-      totalAmount += val.qty * val.price;
-    });
-    setTotal(totalAmount);
-    setDiscount(0);
-    setOverallTotalWithDiscount(0);
-  }, [dispatch, add_to_cart]);
+    },
+    [getOverallTotal]
+  );
+  // const handleRemoveVoucher = useCallback(() => {
+  //   dispatch(remove_voucher_actions());
+  //   let totalAmount = 0;
+  //   add_to_cart.forEach((val: any) => {
+  //     totalAmount += val.qty * val.price;
+  //   });
+  //   setTotal(totalAmount);
+  //   setDiscount(0);
+  //   setOverallTotalWithDiscount(0);
+  // }, [dispatch, add_to_cart]);
 
   return (
     <div className="payment-info-card-main">
@@ -267,17 +291,24 @@ const PaymentOptionsComponent = () => {
                         ></IonInput>
                       </IonItem>
                       <IonItem className="payment-info-item">
-                        <IonInput
-                          name="voucher"
-                          onIonInput={(e: any) => handleInfoChange(e)}
-                          className="payment-info-input"
-                          label="Voucher"
-                          debounce={1500}
-                          labelPlacement="floating"
-                          placeholder="Enter Voucher"
-                        ></IonInput>
+                        <IonSelect
+                          name="Voucher"
+                          onIonChange={(e: any) => handleSelectVoucher(e)}
+                          aria-label="Voucher"
+                          className="info-input"
+                          placeholder="Select Voucher"
+                        >
+                          {get_list_voucher?.map((val, index) => (
+                            <IonSelectOption
+                              key={index}
+                              value={JSON.stringify(val)}
+                            >
+                              {val.vouchercode}
+                            </IonSelectOption>
+                          ))}
+                        </IonSelect>
                       </IonItem>
-                      {get_voucher?.description !== null &&
+                      {/* {get_voucher?.description !== null &&
                       get_voucher?.description !== "" ? (
                         <div>
                           <IonChip>
@@ -288,7 +319,7 @@ const PaymentOptionsComponent = () => {
                             ></IonIcon>
                           </IonChip>
                         </div>
-                      ) : null}
+                      ) : null} */}
                       <IonButton
                         color="medium"
                         onClick={() => handlePay("Cash")}
@@ -426,9 +457,7 @@ const PaymentOptionsComponent = () => {
 
           <div className="payment-info-footer-total-info">
             <span>&#8369;</span>
-            {getOverallTotalWithDiscount > 0
-              ? getOverallTotalWithDiscount.toFixed(2)
-              : getOverallTotal.toFixed(2)}
+            {getOverallTotal.toFixed(2)}
           </div>
         </div>
         {getDiscountPerItem > 0 ? (

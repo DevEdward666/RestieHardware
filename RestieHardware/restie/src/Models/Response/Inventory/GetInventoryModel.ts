@@ -94,3 +94,6 @@ export interface GetVouhcerResponse {
 export interface GetBrandsModel {
   brand: string;
 }
+export interface GetCategoryModel {
+  category: string;
+}

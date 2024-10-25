@@ -1304,6 +1304,75 @@ namespace RestieAPI.Service.Repo
 
           
         }
+        public CategoryResponseModel getCategory(InventoryRequestModel.GetBrand getBrand)
+        {
+            var sql = @"select category from inventory where category ='' is not true and lower(category)  LIKE CONCAT('%', LOWER(''), '%') group by category;";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@category", getBrand.category },
+            };
+
+
+            var results = new List<CategoryResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var orderResponse = new CategoryResponse
+                                    {
+                                        category = reader.GetString(reader.GetOrdinal("category")),
+                                    };
+
+                                    results.Add(orderResponse);
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new CategoryResponseModel
+                        {
+                            result = results,
+                            statusCode = 200,
+                            success = true,
+
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new CategoryResponseModel
+                        {
+                            result = [],
+                            message= ex.Message,
+                            statusCode = 500,
+                            success = false,
+
+                        };
+                        throw;
+                    }
+                }
+            }
+
+          
+        }
         public OrderResponseModel getOrder(InventoryRequestModel.GetUserOrder getUserOrder)
         {
             var sql = "";
@@ -1962,7 +2031,7 @@ namespace RestieAPI.Service.Repo
         }
         public SingleVoucherResponseModel getVouchers(InventoryRequestModel.GetVoucher getVoucher)
         {
-            var sql = @"select * from vouchers where vouchercode=@vouchercode";
+            var sql = @"select * from vouchers where vouchercode=@vouchercode and voucher_for='all'";
             var parameters = new Dictionary<string, object>
             {
                 { "@vouchercode", getVoucher.vouchercode },
@@ -2027,10 +2096,13 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
-        public VoucherResponseModel ListOfVouchers()
+        public VoucherResponseModel ListOfVouchers(GetVoucherType getVoucher)
         {
-            var sql = @"select * from vouchers where voucher_for='single'";
-      
+            var sql = @"select * from vouchers where voucher_for=@voucher_for";
+            var parameters = new Dictionary<string, object>
+            {
+                { "@voucher_for", getVoucher.voucher_for },
+            };
             var results = new List<VoucherResponse>();
 
             using (var connection = new NpgsqlConnection(_connectionString))
@@ -2043,6 +2115,10 @@ namespace RestieAPI.Service.Repo
                     {
                         using (var cmd = new NpgsqlCommand(sql, connection))
                         {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
                             using (var reader = cmd.ExecuteReader())
                             {
                                 while (reader.Read())

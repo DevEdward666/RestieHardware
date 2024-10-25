@@ -227,13 +227,22 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
 
           <div className="inventory-card-addtocart">
             <IonButton
-              size="default"
+              fill="clear"
+              className="inventory-card-addtocart-button"
               disabled={card?.qty > 0 ? false : true}
-              color="medium"
               onClick={(event: any) => handleAddToCart(payload, event)}
             >
-              {card?.qty > 0 ? "Add to cart" : "Sold Out"}
-              <IonIcon color="light" slot="icon-only" icon={cart}></IonIcon>
+              {card?.qty > 0 ? (
+                <span className="addtocart-btn-text">Add to cart</span>
+              ) : (
+                <span className="addtocart-btn-text">Sold Out</span>
+              )}
+              <IonIcon
+                color="light"
+                slot="icon-only"
+                size="small"
+                icon={cart}
+              ></IonIcon>
             </IonButton>
           </div>
         </IonCard>
@@ -317,24 +326,27 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     };
     initializeItems();
   }, [searchItem]);
+  const handleRemove = useCallback(
+    (newCategory: string, newBrand: string) => {
+      const { filter } = get_category_and_brand;
+      dispatch(
+        set_category_and_brand({
+          category: newCategory,
+          brand: newBrand,
+          filter,
+        })
+      );
+    },
+    [dispatch, get_category_and_brand]
+  );
+
   const handleRemoveCategory = useCallback(() => {
-    dispatch(
-      set_category_and_brand({
-        category: "",
-        brand: get_category_and_brand.brand,
-        filter: get_category_and_brand.filter,
-      })
-    );
-  }, [dispatch, get_category_and_brand]);
+    handleRemove("", get_category_and_brand.brand);
+  }, [get_category_and_brand.brand]);
+
   const handleRemoveBrand = useCallback(() => {
-    dispatch(
-      set_category_and_brand({
-        category: get_category_and_brand.category,
-        brand: "",
-        filter: get_category_and_brand.filter,
-      })
-    );
-  }, [dispatch, get_category_and_brand]);
+    handleRemove(get_category_and_brand.category, "");
+  }, [get_category_and_brand.category]);
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
     const newItems = await getMoreInventory();
     setItems(newItems.response);

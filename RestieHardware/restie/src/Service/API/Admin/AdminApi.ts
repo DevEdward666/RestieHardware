@@ -1,6 +1,6 @@
 import baseUrl from "../../../Helpers/environment";
 import { post } from "../../../Helpers/useAxios";
-import { PostAddNewUser, PostInventoryModel, PostNewItemInventoryModel, PostNewSupplierModel, PostNewVoucherModel } from "../../../Models/Request/Admin/AdminRequestModel";
+import { PostAddNewUser, PostDeliveryReceipt, PostInventoryModel, PostNewItemInventoryModel, PostNewSupplierModel, PostNewVoucherModel } from "../../../Models/Request/Admin/AdminRequestModel";
 import { UploadSalesReportFile } from "../../../Models/Request/Inventory/InventoryModel";
 import { SearchInventoryModel } from "../../../Models/Request/searchInventory";
 
@@ -50,6 +50,21 @@ export const searchVoucher = async (payload: SearchInventoryModel) => {
   );
   return response.result.$values;
 };
+export const searchUser = async (payload: SearchInventoryModel) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const response = await post(
+    `${baseUrl}api/Admin/searchUser/${payload.page}`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  return response.result.$values;
+};
 export const AddInventory = async (payload: PostInventoryModel) => {
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {
@@ -57,6 +72,21 @@ export const AddInventory = async (payload: PostInventoryModel) => {
   }
   const response = await post(
     `${baseUrl}api/admin/AddInventory`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  return response;
+};
+export const AddMultipleInventory = async (payload: PostDeliveryReceipt) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const response = await post(
+    `${baseUrl}api/admin/PostMultipleInventory`,
     {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getToken}`,
@@ -152,6 +182,21 @@ export const AddNewUser = async (payload: PostAddNewUser) => {
   }
   const response = await post(
     `${baseUrl}api/user/AddNewUser`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+  return response;
+}
+export const UpdateNewUser = async (payload: PostAddNewUser) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const response = await post(
+    `${baseUrl}api/user/UpdateNewUser`,
     {
       "Content-Type": "application/json",
       Authorization: `Bearer ${getToken}`,

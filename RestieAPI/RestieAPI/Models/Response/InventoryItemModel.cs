@@ -25,7 +25,14 @@ namespace RestieAPI.Models.Response
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string? message { get; set; }
-    }   
+    }
+    public class CategoryResponseModel
+    {
+        public List<CategoryResponse> result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string? message { get; set; }
+    }
     public class OrderInfoResponseModel
     {
         public List<ItemOrders> order_item { get; set; }
@@ -159,6 +166,10 @@ namespace RestieAPI.Models.Response
     public class BrandResponse
     {
         public string brand { get; set; }
+    }    
+    public class CategoryResponse
+    {
+        public string category { get; set; }
     }
     public class QTYResponse
     {

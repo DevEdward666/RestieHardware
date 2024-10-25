@@ -59,7 +59,9 @@ const defaultState: InventoryTypesModel = {
   checked_return_refund: [],
   complete_return_refund: { complete: false },
   receivable_list: [],
-  get_voucher_list: []
+  get_voucher_list: [],
+  get_list_voucher: [],
+  get_category: []
 };
 
 const InventoryReducer = (
@@ -115,6 +117,12 @@ const InventoryReducer = (
         get_brands: action.get_brands,
       };
     }
+    case "GET_CATEGORY": {
+      return {
+        ...state,
+        get_category: action.get_category,
+      };
+    }
     case "GET_VOUCHER": {
       return {
         ...state,
@@ -125,6 +133,12 @@ const InventoryReducer = (
       return {
         ...state,
         get_voucher_list: action.get_voucher_list,
+      };
+    }
+    case "GET_LIST_VOUCHER": {
+      return {
+        ...state,
+        get_list_voucher: action.get_list_voucher,
       };
     }
     case "GET_ITEM_RETURNS": {

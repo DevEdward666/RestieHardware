@@ -4,8 +4,10 @@ import {
   CHECKED_RETURN_REFUND,
   COMPLETE_RETURN_REFUND,
   GET_BRANDS,
+  GET_CATEGORY,
   GET_DELIVERY_INFO,
   GET_ITEM_RETURNS,
+  GET_LIST_VOUCHER,
   GET_VOUCHER,
   GET_VOUCHER_LIST,
   LIST_OF_ITEMS,
@@ -32,6 +34,7 @@ import {
   addToCart,
   deleteCart,
   fetchBrands,
+  fetchCategory,
   getAllInventory,
   searchInventory,
   updateCartOrder,
@@ -45,6 +48,7 @@ import {
   CompleteReturnRefund,
   GetBrandsModel,
   GetItemToRefundRequest,
+  GetVoucherType,
   InventoryModel,
   ItemReturns,
   PostAgedReceivable,
@@ -59,6 +63,7 @@ import {
 import { ResponseModel } from "../../../Models/Response/Commons/Commons";
 import { v4 as uuidv4 } from "uuid";
 import {
+  GetCategoryModel,
   GetDeliveryInfo,
   GetListOrder,
   GetListOrderInfo,
@@ -447,6 +452,18 @@ export const get_brands_actions =
       console.log(error);
     }
   };
+  export const get_category_actions =
+  (payload: GetCategoryModel) => async (dispatch: Dispatch<GET_CATEGORY>) => {
+    try {
+      const res = await fetchCategory(payload);
+      dispatch({
+        type: "GET_CATEGORY",
+        get_category: res,
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
 export const get_voucher_actions =
   (payload: PostVoucherInfoModel) =>
   async (dispatch: Dispatch<GET_VOUCHER>) => {
@@ -461,14 +478,48 @@ export const get_voucher_actions =
       console.log(error);
     }
   };
-  export const get_all_voucher_actions =
+  export const remove_voucher_actions =
   () =>
+  async (dispatch: Dispatch<GET_VOUCHER>) => {
+    try {
+      dispatch({
+        type: "GET_VOUCHER",
+        get_voucher: {  
+          name: "",
+          description: "",
+          maxredemption: "",
+          discount: 0,
+          type: "",
+          voucher_for: "",
+          vouchercode: ""
+        },
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+  export const get_all_voucher_actions =
+  (payload:GetVoucherType) =>
   async (dispatch: Dispatch<GET_VOUCHER_LIST>) => {
     try {
-      const res = await ListOfVouchers();
+      const res = await ListOfVouchers(payload);
       dispatch({
         type: "GET_VOUCHER_LIST",
         get_voucher_list: res.result.$values,
+      });
+      return res.result.$values;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+  export const get_list_of_voucher_actions =
+  (payload:GetVoucherType) =>
+  async (dispatch: Dispatch<GET_LIST_VOUCHER>) => {
+    try {
+      const res = await ListOfVouchers(payload);
+      dispatch({
+        type: "GET_LIST_VOUCHER",
+        get_list_voucher: res.result.$values,
       });
       return res.result.$values;
     } catch (error: any) {

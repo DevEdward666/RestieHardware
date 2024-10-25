@@ -10,6 +10,7 @@ import {
 } from "../../../Models/Request/Inventory/InventoryModel";
 import {
   GetBrandsModel,
+  GetCategoryModel,
   GetDeliveryInfo,
   GetListOrder,
   GetListOrderInfo,
@@ -48,6 +49,10 @@ export type GET_BRANDS = {
   type: "GET_BRANDS";
   get_brands: GetBrandsModel[];
 };
+export type GET_CATEGORY = {
+  type: "GET_CATEGORY";
+  get_category: GetCategoryModel[];
+};
 export type GET_VOUCHER = {
   type: "GET_VOUCHER";
   get_voucher: GetVouhcerResponse;
@@ -55,6 +60,10 @@ export type GET_VOUCHER = {
 export type GET_VOUCHER_LIST = {
   type: "GET_VOUCHER_LIST";
   get_voucher_list: GetVouhcerResponse[];
+};
+export type GET_LIST_VOUCHER = {
+  type: "GET_LIST_VOUCHER";
+  get_list_voucher: GetVouhcerResponse[];
 };
 export type GET_ITEM_RETURNS = {
   type: "GET_ITEM_RETURNS";
@@ -86,8 +95,10 @@ export type LIST_OF_PRODUCT_TYPE =
   | GET_DELIVERY_INFO
   | SET_CATEGORY_AND_BRAND
   | GET_BRANDS
+  | GET_CATEGORY
   | GET_VOUCHER
   | GET_VOUCHER_LIST
+  | GET_LIST_VOUCHER
   | GET_ITEM_RETURNS
   | SUBMIT_RETURN_REFUND
   | COMPLETE_RETURN_REFUND
@@ -104,9 +115,10 @@ export interface InventoryTypesModel {
   get_delivery_info: GetDeliveryInfo;
   set_category_and_brand: CategoryAndBrandModel;
   get_brands: GetBrandsModel[];
+  get_category:GetCategoryModel[];
   get_voucher: GetVouhcerResponse;
   get_voucher_list: GetVouhcerResponse[];
-
+  get_list_voucher:GetVouhcerResponse[];
   submit_return_refund: SubmitReturnRefund;
   complete_return_refund: CompleteReturnRefund;
   checked_return_refund: ItemReturns[];

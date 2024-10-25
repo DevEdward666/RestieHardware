@@ -27,3 +27,11 @@ export interface VouchersModel {
   voucher_for: string;
   createdby:string;
 }
+
+export interface UserNameModel {
+  id: string;
+  name: string;
+  username: string;
+  password: string;
+  role: string;
+}

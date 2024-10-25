@@ -145,6 +145,9 @@ export interface PostDaysSalesModel {
 export interface GetItemToRefundRequest {
   transid: string;
 }
+export interface GetVoucherType {
+  voucher_for: string;
+}
 export interface GetDeliveryImagePath {
   imagePath: string;
 }

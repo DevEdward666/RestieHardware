@@ -142,6 +142,12 @@ namespace RestieAPI.Controllers
         public ActionResult<PostResponse> AddNewUser(Adduser adduser)
         {
             return Ok(_userRepo.AddNewUser(adduser));
+        }     
+        [Authorize]
+        [HttpPost("api/user/UpdateNewUser")]
+        public ActionResult<PostResponse> UpdateNewUser(Adduser adduser)
+        {
+            return Ok(_userRepo.UpdateNewUser(adduser));
         }
 
 

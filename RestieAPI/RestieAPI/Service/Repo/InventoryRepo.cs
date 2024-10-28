@@ -15,6 +15,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Reflection.Metadata;
 using static RestieAPI.Models.Request.InventoryRequestModel;
+using static RestieAPI.Models.Response.AdminResponseModel;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Document = iTextSharp.text.Document;
 
@@ -2644,6 +2645,87 @@ namespace RestieAPI.Service.Repo
                     }
                 }
             }
+        } 
+        public SalesResponseModel GenerateInventoryLogs(GetInventoryLogs getInventoryLogs)
+        {
+            var sql = @"select i.code,i.item,i.brand ,iv.addedqty , iv.onhandqty , s.company,iv.createdat from inventorylogs iv join inventory i  on i.code =iv.code join supplier s on s.supplierid = iv.supplierid
+                        where s.supplierid = @supplier and DATE(to_timestamp(iv.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between '2024-10-01' and '2024-10-26';";
+
+            DateTime fromDate = DateTime.Parse(getInventoryLogs.fromDate);
+            DateTime toDate = DateTime.Parse(getInventoryLogs.toDate);
+            DateTime now = DateTime.Now;
+            var parameters = new Dictionary<string, object>
+            {
+                { "@fromDate", fromDate },
+                { "@supplier", getInventoryLogs.supplier },
+                { "@toDate", toDate },
+            };
+
+            var results = new List<InventoryLogsResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var salesResponse = new InventoryLogsResponse
+                                    {
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        addedqty = reader.GetInt16(reader.GetOrdinal("addedqty")),
+                                        onhandqty = reader.GetInt16(reader.GetOrdinal("onhandqty")),
+                                        brand = reader.GetString(reader.GetOrdinal("brand")),
+                                        company = reader.GetString(reader.GetOrdinal("company")),
+                                    };
+
+                                    results.Add(salesResponse);
+                                }
+                            }
+                        }
+
+                        tran.Commit();
+
+                        byte[] fileContents = GenerateInventoryLogsPdfReport(results, fromDate, toDate);
+                        string fileName = $"Inventory_Logs_Report_{now:yyyyMMddHHmmss}.pdf"; // Formatting the datetime for the file name
+                        var fileResult = new FileContentResult(fileContents, "application/pdf")
+                        {
+                            FileDownloadName = fileName
+                        };
+                        return new SalesResponseModel
+                        {
+                            result = fileResult,
+                            statusCode = 200,
+                            success = true
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new SalesResponseModel
+                        {
+                            result = null,
+                            statusCode = 500,
+                            success = true,
+                            message=ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
         }
         public InventoryResponseModel getInventoryQty()
         {
@@ -3031,6 +3113,92 @@ namespace RestieAPI.Service.Repo
                 table.AddCell(totalCell);
                 table.AddCell(new PdfPCell(new Phrase(totalSales.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
              
+
+                doc.Add(table);
+                doc.Close();
+
+                return ms.ToArray();
+            }
+        }
+        public byte[] GenerateInventoryLogsPdfReport(List<InventoryLogsResponse> inventoryLogs, DateTime from_date, DateTime to_date)
+        {
+            // Load company logo
+            //string base64String = LoadCompanyLogoAsBase64();
+            //byte[] logoBytes = Convert.FromBase64String(base64String);
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                Document doc = new Document();
+                PdfWriter.GetInstance(doc, ms);
+                doc.Open();
+
+                // Add company logo
+                //if (logoBytes != null)
+                //{
+                Paragraph logotitle = new Paragraph();
+                logotitle.Alignment = Element.ALIGN_CENTER;
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk("Restie Hardware", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk("Inventory Logs Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Address: SIR Bucana 76-A", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Sandawa Matina Davao City", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Davao City, Philippines", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Contact No.: (082) 224 1362", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+
+                //Image logo = Image.GetInstance(logoBytes);
+                //logo.Alignment = Element.ALIGN_CENTER;
+                //logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
+                //doc.Add(logo);
+                doc.Add(logotitle);
+                //}
+
+                // Add title
+                Paragraph title = new Paragraph();
+                title.Alignment = Element.ALIGN_CENTER;
+                title.Add(Chunk.NEWLINE);
+                title.Add(new Chunk($"Start Date: {from_date.ToString("MM/dd/yyyy")} End Date: {to_date.ToString("MM/dd/yyyy")}", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                title.Add(Chunk.NEWLINE);
+                title.Add(Chunk.NEWLINE);
+                doc.Add(title);
+
+                // Add table
+                PdfPTable table = new PdfPTable(6);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 1, 3, 2, 1.5f, 1.5f, 2 });
+                table.SpacingBefore = 20f; // Add spacing before the table
+                                           // Add table headers
+                table.AddCell(new PdfPCell(new Phrase("Code", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Brand", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Added Qty", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Onhand Qty", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Company", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                // Add table data
+                foreach (var invLogs in inventoryLogs)
+                {
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.code.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.item.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.brand.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.addedqty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.onhandqty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.company.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                 
+                }
+
+                // Add total row
+                //PdfPCell totalCell = new PdfPCell(new Phrase("Overall Total", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                //totalCell.Colspan = 3;
+                //totalCell.HorizontalAlignment = Element.ALIGN_RIGHT;
+                //table.AddCell(totalCell);
+                //table.AddCell(new PdfPCell(new Phrase(totalSales.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+
 
                 doc.Add(table);
                 doc.Close();

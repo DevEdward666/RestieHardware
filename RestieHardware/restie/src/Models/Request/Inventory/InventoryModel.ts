@@ -142,6 +142,11 @@ export interface PostDaysSalesModel {
   fromDate: string;
   toDate: string;
 }
+export interface PostInventoryLogsModel {
+  fromDate: string;
+  supplier: string;
+  toDate: string;
+}
 export interface GetItemToRefundRequest {
   transid: string;
 }

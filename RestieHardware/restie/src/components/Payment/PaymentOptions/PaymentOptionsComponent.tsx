@@ -83,7 +83,6 @@ const PaymentOptionsComponent = () => {
       const totalAmountToPay = getOverallTotal;
       const customerCash = Math.round(customerPayemntInfo.cash * 100);
       const totalCashRequired = Math.round(totalAmountToPay * 100);
-      alert(customerPayemntInfo.cash);
       if (type.toLowerCase() === "cash" && customerCash < totalCashRequired) {
         setIsOpenToast({
           toastMessage: "Not enough cash",

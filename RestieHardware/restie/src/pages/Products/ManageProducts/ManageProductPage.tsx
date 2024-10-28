@@ -33,9 +33,6 @@ const ManageProductPage = () => {
       router.push("/pageNotFound");
     }
   }, [user_login_information]);
-  console.log(
-    user_login_information?.role.trim().toLowerCase() === "super admin"
-  );
   return isLoaded ? (
     <IonPage className="manage-page-container">
       <IonHeader className="manage-page-header">

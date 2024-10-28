@@ -196,6 +196,13 @@ namespace RestieAPI.Controllers.Inventory
            
         }
         [Authorize]
+        [HttpPost("GenerateInventoryLogs")]
+        public ActionResult<PostSalesResponse> GenerateInventoryLogs(GetInventoryLogs getInventoryLogs)
+        {
+            return Ok(_inventoryRepo.GenerateInventoryLogs(getInventoryLogs));
+        }
+        
+        [Authorize]
         [HttpPost("GetQuotationOrderInfo")]
         public ActionResult<PostSalesResponse> GetQuotationOrderInfo(GetSelectedOrder getSelectedOrder)
         {

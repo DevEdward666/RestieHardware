@@ -339,7 +339,7 @@ const Tab1: React.FC = () => {
               </IonIcon> */}
             </IonButtons>
           </IonToolbar>
-          <IonToolbar
+          {/* <IonToolbar
             mode="ios"
             color="tertiary"
             className="home-toolbar-logo-container"
@@ -353,7 +353,7 @@ const Tab1: React.FC = () => {
             >
               <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
             </div>
-          </IonToolbar>
+          </IonToolbar> */}
           <IonToolbar mode="ios" color="tertiary">
             <div
               className={`home-search-container ${

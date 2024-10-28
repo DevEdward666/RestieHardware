@@ -241,5 +241,12 @@ namespace RestieAPI.Models.Request
             public string toDate { get; set; }
 
         }
+        public class GetInventoryLogs
+        {
+            public string fromDate { get; set; }
+            public string supplier { get; set; }
+            public string toDate { get; set; }
+
+        }
     }
 }

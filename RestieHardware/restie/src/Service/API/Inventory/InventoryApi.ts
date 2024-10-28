@@ -13,6 +13,7 @@ import {
   PostDeliveryImage,
   PostDeliveryInfo,
   PostDeliveryInfoModel,
+  PostInventoryLogsModel,
   PostSelectedOrder,
   PostUpdateDeliveredOrder,
   PostVoucherInfoModel,
@@ -456,6 +457,22 @@ export const GenerateSalesReturn = async (payload: PostDaysSalesModel) => {
     JSON.stringify(payload)
   );
   console.log(response);
+  return response;
+};
+export const GenerateInventoryLogs = async (payload: PostInventoryLogsModel) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+
+  const response = await post(
+    `${baseUrl}api/Inventory/GenerateInventoryLogs`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
   return response;
 };
 export const GetSalesByDay = async (payload: PostDaysSalesModel) => {

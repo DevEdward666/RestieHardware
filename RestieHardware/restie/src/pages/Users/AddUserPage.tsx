@@ -8,15 +8,16 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import React, { useEffect, useState } from "react";
-import ManageProductComponent from "../../../components/Admin/Products/ManageProducts/ManageProductComponent";
-import { RootStore, useTypedDispatch } from "../../../Service/Store";
-import restielogo from "../../../assets/images/Icon@3.png";
-import "./ManageProductPage.css";
 import { arrowBack } from "ionicons/icons";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import PageNotFoundComponent from "../../../components/PageNotFound/PageNotFoundComponent";
-const ManageProductPage = () => {
+import restielogo from "../../assets/images/Icon@3.png";
+
+import "./AddUserPage.css";
+import PageNotFoundComponent from "../../components/PageNotFound/PageNotFoundComponent";
+import { RootStore } from "../../Service/Store";
+import AddUserComponent from "../../components/Admin/Users/ManageUsers/AddUserComponent";
+const AddUserPage = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
@@ -40,7 +41,7 @@ const ManageProductPage = () => {
           <IonButtons slot="start" onClick={() => router.goBack()}>
             <IonIcon slot="icon-only" icon={arrowBack}></IonIcon>
           </IonButtons>
-          <IonTitle>Update Item</IonTitle>
+          <IonTitle>Add New User</IonTitle>
         </IonToolbar>
         <IonToolbar
           mode="ios"
@@ -50,11 +51,11 @@ const ManageProductPage = () => {
           <IonImg src={restielogo} className="manage-toolbar-logo"></IonImg>
         </IonToolbar>
       </IonHeader>
-      <ManageProductComponent />
+      <AddUserComponent />
     </IonPage>
   ) : (
     <PageNotFoundComponent />
   );
 };
 
-export default ManageProductPage;
+export default AddUserPage;

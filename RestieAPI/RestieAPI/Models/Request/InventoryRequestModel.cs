@@ -23,6 +23,12 @@ namespace RestieAPI.Models.Request
         }
         public class PostInventory
         {
+            public PostInventoryItems[] items { get; set; }
+            public string supplierId { get; set; }
+
+        }      
+        public class PostInventoryItems
+        {
             public string item { get; set; }
             public string category { get; set; }
             public string brand { get; set; }
@@ -34,7 +40,6 @@ namespace RestieAPI.Models.Request
             public float price { get; set; }
             public long createdat { get; set; }
             public long updatedat { get; set; }
-          
 
         }
         public class PostNewItemInventory
@@ -89,6 +94,11 @@ namespace RestieAPI.Models.Request
 
 
         }
+        public class PutInventoryImage
+        {
+            public string code { get; set; }
+            public string image { get; set; }
+        }
         public class GetUserOrder
         {
             public string userid { get; set; }
@@ -123,8 +133,12 @@ namespace RestieAPI.Models.Request
         }
         public class GetVoucher
         {
-            public string vouchercode { get; set; }
-
+            public string? vouchercode { get; set; }
+            public string? vouchertype { get; set; }
+        }
+        public class GetVoucherType
+        {
+            public string? voucher_for { get; set; }
         }
         public class GetDeliveryImage
         {
@@ -162,6 +176,11 @@ namespace RestieAPI.Models.Request
             public long? updateat { get; set; }
             public string? userid { get; set; }
             public string status { get; set; }
+            public int? voucher_id { get; set; }
+            public float? discount { get; set; }
+            public float? total_discount{ get; set; }
+            public string? order_voucher{ get; set; }
+            public string? voucher { get; set; }
             public string? type { get; set; }
             public string? transid { get; set; }
             public string? cashier { get; set; }
@@ -224,6 +243,13 @@ namespace RestieAPI.Models.Request
         public class GetSales
         {
             public string fromDate { get; set; }
+            public string toDate { get; set; }
+
+        }
+        public class GetInventoryLogs
+        {
+            public string fromDate { get; set; }
+            public string supplier { get; set; }
             public string toDate { get; set; }
 
         }

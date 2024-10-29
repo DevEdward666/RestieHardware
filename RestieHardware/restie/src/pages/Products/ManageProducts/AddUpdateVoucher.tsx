@@ -12,11 +12,14 @@ import React, { useEffect, useState } from "react";
 import ManageProductComponent from "../../../components/Admin/Products/ManageProducts/ManageProductComponent";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import restielogo from "../../../assets/images/Icon@3.png";
-import "./ManageProductPage.css";
+import "./AddNewSupplierPage.css";
 import { arrowBack } from "ionicons/icons";
 import { useSelector } from "react-redux";
 import PageNotFoundComponent from "../../../components/PageNotFound/PageNotFoundComponent";
-const ManageProductPage = () => {
+import AddNewItemComponent from "../../../components/Admin/Products/ManageProducts/AddNewItemComponent";
+import AddNewSupplierComponent from "../../../components/Admin/Products/ManageProducts/AddNewSupplierComponents";
+import AddUpdateVoucherComponent from "../../../components/Admin/Products/ManageProducts/AddUpdateVoucherComponent";
+const AddUpdateVoucherPage = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
@@ -24,10 +27,7 @@ const ManageProductPage = () => {
   const [isLoaded, setLoaded] = useState<boolean>(false);
   const router = useIonRouter();
   useEffect(() => {
-    if (
-      user_login_information?.role.trim().toLowerCase() === "admin" ||
-      user_login_information?.role.trim().toLowerCase() === "super admin"
-    ) {
+    if (user_login_information?.role.trim().toLowerCase() === "super admin") {
       setLoaded(true);
     } else {
       router.push("/pageNotFound");
@@ -40,7 +40,7 @@ const ManageProductPage = () => {
           <IonButtons slot="start" onClick={() => router.goBack()}>
             <IonIcon slot="icon-only" icon={arrowBack}></IonIcon>
           </IonButtons>
-          <IonTitle>Update Item</IonTitle>
+          <IonTitle>Add New Voucher</IonTitle>
         </IonToolbar>
         <IonToolbar
           mode="ios"
@@ -50,11 +50,11 @@ const ManageProductPage = () => {
           <IonImg src={restielogo} className="manage-toolbar-logo"></IonImg>
         </IonToolbar>
       </IonHeader>
-      <ManageProductComponent />
+      <AddUpdateVoucherComponent />
     </IonPage>
   ) : (
     <PageNotFoundComponent />
   );
 };
 
-export default ManageProductPage;
+export default AddUpdateVoucherPage;

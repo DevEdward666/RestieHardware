@@ -15,6 +15,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Reflection.Metadata;
 using static RestieAPI.Models.Request.InventoryRequestModel;
+using static RestieAPI.Models.Response.AdminResponseModel;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Document = iTextSharp.text.Document;
 
@@ -325,6 +326,59 @@ namespace RestieAPI.Service.Repo
 
 
         }
+        public PostResponse UpdateInventoryImage(InventoryRequestModel.PutInventoryImage putInventoryImage)
+        {
+            var sql = @"update inventory set image=@image where code= @code";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@code", putInventoryImage.code },
+                { "@image", putInventoryImage.image },
+            };
+
+            var results = new List<InventoryItems>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        var insert = 0;
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            insert = cmd.ExecuteNonQuery();
+                        }
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new PostResponse
+                        {
+                            Message = "Successfully updated",
+                            status = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostResponse
+                        {
+                            status = 500,
+                            Message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+
+
+        }
         public PostResponse UpdateCustomerEmail(InventoryRequestModel.PutCustomerEmail putCustomerEmail)
         {
             var sql = @"update customer set customer_email=@customer_email where customerid= @customerid";
@@ -464,17 +518,17 @@ namespace RestieAPI.Service.Repo
         public PostResponse AddToCart(InventoryRequestModel.AddToCart[] addToCartItems)
         {
             var orderid = Guid.NewGuid();
-            var sql = @"insert into cart (cartid,code,item,qty,price,total,createdat,status) 
-                values(@cartid,@code,@item,@qty,@price,@total,@createdat,@status)";
+            var sql = @"insert into cart (cartid,code,item,qty,price,total,createdat,status,voucher_id,discount_price,total_discount) 
+                values(@cartid,@code,@item,@qty,@price,@total,@createdat,@status,@voucher_id,@discount,@total_discount)";
             var insertOrder = "";
             if (addToCartItems[0].orderid.Length > 0) 
             {
-                insertOrder = @"update orders set total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat,status=@status,createdat=@createdat  where orderid = @orderid";
+                insertOrder = @"update orders set voucher=@order_voucher, totaldiscount=@totaldiscount, total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat,status=@status,createdat=@createdat  where orderid = @orderid";
             }
             else
             {
-                insertOrder = @"insert into orders (orderid,cartid,total,paidthru,paidcash,createdby,createdat,status,userid,type) 
-                        values(@orderid,@cartid,@total,@paidthru,@paidcash,@createdby,@createdat,@status,@userid,@type)";
+                insertOrder = @"insert into orders (orderid,cartid,total,paidthru,paidcash,createdby,createdat,status,userid,type,totaldiscount) 
+                        values(@orderid,@cartid,@total,@paidthru,@paidcash,@createdby,@createdat,@status,@userid,@type,@totaldiscount)";
             }
           
 
@@ -499,6 +553,9 @@ namespace RestieAPI.Service.Repo
                                 { "@total", addToCart.qty * addToCart.price },
                                 { "@createdat", addToCart.createdat },
                                 { "@status", addToCart.status },
+                                { "@voucher_id", addToCart.voucher_id ?? (object)DBNull.Value },
+                                { "@discount", addToCart.discount?? (object)DBNull.Value},
+                                { "@total_discount", addToCart.total_discount ?? (object)DBNull.Value },
                             };
                             
                           
@@ -525,11 +582,13 @@ namespace RestieAPI.Service.Repo
                                 {
                                     { "@orderid", addToCartItems[0].orderid },
                                     { "@total",  total},
+                                    { "@totaldiscount",  addToCartItems[0].total_discount?? 0},
                                     { "@paidthru", addToCartItems[0].paidthru },
                                     { "@paidcash", addToCartItems[0].paidcash },
                                     { "@updateat", addToCartItems[0].updateat },
                                     { "@createdat", addToCartItems[0].createdat },
                                     { "@status", addToCartItems[0].status },
+                                     { "@order_voucher", addToCartItems[0].order_voucher ?? (object)DBNull.Value }, 
                                 };
                             }
                             else
@@ -540,6 +599,7 @@ namespace RestieAPI.Service.Repo
                                     { "@orderid",  orderid.ToString() },
                                     { "@cartid", addToCartItems[0].cartid },
                                     { "@total",  total},
+                                    { "@totaldiscount",  addToCartItems[0].total_discount},
                                     { "@paidthru", addToCartItems[0].paidthru },
                                     { "@paidcash", addToCartItems[0].paidcash },
                                     { "@createdby", addToCartItems[0].createdby },
@@ -584,10 +644,10 @@ namespace RestieAPI.Service.Repo
         }
         public PostResponse SavetoCartandUpdateInventory(InventoryRequestModel.AddToCart[] addToCartItems)
         {
-            var sql = @"insert into cart (cartid,code,item,qty,price,total,createdat,status) 
-                values(@cartid,@code,@item,@qty,@price,@total,@createdat,@status)";
-            var insertOrder = @"insert into orders (orderid,cartid,total,paidthru,paidcash,createdby,createdat,status,userid,type) 
-                        values(@orderid,@cartid,@total,@paidthru,@paidcash,@createdby,@createdat,@status,@userid,@type)";
+            var sql = @"insert into cart (cartid,code,item,qty,price,total,createdat,status,voucher_id,discount_price,total_discount) 
+                values(@cartid,@code,@item,@qty,@price,@total,@createdat,@status,@voucher_id,@discount,@total_discount)";
+            var insertOrder = @"insert into orders (orderid,cartid,total,paidthru,paidcash,createdby,createdat,status,userid,type,totaldiscount,voucher) 
+                        values(@orderid,@cartid,@total,@paidthru,@paidcash,@createdby,@createdat,@status,@userid,@type,@totaldiscount,@order_voucher)";
             //var updatecart = @"update cart set status=@status,qty=@qty,total=@total,updateat=@updateat where cartid=@cartid";
             //var updateOrder = @"update orders set total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat  where orderid = @orderid";
             var updatesql = @"update  inventory set qty=@onhandqty where code=@code";
@@ -615,6 +675,9 @@ namespace RestieAPI.Service.Repo
                                 { "@total", addToCart.qty * addToCart.price },
                                 { "@createdat", addToCart.createdat },
                                 { "@status", addToCart.status },
+                                { "@voucher_id", addToCart.voucher_id },
+                                { "@discount", addToCart.discount },
+                                { "@total_discount", addToCart.total_discount },
                             };
 
                             // Execute the insertion command for each item
@@ -637,6 +700,8 @@ namespace RestieAPI.Service.Repo
                                     { "@orderid", orderid },
                                     { "@cartid", addToCartItems[0].cartid },
                                     { "@total",  total},
+                                    { "@totaldiscount",  addToCartItems[0].total_discount},
+                                    { "@order_voucher",  addToCartItems[0].order_voucher},
                                     { "@paidthru", addToCartItems[0].paidthru },
                                     { "@paidcash", addToCartItems[0].paidcash },
                                     { "@createdby", addToCartItems[0].createdby },
@@ -998,7 +1063,7 @@ namespace RestieAPI.Service.Repo
         {
 
             var updatecart = @"update cart set status=@status,qty=@qty,total=@total,updateat=@updateat where cartid=@cartid and code=@code";
-            var updateOrder = @"update orders set total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat,status=@status  where orderid = @orderid";
+            var updateOrder = @"update orders set total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat,status=@status,totaldiscount=@totaldiscount,voucher=@order_voucher  where orderid = @orderid";
             var updatesql = @"update  inventory set qty=@onhandqty where code=@code";
             var InsertTransaction = @"insert into transaction (transid,orderid,customer,cashier,status,createdat,updateat) 
                                     values(@transid,@orderid,@customer,@cashier,@status,@createdat,@updateat)";
@@ -1051,6 +1116,8 @@ namespace RestieAPI.Service.Repo
                                     { "@paidcash", addToCartItems[0].paidcash },
                                     { "@updateat", addToCartItems[0].updateat },
                                     { "@status", addToCartItems[0].status },
+                                    { "@order_voucher", addToCartItems[0].order_voucher ?? (object)DBNull.Value},
+                                    { "@totaldiscount", addToCartItems[0].total_discount ?? 0 },
                                 };
                                 foreach (var param in insertOrderParams)
                                 {
@@ -1291,6 +1358,75 @@ namespace RestieAPI.Service.Repo
 
           
         }
+        public CategoryResponseModel getCategory(InventoryRequestModel.GetBrand getBrand)
+        {
+            var sql = @"select category from inventory where category ='' is not true and lower(category)  LIKE CONCAT('%', LOWER(''), '%') group by category;";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@category", getBrand.category },
+            };
+
+
+            var results = new List<CategoryResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var orderResponse = new CategoryResponse
+                                    {
+                                        category = reader.GetString(reader.GetOrdinal("category")),
+                                    };
+
+                                    results.Add(orderResponse);
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new CategoryResponseModel
+                        {
+                            result = results,
+                            statusCode = 200,
+                            success = true,
+
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new CategoryResponseModel
+                        {
+                            result = [],
+                            message= ex.Message,
+                            statusCode = 500,
+                            success = false,
+
+                        };
+                        throw;
+                    }
+                }
+            }
+
+          
+        }
         public OrderResponseModel getOrder(InventoryRequestModel.GetUserOrder getUserOrder)
         {
             var sql = "";
@@ -1431,8 +1567,8 @@ namespace RestieAPI.Service.Repo
                         COALESCE((SELECT cts.address from customer cts where cts.customerid =ors.userid  limit 1),'') as address,
                         COALESCE((SELECT cts.contactno from customer cts where cts.customerid =ors.userid  limit 1),'') as contactno,
                            ct.cartid, ors.orderid,
-                           ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code,
-                           ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type
+                           ors.paidcash, ors.paidthru, ors.total,ors.totaldiscount, ors.createdat, ct.code,
+                           ct.item, ct.price, ct.qty,ct.discount_price,ors.voucher,ors.status, ors.createdby, ors.type
                     FROM orders AS ors
                     left JOIN cart AS ct ON ors.cartid = ct.cartid
                     LEFT JOIN inventory AS inv ON inv.code = ct.code
@@ -1528,6 +1664,8 @@ namespace RestieAPI.Service.Repo
                                         status = reader.GetString(reader.GetOrdinal("status")),
                                         type = reader.GetString(reader.GetOrdinal("type")),
                                         total = reader.GetFloat(reader.GetOrdinal("total")),
+                                        totaldiscount = reader.GetFloat(reader.GetOrdinal("totaldiscount")),
+                                        voucher = !reader.IsDBNull(reader.GetOrdinal("voucher")) ? reader.GetString(reader.GetOrdinal("voucher")) : null,
                                     };
 
                                     var orderItemResponse = new ItemOrders
@@ -1537,7 +1675,7 @@ namespace RestieAPI.Service.Repo
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
                                         qty = reader.GetInt32(reader.GetOrdinal("qty")),
                                         onhandqty = reader.GetInt32(reader.GetOrdinal("onhandqty")),
-
+                                        discount_price = !reader.IsDBNull(reader.GetOrdinal("discount_price")) ? reader.GetFloat(reader.GetOrdinal("discount_price")) :0,
                                         brand = reader.GetString(reader.GetOrdinal("brand")),
                                         category = reader.GetString(reader.GetOrdinal("category")),
                                     };
@@ -1945,9 +2083,9 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
-        public VoucherResponseModel getVouchers(InventoryRequestModel.GetVoucher getVoucher)
+        public SingleVoucherResponseModel getVouchers(InventoryRequestModel.GetVoucher getVoucher)
         {
-            var sql = @"select * from vouchers where vouchercode=@vouchercode";
+            var sql = @"select * from vouchers where vouchercode=@vouchercode and voucher_for='all'";
             var parameters = new Dictionary<string, object>
             {
                 { "@vouchercode", getVoucher.vouchercode },
@@ -1978,10 +2116,80 @@ namespace RestieAPI.Service.Repo
                                         name = reader.GetString(reader.GetOrdinal("name")),
                                         description = reader.GetString(reader.GetOrdinal("description")),
                                         maxredemption = reader.GetInt16(reader.GetOrdinal("maxredemption")),
-                                        discount = reader.GetDecimal(reader.GetOrdinal("discount")),
+                                        discount = reader.GetDouble(reader.GetOrdinal("discount")),
                                     };
 
                                     results = orderResponse;
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new SingleVoucherResponseModel
+                        {
+                            result = results,
+                            statusCode = 200,
+                            success = true,
+
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new SingleVoucherResponseModel
+                        {
+                            result = null,
+                            statusCode = 500,
+                            success = false,
+                            message = ex.Message,
+
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
+        public VoucherResponseModel ListOfVouchers(GetVoucherType getVoucher)
+        {
+            var sql = @"select * from vouchers where voucher_for=@voucher_for";
+            var parameters = new Dictionary<string, object>
+            {
+                { "@voucher_for", getVoucher.voucher_for },
+            };
+            var results = new List<VoucherResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var orderResponse = new VoucherResponse
+                                    {
+                                        id = reader.GetInt32(reader.GetOrdinal("voucher_seq")),
+                                        vouchercode = reader.GetString(reader.GetOrdinal("vouchercode")),
+                                        name = reader.GetString(reader.GetOrdinal("name")),
+                                        description = reader.GetString(reader.GetOrdinal("description")),
+                                        maxredemption = reader.GetInt16(reader.GetOrdinal("maxredemption")),
+                                        discount = reader.GetDouble(reader.GetOrdinal("discount")),
+                                        voucher_for = reader.GetString(reader.GetOrdinal("voucher_for")),
+                                        type = reader.GetString(reader.GetOrdinal("type")),
+                                    };
+
+                                    results.Add(orderResponse);
                                 }
                             }
                         }
@@ -2318,7 +2526,9 @@ namespace RestieAPI.Service.Repo
             var sql = @"select  ct.code, TRIM(ct.item) as item, SUM(ct.qty) as qty, it.cost , it.price,
                 TO_CHAR(SUM(it.cost * ct.qty), 'FM999,999,999.00') AS total_cost,
                 TO_CHAR(SUM(ct.total), 'FM999,999,999.00') AS total_sales,
-               TO_CHAR(SUM(ct.total) - SUM(it.cost * ct.qty), 'FM999,999,999.00') AS profit
+                TO_CHAR(SUM(ors.totaldiscount), 'FM999,999,999.00') AS total_discount,
+
+                TO_CHAR(SUM(ct.total) - SUM(it.cost * ct.qty), 'FM999,999,999.00') AS profit
                 from transaction as tr
                 right join orders as ors on tr.orderid = ors.orderid
                 join cart as ct on ct.cartid = ors.cartid
@@ -2367,6 +2577,7 @@ namespace RestieAPI.Service.Repo
                                         cost = reader.GetInt16(reader.GetOrdinal("cost")),
                                         total_cost = reader.GetString(reader.GetOrdinal("total_cost")),
                                         total_sales = reader.GetString(reader.GetOrdinal("total_sales")),
+                                        total_discount = reader.GetString(reader.GetOrdinal("total_discount")),
                                         profit = reader.GetString(reader.GetOrdinal("profit")),
                                     };
 
@@ -2462,6 +2673,87 @@ namespace RestieAPI.Service.Repo
 
                         byte[] fileContents = GenerateSalesReturnPdfReport(results, fromDate, toDate);
                         string fileName = $"Sales_Report_{now:yyyyMMddHHmmss}.pdf"; // Formatting the datetime for the file name
+                        var fileResult = new FileContentResult(fileContents, "application/pdf")
+                        {
+                            FileDownloadName = fileName
+                        };
+                        return new SalesResponseModel
+                        {
+                            result = fileResult,
+                            statusCode = 200,
+                            success = true
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new SalesResponseModel
+                        {
+                            result = null,
+                            statusCode = 500,
+                            success = true,
+                            message=ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+        } 
+        public SalesResponseModel GenerateInventoryLogs(GetInventoryLogs getInventoryLogs)
+        {
+            var sql = @"select i.code,i.item,i.brand ,iv.addedqty , iv.onhandqty , s.company,iv.createdat from inventorylogs iv join inventory i  on i.code =iv.code join supplier s on s.supplierid = iv.supplierid
+                        where s.supplierid = @supplier and DATE(to_timestamp(iv.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between '2024-10-01' and '2024-10-26';";
+
+            DateTime fromDate = DateTime.Parse(getInventoryLogs.fromDate);
+            DateTime toDate = DateTime.Parse(getInventoryLogs.toDate);
+            DateTime now = DateTime.Now;
+            var parameters = new Dictionary<string, object>
+            {
+                { "@fromDate", fromDate },
+                { "@supplier", getInventoryLogs.supplier },
+                { "@toDate", toDate },
+            };
+
+            var results = new List<InventoryLogsResponse>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var salesResponse = new InventoryLogsResponse
+                                    {
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        addedqty = reader.GetInt16(reader.GetOrdinal("addedqty")),
+                                        onhandqty = reader.GetInt16(reader.GetOrdinal("onhandqty")),
+                                        brand = reader.GetString(reader.GetOrdinal("brand")),
+                                        company = reader.GetString(reader.GetOrdinal("company")),
+                                    };
+
+                                    results.Add(salesResponse);
+                                }
+                            }
+                        }
+
+                        tran.Commit();
+
+                        byte[] fileContents = GenerateInventoryLogsPdfReport(results, fromDate, toDate);
+                        string fileName = $"Inventory_Logs_Report_{now:yyyyMMddHHmmss}.pdf"; // Formatting the datetime for the file name
                         var fileResult = new FileContentResult(fileContents, "application/pdf")
                         {
                             FileDownloadName = fileName
@@ -2881,6 +3173,92 @@ namespace RestieAPI.Service.Repo
                 return ms.ToArray();
             }
         }
+        public byte[] GenerateInventoryLogsPdfReport(List<InventoryLogsResponse> inventoryLogs, DateTime from_date, DateTime to_date)
+        {
+            // Load company logo
+            //string base64String = LoadCompanyLogoAsBase64();
+            //byte[] logoBytes = Convert.FromBase64String(base64String);
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                Document doc = new Document();
+                PdfWriter.GetInstance(doc, ms);
+                doc.Open();
+
+                // Add company logo
+                //if (logoBytes != null)
+                //{
+                Paragraph logotitle = new Paragraph();
+                logotitle.Alignment = Element.ALIGN_CENTER;
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk("Restie Hardware", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk("Inventory Logs Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Address: SIR Bucana 76-A", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Sandawa Matina Davao City", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Davao City, Philippines", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Contact No.: (082) 224 1362", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+
+                //Image logo = Image.GetInstance(logoBytes);
+                //logo.Alignment = Element.ALIGN_CENTER;
+                //logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
+                //doc.Add(logo);
+                doc.Add(logotitle);
+                //}
+
+                // Add title
+                Paragraph title = new Paragraph();
+                title.Alignment = Element.ALIGN_CENTER;
+                title.Add(Chunk.NEWLINE);
+                title.Add(new Chunk($"Start Date: {from_date.ToString("MM/dd/yyyy")} End Date: {to_date.ToString("MM/dd/yyyy")}", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                title.Add(Chunk.NEWLINE);
+                title.Add(Chunk.NEWLINE);
+                doc.Add(title);
+
+                // Add table
+                PdfPTable table = new PdfPTable(6);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 1, 3, 2, 1.5f, 1.5f, 2 });
+                table.SpacingBefore = 20f; // Add spacing before the table
+                                           // Add table headers
+                table.AddCell(new PdfPCell(new Phrase("Code", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Brand", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Added Qty", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Onhand Qty", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Company", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                // Add table data
+                foreach (var invLogs in inventoryLogs)
+                {
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.code.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.item.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.brand.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.addedqty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.onhandqty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.company.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                 
+                }
+
+                // Add total row
+                //PdfPCell totalCell = new PdfPCell(new Phrase("Overall Total", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                //totalCell.Colspan = 3;
+                //totalCell.HorizontalAlignment = Element.ALIGN_RIGHT;
+                //table.AddCell(totalCell);
+                //table.AddCell(new PdfPCell(new Phrase(totalSales.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+
+                doc.Add(table);
+                doc.Close();
+
+                return ms.ToArray();
+            }
+        }
         public byte[] GeneratePdfReport(List<SalesResponse> sales, DateTime from_date,DateTime to_date)
             {
             // Load company logo
@@ -2889,7 +3267,7 @@ namespace RestieAPI.Service.Repo
 
             using (MemoryStream ms = new MemoryStream())
                 {
-                    Document doc = new Document();
+                    Document doc = new Document(PageSize.A4.Rotate());
                     PdfWriter.GetInstance(doc, ms);
                     doc.Open();
 
@@ -2927,10 +3305,10 @@ namespace RestieAPI.Service.Repo
                     doc.Add(title);
 
                     // Add table
-                    PdfPTable table = new PdfPTable(8);
+                    PdfPTable table = new PdfPTable(11);
                     table.WidthPercentage = 100;
-                    table.SetWidths(new float[] { 1, 3, 1, 1, 1, 1.5f, 1.5f, 1.5f });
-                    table.SpacingBefore = 20f; // Add spacing before the table
+                    table.SetWidths(new float[] { 1.5f, 3, 1, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f,1.5f,1.5f,1.5f });
+                    table.SpacingBefore = 50f; // Add spacing before the table
                                                // Add table headers
                     table.AddCell(new PdfPCell(new Phrase("Code", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase("Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
@@ -2939,16 +3317,26 @@ namespace RestieAPI.Service.Repo
                     table.AddCell(new PdfPCell(new Phrase("Price", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase("Total Cost", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase("Total Sales", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase("Total Discount", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase("Total Sales w/ Discounts", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase("Profit", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-      
+                    table.AddCell(new PdfPCell(new Phrase("Profit w/ Discounts", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                   
 
-                    // Add table data
-                    decimal totalSales = 0;
+
+                // Add table data
+                decimal totalSales = 0;
+                    decimal totalSalesWDiscount = 0;
+                    decimal totalProfitWDiscount = 0;
+                    decimal totalDiscount = 0;
                     decimal totalCost = 0;
                     decimal profit = 0;
+                    decimal profitwDiscount = 0;
+                    decimal saleswDiscount = 0;
                     foreach (var sale in sales)
                     {
-                  
+                    totalSalesWDiscount = Decimal.Parse(sale.total_sales) - Decimal.Parse(sale.total_discount);
+                    totalProfitWDiscount = Decimal.Parse(sale.profit) - Decimal.Parse(sale.total_discount);
                     table.AddCell(sale.code);
                     table.AddCell(sale.item);
                     table.AddCell(new PdfPCell(new Phrase(sale.qty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
@@ -2956,37 +3344,73 @@ namespace RestieAPI.Service.Repo
                     table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.price.ToString()).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.total_cost).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.total_sales).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.total_discount).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(totalSalesWDiscount.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.profit).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(totalProfitWDiscount.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     totalSales += Decimal.Parse(sale.total_sales);
+                    saleswDiscount += Decimal.Parse(sale.total_sales) - Decimal.Parse(sale.total_discount);
+                    totalDiscount += Decimal.Parse(sale.total_discount);
                     totalCost += Decimal.Parse(sale.total_cost);
                     profit += Decimal.Parse(sale.profit);
+                    profitwDiscount += Decimal.Parse(sale.profit) - Decimal.Parse(sale.total_discount);
                     }
 
                     // Add total row
                     PdfPCell totalCellCost = new PdfPCell(new Phrase("Overall Total Cost", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
                     PdfPCell totalCellPrice = new PdfPCell(new Phrase("Overall Total Sales", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    PdfPCell totalCellPriceWDiscount = new PdfPCell(new Phrase("Overall Total Sale w/ Discounts", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
                     PdfPCell totalCellProfit = new PdfPCell(new Phrase("Overall Profit", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
-                    totalCellCost.Colspan = 3;
+                    PdfPCell totalCellProfitWDiscount = new PdfPCell(new Phrase("Overall Profit w/ Discounts", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    PdfPCell totalCellDiscount = new PdfPCell(new Phrase("Overall Total Discount", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                 
+                    totalCellCost.Colspan = 2;
                     totalCellCost.HorizontalAlignment = Element.ALIGN_RIGHT;
-                    totalCellPrice.Colspan = 3;
+                    totalCellPrice.Colspan = 2;
                     totalCellPrice.HorizontalAlignment = Element.ALIGN_RIGHT;
-                    totalCellProfit.Colspan = 3;
+                    totalCellPriceWDiscount.Colspan = 2;
+                    totalCellPriceWDiscount.HorizontalAlignment = Element.ALIGN_RIGHT;
+
+                    totalCellProfitWDiscount.Colspan = 2;
+                    totalCellProfitWDiscount.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    totalCellProfit.Colspan = 2;
                     totalCellProfit.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    totalCellDiscount.Colspan = 2;
+                    totalCellDiscount.HorizontalAlignment = Element.ALIGN_RIGHT;
+
                     table.AddCell(totalCellCost);
                     table.AddCell(totalCellPrice);
+                    table.AddCell(totalCellPriceWDiscount);
+                    table.AddCell(totalCellDiscount);
                     table.AddCell(totalCellProfit);
+                    table.AddCell(totalCellProfitWDiscount);
+
                     PdfPCell totalCostData = new PdfPCell(new Phrase(totalCost.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
                     PdfPCell totalPriceData = new PdfPCell(new Phrase(totalSales.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    PdfPCell totalPriceWDiscountData = new PdfPCell(new Phrase(saleswDiscount.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    PdfPCell totalDiscountData = new PdfPCell(new Phrase(totalDiscount.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
                     PdfPCell totalProfitData = new PdfPCell(new Phrase(profit.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
-                totalCostData.HorizontalAlignment = Element.ALIGN_RIGHT;
-                totalCostData.Colspan = 3;
-                totalPriceData.HorizontalAlignment = Element.ALIGN_RIGHT;
-                totalPriceData.Colspan = 3;
-                totalProfitData.HorizontalAlignment = Element.ALIGN_RIGHT;
-                totalProfitData.Colspan = 3;
-                table.AddCell(totalCostData);
+                    PdfPCell totalProfitWDiscountData = new PdfPCell(new Phrase(profitwDiscount.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+
+                    totalCostData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    totalCostData.Colspan = 2;
+                    totalPriceData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    totalPriceData.Colspan = 2;
+                    totalPriceWDiscountData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    totalPriceWDiscountData.Colspan = 2;
+                    totalDiscountData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    totalDiscountData.Colspan = 2;
+                    totalProfitData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    totalProfitData.Colspan = 2;
+                    totalProfitWDiscountData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    totalProfitWDiscountData.Colspan = 2;
+
+                    table.AddCell(totalCostData);
                     table.AddCell(totalPriceData);
+                    table.AddCell(totalPriceWDiscountData);
+                    table.AddCell(totalDiscountData);
                     table.AddCell(totalProfitData);
+                    table.AddCell(totalProfitWDiscountData);
                     doc.Add(table);
                     doc.Close();
 

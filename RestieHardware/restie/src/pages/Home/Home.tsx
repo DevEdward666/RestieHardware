@@ -39,12 +39,14 @@ import paint from "../../assets/images/Categories/Paint.png";
 import categoryIcon from "../../assets/images/icons/category.png";
 import {
   get_brands_actions,
+  get_category_actions,
   getReceivableList,
   set_category_and_brand,
 } from "../../Service/Actions/Inventory/InventoryActions";
 import { GetBrandsModel } from "../../Models/Request/Inventory/InventoryModel";
 import { getPlatforms } from "@ionic/react";
 import { notifications } from "ionicons/icons";
+import { GetCategoryModel } from "../../Models/Response/Inventory/GetInventoryModel";
 const queryClient = new QueryClient();
 const Tab1: React.FC = () => {
   const list_of_items = useSelector(
@@ -52,6 +54,9 @@ const Tab1: React.FC = () => {
   );
   const fetch_brands = useSelector(
     (store: RootStore) => store.InventoryReducer.get_brands
+  );
+  const fetch_category = useSelector(
+    (store: RootStore) => store.InventoryReducer.get_category
   );
   const get_category_and_brand = useSelector(
     (store: RootStore) => store.InventoryReducer.set_category_and_brand
@@ -89,12 +94,26 @@ const Tab1: React.FC = () => {
       searchTerm: query,
     });
   };
-  const handleCategory = (category: string) => {
-    setCategoryAndBrand((prev) => ({ ...prev, category: category }));
-  };
-  const handleBrand = (brand: string) => {
-    setCategoryAndBrand((prev) => ({ ...prev, brand: brand }));
-  };
+  const handleCategory = useCallback(
+    (category: string) => {
+      setCategoryAndBrand({
+        category: category,
+        brand: get_category_and_brand.brand,
+        filter: get_category_and_brand.filter,
+      });
+    },
+    [get_category_and_brand]
+  );
+  const handleBrand = useCallback(
+    (brand: string) => {
+      setCategoryAndBrand({
+        category: get_category_and_brand.category,
+        brand: brand,
+        filter: get_category_and_brand.filter,
+      });
+    },
+    [get_category_and_brand]
+  );
   useEffect(() => {
     const initializeCategoryAndBrand = () => {
       dispatch(set_category_and_brand(getCategoryAndBrand));
@@ -106,12 +125,17 @@ const Tab1: React.FC = () => {
       const payload: GetBrandsModel = {
         category: getCategoryAndBrand.brand,
       };
+      const category_payload: GetCategoryModel = {
+        category: getCategoryAndBrand.category,
+      };
       dispatch(get_brands_actions(payload));
+      dispatch(get_category_actions(category_payload));
 
       dispatch(getReceivableList());
     };
     initializeBrand();
-  }, []);
+  }, [dispatch]);
+
   useEffect(() => {
     const initializeNotification = () => {
       setTotalNotifs(receivable_list.length);
@@ -171,7 +195,20 @@ const Tab1: React.FC = () => {
                   </div>
                 </div>
               </IonItem>
-              <div slot="content">
+              <div className="brand-content" slot="content">
+                {fetch_category.map((val, index) => (
+                  <div
+                    key={index}
+                    className="brands-container"
+                    onClick={() => handleCategory(val.category)}
+                  >
+                    <div className="brands-brand">
+                      <IonText className="brand-text">{val.category}</IonText>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* <div slot="content">
                 <div
                   className="categories-container"
                   onClick={() => handleCategory("Electrical")}
@@ -210,7 +247,7 @@ const Tab1: React.FC = () => {
                     <IonImg src={lumber} className="category-img"></IonImg>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </IonAccordion>
             <IonAccordion value="brand">
               <IonItem slot="header" color="light">
@@ -269,12 +306,12 @@ const Tab1: React.FC = () => {
               </IonSelectOption>
             </IonSelect>
           </IonItem>
-          <IonItem
+          {/* <IonItem
             className="onboarding"
             onClick={() => router.push("/Onboarding")}
           >
             Onboarding
-          </IonItem>
+          </IonItem> */}
         </IonContent>
       </IonMenu>
       <IonPage className="home-page-container" id="main-content">
@@ -302,7 +339,7 @@ const Tab1: React.FC = () => {
               </IonIcon> */}
             </IonButtons>
           </IonToolbar>
-          <IonToolbar
+          {/* <IonToolbar
             mode="ios"
             color="tertiary"
             className="home-toolbar-logo-container"
@@ -316,7 +353,7 @@ const Tab1: React.FC = () => {
             >
               <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
             </div>
-          </IonToolbar>
+          </IonToolbar> */}
           <IonToolbar mode="ios" color="tertiary">
             <div
               className={`home-search-container ${

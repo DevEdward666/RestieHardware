@@ -1,0 +1,22 @@
+.info-item{
+    font-size: 16px;
+    font-family: "Gotham-Light";
+    display: flex;
+    flex-direction: row;
+    --padding-end: 0px;
+    --padding-start: 0px;
+    --inner-padding-end: 0px;
+    --inner-padding-bottom: 0;
+    
+    .info-text{
+        flex: 0.5;
+        flex:1;
+    }
+    .select-option{
+        flex:1;
+    }
+    .info-input{
+        font-family: "Gotham-Light";
+        flex: 1;
+    }
+}

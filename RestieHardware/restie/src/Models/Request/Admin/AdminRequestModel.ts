@@ -15,6 +15,24 @@ export interface PostInventoryModel {
   updatedAt: number;
 }
 
+export interface PostDeliveryReceipt {
+  items:ProductInfo[],
+  supplierId:string,
+}
+export interface ProductInfo {
+  item: string;
+  category: string;
+  brand: string;
+
+  code: string;
+  onhandqty: number;
+  addedqty: number;
+  supplierid: string;
+  supplierName: string;
+
+  cost: number;
+  price: number;
+}
 export interface PostNewItemInventoryModel {
   image: string;
   code: string;
@@ -40,4 +58,23 @@ export interface PostNewSupplierModel {
   address: string;
   createdat:number;
   supplierid?:string;
+}
+
+export interface PostNewVoucherModel {
+  voucher_seq: number;
+  vouchercode: string;
+  name: string;
+  description: string;
+  type: string;
+  discount: number;
+  voucher_for: string;
+  createdby:string;
+}
+
+export interface PostAddNewUser{
+  id: string;
+  name: string;
+  username: string;
+  password: string;
+  role: string;
 }

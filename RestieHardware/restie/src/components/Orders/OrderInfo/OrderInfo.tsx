@@ -180,26 +180,22 @@ const OrderInfoComponent: React.FC = () => {
   }
   useEffect(() => {
     const initialize = async () => {
-      if (get_voucher && get_voucher.description?.length > 0) {
-        const totalDiscount =
-          order_list_info.order_info?.total -
-          order_list_info.order_info?.total * get_voucher.discount;
-        setDiscount(get_voucher.discount * 100);
-        setTotalAmount(totalDiscount);
+      if (getReturnsFromUrl === "true") {
+        let total = 0;
+        order_list_info?.return_item.map((val) => {
+          total += val.total;
+        });
+        setTotalAmount(total);
       } else {
-        if (getReturnsFromUrl === "true") {
-          let total = 0;
-          order_list_info?.return_item.map((val) => {
-            total += val.total;
-          });
-          setTotalAmount(total);
-        } else {
-          setTotalAmount(order_list_info.order_info?.total);
-        }
+        setTotalAmount(
+          order_list_info.order_info?.total -
+            (order_list_info.order_info.totaldiscount ?? 0)
+        );
+        setDiscount(order_list_info.order_info.totaldiscount);
       }
     };
     initialize();
-  }, [get_voucher, order_list_info, getReturnsFromUrl]);
+  }, [order_list_info, getReturnsFromUrl]);
   const handleSelectOrder = (orderid: string, cartid: string) => {
     const payload: PostSelectedOrder = {
       orderid: orderid,
@@ -661,12 +657,17 @@ const OrderInfoComponent: React.FC = () => {
 
   // Generate receipt footer
   const generateReceiptFooter = (order_list_info: GetListOrderInfo) => {
-    const totalAmount = order_list_info.order_info?.total.toFixed(2);
+    const totalAmount =
+      order_list_info.order_info?.total -
+      (order_list_info.order_info.totaldiscount ?? 0);
+    const totalDiscount = order_list_info.order_info.totaldiscount ?? 0;
     const paidCash = order_list_info.order_info?.paidcash.toFixed(2);
     const change = (
       order_list_info.order_info?.paidcash - getTotalAmount
     ).toFixed(2);
-    return `\nAmount Due: ${totalAmount}\nCash: ${paidCash}\nChange: ${change}\n\n-----------Thank you-----------\n\n`;
+    return `\nAmount Due: ${totalAmount.toFixed(
+      2
+    )}\nDiscount: ${totalDiscount}\nCash: ${paidCash}\nChange: ${change}\n\n-----------Thank you-----------\n\n`;
   };
 
   // Generate receipt items
@@ -676,7 +677,9 @@ const OrderInfoComponent: React.FC = () => {
         (item) =>
           `${item.code}\n${item.item.trim()}\nPrice        Qty      Total\nP${
             item.price
-          }       |    ${item.qty}    |  P${item.price * item.qty}
+          }       |    ${item.qty}    |  P${
+            item.price - (item.discount_price ?? 0) * item.qty
+          }
         \n--------------------------------`
       )
       .join("\n");
@@ -759,6 +762,7 @@ const OrderInfoComponent: React.FC = () => {
     permissionRequested = value;
   };
   const handleReceivedPayment = () => {
+    // console.log(order_list_info);
     setOpenSearchModal({ isOpen: false, modal: "process" });
     setCanDismiss(true);
     setOpenCashModal(true);
@@ -785,12 +789,17 @@ const OrderInfoComponent: React.FC = () => {
     let newItem: Addtocart;
     let payload: Addtocart[] = [];
     order_list_info.order_item.map((val) => {
+      let totalDiscount: number = 0.0;
+      totalDiscount += val.discount_price;
+      console.log(totalDiscount);
       newItem = {
         onhandqty: val?.onhandqty!,
         code: val.code,
         item: val.item,
         qty: val.qty,
         price: val.price,
+        discount: val.discount_price ?? 0,
+        total_discount: totalDiscount,
         image: "",
         orderid: order_list_info.order_info.orderid,
         cartid: order_list_info.order_info.cartid,
@@ -1003,7 +1012,24 @@ const OrderInfoComponent: React.FC = () => {
                           </div>
                           <div className="order-list-info-card-price-details">
                             <span>&#8369;</span>
-                            {items.price.toFixed(2)}
+                            <span
+                              className={`${
+                                items.discount_price > 0
+                                  ? "order-list-price-with-discount"
+                                  : null
+                              }`}
+                            >
+                              {items.price.toFixed(2)}
+                            </span>
+
+                            {items.discount_price > 0 ? (
+                              <span>
+                                &#8369;
+                                {(items.price - items.discount_price).toFixed(
+                                  2
+                                )}
+                              </span>
+                            ) : null}
                           </div>
                         </div>
                         <div className="order-list-info-card-content">
@@ -1043,9 +1069,11 @@ const OrderInfoComponent: React.FC = () => {
           <div className="order-list-info-footer-details">
             <div className="order-list-info-footer">Discount & Vouchers: </div>
 
-            <div className="order-list-info-footer-info">{`${
-              getDiscount > 0 ? getDiscount + "%" : 0
-            }`}</div>
+            <div className="order-list-info-footer-info">
+              {" "}
+              <span>&#8369;</span>
+              {`${getDiscount > 0 ? getDiscount.toFixed(2) : 0}`}
+            </div>
           </div>
           <IonImg className="breakline" src={breakline} />
           <div className="order-list-info-footer-total-main">
@@ -1088,11 +1116,13 @@ const OrderInfoComponent: React.FC = () => {
             </div>
           </div>
           <div className="order-list-info-footer-details">
-            <div className="order-list-info-footer">Discount & Vouchers: </div>
+            <div className="order-list-info-footer">Total Discounts: </div>
 
-            <div className="order-list-info-footer-info">{`${
-              getDiscount > 0 ? getDiscount + "%" : 0
-            }`}</div>
+            <div className="order-list-info-footer-info">
+              {" "}
+              <span>&#8369;</span>
+              {`${getDiscount > 0 ? getDiscount.toFixed(2) : 0}`}
+            </div>
           </div>
           <IonImg className="breakline" src={breakline} />
           <div className="order-list-info-footer-total-main">
@@ -1528,6 +1558,8 @@ const OrderInfoComponent: React.FC = () => {
                           <div className="order-list-info-card-price-details">
                             <span>&#8369;</span>
                             {items.price.toFixed(2)}
+                            <span>&#8369;</span>
+                            {items.discount_price.toFixed(2)}
                           </div>
                         </div>
                         <div className="order-list-info-card-content">

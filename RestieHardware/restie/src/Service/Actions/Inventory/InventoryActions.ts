@@ -4,9 +4,12 @@ import {
   CHECKED_RETURN_REFUND,
   COMPLETE_RETURN_REFUND,
   GET_BRANDS,
+  GET_CATEGORY,
   GET_DELIVERY_INFO,
   GET_ITEM_RETURNS,
+  GET_LIST_VOUCHER,
   GET_VOUCHER,
+  GET_VOUCHER_LIST,
   LIST_OF_ITEMS,
   ORDER_LIST,
   ORDER_LIST_INFO,
@@ -22,6 +25,7 @@ import {
   GetVoucherInfo,
   InsertCustomerInfo,
   ListAgedReceivable,
+  ListOfVouchers,
   ListOrder,
   PostGetDeliveryInfo,
   PostReturnItems,
@@ -30,6 +34,7 @@ import {
   addToCart,
   deleteCart,
   fetchBrands,
+  fetchCategory,
   getAllInventory,
   searchInventory,
   updateCartOrder,
@@ -43,6 +48,7 @@ import {
   CompleteReturnRefund,
   GetBrandsModel,
   GetItemToRefundRequest,
+  GetVoucherType,
   InventoryModel,
   ItemReturns,
   PostAgedReceivable,
@@ -57,6 +63,7 @@ import {
 import { ResponseModel } from "../../../Models/Response/Commons/Commons";
 import { v4 as uuidv4 } from "uuid";
 import {
+  GetCategoryModel,
   GetDeliveryInfo,
   GetListOrder,
   GetListOrderInfo,
@@ -177,6 +184,7 @@ const checkPayload = (
   if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
     update_status = "pending";
   }
+  console.log(payload)
   const updatedPayload = payload.map((val) => ({
     ...val,
     orderid: orderid,
@@ -194,6 +202,7 @@ const checkPayload = (
     customer: customer_payload.name,
     cashier: cashier,
   }));
+  console.log(updatedPayload)
   return updatedPayload;
 };
 export const PostOrder =
@@ -255,6 +264,8 @@ export const PostOrder =
           let newItem: Addtocart;
           payload = [];
           resOrderInfo.order_item.$values?.map((val: GetOrderItems) => {
+            let totalDiscount = 0;
+            totalDiscount += val.discount_price;
             newItem = {
               onhandqty: val?.onhandqty!,
               code: val.code,
@@ -262,6 +273,8 @@ export const PostOrder =
               qty: val.qty,
               image: "",
               price: val.price,
+              discount:val.discount_price,
+              total_discount:totalDiscount,
               orderid: resOrderInfo.order_info.orderid,
               cartid: resOrderInfo.order_info.cartid,
               createdAt: isReorder
@@ -439,6 +452,18 @@ export const get_brands_actions =
       console.log(error);
     }
   };
+  export const get_category_actions =
+  (payload: GetCategoryModel) => async (dispatch: Dispatch<GET_CATEGORY>) => {
+    try {
+      const res = await fetchCategory(payload);
+      dispatch({
+        type: "GET_CATEGORY",
+        get_category: res,
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
 export const get_voucher_actions =
   (payload: PostVoucherInfoModel) =>
   async (dispatch: Dispatch<GET_VOUCHER>) => {
@@ -449,6 +474,54 @@ export const get_voucher_actions =
         get_voucher: res.result,
       });
       return res.result;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+  export const remove_voucher_actions =
+  () =>
+  async (dispatch: Dispatch<GET_VOUCHER>) => {
+    try {
+      dispatch({
+        type: "GET_VOUCHER",
+        get_voucher: {  
+          name: "",
+          description: "",
+          maxredemption: "",
+          discount: 0,
+          type: "",
+          voucher_for: "",
+          vouchercode: ""
+        },
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+  export const get_all_voucher_actions =
+  (payload:GetVoucherType) =>
+  async (dispatch: Dispatch<GET_VOUCHER_LIST>) => {
+    try {
+      const res = await ListOfVouchers(payload);
+      dispatch({
+        type: "GET_VOUCHER_LIST",
+        get_voucher_list: res.result.$values,
+      });
+      return res.result.$values;
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+  export const get_list_of_voucher_actions =
+  (payload:GetVoucherType) =>
+  async (dispatch: Dispatch<GET_LIST_VOUCHER>) => {
+    try {
+      const res = await ListOfVouchers(payload);
+      dispatch({
+        type: "GET_LIST_VOUCHER",
+        get_list_voucher: res.result.$values,
+      });
+      return res.result.$values;
     } catch (error: any) {
       console.log(error);
     }

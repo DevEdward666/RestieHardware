@@ -1,9 +1,10 @@
 .container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, .5fr));
-  max-width: calc(190px* 6);
+  grid-template-columns: repeat(auto-fit, minmax(140px, .5fr));
+  max-width: calc(110px* 6);
   margin: 0 auto;
   justify-content: center;
+  justify-items: center;
 
 .inventory-card-content{
   display: flex;
@@ -69,9 +70,27 @@
 }
 .inventory-card-addtocart{
   display: flex;
-  justify-content: center;
+  flex-direction: row;
+  background-color: #125B8C;
+  text-align: center;
+  font-family: Gotham-Book;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
   align-items: center;
-  width: 100%;
+  justify-content: center;
+  border-radius: 40px;
+  margin: 10px 0px 10px 0px;
+
+  .inventory-card-addtocart-button{
+    font-family: Gotham-Book;
+    font-size: 16px;
+    --color:white;
+    .addtocart-btn-text{
+      font-size: 14px;
+    }
+  }
 }
 .inventory-card-main-div{
 display: flex;

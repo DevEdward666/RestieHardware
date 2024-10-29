@@ -6,8 +6,12 @@ import {
   IonHeader,
   IonIcon,
   IonImg,
+  IonItem,
+  IonLabel,
   IonLoading,
   IonModal,
+  IonSelect,
+  IonSelectOption,
   IonText,
   IonTitle,
   IonToast,
@@ -16,23 +20,35 @@ import {
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./SalesComponent.css";
 import {
+  GenerateInventoryLogs,
   GenerateSalesReturn,
   GetInventory,
   GetSalesByDay,
 } from "../../../../Service/API/Inventory/InventoryApi";
-import { PostDaysSalesModel } from "../../../../Models/Request/Inventory/InventoryModel";
+import {
+  PostDaysSalesModel,
+  PostInventoryLogsModel,
+} from "../../../../Models/Request/Inventory/InventoryModel";
 import { format } from "date-fns";
 import { FileResponse } from "../../../../Models/Response/Inventory/GetInventoryModel";
 import MyCalendar from "../../../../Hooks/MyCalendar";
 import { UploadSales } from "../../../../Service/API/Admin/AdminApi";
-import { cloudUploadOutline } from "ionicons/icons";
+import { card, cloudUploadOutline } from "ionicons/icons";
+import { useSelector } from "react-redux";
+import { RootStore } from "../../../../Service/Store";
 interface ISelectedDates {
   startDate: Date;
   endDate: Date;
 }
 const SalesComponent = () => {
+  const admin_list_of_supplier =
+    useSelector(
+      (store: RootStore) => store.AdminReducer.admin_list_of_supplier
+    ) || [];
   const [selectedDate, setSelectedDate] = useState<string[]>([]);
   const [selectedDates, setSelectedDates] = useState<ISelectedDates>();
+  const [selectedSupplier, setSelectedSupplier] = useState<string>("");
+
   const [salesFile, setSalesFile] = useState<File | null>(null);
 
   const [getFile, setFile] = useState<FileResponse>();
@@ -64,9 +80,9 @@ const SalesComponent = () => {
     const formattedDate = `${year}-${month}-${day}`;
     return formattedDate;
   };
-  // useEffect(() => {
-  //   setSelectedDate(formatDate());
-  // }, []);
+  useEffect(() => {
+    setSelectedSupplier(admin_list_of_supplier[0]?.supplierid);
+  }, [admin_list_of_supplier]);
   const handleDownloaPdf = useCallback(async () => {
     const parsedDates = selectedDate.map((date) => new Date(date).getTime());
     parsedDates.sort((a, b) => a - b);
@@ -76,12 +92,16 @@ const SalesComponent = () => {
       fromDate: formatDate(lowestDate),
       toDate: formatDate(highestDate),
     };
+    const inventory_logs_payload: PostInventoryLogsModel = {
+      fromDate: formatDate(lowestDate),
+      toDate: formatDate(highestDate),
+      supplier: selectedSupplier,
+    };
     setIsOpenToast({
       toastMessage: "Generating PDF",
       isOpen: true,
       type: "PDF",
     });
-    console.log(payload);
     if (payload.fromDate === undefined) {
       setIsOpenToast({
         toastMessage: "No reports available",
@@ -97,6 +117,8 @@ const SalesComponent = () => {
     const res =
       openPDFModal.type === "sales"
         ? await GetSalesByDay(payload)
+        : openPDFModal.type === "inventory_logs"
+        ? await GenerateInventoryLogs(inventory_logs_payload)
         : await GenerateSalesReturn(payload);
     console.log(res);
     if (res.result === null || res.result === undefined) {
@@ -129,7 +151,7 @@ const SalesComponent = () => {
     });
     // setopenPDFModal({ isOpen: true, modal: "pdf" });
     setFile(res);
-  }, [openPDFModal, selectedDates]);
+  }, [openPDFModal, selectedDates, selectedSupplier]);
   const handleGenerateInventory = async () => {
     setIsOpenToast({
       toastMessage: "Generating PDF",
@@ -154,6 +176,7 @@ const SalesComponent = () => {
       type: "",
     });
   };
+
   const handleDateRangeSelected = (start: Date, end: Date) => {
     setSelectedDates({
       startDate: start,
@@ -215,7 +238,14 @@ const SalesComponent = () => {
       }
     }
   };
-
+  const handleSelectedSupplier = async (
+    e: CustomEvent<HTMLIonSelectElement>
+  ) => {
+    const { value } = e.detail;
+    if (value) {
+      setSelectedSupplier(value);
+    }
+  };
   return (
     <IonContent className="generate-sales-main-content">
       <IonText className="generate-sales-title">Generate PDF</IonText>
@@ -244,6 +274,15 @@ const SalesComponent = () => {
           onClick={() => handleGenerateInventory()}
         >
           Generate Inventory Report
+        </IonButton>
+        <IonButton
+          color={"medium"}
+          expand="block"
+          onClick={() =>
+            setopenPDFModal({ isOpen: true, modal: "", type: "inventory_logs" })
+          }
+        >
+          Generate Inventory Logs
         </IonButton>
         <div>
           <IonButton
@@ -296,6 +335,23 @@ const SalesComponent = () => {
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
+          <IonItem>
+            <IonLabel>Supplier</IonLabel>
+            <IonSelect
+              name="Supplier"
+              onIonChange={(e: any) => handleSelectedSupplier(e)}
+              aria-label="Supplier"
+              className="info-input"
+              placeholder="Select Supplier"
+              value={selectedSupplier}
+            >
+              {admin_list_of_supplier?.map((val, index) => (
+                <IonSelectOption key={index} value={val.supplierid}>
+                  {val.company}
+                </IonSelectOption>
+              ))}
+            </IonSelect>
+          </IonItem>
           <MyCalendar
             onDateRangeSelected={(start, end) =>
               handleDateRangeSelected(start, end)

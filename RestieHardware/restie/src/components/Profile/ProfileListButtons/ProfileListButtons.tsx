@@ -16,6 +16,7 @@ import {
   chevronForwardOutline,
   logInOutline,
   logOutOutline,
+  personAdd,
   syncCircle,
   syncCircleOutline,
   syncCircleSharp,
@@ -134,6 +135,25 @@ const ProfileListButtons: React.FC = () => {
                     <IonIcon icon={chevronForwardOutline}></IonIcon>
                   </IonButton>
                 </div>
+                {user_login_information?.role.trim().toLowerCase() ===
+                "super admin" ? (
+                  <div
+                    className="profile-list-button-list"
+                    onClick={() => router.push("/admin/add-new-user")}
+                  >
+                    <IonButton fill="clear" className="profile-button-order">
+                      <IonIcon icon={personAdd}></IonIcon>
+                      <IonText className="profile-button-text">
+                        Manage User
+                      </IonText>
+                    </IonButton>
+
+                    <IonButton fill="clear" className="profile-button-order">
+                      <IonIcon icon={chevronForwardOutline}></IonIcon>
+                    </IonButton>
+                  </div>
+                ) : null}
+
                 <div
                   className="profile-list-button-list"
                   onClick={() => router.push("/DeliverOffline")}

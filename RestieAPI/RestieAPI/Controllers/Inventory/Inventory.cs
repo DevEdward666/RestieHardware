@@ -48,6 +48,12 @@ namespace RestieAPI.Controllers.Inventory
      
             return Ok(_inventoryRepo.getBrands(getBrand));
         }
+        [HttpPost("fetchCategory")]
+        public ActionResult<CategoryResponseModel> FetchCategory( [FromBody] GetBrand getBrand)
+        {
+     
+            return Ok(_inventoryRepo.getCategory(getBrand));
+        }
         [HttpPost("searchInventory/{pageNumber}")]
         public ActionResult<InventoryItemModel> SearchInventory(int pageNumber, [FromBody] GetAllInventory getAllInventory)
         {
@@ -166,6 +172,12 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<PostResponse> GetVouchers(GetVoucher getVoucher)
         {
             return Ok(_inventoryRepo.getVouchers(getVoucher));
+        } 
+        [Authorize]
+        [HttpPost("ListOfVouchers")]
+        public ActionResult<PostResponse> ListOfVouchers(GetVoucherType getVoucher)
+        {
+            return Ok(_inventoryRepo.ListOfVouchers(getVoucher));
         }
         [Authorize]
         [HttpPost("GetByDaySales")]
@@ -183,6 +195,13 @@ namespace RestieAPI.Controllers.Inventory
             return Ok(_inventoryRepo.GenerateSalesReturn(getSales));
            
         }
+        [Authorize]
+        [HttpPost("GenerateInventoryLogs")]
+        public ActionResult<PostSalesResponse> GenerateInventoryLogs(GetInventoryLogs getInventoryLogs)
+        {
+            return Ok(_inventoryRepo.GenerateInventoryLogs(getInventoryLogs));
+        }
+        
         [Authorize]
         [HttpPost("GetQuotationOrderInfo")]
         public ActionResult<PostSalesResponse> GetQuotationOrderInfo(GetSelectedOrder getSelectedOrder)
@@ -212,6 +231,12 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<AgedReceivableResponseModel> GetAllAgedReceivable()
         {
             return Ok(_inventoryRepo.GetAllAgedReceivable());
+        }     
+        [Authorize]
+        [HttpPost("UpdateInventoryImage")]
+        public ActionResult<PostResponse> UpdateInventoryImage(PutInventoryImage putInventoryImage)
+        {
+            return Ok(_inventoryRepo.UpdateInventoryImage(putInventoryImage));
         }
         [Authorize]
         [HttpPost("UploadFile")]
@@ -251,7 +276,6 @@ namespace RestieAPI.Controllers.Inventory
                 });
             }
         }
-        [Authorize]
         [HttpPost("Getimage")]
         public ActionResult<PostDeliveryImageResponse> GetImageDelivery(GetDeliveryImage getDeliveryImage)
         {

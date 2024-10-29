@@ -1,5 +1,3 @@
-import React, { useCallback, useEffect, useState } from "react";
-import "./LoginComponent.css";
 import {
   IonButton,
   IonCard,
@@ -9,26 +7,16 @@ import {
   IonImg,
   IonInput,
   IonItem,
-  IonLabel,
   IonLoading,
   useIonRouter,
 } from "@ionic/react";
-import {
-  GetCustomerInformation,
-  PostCustomer,
-} from "../../Models/Response/Customer/GetCustomerModel";
-import { GetOneCustomer } from "../../Service/Actions/Customer/CustomerActions";
+import { eyeOffOutline, eyeOutline, lockClosed, mail } from "ionicons/icons";
+import React, { useCallback, useEffect, useState } from "react";
 import { PostLogin } from "../../Models/Request/Login/LoginModel";
-import restie from "../../assets/images/Icon@3x.png";
-import {
-  lockClosed,
-  eyeOutline,
-  eyeOffOutline,
-  mail,
-  star,
-} from "ionicons/icons";
-import { useTypedDispatch } from "../../Service/Store";
 import { GetLoginUser, Login } from "../../Service/Actions/Login/LoginActions";
+import { useTypedDispatch } from "../../Service/Store";
+import restie from "../../assets/images/Icon@3x.png";
+import "./LoginComponent.css";
 const LoginComponent = () => {
   const [customerInformation, setCustomerInformation] = useState<PostLogin>({
     username: "",
@@ -72,7 +60,7 @@ const LoginComponent = () => {
         router.push("/home/main");
       }
     } else {
-      alert(res);
+      alert("Wrong Username/Password");
     }
   }, [dispatch, customerInformation]);
   useEffect(() => {

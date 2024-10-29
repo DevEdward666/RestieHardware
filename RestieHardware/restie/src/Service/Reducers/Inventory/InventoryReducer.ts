@@ -29,6 +29,7 @@ const defaultState: InventoryTypesModel = {
       name: "",
       address: "",
       contactno: 0,
+      totaldiscount: 0
     },
     return_item: [],
   },
@@ -49,12 +50,18 @@ const defaultState: InventoryTypesModel = {
     description: "",
     maxredemption: "",
     discount: 0,
+    type: "",
+    voucher_for: "",
+    vouchercode: ""
   },
   get_item_returns: [],
   submit_return_refund: { submit: false },
   checked_return_refund: [],
   complete_return_refund: { complete: false },
-  receivable_list: []
+  receivable_list: [],
+  get_voucher_list: [],
+  get_list_voucher: [],
+  get_category: []
 };
 
 const InventoryReducer = (
@@ -110,10 +117,28 @@ const InventoryReducer = (
         get_brands: action.get_brands,
       };
     }
+    case "GET_CATEGORY": {
+      return {
+        ...state,
+        get_category: action.get_category,
+      };
+    }
     case "GET_VOUCHER": {
       return {
         ...state,
         get_voucher: action.get_voucher,
+      };
+    }
+    case "GET_VOUCHER_LIST": {
+      return {
+        ...state,
+        get_voucher_list: action.get_voucher_list,
+      };
+    }
+    case "GET_LIST_VOUCHER": {
+      return {
+        ...state,
+        get_list_voucher: action.get_list_voucher,
       };
     }
     case "GET_ITEM_RETURNS": {

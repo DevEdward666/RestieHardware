@@ -25,7 +25,7 @@ const Tab3: React.FC = () => {
         <IonToolbar mode="ios" color="tertiary">
           <IonTitle>Profile</IonTitle>
         </IonToolbar>
-        <IonToolbar
+        {/* <IonToolbar
           mode="ios"
           color="tertiary"
           className="profile-toolbar-logo-container"
@@ -39,7 +39,7 @@ const Tab3: React.FC = () => {
           >
             <IonImg src={restielogo} className="profile-toolbar-logo"></IonImg>
           </div>
-        </IonToolbar>
+        </IonToolbar> */}
       </IonHeader>
       <IonContent fullscreen>
         <div className="profile-page-button-container">

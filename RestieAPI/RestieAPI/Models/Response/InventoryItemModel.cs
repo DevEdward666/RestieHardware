@@ -25,7 +25,14 @@ namespace RestieAPI.Models.Response
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string? message { get; set; }
-    }   
+    }
+    public class CategoryResponseModel
+    {
+        public List<CategoryResponse> result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string? message { get; set; }
+    }
     public class OrderInfoResponseModel
     {
         public List<ItemOrders> order_item { get; set; }
@@ -61,10 +68,17 @@ namespace RestieAPI.Models.Response
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string message { get; set; }
-    }   
-    public class VoucherResponseModel
+    }
+    public class SingleVoucherResponseModel
     {
         public VoucherResponse result { get; set; }
+        public Boolean success { get; set; }
+        public int statusCode { get; set; }
+        public string message { get; set; }
+    }
+    public class VoucherResponseModel
+    {
+        public List<VoucherResponse> result { get; set; }
         public Boolean success { get; set; }
         public int statusCode { get; set; }
         public string message { get; set; }
@@ -104,12 +118,12 @@ namespace RestieAPI.Models.Response
         public string item { get; set; }
         public string category { get; set; }
         public string? brand { get; set; }
+        public string? image { get; set; }
         public long qty { get; set; }
         public long reorderqty { get; set; }
         public float cost { get; set; }
         public float price { get; set; }
         public string status { get; set; }
-        public string image { get; set; }
         public long createdat { get; set; }
         public long updatedat { get; set; }
     }
@@ -152,6 +166,10 @@ namespace RestieAPI.Models.Response
     public class BrandResponse
     {
         public string brand { get; set; }
+    }    
+    public class CategoryResponse
+    {
+        public string category { get; set; }
     }
     public class QTYResponse
     {
@@ -176,7 +194,9 @@ namespace RestieAPI.Models.Response
         public string type { get; set; }
         public string? customer_email { get; set; }
         public string? customerid { get; set; }
+        public string? voucher {  get; set; }
         public float total { get; set; }
+        public float totaldiscount { get; set; }
     }
 
     public class ItemOrders
@@ -189,6 +209,7 @@ namespace RestieAPI.Models.Response
         public long onhandqty { get; set; }
         public float cost { get; set; }
         public float price { get; set; }
+        public float discount_price { get; set; }
     }
     public class SelectedOrderResponse
     {
@@ -220,10 +241,17 @@ namespace RestieAPI.Models.Response
     }
     public class VoucherResponse
     {
+        public int id { get; set; }
+
+        public string vouchercode { get; set; }
         public string name { get; set; }
         public string description { get; set; }
-        public decimal discount { get; set; }
+        public double discount { get; set; }
         public int maxredemption { get; set; }
+        public string type { get; set; }
+        public string voucher_for { get; set; }
+
+
     }
     public class SalesResponse
     {   
@@ -234,6 +262,7 @@ namespace RestieAPI.Models.Response
         public int price { get; set; }
         public string total_cost { get; set; }
         public string total_sales { get; set; }
+        public string total_discount { get; set; }
         public string profit { get; set; }
     }
     public class ReturnSalesResponse
@@ -244,6 +273,15 @@ namespace RestieAPI.Models.Response
         public float price { get; set; }
 
         public string total_sales { get; set; }
+    }
+    public class InventoryLogsResponse
+    {
+        public string code { get; set; }
+        public string item { get; set; }
+        public string brand { get; set; }
+        public int addedqty { get; set; }
+        public int onhandqty { get; set; }
+        public string company { get; set; }
     }
     public class InventoryResponse
     {

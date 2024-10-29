@@ -6,6 +6,8 @@ import {
 const defaultState: AdminTypesModel = {
   admin_list_of_items: [],
   admin_list_of_supplier: [],
+  admin_list_of_voucher: [],
+  admin_list_of_users: []
 };
 
 const AdminReducer = (
@@ -23,6 +25,18 @@ const AdminReducer = (
       return {
         ...state,
         admin_list_of_supplier: action.admin_list_of_supplier,
+      };
+    }
+    case "ADMIN_LIST_OF_VOUCHERS": {
+      return {
+        ...state,
+        admin_list_of_voucher: action.admin_list_of_voucher,
+      };
+    }
+    case "ADMIN_LIST_OF_USERS": {
+      return {
+        ...state,
+        admin_list_of_users: action.admin_list_of_users,
       };
     }
     default:

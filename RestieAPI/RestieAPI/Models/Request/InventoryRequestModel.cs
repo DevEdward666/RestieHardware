@@ -94,6 +94,11 @@ namespace RestieAPI.Models.Request
 
 
         }
+        public class PutInventoryImage
+        {
+            public string code { get; set; }
+            public string image { get; set; }
+        }
         public class GetUserOrder
         {
             public string userid { get; set; }

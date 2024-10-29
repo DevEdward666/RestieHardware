@@ -231,6 +231,12 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<AgedReceivableResponseModel> GetAllAgedReceivable()
         {
             return Ok(_inventoryRepo.GetAllAgedReceivable());
+        }     
+        [Authorize]
+        [HttpPost("UpdateInventoryImage")]
+        public ActionResult<PostResponse> UpdateInventoryImage(PutInventoryImage putInventoryImage)
+        {
+            return Ok(_inventoryRepo.UpdateInventoryImage(putInventoryImage));
         }
         [Authorize]
         [HttpPost("UploadFile")]
@@ -270,7 +276,6 @@ namespace RestieAPI.Controllers.Inventory
                 });
             }
         }
-        [Authorize]
         [HttpPost("Getimage")]
         public ActionResult<PostDeliveryImageResponse> GetImageDelivery(GetDeliveryImage getDeliveryImage)
         {

@@ -14,13 +14,15 @@ import {
   RefresherEventDetail,
   useIonRouter,
 } from "@ionic/react";
-import { cart, close } from "ionicons/icons";
+import { cart, close, cloudUpload } from "ionicons/icons";
 import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 import {
   Addtocart,
   InventoryModel,
+  PostDeliveryImage,
+  PutInventoryImage,
   SelectedItemToCart,
 } from "../Models/Request/Inventory/InventoryModel";
 import { SearchInventoryModel } from "../Models/Request/searchInventory";
@@ -35,8 +37,16 @@ import { RootStore, useTypedDispatch } from "../Service/Store";
 import stock from "../assets/images/Image_not_available.png";
 
 import "./ExploreContainer.css";
-import { GetItemImage } from "../Service/API/Inventory/InventoryApi";
+import {
+  GetItemImage,
+  UpdateInventoryImage,
+  UploadDeliveryImages,
+} from "../Service/API/Inventory/InventoryApi";
 import { FileResponse } from "../Models/Response/Inventory/GetInventoryModel";
+import {
+  productFilename,
+  base64toFile,
+} from "./Admin/Products/ManageProducts/ProductComponentsService";
 interface ContainerProps {
   data: any;
   searchItem: SearchInventoryModel;
@@ -60,11 +70,15 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
   const [items, setItems] = useState(data);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+
   const selectedItemselector = useSelector(
     (store: RootStore) => store.InventoryReducer.add_to_cart
   );
   const get_category_and_brand = useSelector(
     (store: RootStore) => store.InventoryReducer.set_category_and_brand
+  );
+  const user_login_information = useSelector(
+    (store: RootStore) => store.LoginReducer.user_login_information
   );
 
   useEffect(() => {
@@ -175,6 +189,45 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     }
   };
   const CardList = (card: InventoryModel) => {
+    const [getItemImage, setImage] = useState<FileResponse>();
+
+    const [canUpload, setCanUpload] = useState<boolean>(false);
+    const fileInput = useRef(null);
+    const onSelectFile = async (e: any) => {
+      const selectedFiles = e.target.files;
+      const newFiles = selectedFiles[0];
+      const reader = new FileReader();
+      let base64stringImage = "";
+      reader.onloadend = async () => {
+        const base64String = reader.result;
+        if (typeof reader.result === "string") {
+          base64stringImage = reader.result;
+          const imageName = productFilename(payload.code, "jpg");
+          const fileImage = base64toFile(
+            base64stringImage,
+            imageName,
+            "image/jpg"
+          );
+          const imagePayload: PostDeliveryImage = {
+            FileName: imageName,
+            FolderName: "Inventory",
+            FormFile: fileImage!,
+          };
+
+          const uploaded = await UploadDeliveryImages(imagePayload);
+          if (uploaded.status === 201) {
+            const updateInventoryImage: PutInventoryImage = {
+              image: uploaded.result.imagePath,
+              code: payload.code,
+            };
+            const updatedInventory = await UpdateInventoryImage(
+              updateInventoryImage
+            );
+          }
+        }
+      };
+      reader.readAsDataURL(newFiles);
+    };
     const payload: SelectedItemToCart = {
       code: card.code,
       item: card.item,
@@ -182,30 +235,65 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       price: card.price,
       category: card.category,
       brand: card.brand,
+      //
       image:
         card.image.length <= 0
           ? stock
-          : `${window.location.origin}/${card.image}`,
+          : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`,
     };
+    useEffect(() => {
+      if (card.image.length > 0) {
+        GetItemImage({ imagePath: card.image }).then((res: any) => {
+          setImage(res.result.image);
+        });
+      }
+      if (
+        user_login_information?.role.trim().toLowerCase() === "admin" ||
+        user_login_information?.role.trim().toLowerCase() === "super admin"
+      ) {
+        setCanUpload(true);
+      }
+    }, [card.image, user_login_information]);
+    const handleClickImage = useCallback(
+      (payload: SelectedItemToCart) => {
+        if (canUpload) {
+          // @ts-ignore
+          fileInput?.current?.click();
+        } else {
+          handleSelectedItem(payload);
+        }
+      },
+      [canUpload]
+    );
     return (
-      <div
-        ref={cardRef}
-        className="inventory-card-main-div"
-        onClick={() => handleSelectedItem(payload)}
-      >
+      <div ref={cardRef} className="inventory-card-main-div">
         <IonCard className="inventory-card-main">
           <div className="inventory-card-add-item-img">
+            <input
+              ref={fileInput}
+              hidden
+              type="file"
+              accept="image/*"
+              onChange={(e) => onSelectFile(e)}
+            />
             <img
               alt={card?.item}
+              // src={
+              //   card.image.length <= 0
+              //     ? stock
+              //     : `${window.location.origin}/${card.image}`
+              // }
               src={
                 card.image.length <= 0
                   ? stock
-                  : `${window.location.origin}/${card.image}`
+                  : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`
               }
+              onClick={() => handleClickImage(payload)}
             />
           </div>
           <div className="inventory-card-add-item-container">
             <IonCardContent
+              onClick={() => handleSelectedItem(payload)}
               key={card.code}
               className="inventory-card-main-content"
             >

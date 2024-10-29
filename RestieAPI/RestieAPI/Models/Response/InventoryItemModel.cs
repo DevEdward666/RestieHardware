@@ -118,12 +118,12 @@ namespace RestieAPI.Models.Response
         public string item { get; set; }
         public string category { get; set; }
         public string? brand { get; set; }
+        public string? image { get; set; }
         public long qty { get; set; }
         public long reorderqty { get; set; }
         public float cost { get; set; }
         public float price { get; set; }
         public string status { get; set; }
-        public string image { get; set; }
         public long createdat { get; set; }
         public long updatedat { get; set; }
     }

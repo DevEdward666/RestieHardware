@@ -326,6 +326,59 @@ namespace RestieAPI.Service.Repo
 
 
         }
+        public PostResponse UpdateInventoryImage(InventoryRequestModel.PutInventoryImage putInventoryImage)
+        {
+            var sql = @"update inventory set image=@image where code= @code";
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@code", putInventoryImage.code },
+                { "@image", putInventoryImage.image },
+            };
+
+            var results = new List<InventoryItems>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        var insert = 0;
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            insert = cmd.ExecuteNonQuery();
+                        }
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new PostResponse
+                        {
+                            Message = "Successfully updated",
+                            status = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new PostResponse
+                        {
+                            status = 500,
+                            Message = ex.Message
+                        };
+                        throw;
+                    }
+                }
+            }
+
+
+        }
         public PostResponse UpdateCustomerEmail(InventoryRequestModel.PutCustomerEmail putCustomerEmail)
         {
             var sql = @"update customer set customer_email=@customer_email where customerid= @customerid";

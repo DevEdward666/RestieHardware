@@ -108,6 +108,10 @@ export interface PostDeliveryImage {
   FileName: string;
   FormFile: File;
 }
+export interface PutInventoryImage {
+  code: string;
+  image: string;
+}
 export interface PostDeliveryInfoOffline {
   deliveredby: string;
   deliverydate: number;

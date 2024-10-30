@@ -137,13 +137,13 @@ namespace RestieAPI.Controllers
 
             return Ok();
         }
-        [Authorize]
+        [Authorize(Roles = "Admin, Super Admin")]
         [HttpPost("api/user/AddNewUser")]
         public ActionResult<PostResponse> AddNewUser(Adduser adduser)
         {
             return Ok(_userRepo.AddNewUser(adduser));
-        }     
-        [Authorize]
+        }
+        [Authorize(Roles = "Admin, Super Admin")]
         [HttpPost("api/user/UpdateNewUser")]
         public ActionResult<PostResponse> UpdateNewUser(Adduser adduser)
         {

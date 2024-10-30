@@ -14,7 +14,7 @@ import {
   RefresherEventDetail,
   useIonRouter,
 } from "@ionic/react";
-import { cart, close, cloudUpload } from "ionicons/icons";
+import { add, cart, close, cloudUpload } from "ionicons/icons";
 import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
@@ -134,6 +134,12 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     });
     scrollToElement(cardRef);
   };
+  const handleAddQty = (
+    selectedItem: SelectedItemToCart,
+    event: MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    router.push(`/admin/manageproduct?itemcode=${selectedItem.code}`);
+  };
   const addItem = (
     selectedItem: SelectedItemToCart,
     cartItems: Addtocart[],
@@ -188,46 +194,41 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       return [...cartItems, newItem];
     }
   };
-  const CardList = (card: InventoryModel) => {
+  const CardList = ({ card }: { card: InventoryModel }) => {
     const [getItemImage, setImage] = useState<FileResponse>();
-
     const [canUpload, setCanUpload] = useState<boolean>(false);
-    const fileInput = useRef(null);
-    const onSelectFile = async (e: any) => {
-      const selectedFiles = e.target.files;
-      const newFiles = selectedFiles[0];
-      const reader = new FileReader();
-      let base64stringImage = "";
-      reader.onloadend = async () => {
-        const base64String = reader.result;
-        if (typeof reader.result === "string") {
-          base64stringImage = reader.result;
-          const imageName = productFilename(payload.code, "jpg");
-          const fileImage = base64toFile(
-            base64stringImage,
-            imageName,
-            "image/jpg"
-          );
-          const imagePayload: PostDeliveryImage = {
-            FileName: imageName,
-            FolderName: "Inventory",
-            FormFile: fileImage!,
-          };
+    const fileInput = useRef<HTMLInputElement | null>(null);
 
-          const uploaded = await UploadDeliveryImages(imagePayload);
-          if (uploaded.status === 201) {
-            const updateInventoryImage: PutInventoryImage = {
-              image: uploaded.result.imagePath,
-              code: payload.code,
-            };
-            const updatedInventory = await UpdateInventoryImage(
-              updateInventoryImage
-            );
-          }
+    // Function to handle file selection and upload
+    const onSelectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const selectedFile = e.target.files?.[0];
+      if (!selectedFile) return;
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+        const imageName = productFilename(card.code, "jpg");
+        const fileImage = base64toFile(base64String, imageName, "image/jpg");
+
+        const imagePayload: PostDeliveryImage = {
+          FileName: imageName,
+          FolderName: "Inventory",
+          FormFile: fileImage!,
+        };
+
+        const uploaded = await UploadDeliveryImages(imagePayload);
+        if (uploaded.status === 201) {
+          const updateInventoryImage: PutInventoryImage = {
+            image: uploaded.result.imagePath,
+            code: card.code,
+          };
+          await UpdateInventoryImage(updateInventoryImage);
         }
       };
-      reader.readAsDataURL(newFiles);
+      reader.readAsDataURL(selectedFile);
     };
+
+    // Payload setup for selected item
     const payload: SelectedItemToCart = {
       code: card.code,
       item: card.item,
@@ -235,38 +236,37 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       price: card.price,
       category: card.category,
       brand: card.brand,
-      //
       image:
-        card.image.length <= 0
-          ? stock
-          : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`,
+        card.image.length > 0
+          ? `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`
+          : stock,
     };
+
+    // Effect to fetch the item image and set upload permission
     useEffect(() => {
-      if (card.image.length > 0) {
+      if (location.pathname === "/home/main" && card.image.length > 0) {
         GetItemImage({ imagePath: card.image }).then((res: any) => {
           setImage(res.result.image);
         });
       }
-      if (
-        user_login_information?.role.trim().toLowerCase() === "admin" ||
-        user_login_information?.role.trim().toLowerCase() === "super admin"
-      ) {
-        setCanUpload(true);
-      }
+      setCanUpload(
+        ["admin", "super admin"].includes(
+          user_login_information?.role.trim().toLowerCase()
+        )
+      );
     }, [card.image, user_login_information]);
-    const handleClickImage = useCallback(
-      (payload: SelectedItemToCart) => {
-        if (canUpload) {
-          // @ts-ignore
-          fileInput?.current?.click();
-        } else {
-          handleSelectedItem(payload);
-        }
-      },
-      [canUpload]
-    );
+
+    // Click handler for the image
+    const handleClickImage = useCallback(() => {
+      if (canUpload) {
+        fileInput.current?.click();
+      } else {
+        handleSelectedItem(payload);
+      }
+    }, [canUpload, payload]);
+
     return (
-      <div ref={cardRef} className="inventory-card-main-div">
+      <div className="inventory-card-main-div">
         <IonCard className="inventory-card-main">
           <div className="inventory-card-add-item-img">
             <input
@@ -274,64 +274,68 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
               hidden
               type="file"
               accept="image/*"
-              onChange={(e) => onSelectFile(e)}
+              onChange={onSelectFile}
             />
             <img
               alt={card?.item}
-              // src={
-              //   card.image.length <= 0
-              //     ? stock
-              //     : `${window.location.origin}/${card.image}`
-              // }
-              src={
-                card.image.length <= 0
-                  ? stock
-                  : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`
-              }
-              onClick={() => handleClickImage(payload)}
+              src={payload.image}
+              onClick={handleClickImage}
             />
           </div>
           <div className="inventory-card-add-item-container">
             <IonCardContent
               onClick={() => handleSelectedItem(payload)}
-              key={card.code}
               className="inventory-card-main-content"
             >
               <div className="inventory-card-content">
                 <div className="inventory-card-title">{card?.item}</div>
                 <div className="inventory-card-price">
-                  <div>
-                    <span>&#8369;</span>
+                  <span>
+                    &#8369;
                     {card?.price.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
-                  </div>
+                  </span>
                   <div className="inventory-qty">QTY: {card?.qty}</div>
                 </div>
               </div>
             </IonCardContent>
           </div>
-
-          <div className="inventory-card-addtocart">
-            <IonButton
-              fill="clear"
-              className="inventory-card-addtocart-button"
-              disabled={card?.qty > 0 ? false : true}
-              onClick={(event: any) => handleAddToCart(payload, event)}
-            >
-              {card?.qty > 0 ? (
-                <span className="addtocart-btn-text">Add to cart</span>
-              ) : (
-                <span className="addtocart-btn-text">Sold Out</span>
-              )}
-              <IonIcon
-                color="light"
-                slot="icon-only"
+          <div className="inventory-card-button-container">
+            <div className="inventory-card-addtocart">
+              <IonButton
+                fill="clear"
+                className="inventory-card-addtocart-button"
+                disabled={card?.qty <= 0}
+                onClick={(event: any) => handleAddToCart(payload, event)}
+              >
+                <span className="addtocart-btn-text">
+                  {card?.qty > 0 ? "Add to cart" : "Sold Out"}
+                </span>
+                <IonIcon
+                  color="light"
+                  slot="icon-only"
+                  size="small"
+                  icon={cart}
+                />
+              </IonButton>
+            </div>
+            <div className="inventory-card-addtocart-qty">
+              <IonButton
                 size="small"
-                icon={cart}
-              ></IonIcon>
-            </IonButton>
+                fill="clear"
+                className="inventory-card-addtocart-button"
+                onClick={(event: any) => handleAddQty(payload, event)}
+              >
+                <IonIcon
+                  color="light"
+                  slot="icon-only"
+                  size="small"
+                  icon={add}
+                />
+              </IonButton>
+            </div>
           </div>
         </IonCard>
       </div>
@@ -484,20 +488,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       <IonList className="container" lines="none">
         {items?.map((res: InventoryModel, index: number) => (
           <IonItem className="Item-Card" key={index}>
-            <CardList
-              code={res.code}
-              item={res.item}
-              price={res.price}
-              qty={res.qty}
-              category={res.category}
-              reorderqty={res.reorderqty}
-              cost={res.cost}
-              image={res.image}
-              status={res.status}
-              brand={res.brand}
-              createdat={res.createdat}
-              updatedAt={res.updatedAt}
-            />
+            <CardList card={res} />
           </IonItem>
         ))}
       </IonList>

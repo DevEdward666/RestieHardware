@@ -45,7 +45,11 @@ namespace RestieAPI
                 c.SwaggerDoc("v2", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "Restie API", Version = "v1" });
             });
             services.AddTransient<DatabaseService>();
-            services.AddAuthorization();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("RequireUserRole", policy => policy.RequireRole("User"));
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -321,6 +321,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
                 />
               </IonButton>
             </div>
+            {canUpload?
             <div className="inventory-card-addtocart-qty">
               <IonButton
                 size="small"
@@ -335,7 +336,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
                   icon={add}
                 />
               </IonButton>
-            </div>
+            </div>:null}
           </div>
         </IonCard>
       </div>

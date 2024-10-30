@@ -1,22 +1,13 @@
 import {
   getPlatforms,
-  IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
-  IonImg,
-  IonMenuButton,
   IonPage,
   IonTitle,
   IonToolbar,
-  useIonRouter,
 } from "@ionic/react";
-import ExploreContainer from "../../components/ExploreContainer";
-import "./Tab3.css";
-import restielogo from "../../assets/images/Icon@3.png";
 import ProfileListButtons from "../../components/Profile/ProfileListButtons/ProfileListButtons";
-import { arrowBack } from "ionicons/icons";
-import { selectedItem } from "../../Service/Actions/Inventory/InventoryActions";
+import "./Tab3.css";
 const Tab3: React.FC = () => {
   const platform = getPlatforms();
   return (

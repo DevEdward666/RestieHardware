@@ -48,13 +48,13 @@ namespace RestieAPI.Controllers.Admin
         {
             return Ok(_adminRepo.PostNewItemInventory(postNewItem));
         }          
-        [Authorize]
+        [Authorize(Roles ="Admin, Super Admin")]
         [HttpPost("AddNewSupplier")]
         public ActionResult<PostResponse> PostNewSupplier(PostNewSupplier postNewSupplier)
         {
             return Ok(_adminRepo.PostNewSupplier(postNewSupplier));
-        }        
-        [Authorize]
+        }
+        [Authorize(Roles = "Admin, Super Admin")]
         [HttpPost("UpdateSupplier")]
         public ActionResult<PostResponse> PutSupplier(PutSupplier putSupplier)
         {
@@ -105,13 +105,13 @@ namespace RestieAPI.Controllers.Admin
             getAllUser.limit = itemsPerPage;
             return Ok(_adminRepo.searchUser(getAllUser));
         }
-        [Authorize]
+        [Authorize(Roles = "Admin, Super Admin")]
         [HttpPost("AddNewVoucher")]
         public ActionResult<PostResponse> AddNewVoucher(PostVouchers postVouchers)
         {
             return Ok(_adminRepo.AddNewVoucher(postVouchers));
-        }      
-        [Authorize]
+        }
+        [Authorize(Roles = "Admin, Super Admin")]
         [HttpPost("PutVoucher")]
         public ActionResult<PostResponse> PutVoucher(PostVouchers postVouchers)
         {

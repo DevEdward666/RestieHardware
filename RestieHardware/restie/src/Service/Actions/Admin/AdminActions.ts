@@ -125,3 +125,25 @@ export const UpdateNewUsers = async (payload: PostAddNewUser) => {
   console.log(res);
   return res;
 };
+export const checkPasswordStrength = (password:string) => {
+  const lengthCriteria = password.length >= 8;
+  const numberCriteria = /[0-9]/.test(password);
+  const uppercaseCriteria = /[A-Z]/.test(password);
+  const specialCharCriteria = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  let strength_score = 0;
+  if (password.length >= 8) strength_score += 1;
+  if (/[0-9]/.test(password)) strength_score += 1;
+  if (/[A-Z]/.test(password)) strength_score += 1;
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength_score += 1;
+
+  const strength = {
+    length: lengthCriteria,
+    number: numberCriteria,
+    uppercase: uppercaseCriteria,
+    specialChar: specialCharCriteria,
+  };
+
+  const isStrong = Object.values(strength).every(Boolean);
+  
+  return { isStrong, strength,strength_score };
+};

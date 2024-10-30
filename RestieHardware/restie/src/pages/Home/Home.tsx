@@ -1,11 +1,9 @@
 import {
+  getPlatforms,
   IonAccordion,
   IonAccordionGroup,
   IonBadge,
-  IonButton,
   IonButtons,
-  IonCard,
-  IonCardContent,
   IonContent,
   IonHeader,
   IonIcon,
@@ -24,29 +22,23 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
+import { notifications } from "ionicons/icons";
 import { useCallback, useEffect, useState } from "react";
 import { QueryClient } from "react-query";
 import { useSelector } from "react-redux";
-import { SearchInventoryModel } from "../../Models/Request/searchInventory";
-import { RootStore, useTypedDispatch } from "../../Service/Store";
-import restielogo from "../../assets/images/Icon@3.png";
-import ExploreContainer from "../../components/ExploreContainer";
-import "./Home.css";
-import plumbing from "../../assets/images/Categories/Plumbing.png";
-import electrical from "../../assets/images/Categories/Electrical.png";
-import lumber from "../../assets/images/Categories/Lumber.png";
-import paint from "../../assets/images/Categories/Paint.png";
 import categoryIcon from "../../assets/images/icons/category.png";
+import ExploreContainer from "../../components/ExploreContainer";
+import { GetBrandsModel } from "../../Models/Request/Inventory/InventoryModel";
+import { SearchInventoryModel } from "../../Models/Request/searchInventory";
+import { GetCategoryModel } from "../../Models/Response/Inventory/GetInventoryModel";
 import {
   get_brands_actions,
   get_category_actions,
   getReceivableList,
   set_category_and_brand,
 } from "../../Service/Actions/Inventory/InventoryActions";
-import { GetBrandsModel } from "../../Models/Request/Inventory/InventoryModel";
-import { getPlatforms } from "@ionic/react";
-import { notifications } from "ionicons/icons";
-import { GetCategoryModel } from "../../Models/Response/Inventory/GetInventoryModel";
+import { RootStore, useTypedDispatch } from "../../Service/Store";
+import "./Home.css";
 const queryClient = new QueryClient();
 const Tab1: React.FC = () => {
   const list_of_items = useSelector(

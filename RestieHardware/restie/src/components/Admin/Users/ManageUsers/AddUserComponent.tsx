@@ -15,11 +15,12 @@ import {
   IonText,
   IonToolbar,
 } from "@ionic/react";
-import { saveOutline } from "ionicons/icons";
+import { close, saveOutline } from "ionicons/icons";
 import { useCallback, useEffect, useState } from "react";
 import { PostAddNewUser } from "../../../../Models/Request/Admin/AdminRequestModel";
 import {
   AddNewUsers,
+  checkPasswordStrength,
   searchUsers,
   UpdateNewUsers,
 } from "../../../../Service/Actions/Admin/AdminActions";
@@ -32,7 +33,7 @@ import {
   searchUser,
   UpdateNewUser,
 } from "../../../../Service/API/Admin/AdminApi";
-
+import "./AddUserComponent.css";
 const AddUserComponent = () => {
   const dispatch = useTypedDispatch();
   const admin_list_of_users =
@@ -53,8 +54,14 @@ const AddUserComponent = () => {
     name: "",
     username: "",
     password: "",
-    role: "",
+    confirm_password: "",
+    role: "Staff",
   });
+  const [passwordStrength, setPasswordStrength] = useState({
+    isStrong: false,
+    strength_score: 0,
+  });
+  const [isUsernameTaken, setIsUsernameTaken] = useState(false);
   useEffect(() => {
     const searchUser = () => {
       dispatch(searchUsers(fetchList));
@@ -68,8 +75,21 @@ const AddUserComponent = () => {
         ...prevState,
         [name]: value,
       }));
+      if (name === "password") {
+        const { isStrong, strength, strength_score } =
+          checkPasswordStrength(value);
+        setPasswordStrength({ isStrong, strength_score });
+      }
+      if (name === "username") {
+        const exists = admin_list_of_users.some(
+          (user) => user.username === value
+        );
+
+        console.log(exists);
+        setIsUsernameTaken(exists);
+      }
     },
-    []
+    [admin_list_of_users]
   );
   const handleSaveUser = useCallback(
     async (update: boolean) => {
@@ -78,13 +98,14 @@ const AddUserComponent = () => {
         name: userInfo.name,
         username: userInfo.username,
         password: userInfo.password,
+        confirm_password: userInfo.confirm_password,
         role: userInfo.role,
       };
-
       if (
-        payload.name.length < 0 ||
-        payload.username.length < 0 ||
-        payload.password.length < 0
+        payload.name?.length <= 0 ||
+        payload.username?.length <= 0 ||
+        payload.password?.length <= 0 ||
+        payload.confirm_password?.length <= 0
       ) {
         dispatch(
           set_toast({
@@ -96,6 +117,40 @@ const AddUserComponent = () => {
         );
         return;
       } else {
+        if (payload.password !== payload.confirm_password) {
+          dispatch(
+            set_toast({
+              isOpen: true,
+              message: "Password mismatch",
+              position: "middle",
+              color: "#125B8C",
+            })
+          );
+          return;
+        }
+        if (!passwordStrength.isStrong) {
+          dispatch(
+            set_toast({
+              isOpen: true,
+              message:
+                "Password must be at least 8 characters long and include numbers, uppercase letters, and special characters.",
+              position: "middle",
+              color: "#125B8C",
+            })
+          );
+          return;
+        }
+        if (isUsernameTaken) {
+          dispatch(
+            set_toast({
+              isOpen: true,
+              message: "Username is already taken. Please choose another one",
+              position: "middle",
+              color: "#125B8C",
+            })
+          );
+          return;
+        }
         let res: any = "";
         let message: string = "";
         if (update) {
@@ -110,7 +165,7 @@ const AddUserComponent = () => {
           dispatch(
             set_toast({
               isOpen: true,
-              message: "Successfully Added",
+              message: message,
               position: "middle",
               color: "#125B8C",
             })
@@ -120,7 +175,8 @@ const AddUserComponent = () => {
             name: "",
             username: "",
             password: "",
-            role: "",
+            confirm_password: "",
+            role: "User",
           });
         }
       }
@@ -145,6 +201,7 @@ const AddUserComponent = () => {
       name: val.name,
       username: val.username,
       password: val.password,
+      confirm_password: val.password,
       role: val.role,
     });
   };
@@ -158,6 +215,16 @@ const AddUserComponent = () => {
     setOpenSearchModal({ isOpen: true, modal: "supplier" });
     dispatch(searchUsers(fetchList));
   }, [dispatch, fetchList]);
+  const handleCancel = () => {
+    setUserInfo({
+      id: "",
+      name: "",
+      username: "",
+      password: "",
+      confirm_password: "",
+      role: "User",
+    });
+  };
   return (
     <IonContent>
       <IonSearchbar
@@ -235,15 +302,64 @@ const AddUserComponent = () => {
           class="product-input"
           value={userInfo.username}
         ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Password"
-          name="password"
-          type="password"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={userInfo.password}
-        ></IonInput>
+        {isUsernameTaken && (
+          <IonText color="danger" className="username-taken-message">
+            Username is already taken. Please choose another one.
+          </IonText>
+        )}
+        <div className="password-strength-container">
+          <IonInput
+            labelPlacement="floating"
+            label="Password"
+            name="password"
+            type="password"
+            debounce={500}
+            onIonInput={(e: any) => handleInfoChange(e)}
+            class="product-input"
+            value={userInfo.password}
+          ></IonInput>
+          {!passwordStrength.isStrong && userInfo.password !== "" && (
+            <IonText color="danger">
+              Password must be at least 8 characters long and include numbers,
+              uppercase letters, and special characters.
+            </IonText>
+          )}
+          <div
+            className="password-strength-bar"
+            style={{
+              width: `${
+                passwordStrength.strength_score > 0
+                  ? (passwordStrength.strength_score / 4) * 100
+                  : 10
+              }%`,
+
+              backgroundColor:
+                passwordStrength.strength_score === 0
+                  ? "red"
+                  : passwordStrength.strength_score < 2
+                  ? "red"
+                  : passwordStrength.strength_score < 3
+                  ? "orange"
+                  : "green",
+              height: "5px",
+              transition: "width 0.3s",
+            }}
+          />
+        </div>
+        <div className="password-strength-container">
+          <IonInput
+            labelPlacement="floating"
+            label="Confirm Password"
+            name="confirm_password"
+            type="password"
+            onIonInput={(e: any) => handleInfoChange(e)}
+            class="product-input"
+            value={userInfo.confirm_password}
+          ></IonInput>
+          {userInfo.password !== userInfo.confirm_password && (
+            <IonText color="danger">Password mismatch</IonText>
+          )}
+        </div>
         <IonItem className="info-item">
           <IonText className="info-text">Role </IonText>
           <IonSelect
@@ -265,14 +381,26 @@ const AddUserComponent = () => {
           </IonSelect>
         </IonItem>
         {userInfo?.id?.length > 0 ? (
-          <IonButton
-            color="medium"
-            expand="block"
-            onClick={() => handleSaveUser(true)}
-          >
-            <IonIcon slot="start" icon={saveOutline}></IonIcon>
-            Update User
-          </IonButton>
+          <div className="add-user-button-container">
+            <IonButton
+              className="add-user-button"
+              color="medium"
+              expand="block"
+              onClick={() => handleCancel()}
+            >
+              <IonIcon slot="start" icon={close}></IonIcon>
+              Cancel
+            </IonButton>
+            <IonButton
+              className="add-user-button"
+              color="medium"
+              expand="block"
+              onClick={() => handleSaveUser(true)}
+            >
+              <IonIcon slot="start" icon={saveOutline}></IonIcon>
+              Update User
+            </IonButton>
+          </div>
         ) : (
           <IonButton
             color="medium"

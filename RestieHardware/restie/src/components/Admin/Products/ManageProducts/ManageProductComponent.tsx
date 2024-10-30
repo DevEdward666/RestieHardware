@@ -113,14 +113,65 @@ const ManageProductComponent = () => {
       searchSupplier({
         page: 1,
         offset: 0,
-        limit: 50,
+        limit: 500,
         searchTerm: "",
       })
     );
+    const query = new URLSearchParams(location.search);
+    if (query.size > 0) {
+      dispatch(
+        searchAdminInventoryList({
+          page: 1,
+          offset: 0,
+          limit: 2050,
+          searchTerm: "",
+        })
+      );
+      setdrType("multiple");
+      const item = query.get("itemcode");
+      const exists = itemExists(item ?? "");
+      if (exists) {
+        const itemInfo = getItemInfo(item ?? "");
+        // const productExists = products.some(
+        //   (product) => product.code === itemInfo?.code
+        // );
+        // if (productExists) {
+        //   setProducts((prev) =>
+        //     prev.map((product) =>
+        //       product.code === itemInfo?.code
+        //         ? { ...product, addedqty: product.addedqty + 1 }
+        //         : product
+        //     )
+        //   );
+        // }
 
-    setdrType("single");
+        setProducts([
+          {
+            item: itemInfo?.item ?? "",
+            addedqty: 1,
+            category: itemInfo?.category ?? "",
+            brand: itemInfo?.brand ?? "",
+            code: itemInfo?.code ?? "",
+            onhandqty: itemInfo?.qty ?? 0,
+            supplierid: "",
+            supplierName: "",
+            cost: parseInt(itemInfo?.cost ?? "0"),
+            price: itemInfo?.price ?? 0,
+          },
+        ]);
+        // }
+      }
+    } else {
+      setdrType("single");
+    }
   };
-
+  const itemExists = (itemCode: string) => {
+    return admin_list_of_items.some((item) => item.code === itemCode);
+  };
+  const getItemInfo = (itemCode: string) => {
+    const item = admin_list_of_items.find((item) => item.code === itemCode);
+    return item || null; // Return the item object if found, otherwise return null
+  };
   const compareWith = (
     o1: TypeOfDeliveryReceipt,
     o2: TypeOfDeliveryReceipt
@@ -696,9 +747,9 @@ const ManageProductComponent = () => {
                       debounce={500}
                     ></IonSearchbar>
                     <IonList>
-                      {admin_list_of_items.map((item) => (
+                      {admin_list_of_items.map((item, index) => (
                         <IonItem
-                          key={item.code}
+                          key={index}
                           onClick={() =>
                             handleSelectProduct(item, selectedProductIndex!)
                           }

@@ -196,7 +196,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
   };
   const CardList = ({ card }: { card: InventoryModel }) => {
     const [getItemImage, setImage] = useState<FileResponse>();
-    const [canUpload, setCanUpload] = useState<boolean>(false);
+    const [hasPermission, setHavePermission] = useState<boolean>(false);
     const fileInput = useRef<HTMLInputElement | null>(null);
 
     // Function to handle file selection and upload
@@ -237,19 +237,18 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       category: card.category,
       brand: card.brand,
       image:
-        card.image.length > 0
-          ? `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`
+        card.image?.length > 0
+          ? `data:${card.image_type};base64,${card?.image}`
           : stock,
     };
 
-    // Effect to fetch the item image and set upload permission
     useEffect(() => {
-      if (location.pathname === "/home/main" && card.image.length > 0) {
-        GetItemImage({ imagePath: card.image }).then((res: any) => {
-          setImage(res.result.image);
-        });
-      }
-      setCanUpload(
+      // if (location.pathname === "/home/main" && card.image?.length > 0) {
+      //   GetItemImage({ imagePath: card.image }).then((res: any) => {
+      //     setImage(res.result.image);
+      //   });
+      // }
+      setHavePermission(
         ["admin", "super admin"].includes(
           user_login_information?.role.trim().toLowerCase()
         )
@@ -258,12 +257,12 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
 
     // Click handler for the image
     const handleClickImage = useCallback(() => {
-      if (canUpload) {
+      if (hasPermission) {
         fileInput.current?.click();
       } else {
         handleSelectedItem(payload);
       }
-    }, [canUpload, payload]);
+    }, [hasPermission, payload]);
 
     return (
       <div className="inventory-card-main-div">
@@ -321,21 +320,23 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
                 />
               </IonButton>
             </div>
-            <div className="inventory-card-addtocart-qty">
-              <IonButton
-                size="small"
-                fill="clear"
-                className="inventory-card-addtocart-button"
-                onClick={(event: any) => handleAddQty(payload, event)}
-              >
-                <IonIcon
-                  color="light"
-                  slot="icon-only"
+            {hasPermission ? (
+              <div className="inventory-card-addtocart-qty">
+                <IonButton
                   size="small"
-                  icon={add}
-                />
-              </IonButton>
-            </div>
+                  fill="clear"
+                  className="inventory-card-addtocart-button"
+                  onClick={(event: any) => handleAddQty(payload, event)}
+                >
+                  <IonIcon
+                    color="light"
+                    slot="icon-only"
+                    size="small"
+                    icon={add}
+                  />
+                </IonButton>
+              </div>
+            ) : null}
           </div>
         </IonCard>
       </div>

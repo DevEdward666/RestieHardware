@@ -185,6 +185,8 @@ const ManageProductComponent = () => {
     setdrType(value);
   };
   const [products, setProducts] = useState<ProductInfo[]>([]);
+  const [previousProducts, setPreviousProducts] = useState<ProductInfo[]>([]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [showAlert, setShowAlert] = useState({ isOpen: false, message: "" });
   const [selectedProductIndex, setSelectedProductIndex] = useState<
@@ -204,6 +206,7 @@ const ManageProductComponent = () => {
 
   const addNewProduct = (is_submit: boolean) => {
     if (is_submit) {
+      setPreviousProducts(products);
       setProducts([
         {
           item: "",
@@ -220,6 +223,7 @@ const ManageProductComponent = () => {
       ]);
       return;
     }
+    setPreviousProducts(products);
     setProducts((prev) => [
       ...prev,
       {
@@ -245,36 +249,51 @@ const ManageProductComponent = () => {
   };
 
   const handleSubmit = async () => {
-    const res = await PostMultipleInventory({
-      items: products,
-      supplierId: productInfo.supplierid,
-    });
-    if (res.status === 200) {
-      addNewProduct(true);
-      setProductInfo({
-        code: "",
-        item: "",
-        category: "",
-        brand: "",
-        onhandqty: 0,
-        addedqty: 0,
-        supplierid: "",
-        supplierName: "",
+    const noProduct = products.length <= 0;
 
-        cost: 0,
-        price: 0.0,
-        createdat: 0,
-        updatedAt: 0,
-      });
+    const invalidProduct = products.find(
+      (product) => !product.code || product.addedqty <= 0 || product.price <= 0
+    );
+
+    if (invalidProduct || noProduct) {
       setShowAlert({
         isOpen: true,
-        message: "Successfully Submitted",
+        message:
+          "Please ensure all products have valid code, quantity > 0, and price > 0.",
       });
+      return;
     } else {
-      setShowAlert({
-        isOpen: true,
-        message: res.message,
+      const res = await PostMultipleInventory({
+        items: products,
+        supplierId: productInfo.supplierid,
       });
+      if (res.status === 200) {
+        addNewProduct(true);
+        setProductInfo({
+          code: "",
+          item: "",
+          category: "",
+          brand: "",
+          onhandqty: 0,
+          addedqty: 0,
+          supplierid: "",
+          supplierName: "",
+
+          cost: 0,
+          price: 0.0,
+          createdat: 0,
+          updatedAt: 0,
+        });
+        setShowAlert({
+          isOpen: true,
+          message: "Successfully Submitted",
+        });
+      } else {
+        setShowAlert({
+          isOpen: true,
+          message: res.message,
+        });
+      }
     }
   };
 
@@ -454,7 +473,10 @@ const ManageProductComponent = () => {
       }
     }
   }, [dispatch, productInfo]);
-
+  const handleCloseListOfItemsModal = useCallback(() => {
+    setShowModal({ isOpen: false, type: "product" });
+    setProducts(previousProducts);
+  }, [previousProducts]);
   return (
     <IonContent>
       <IonList>
@@ -727,14 +749,14 @@ const ManageProductComponent = () => {
               <IonHeader>
                 <IonToolbar>
                   <IonTitle>Select Item</IonTitle>
-                  <IonButton
+
+                  <IonIcon
                     slot="end"
-                    onClick={() =>
-                      setShowModal({ isOpen: false, type: "product" })
-                    }
-                  >
-                    Close
-                  </IonButton>
+                    color="medium"
+                    size="large"
+                    onClick={() => handleCloseListOfItemsModal()}
+                    icon={closeCircle}
+                  ></IonIcon>
                 </IonToolbar>
               </IonHeader>
               <IonContent>

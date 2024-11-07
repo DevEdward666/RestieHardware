@@ -7,6 +7,8 @@ export interface InventoryModel {
   reorderqty: number;
   cost: string;
   image: string;
+  image_type: string;
+
   price: number;
   status: string;
   createdat: number;
@@ -29,11 +31,11 @@ export interface Addtocart {
   userid?: string;
   discount?: number;
   voucher_code?: string;
-  voucher?:VoucherModel;
-  voucher_id?:number;
+  voucher?: VoucherModel;
+  voucher_id?: number;
 
-  total_discount?:number;
-  order_voucher?:string;
+  total_discount?: number;
+  order_voucher?: string;
   type?: string;
   transid?: string;
   cashier?: string;
@@ -41,16 +43,16 @@ export interface Addtocart {
   reorder?: boolean;
 }
 export interface VoucherModel {
-  id:number,
-  voucher_seq?:number,
-  vouchercode:string;
+  id: number;
+  voucher_seq?: number;
+  vouchercode: string;
   name: string;
   description: string;
   maxredemption: string;
   discount: number;
   type: string;
   voucher_for: string;
-  createdby?:string;
+  createdby?: string;
 }
 export interface ItemReturns {
   transid: string;
@@ -76,27 +78,27 @@ export interface SelectedItemToCart {
   brand?: string;
   image: string;
   discount?: number;
-  voucher_code?:string;
-  voucher?:VoucherModel;
+  voucher_code?: string;
+  voucher?: VoucherModel;
 }
 export interface PostdOrderList {
   userid: string;
   limit: number;
   offset: number;
   status: string;
-  paidThru:string;
+  paidThru: string;
   searchdate?: string;
   orderid?: string;
 }
 export interface PostAgedReceivable {
   transid: string;
-  orderid:string;
+  orderid: string;
   createdat: number;
   customer: string;
   paidthru: string;
   customer_email: string;
   contactno: string;
-  total:number;
+  total: number;
 }
 export interface PostSelectedOrder {
   orderid: string;
@@ -191,5 +193,4 @@ export interface CompleteReturnRefund {
 }
 export interface UploadSalesReportFile {
   SalesFile: File;
-
 }

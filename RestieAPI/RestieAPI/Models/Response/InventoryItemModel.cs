@@ -126,6 +126,8 @@ namespace RestieAPI.Models.Response
         public string status { get; set; }
         public long createdat { get; set; }
         public long updatedat { get; set; }
+        public string? image_type { get; set; }
+
     }
 
     public class OrderResponse

@@ -51,13 +51,11 @@ interface ContainerProps {
   data: any;
   searchItem: SearchInventoryModel;
 }
-
 interface SelectedItem {
   code: string;
   item: string;
   price: number;
 }
-
 const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
   const dispatch = useTypedDispatch();
   const cardRef = useRef(null);

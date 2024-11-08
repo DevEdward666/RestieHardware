@@ -7,7 +7,10 @@ import {
   IonImg,
   IonInput,
   IonItem,
+  IonLabel,
+  IonList,
   IonMenuButton,
+  IonModal,
   IonSearchbar,
   IonText,
   IonTitle,
@@ -18,7 +21,7 @@ import {
 import "./SelectedItemContainer.css";
 import { useSelector } from "react-redux";
 import { RootStore, useTypedDispatch } from "../../Service/Store";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/autoplay";
@@ -28,13 +31,23 @@ import "swiper/css/scrollbar";
 import "swiper/css/zoom";
 import "@ionic/react/css/ionic-swiper.css";
 import sample from "../../assets/images/Sample.png";
-import { addCircle, removeCircle, arrowBack } from "ionicons/icons";
+import {
+  addCircle,
+  removeCircle,
+  arrowBack,
+  personCircle,
+} from "ionicons/icons";
 import { addToCartAction } from "../../Service/Actions/Inventory/InventoryActions";
 import { v4 as uuidv4 } from "uuid";
 import {
   SelectedItemToCart,
   Addtocart,
 } from "../../Models/Request/Inventory/InventoryModel";
+import {
+  TransformWrapper,
+  TransformComponent,
+  useControls,
+} from "react-zoom-pan-pinch";
 const SelectedItemContainer: React.FC = () => {
   const [getcartid, setCartId] = useState<string>("");
   const [addedQty, setAddedQty] = useState<number>(1);
@@ -51,11 +64,40 @@ const SelectedItemContainer: React.FC = () => {
   const selectedItemselector = useSelector(
     (store: RootStore) => store.InventoryReducer.add_to_cart
   );
+  const modal = useRef<HTMLIonModalElement>(null);
+
   const router = useIonRouter();
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [selectedImage, setselectedImage] = useState("");
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  // Toggle zoom on double-click
+  const handleDoubleClick = () => {
+    setIsZoomed((prevState) => !prevState); // Toggle the zoom state
+  };
   useEffect(() => {
     console.log(selectedItem);
   }, [selectedItem]);
+  const dismiss = () => {
+    setOpenModal(false);
+  };
+  const Controls = () => {
+    const { zoomIn, zoomOut, resetTransform } = useControls();
 
+    return (
+      <div className="tools">
+        <IonButton color="medium" size="small" onClick={() => zoomIn()}>
+          Zoom in +
+        </IonButton>
+        <IonButton color="medium" size="small" onClick={() => zoomOut()}>
+          Zoom out -
+        </IonButton>
+        <IonButton color="medium" size="small" onClick={() => resetTransform()}>
+          Reset x
+        </IonButton>
+      </div>
+    );
+  };
   const handleAddToCart = useCallback(async () => {
     let cartid = localStorage.getItem("cartid");
 
@@ -152,6 +194,13 @@ const SelectedItemContainer: React.FC = () => {
     };
     initalize();
   }, [addedQty, selectedItem]);
+  const handleOpenImage = (selected_item: SelectedItemToCart) => {
+    setselectedImage(selected_item.image);
+    setOpenModal(true);
+  };
+  const handleDismiss = () => {
+    setOpenModal(false);
+  };
   return (
     <IonContent className="selected-item-main-content">
       <IonToast
@@ -184,7 +233,11 @@ const SelectedItemContainer: React.FC = () => {
             zoom={true}
           >
             <SwiperSlide>
-              <IonImg src={selectedItem.image}></IonImg>
+              <IonImg
+                onClick={() => handleOpenImage(selectedItem)}
+                className="selected-item-img"
+                src={selectedItem.image}
+              ></IonImg>
             </SwiperSlide>
           </Swiper>
           <div className="selected-item-information-container">
@@ -254,6 +307,28 @@ const SelectedItemContainer: React.FC = () => {
           {selectedItem.onhandqty! > 0 ? "Add to Cart" : "Sold out"}
         </IonButton>
       </div>
+      <IonModal
+        id="example-modal"
+        onDidDismiss={() => handleDismiss()}
+        isOpen={openModal}
+      >
+        <div className="modal-content">
+          <TransformWrapper initialScale={1}>
+            {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+              <>
+                <Controls />
+                <TransformComponent>
+                  <img
+                    src={selectedImage}
+                    alt="item image"
+                    className={`modal-image ${isZoomed ? "zoomed" : ""}`}
+                  />
+                </TransformComponent>
+              </>
+            )}
+          </TransformWrapper>
+        </div>
+      </IonModal>
     </IonContent>
   );
 };

@@ -274,6 +274,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
               onChange={onSelectFile}
             />
             <img
+              className="inventory-card-image"
               alt={card?.item}
               src={payload.image}
               onClick={handleClickImage}
@@ -300,40 +301,35 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
             </IonCardContent>
           </div>
           <div className="inventory-card-button-container">
-            <div className="inventory-card-addtocart">
+            <IonButton
+              fill="clear"
+              className="inventory-card-addtocart-button"
+              disabled={card?.qty <= 0}
+              onClick={(event: any) => handleAddToCart(payload, event)}
+            >
+              <span className="addtocart-btn-text">
+                {card?.qty > 0 ? "Add to cart" : "Sold Out"}
+              </span>
+              <IonIcon
+                color="light"
+                slot="icon-only"
+                size="small"
+                icon={cart}
+              />
+            </IonButton>
+            {hasPermission ? (
               <IonButton
                 fill="clear"
                 className="inventory-card-addtocart-button"
-                disabled={card?.qty <= 0}
-                onClick={(event: any) => handleAddToCart(payload, event)}
+                onClick={(event: any) => handleAddQty(payload, event)}
               >
-                <span className="addtocart-btn-text">
-                  {card?.qty > 0 ? "Add to cart" : "Sold Out"}
-                </span>
                 <IonIcon
                   color="light"
                   slot="icon-only"
-                  size="small"
-                  icon={cart}
+                  size="large"
+                  icon={add}
                 />
               </IonButton>
-            </div>
-            {hasPermission ? (
-              <div className="inventory-card-addtocart-qty">
-                <IonButton
-                  size="small"
-                  fill="clear"
-                  className="inventory-card-addtocart-button"
-                  onClick={(event: any) => handleAddQty(payload, event)}
-                >
-                  <IonIcon
-                    color="light"
-                    slot="icon-only"
-                    size="small"
-                    icon={add}
-                  />
-                </IonButton>
-              </div>
             ) : null}
           </div>
         </IonCard>

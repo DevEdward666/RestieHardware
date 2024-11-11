@@ -14,6 +14,18 @@ namespace RestieAPI.Models.Response
         public int status { get; set; }
         public string message { get; set; }
     }
+    public class PostMultipleImageResponse
+    {
+        public SaveMultipleImageResponse result { get; set; }
+        public int status { get; set; }
+        public string message { get; set; }
+    }    
+    public class GetMultipleImageResponse
+    {
+        public GetMultipleImagesResponse result { get; set; }
+        public int status { get; set; }
+        public string message { get; set; }
+    }
     public class PostSendEmail
     {
         public int status { get; set; }
@@ -41,9 +53,19 @@ namespace RestieAPI.Models.Response
         public string imagePath { get; set; }
 
     }
+    public class SaveMultipleImageResponse
+    {
+        public List<string> imagePaths { get; set; }
+
+    }
     public class DeliveryImageResponse
     {
         public FileContentResult image { get; set; }
+
+    }
+    public class GetMultipleImagesResponse
+    {
+        public List<FileContentResult> images { get; set; }
 
     }
     public class PostInventoryAddResponse

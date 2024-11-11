@@ -14,6 +14,7 @@ import {
   PostDeliveryInfo,
   PostDeliveryInfoModel,
   PostInventoryLogsModel,
+  PostMultipleImage,
   PostSelectedOrder,
   PostUpdateDeliveredOrder,
   PostVoucherInfoModel,
@@ -165,7 +166,6 @@ export const updateCartOrder = async (payload: Addtocart[]) => {
   return response;
 };
 export const ListOrder = async (payload: PostdOrderList) => {
-
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {
     throw new Error("Token not found");
@@ -181,7 +181,6 @@ export const ListOrder = async (payload: PostdOrderList) => {
   return response.result.$values;
 };
 export const ListAgedReceivable = async () => {
-
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {
     throw new Error("Token not found");
@@ -318,10 +317,31 @@ export const UploadDeliveryImages = async (payload: PostDeliveryImage) => {
   const formData = new FormData();
   formData.append(`Filename`, payload.FileName);
   formData.append(`FolderName`, payload.FolderName);
-  formData.append(`FormFile`, payload.FormFile);
+  formData.append("FormFile", payload.FormFile);
 
   const response = await post(
     `${baseUrl}api/Inventory/UploadFile`,
+    {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${getToken}`,
+    },
+    formData
+  );
+  return response;
+};
+export const UploadMultipleImages = async (
+  formData: FormData,
+  payload: PostMultipleImage
+) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  formData.append(`Filename`, payload.FileName);
+  formData.append(`FolderName`, payload.FolderName);
+
+  const response = await post(
+    `${baseUrl}api/Inventory/UploadFileMultiple`,
     {
       "Content-Type": "multipart/form-data",
       Authorization: `Bearer ${getToken}`,
@@ -361,6 +381,27 @@ export const GetDeliveryImage = async (payload: GetDeliveryImagePath) => {
     },
     JSON.stringify(payload)
   );
+  return response;
+};
+
+export const GetMultipleimage = async (folderPath: string) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const payload = {
+    folderPath: folderPath,
+  };
+
+  const response = await post(
+    `${baseUrl}api/Inventory/GetMultipleimage`,
+    {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken}`,
+    },
+    JSON.stringify(payload)
+  );
+
   return response;
 };
 export const GetItemImage = async (payload: GetItemImageRequest) => {
@@ -443,7 +484,7 @@ export const GetVoucherInfo = async (payload: PostVoucherInfoModel) => {
   );
   return response;
 };
-export const ListOfVouchers = async (payload:GetVoucherType) => {
+export const ListOfVouchers = async (payload: GetVoucherType) => {
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {
     throw new Error("Token not found");
@@ -476,7 +517,9 @@ export const GenerateSalesReturn = async (payload: PostDaysSalesModel) => {
   console.log(response);
   return response;
 };
-export const GenerateInventoryLogs = async (payload: PostInventoryLogsModel) => {
+export const GenerateInventoryLogs = async (
+  payload: PostInventoryLogsModel
+) => {
   const getToken = localStorage.getItem("bearer");
   if (!getToken) {
     throw new Error("Token not found");

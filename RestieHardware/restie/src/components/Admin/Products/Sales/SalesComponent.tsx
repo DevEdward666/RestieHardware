@@ -67,6 +67,7 @@ const SalesComponent = () => {
     toastMessage: "",
     isOpen: false,
   });
+  const [selectedFilter, setSelectedFilter] = useState<number>(0);
 
   const formatDate = (dateStr?: string) => {
     const dateTimeString = dateStr;
@@ -91,6 +92,7 @@ const SalesComponent = () => {
     const payload: PostDaysSalesModel = {
       fromDate: formatDate(lowestDate),
       toDate: formatDate(highestDate),
+      filter: selectedFilter,
     };
     const inventory_logs_payload: PostInventoryLogsModel = {
       fromDate: formatDate(lowestDate),
@@ -120,7 +122,6 @@ const SalesComponent = () => {
         : openPDFModal.type === "inventory_logs"
         ? await GenerateInventoryLogs(inventory_logs_payload)
         : await GenerateSalesReturn(payload);
-    console.log(res);
     if (res.result === null || res.result === undefined) {
       setIsOpenToast({
         toastMessage: "No reports available",
@@ -151,7 +152,7 @@ const SalesComponent = () => {
     });
     // setopenPDFModal({ isOpen: true, modal: "pdf" });
     setFile(res);
-  }, [openPDFModal, selectedDates, selectedSupplier]);
+  }, [openPDFModal, selectedDates, selectedSupplier, selectedFilter]);
   const handleGenerateInventory = async () => {
     setIsOpenToast({
       toastMessage: "Generating PDF",
@@ -246,6 +247,20 @@ const SalesComponent = () => {
       setSelectedSupplier(value);
     }
   };
+  const filterForSales = [
+    {
+      name: "With Discount",
+      value: 0,
+    },
+    {
+      name: "Without Discount",
+      value: 1,
+    },
+  ];
+  const handleSelectedFilter = (e: CustomEvent<HTMLIonSelectElement>) => {
+    const { value } = e.detail;
+    setSelectedFilter(value);
+  };
   return (
     <IonContent className="generate-sales-main-content">
       <IonText className="generate-sales-title">Generate PDF</IonText>
@@ -335,23 +350,48 @@ const SalesComponent = () => {
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          <IonItem>
-            <IonLabel>Supplier</IonLabel>
-            <IonSelect
-              name="Supplier"
-              onIonChange={(e: any) => handleSelectedSupplier(e)}
-              aria-label="Supplier"
-              className="info-input"
-              placeholder="Select Supplier"
-              value={selectedSupplier}
-            >
-              {admin_list_of_supplier?.map((val, index) => (
-                <IonSelectOption key={index} value={val.supplierid}>
-                  {val.company}
-                </IonSelectOption>
-              ))}
-            </IonSelect>
-          </IonItem>
+          {openPDFModal.type === "inventory_logs" ? (
+            <>
+              <IonItem>
+                <IonLabel>Supplier</IonLabel>
+                <IonSelect
+                  name="Supplier"
+                  onIonChange={(e: any) => handleSelectedSupplier(e)}
+                  aria-label="Supplier"
+                  className="info-input"
+                  placeholder="Select Supplier"
+                  value={selectedSupplier}
+                >
+                  {admin_list_of_supplier?.map((val, index) => (
+                    <IonSelectOption key={index} value={val.supplierid}>
+                      {val.company}
+                    </IonSelectOption>
+                  ))}
+                </IonSelect>
+              </IonItem>
+            </>
+          ) : openPDFModal.type === "sales" ? (
+            <>
+              <IonItem>
+                <IonLabel>Filter</IonLabel>
+                <IonSelect
+                  name="Filter Report"
+                  onIonChange={(e: any) => handleSelectedFilter(e)}
+                  aria-label="Filter Report"
+                  className="info-input"
+                  placeholder="Filter Report"
+                  value={selectedFilter}
+                >
+                  {filterForSales?.map((val, index) => (
+                    <IonSelectOption key={index} value={val.value}>
+                      {val.name}
+                    </IonSelectOption>
+                  ))}
+                </IonSelect>
+              </IonItem>
+            </>
+          ) : null}
+
           <MyCalendar
             onDateRangeSelected={(start, end) =>
               handleDateRangeSelected(start, end)

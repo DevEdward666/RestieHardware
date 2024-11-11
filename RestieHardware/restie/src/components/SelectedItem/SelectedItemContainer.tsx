@@ -7,7 +7,10 @@ import {
   IonImg,
   IonInput,
   IonItem,
+  IonLabel,
+  IonList,
   IonMenuButton,
+  IonModal,
   IonSearchbar,
   IonText,
   IonTitle,
@@ -18,8 +21,9 @@ import {
 import "./SelectedItemContainer.css";
 import { useSelector } from "react-redux";
 import { RootStore, useTypedDispatch } from "../../Service/Store";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
+import attachmentIcon from "../../assets/images/icons/attchment-icon.svg";
 import "swiper/css";
 import "swiper/css/autoplay";
 import "swiper/css/keyboard";
@@ -28,13 +32,37 @@ import "swiper/css/scrollbar";
 import "swiper/css/zoom";
 import "@ionic/react/css/ionic-swiper.css";
 import sample from "../../assets/images/Sample.png";
-import { addCircle, removeCircle, arrowBack } from "ionicons/icons";
+import {
+  addCircle,
+  removeCircle,
+  arrowBack,
+  personCircle,
+  card,
+} from "ionicons/icons";
 import { addToCartAction } from "../../Service/Actions/Inventory/InventoryActions";
 import { v4 as uuidv4 } from "uuid";
 import {
   SelectedItemToCart,
   Addtocart,
+  PostDeliveryImage,
+  FileMetadata,
+  PostMultipleImage,
 } from "../../Models/Request/Inventory/InventoryModel";
+import {
+  TransformWrapper,
+  TransformComponent,
+  useControls,
+} from "react-zoom-pan-pinch";
+import { usePhotoGallery } from "../../Hooks/usePhotoGallery";
+import {
+  productFilename,
+  base64toFile,
+} from "../Admin/Products/ManageProducts/ProductComponentsService";
+import {
+  GetMultipleimage,
+  UploadDeliveryImages,
+  UploadMultipleImages,
+} from "../../Service/API/Inventory/InventoryApi";
 const SelectedItemContainer: React.FC = () => {
   const [getcartid, setCartId] = useState<string>("");
   const [addedQty, setAddedQty] = useState<number>(1);
@@ -51,11 +79,52 @@ const SelectedItemContainer: React.FC = () => {
   const selectedItemselector = useSelector(
     (store: RootStore) => store.InventoryReducer.add_to_cart
   );
-  const router = useIonRouter();
-  useEffect(() => {
-    console.log(selectedItem);
-  }, [selectedItem]);
+  const modal = useRef<HTMLIonModalElement>(null);
 
+  const router = useIonRouter();
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [selectedImage, setselectedImage] = useState("");
+  const [isZoomed, setIsZoomed] = useState(false);
+  const fileInput = useRef(null);
+  const [getFile, setFile] = useState<File>();
+  const { file, takePhoto } = usePhotoGallery();
+  const [base64Image, setBase64Image] = useState("");
+  const [imageData, setImageData] = useState<FileMetadata[]>([]);
+  const handleDoubleClick = () => {
+    setIsZoomed((prevState) => !prevState); // Toggle the zoom state
+  };
+  const fetchImages = async () => {
+    const response = await GetMultipleimage(
+      `Resources\\Images\\${selectedItem.code}`
+    );
+    if (response.status === 200) {
+      console.log(response.result.images.$values);
+      setImageData(response.result.images.$values);
+    }
+  };
+  useEffect(() => {
+    fetchImages();
+  }, [selectedItem]);
+  const dismiss = () => {
+    setOpenModal(false);
+  };
+  const Controls = () => {
+    const { zoomIn, zoomOut, resetTransform } = useControls();
+
+    return (
+      <div className="tools">
+        <IonButton color="medium" size="small" onClick={() => zoomIn()}>
+          Zoom in +
+        </IonButton>
+        <IonButton color="medium" size="small" onClick={() => zoomOut()}>
+          Zoom out -
+        </IonButton>
+        <IonButton color="medium" size="small" onClick={() => resetTransform()}>
+          Reset x
+        </IonButton>
+      </div>
+    );
+  };
   const handleAddToCart = useCallback(async () => {
     let cartid = localStorage.getItem("cartid");
 
@@ -152,6 +221,68 @@ const SelectedItemContainer: React.FC = () => {
     };
     initalize();
   }, [addedQty, selectedItem]);
+  const handleOpenImage = (selected_item: SelectedItemToCart) => {
+    setselectedImage(selected_item.image);
+    setOpenModal(true);
+  };
+  const handleDismiss = () => {
+    setOpenModal(false);
+  };
+  const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []); // Ensure files are not null
+    if (selectedFiles.length === 0) return; // No files selected
+
+    // Create a FormData object for the request
+    const formData = new FormData();
+
+    const filesPayload: PostMultipleImage = {
+      FolderName: selectedItem.code, // Make sure selectedItem is defined
+      FileName: "", // We'll set the FileName once we know the unique name for all files
+      FormFile: [], // Array to hold all file objects
+    };
+
+    selectedFiles.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = reader.result as string; // This will be base64-encoded string
+        setBase64Image(base64String); // Optionally update state with base64 string (for preview or other logic)
+
+        // Generate a unique image GUID and filename for each file
+        const imageGuid = uuidv4();
+        const imageName = productFilename(imageGuid, "jpg");
+
+        // Convert the base64 string back to a file (assuming base64toFile is a helper function)
+        const fileImage = base64toFile(base64String, imageName, "image/jpg");
+
+        // Add each file to the FormFile array for the payload
+        filesPayload.FormFile.push(fileImage!); // Ensure fileImage is not null
+
+        // Append the file to the FormData object with the correct field name
+        formData.append("FormFiles", fileImage!); // Ensure "FormFiles" is used as the field name
+
+        // We can set the FileName to the first image GUID (or combine GUIDs for all files if needed)
+        if (index === 0) {
+          filesPayload.FileName = imageGuid;
+        }
+
+        // If all files have been processed, upload them
+        if (filesPayload.FormFile.length === selectedFiles.length) {
+          // Use the UploadMultipleImages function with the correct payload
+          const uploaded = await UploadMultipleImages(formData, filesPayload);
+          if (uploaded.status === 201) {
+            await fetchImages();
+          }
+        }
+      };
+
+      // Read each selected file as a data URL (base64 string)
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleTakePhoto = async () => {
+    await takePhoto();
+  };
   return (
     <IonContent className="selected-item-main-content">
       <IonToast
@@ -183,10 +314,55 @@ const SelectedItemContainer: React.FC = () => {
             scrollbar={false}
             zoom={true}
           >
-            <SwiperSlide>
-              <IonImg src={selectedItem.image}></IonImg>
-            </SwiperSlide>
+            {imageData.length > 0 ? (
+              imageData?.map((val, index) => {
+                return (
+                  <SwiperSlide key={index}>
+                    <IonImg
+                      onClick={() => handleOpenImage(selectedItem)}
+                      className="selected-item-img"
+                      src={`data:${val.contentType};base64,${val?.fileContents}`}
+                    />
+                  </SwiperSlide>
+                );
+              })
+            ) : (
+              <SwiperSlide>
+                <IonImg
+                  onClick={() => handleOpenImage(selectedItem)}
+                  className="selected-item-img"
+                  src={selectedItem.image}
+                />
+              </SwiperSlide>
+            )}
           </Swiper>
+          <div className="capture-images-buttons">
+            <>
+              <input
+                ref={fileInput}
+                hidden
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => onSelectFile(e)}
+              />
+
+              <div
+                className="offline-delivery-attachment-button"
+                onClick={() => {
+                  // @ts-ignore
+                  fileInput?.current?.click();
+                  // setBackgroundOption(BackgroundOptionType.Gradient);
+                }}
+              >
+                <IonIcon
+                  className="offline-delivery-attachment-button-icon"
+                  icon={attachmentIcon}
+                ></IonIcon>
+                Add More Image
+              </div>
+            </>
+          </div>
           <div className="selected-item-information-container">
             <div className="selected-item-price-qty-container">
               <IonText className="selected-item-current-price">
@@ -254,6 +430,28 @@ const SelectedItemContainer: React.FC = () => {
           {selectedItem.onhandqty! > 0 ? "Add to Cart" : "Sold out"}
         </IonButton>
       </div>
+      <IonModal
+        id="example-modal"
+        onDidDismiss={() => handleDismiss()}
+        isOpen={openModal}
+      >
+        <div className="modal-content">
+          <TransformWrapper initialScale={1}>
+            {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+              <>
+                <Controls />
+                <TransformComponent>
+                  <img
+                    src={selectedImage}
+                    alt="item image"
+                    className={`modal-image ${isZoomed ? "zoomed" : ""}`}
+                  />
+                </TransformComponent>
+              </>
+            )}
+          </TransformWrapper>
+        </div>
+      </IonModal>
     </IonContent>
   );
 };

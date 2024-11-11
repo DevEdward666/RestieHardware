@@ -81,6 +81,15 @@ export interface SelectedItemToCart {
   voucher_code?: string;
   voucher?: VoucherModel;
 }
+export interface FileMetadata {
+  id: string; // or number if it's numeric
+  contentType: string;
+  enableRangeProcessing: boolean;
+  entityTag: string | null;
+  fileContents: string; // could be a base64 encoded string or file reference
+  fileDownloadName: string;
+  lastModified: string; // or Date, depending on how it's stored
+}
 export interface PostdOrderList {
   userid: string;
   limit: number;
@@ -109,6 +118,12 @@ export interface PostDeliveryImage {
   FolderName: string;
   FileName: string;
   FormFile: File;
+}
+
+export interface PostMultipleImage {
+  FolderName: string;
+  FileName: string;
+  FormFile: File[];
 }
 export interface PutInventoryImage {
   code: string;
@@ -147,6 +162,7 @@ export interface PostVoucherInfoModel {
 export interface PostDaysSalesModel {
   fromDate: string;
   toDate: string;
+  filter?: number;
 }
 export interface PostInventoryLogsModel {
   fromDate: string;

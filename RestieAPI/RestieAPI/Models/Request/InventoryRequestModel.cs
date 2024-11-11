@@ -145,6 +145,11 @@ namespace RestieAPI.Models.Request
             public string imagePath { get; set; }
 
         }
+        public class GetMultipleImages
+        {
+            public string folderPath { get; set; }
+
+        }
         public class PostEmail
         {
             public string from { get; set; }
@@ -194,7 +199,13 @@ namespace RestieAPI.Models.Request
             public string FileName { get; set; }
             public IFormFile FormFile { get; set; }
         }
+        public class MultipleFileModel
+        {
 
+            public string FolderName { get; set; }
+            public string FileName { get; set; }
+            public IEnumerable<IFormFile> FormFiles { get; set; }
+        }
         public class DeliveryInfo
         {
 
@@ -244,6 +255,8 @@ namespace RestieAPI.Models.Request
         {
             public string fromDate { get; set; }
             public string toDate { get; set; }
+            public int filter{ get; set; }
+
 
         }
         public class GetInventoryLogs

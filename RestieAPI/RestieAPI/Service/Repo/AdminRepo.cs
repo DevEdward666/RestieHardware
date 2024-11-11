@@ -149,7 +149,7 @@ namespace RestieAPI.Service.Repo
                                     {
                                         supplierid = reader.GetString(reader.GetOrdinal("supplierid")),
                                         company = reader.GetString(reader.GetOrdinal("company")),
-                                        contactno = reader.GetInt64(reader.GetOrdinal("contactno")),
+                                        contactno = reader.GetString(reader.GetOrdinal("contactno")),
                                         address = reader.GetString(reader.GetOrdinal("address")),
                                     };
 
@@ -173,6 +173,7 @@ namespace RestieAPI.Service.Repo
                         return new SupplierResponseModel
                         {
                             result = [],
+                            message = ex.Message,
                             success = false,
                             statusCode = 500
                         };

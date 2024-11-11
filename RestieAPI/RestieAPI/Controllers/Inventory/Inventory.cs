@@ -276,6 +276,58 @@ namespace RestieAPI.Controllers.Inventory
                 });
             }
         }
+        [Authorize]
+        [HttpPost("UploadFileMultiple")]
+        public async Task<ActionResult<PostMultipleImageResponse>> UploadFileMultiple([FromForm] MultipleFileModel file)
+        {
+            try
+            {
+                if (file.FormFiles == null || !file.FormFiles.Any())
+                {
+                    return BadRequest("No files uploaded.");
+                }
+
+                var imagePaths = new List<string>();
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Images", file.FolderName);
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+
+                foreach (var formFile in file.FormFiles)
+                {
+                    string fileName = Path.GetFileName(formFile.FileName);
+
+                    string filePath = Path.Combine(path, fileName);
+
+                    using (Stream stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await formFile.CopyToAsync(stream);
+                    }
+
+                    imagePaths.Add(Path.Combine("Resources", "Images", file.FolderName, fileName));
+                }
+
+                return new PostMultipleImageResponse
+                {
+                    result = new SaveMultipleImageResponse
+                    {
+                        imagePaths = imagePaths
+                    },
+                    status = StatusCodes.Status201Created,
+                    message = "Images Uploaded Successfully"
+                };
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new PostImageResponse
+                {
+                    result = null,
+                    status = StatusCodes.Status500InternalServerError,
+                    message = e.Message
+                });
+            }
+        }
         [HttpPost("Getimage")]
         public ActionResult<PostDeliveryImageResponse> GetImageDelivery(GetDeliveryImage getDeliveryImage)
         {
@@ -307,6 +359,68 @@ namespace RestieAPI.Controllers.Inventory
             };
 
         }
+        [HttpPost("GetMultipleimage")]
+        public ActionResult<GetMultipleImageResponse> GetMultipleimage([FromBody] GetMultipleImages getMultipleImages)
+        {
+            var images = new List<FileContentResult>();
+
+            // Assuming the folder path is provided in the request
+            string folderPath = getMultipleImages.folderPath;  // Folder path where images are stored
+
+            // Format the path to avoid issues with backslashes
+            string formattedPath = folderPath.Replace("\\", "\\\\");
+            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+
+            // Check if the directory exists
+            if (!Directory.Exists(directoryPath))
+            {
+                return NotFound(new { Message = $"Directory not found: {directoryPath}" });
+            }
+
+            // Get all image files (you can adjust the pattern to support other image types)
+            var imageFiles = Directory.GetFiles(directoryPath, "*.*")
+                                      .Where(file => new[] { ".jpg", ".jpeg", ".png", ".gif" }
+                                      .Contains(Path.GetExtension(file).ToLower()))
+                                      .ToList();
+
+            if (imageFiles.Count == 0)
+            {
+                return NotFound(new { Message = "No images found in the directory." });
+            }
+
+            // Loop through each image file and return its content
+            foreach (var imagePath in imageFiles)
+            {
+                byte[] imageData = System.IO.File.ReadAllBytes(imagePath);
+
+                // Determine the content type based on the file extension
+                string contentType = "image/jpeg";  // Default content type for JPEG images
+                if (Path.GetExtension(imagePath).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                {
+                    contentType = "image/png";
+                }
+                else if (Path.GetExtension(imagePath).Equals(".gif", StringComparison.OrdinalIgnoreCase))
+                {
+                    contentType = "image/gif";
+                }
+
+                // Add the image file content to the response list
+                images.Add(File(imageData, contentType));
+            }
+
+            // Return the images
+            return new GetMultipleImageResponse
+            {
+                result = new GetMultipleImagesResponse
+                {
+                    images = images,  // Return the list of image FileContentResult objects
+                },
+                status = StatusCodes.Status200OK,
+                message = "Images retrieved successfully"
+            };
+        }
+
+
         [Authorize]
         [HttpPost("SendEmail")]
         public async Task<ActionResult<PostSendEmail>> SendMailgunEmail([FromForm] PostEmail postEmail)

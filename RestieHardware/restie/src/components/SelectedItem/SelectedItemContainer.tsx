@@ -95,7 +95,7 @@ const SelectedItemContainer: React.FC = () => {
   };
   const fetchImages = async () => {
     const response = await GetMultipleimage(
-      `Resources\\Images\\${selectedItem.code}`
+      `Resources/Images/${selectedItem.code}`
     );
     if (response.status === 200) {
       console.log(response.result.images.$values);

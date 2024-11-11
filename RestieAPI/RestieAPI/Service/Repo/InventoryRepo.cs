@@ -2565,6 +2565,7 @@ namespace RestieAPI.Service.Repo
             {
                 { "@fromDate", fromDate },
                 { "@toDate", toDate },
+
             };
 
             var results = new List<SalesResponse>();
@@ -2608,7 +2609,7 @@ namespace RestieAPI.Service.Repo
 
                         tran.Commit();
 
-                        byte[] fileContents = GeneratePdfReport(results, fromDate, toDate);
+                        byte[] fileContents = getSales.filter == 1 ? GeneratePdfReportWithoutDiscount(results, fromDate, toDate) :  GeneratePdfReport(results, fromDate, toDate);
                         string fileName = $"Sales_Report_{now:yyyyMMddHHmmss}.pdf"; // Formatting the datetime for the file name
                         var fileResult = new FileContentResult(fileContents, "application/pdf")
                         {
@@ -2627,7 +2628,8 @@ namespace RestieAPI.Service.Repo
                         return new SalesResponseModel
                         {
                             result = null,
-                            statusCode = 200,
+                            message= ex.Message,
+                            statusCode = 500,
                             success = true
                         };
                         throw;
@@ -3437,6 +3439,130 @@ namespace RestieAPI.Service.Repo
                     return ms.ToArray();
                 }
             }
+        public byte[] GeneratePdfReportWithoutDiscount(List<SalesResponse> sales, DateTime from_date, DateTime to_date)
+        {
+            // Load company logo
+            //string base64String = LoadCompanyLogoAsBase64();
+            //byte[] logoBytes = Convert.FromBase64String(base64String);
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                Document doc = new Document(PageSize.A4.Rotate());
+                PdfWriter.GetInstance(doc, ms);
+                doc.Open();
+
+                // Add company logo
+                //if (logoBytes != null)
+                //{
+                Paragraph logotitle = new Paragraph();
+                logotitle.Alignment = Element.ALIGN_CENTER;
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk("Restie Hardware Sales Report", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Address: SIR Bucana 76-A", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Sandawa Matina Davao City", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Davao City, Philippines", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                logotitle.Add(Chunk.NEWLINE);
+                logotitle.Add(new Chunk($"Contact No.: (082) 224 1362", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+
+                //Image logo = Image.GetInstance(logoBytes);
+                //logo.Alignment = Element.ALIGN_CENTER;
+                //logo.ScaleAbsolute(50f, 50f); // Adjust dimensions as needed
+                //doc.Add(logo);
+                doc.Add(logotitle);
+                //}
+
+                // Add title
+                Paragraph title = new Paragraph();
+                title.Alignment = Element.ALIGN_CENTER;
+                title.Add(Chunk.NEWLINE);
+                title.Add(new Chunk($"Start Date: {from_date.ToString("MM/dd/yyyy")} End Date: {to_date.ToString("MM/dd/yyyy")}", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
+                title.Add(Chunk.NEWLINE);
+                title.Add(Chunk.NEWLINE);
+                doc.Add(title);
+
+                // Add table
+                PdfPTable table = new PdfPTable(8);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 1.5f, 3, 1, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f });
+                table.SpacingBefore = 50f; // Add spacing before the table
+                                           // Add table headers
+                table.AddCell(new PdfPCell(new Phrase("Code", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Qty", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Cost", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Price", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Total Cost", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Total Sales", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Profit", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+
+
+                // Add table data
+                decimal totalSales = 0;
+                decimal totalSalesWDiscount = 0;
+                decimal totalProfitWDiscount = 0;
+                decimal totalDiscount = 0;
+                decimal totalCost = 0;
+                decimal profit = 0;
+                decimal profitwDiscount = 0;
+                decimal saleswDiscount = 0;
+                foreach (var sale in sales)
+                {
+                    totalSalesWDiscount = Decimal.Parse(sale.total_sales) - Decimal.Parse(sale.total_discount);
+                    totalProfitWDiscount = Decimal.Parse(sale.profit) - Decimal.Parse(sale.total_discount);
+                    table.AddCell(sale.code);
+                    table.AddCell(sale.item);
+                    table.AddCell(new PdfPCell(new Phrase(sale.qty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.cost.ToString()).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.price.ToString()).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.total_cost).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.total_sales).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.profit).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    totalSales += Decimal.Parse(sale.total_sales);
+                    totalCost += Decimal.Parse(sale.total_cost);
+                    profit += Decimal.Parse(sale.profit);
+                }
+
+                // Add total row
+                PdfPCell totalCellCost = new PdfPCell(new Phrase("Overall Total Cost", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                PdfPCell totalCellPrice = new PdfPCell(new Phrase("Overall Total Sales", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                PdfPCell totalCellProfit = new PdfPCell(new Phrase("Overall Profit", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+
+                totalCellCost.Colspan = 3;
+                totalCellCost.HorizontalAlignment = Element.ALIGN_RIGHT;
+                totalCellPrice.Colspan = 3;
+                totalCellPrice.HorizontalAlignment = Element.ALIGN_RIGHT;
+                totalCellProfit.Colspan = 3;
+                totalCellProfit.HorizontalAlignment = Element.ALIGN_RIGHT;
+
+                table.AddCell(totalCellCost);
+                table.AddCell(totalCellPrice);
+                table.AddCell(totalCellProfit);
+
+                PdfPCell totalCostData = new PdfPCell(new Phrase(totalCost.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                PdfPCell totalPriceData = new PdfPCell(new Phrase(totalSales.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                PdfPCell totalProfitData = new PdfPCell(new Phrase(profit.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+
+                totalCostData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                totalCostData.Colspan = 3;
+                totalPriceData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                totalPriceData.Colspan = 3;
+                totalProfitData.HorizontalAlignment = Element.ALIGN_RIGHT;
+                totalProfitData.Colspan = 3;
+
+                table.AddCell(totalCostData);
+                table.AddCell(totalPriceData);
+                table.AddCell(totalProfitData);
+                doc.Add(table);
+                doc.Close();
+
+                return ms.ToArray();
+            }
+        }
 
         public byte[] GenerateQuotationPdfReport(List<ItemOrders> orders, OrderInfoResponse customer,DateTime quoted_date)
         {

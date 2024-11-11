@@ -369,7 +369,7 @@ namespace RestieAPI.Controllers.Inventory
 
             // Format the path to avoid issues with backslashes
             string formattedPath = folderPath.Replace("\\", "////");
-            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Images", getMultipleImages.folderPath);
 
             // Check if the directory exists
             if (!Directory.Exists(directoryPath))

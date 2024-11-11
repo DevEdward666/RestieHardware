@@ -94,9 +94,7 @@ const SelectedItemContainer: React.FC = () => {
     setIsZoomed((prevState) => !prevState); // Toggle the zoom state
   };
   const fetchImages = async () => {
-    const response = await GetMultipleimage(
-      `Resources\\Images\\${selectedItem.code}`
-    );
+    const response = await GetMultipleimage(`${selectedItem.code}`);
     if (response.status === 200) {
       console.log(response.result.images.$values);
       setImageData(response.result.images.$values);

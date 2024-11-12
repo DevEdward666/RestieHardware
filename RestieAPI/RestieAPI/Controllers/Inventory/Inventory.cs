@@ -368,9 +368,9 @@ namespace RestieAPI.Controllers.Inventory
             string folderPath = getMultipleImages.folderPath;  // Folder path where images are stored
 
             // Format the path to avoid issues with backslashes
-            string formattedPath = folderPath.Replace("\\", "\\\\");
-            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
-
+            string formattedPath = folderPath.Replace("\\", "////");
+            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Images", getMultipleImages.folderPath);
+            Console.WriteLine($"Directory path: {directoryPath}");
             // Check if the directory exists
             if (!Directory.Exists(directoryPath))
             {

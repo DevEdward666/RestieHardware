@@ -262,6 +262,11 @@ const ManageProductComponent = () => {
           "Please ensure all products have valid code, quantity > 0, and price > 0.",
       });
       return;
+    } else if (productInfo.supplierid.length <= 0) {
+      setShowAlert({
+        isOpen: true,
+        message: "Please Select a supplier",
+      });
     } else {
       const res = await PostMultipleInventory({
         items: products,

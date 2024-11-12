@@ -126,6 +126,24 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  deploy-web-api-dev:
+    runs-on: ubuntu-latest
+    needs: build-docker-image-prod
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Install Flyctl and Set PATH
+        run: |
+          curl -L https://fly.io/install.sh | sh
+          echo "export PATH=\"$HOME/.fly/bin:$PATH\"" >> $HOME/.bashrc
+          source $HOME/.bashrc
+      - name: Login to flyctl
+        run: |
+          /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
+      - name: Deploy .NET API to Fly.io
+        run: |
+          cd RestieAPI
+          /home/runner/.fly/bin/flyctl deploy -a restieapi
   deploy-ionic-react:
     runs-on: ubuntu-latest
     needs: build-docker-image

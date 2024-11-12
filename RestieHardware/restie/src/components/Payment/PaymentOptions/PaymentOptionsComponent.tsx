@@ -91,7 +91,19 @@ const PaymentOptionsComponent = () => {
         });
       } else if (type.toLowerCase() === "pending" && getDiscountPerItem > 0) {
         setIsOpenToast({
-          toastMessage: "You can't save an order as draft if it has a voucher",
+          toastMessage: "You can't save an order as Draft if it has a voucher",
+          isOpen: true,
+          type: "toast",
+        });
+      } else if (type.toLowerCase() === "quotation" && getDiscountPerItem > 0) {
+        setIsOpenToast({
+          toastMessage: "You can't Create a Quoatation if it has a voucher",
+          isOpen: true,
+          type: "toast",
+        });
+      } else if (type.toLowerCase() === "debt" && getDiscountPerItem > 0) {
+        setIsOpenToast({
+          toastMessage: "You can't save an order as Terms if it has a voucher",
           isOpen: true,
           type: "toast",
         });

@@ -80,7 +80,9 @@ const SelectedItemContainer: React.FC = () => {
     (store: RootStore) => store.InventoryReducer.add_to_cart
   );
   const modal = useRef<HTMLIonModalElement>(null);
-
+  const user_login_information = useSelector(
+    (store: RootStore) => store.LoginReducer.user_login_information
+  );
   const router = useIonRouter();
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [selectedImage, setselectedImage] = useState("");
@@ -334,33 +336,39 @@ const SelectedItemContainer: React.FC = () => {
               </SwiperSlide>
             )}
           </Swiper>
-          <div className="capture-images-buttons">
+          {user_login_information?.role.trim().toLowerCase() === "admin" ||
+          user_login_information?.role.trim().toLowerCase() ===
+            "super admin" ? (
             <>
-              <input
-                ref={fileInput}
-                hidden
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => onSelectFile(e)}
-              />
+              <div className="capture-images-buttons">
+                <>
+                  <input
+                    ref={fileInput}
+                    hidden
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => onSelectFile(e)}
+                  />
 
-              <div
-                className="offline-delivery-attachment-button"
-                onClick={() => {
-                  // @ts-ignore
-                  fileInput?.current?.click();
-                  // setBackgroundOption(BackgroundOptionType.Gradient);
-                }}
-              >
-                <IonIcon
-                  className="offline-delivery-attachment-button-icon"
-                  icon={attachmentIcon}
-                ></IonIcon>
-                Add More Image
+                  <div
+                    className="offline-delivery-attachment-button"
+                    onClick={() => {
+                      // @ts-ignore
+                      fileInput?.current?.click();
+                      // setBackgroundOption(BackgroundOptionType.Gradient);
+                    }}
+                  >
+                    <IonIcon
+                      className="offline-delivery-attachment-button-icon"
+                      icon={attachmentIcon}
+                    ></IonIcon>
+                    Add More Image
+                  </div>
+                </>
               </div>
             </>
-          </div>
+          ) : null}
           <div className="selected-item-information-container">
             <div className="selected-item-price-qty-container">
               <IonText className="selected-item-current-price">

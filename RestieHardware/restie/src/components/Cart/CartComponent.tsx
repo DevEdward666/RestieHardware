@@ -213,6 +213,7 @@ const CartComponent: React.FC = () => {
     }
   };
   const CardList = (card: Addtocart) => {
+    console.log(card);
     return (
       <div>
         <IonItemSliding>
@@ -228,7 +229,7 @@ const CartComponent: React.FC = () => {
                 <div className="main-cart-card-add-item-img">
                   <img
                     alt={card.item}
-                    src={card.image.length <= 0 ? stock : `${card.image}`}
+                    src={card.image.length <= 0 ? stock : `${card?.image}`}
                   />
                 </div>
                 <div className="main-cart-card-add-item-container">

@@ -157,6 +157,102 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
+        public InventoryItemModel selectedItem(string itemCode)
+        {
+            var sql = @"SELECT * FROM Inventory where code=@itemCode";
+
+            
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@itemCode", itemCode},
+            };
+
+            var results = new List<InventoryItems>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var inventoryItem = new InventoryItems
+                                    {
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        category = reader.GetString(reader.GetOrdinal("category")),
+                                        brand = reader.GetString(reader.GetOrdinal("brand")),
+                                        qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                        reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                                        cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                                        price = reader.GetFloat(reader.GetOrdinal("price")),
+                                        status = reader.GetString(reader.GetOrdinal("status")),
+                                        image = reader.GetString(reader.GetOrdinal("image")),
+                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                        updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                                    };
+                                    string originalPath = inventoryItem.image;
+                                    string formattedPath = originalPath.Replace("\\", "\\\\");
+                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+
+                                    if (!System.IO.File.Exists(path))
+                                    {
+                                        inventoryItem.image = null;
+                                    }
+                                    else
+                                    {
+                                        string contentType = "image/jpeg";
+                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            contentType = "image/png";
+                                        }
+
+                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+
+                                        inventoryItem.image = Convert.ToBase64String(imageData);
+                                        inventoryItem.image_type = contentType;
+                                    }
+                                    results.Add(inventoryItem);
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new InventoryItemModel
+                        {
+                            result = results,
+                            success = true,
+                            statusCode = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new InventoryItemModel
+                        {
+                            result = [],
+                            success = false,
+                            statusCode = 500
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
         public InventoryItemModel searchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
         {
             var sql = "";

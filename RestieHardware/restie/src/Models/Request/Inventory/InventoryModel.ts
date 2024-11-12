@@ -33,7 +33,7 @@ export interface Addtocart {
   voucher_code?: string;
   voucher?: VoucherModel;
   voucher_id?: number;
-
+  image_type?: string;
   total_discount?: number;
   order_voucher?: string;
   type?: string;
@@ -77,6 +77,8 @@ export interface SelectedItemToCart {
   category?: string;
   brand?: string;
   image: string;
+  image_type?: string;
+
   discount?: number;
   voucher_code?: string;
   voucher?: VoucherModel;

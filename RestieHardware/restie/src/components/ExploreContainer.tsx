@@ -87,11 +87,14 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     };
     checkCartId();
   }, [selectedItemselector]);
-  const handleSelectedItem = useCallback((payload: SelectedItemToCart) => {
-    payload.qty = 1;
-    dispatch(selectedItem(payload));
-    router.push("/selectedItem");
-  }, []);
+  const handleSelectedItem = useCallback(
+    (payload: SelectedItemToCart) => {
+      payload.qty = 1;
+      dispatch(selectedItem(payload.code));
+      router.push(`/selectedItem?itemcode=${payload.code}`);
+    },
+    [dispatch]
+  );
   const handleAddToCart = async (
     selectedItem: SelectedItemToCart,
     event: MouseEvent<HTMLButtonElement, MouseEvent>

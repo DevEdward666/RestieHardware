@@ -36,6 +36,7 @@ import {
   fetchBrands,
   fetchCategory,
   getAllInventory,
+  getSelectedItem,
   searchInventory,
   updateCartOrder,
   userOrderInfo,
@@ -100,13 +101,15 @@ export const searchInventoryList =
   };
 
 export const selectedItem =
-  (payload: SelectedItemToCart) =>
-  async (dispatch: Dispatch<SELECTED_ITEM>) => {
+  (itemCode: string) => async (dispatch: Dispatch<SELECTED_ITEM>) => {
     try {
+      const res = await getSelectedItem(itemCode);
+      res[0].image = `data:image/jpeg;base64,${res[0]?.image}`;
       dispatch({
         type: "SELECTED_ITEM",
-        selected_item: payload,
+        selected_item: res[0],
       });
+      return res[0];
     } catch (error: any) {
       console.log(error);
     }
@@ -169,10 +172,13 @@ const checkPayload = (
     pending: "Pending",
     quotation: "Quotation",
     cancel: "Cancel",
-    debt:"Debt"
+    debt: "Debt",
   };
   let update_status = "";
-  if (method.toLowerCase() === paymentMethod.cash.toLowerCase() || method.toLowerCase() === paymentMethod.debt.toLowerCase()) {
+  if (
+    method.toLowerCase() === paymentMethod.cash.toLowerCase() ||
+    method.toLowerCase() === paymentMethod.debt.toLowerCase()
+  ) {
     update_status = "approved";
   }
   if (method.toLowerCase() === paymentMethod.quotation.toLowerCase()) {
@@ -184,7 +190,7 @@ const checkPayload = (
   if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
     update_status = "pending";
   }
-  console.log(payload)
+  console.log(payload);
   const updatedPayload = payload.map((val) => ({
     ...val,
     orderid: orderid,
@@ -202,7 +208,7 @@ const checkPayload = (
     customer: customer_payload.name,
     cashier: cashier,
   }));
-  console.log(updatedPayload)
+  console.log(updatedPayload);
   return updatedPayload;
 };
 export const PostOrder =
@@ -235,7 +241,6 @@ export const PostOrder =
         quotation: "Quotation",
         cancel: "Cancel",
         debt: "Debt",
-
       };
       let orderid = "";
       if (post_orderid) {
@@ -251,7 +256,10 @@ export const PostOrder =
         customerCash,
         cashierName
       );
-      if (method.toLowerCase() === paymentMethod.cash.toLowerCase() || method.toLowerCase() === paymentMethod.debt.toLowerCase()) {
+      if (
+        method.toLowerCase() === paymentMethod.cash.toLowerCase() ||
+        method.toLowerCase() === paymentMethod.debt.toLowerCase()
+      ) {
         if (payload[0]?.orderid) {
           await deleteCart(updatePayload);
           await addToCart(updatePayload);
@@ -273,8 +281,8 @@ export const PostOrder =
               qty: val.qty,
               image: "",
               price: val.price,
-              discount:val.discount_price,
-              total_discount:totalDiscount,
+              discount: val.discount_price,
+              total_discount: totalDiscount,
               orderid: resOrderInfo.order_info.orderid,
               cartid: resOrderInfo.order_info.cartid,
               createdAt: isReorder
@@ -297,8 +305,7 @@ export const PostOrder =
         } else {
           res = await SavedAndPayOrder(updatePayload);
         }
-      } else if (method.toLowerCase() === paymentMethod.pending.toLowerCase() ) {
-
+      } else if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
         await deleteCart(updatePayload);
         res = await addToCart(updatePayload);
       } else if (
@@ -350,7 +357,7 @@ export const getOrderList =
       return false;
     }
   };
-  export const getReceivableList =
+export const getReceivableList =
   () => async (dispatch: Dispatch<RECEIVABLE_LIST>) => {
     try {
       const res: PostAgedReceivable[] = await ListAgedReceivable();
@@ -452,7 +459,7 @@ export const get_brands_actions =
       console.log(error);
     }
   };
-  export const get_category_actions =
+export const get_category_actions =
   (payload: GetCategoryModel) => async (dispatch: Dispatch<GET_CATEGORY>) => {
     try {
       const res = await fetchCategory(payload);
@@ -478,29 +485,27 @@ export const get_voucher_actions =
       console.log(error);
     }
   };
-  export const remove_voucher_actions =
-  () =>
-  async (dispatch: Dispatch<GET_VOUCHER>) => {
+export const remove_voucher_actions =
+  () => async (dispatch: Dispatch<GET_VOUCHER>) => {
     try {
       dispatch({
         type: "GET_VOUCHER",
-        get_voucher: {  
+        get_voucher: {
           name: "",
           description: "",
           maxredemption: "",
           discount: 0,
           type: "",
           voucher_for: "",
-          vouchercode: ""
+          vouchercode: "",
         },
       });
     } catch (error: any) {
       console.log(error);
     }
   };
-  export const get_all_voucher_actions =
-  (payload:GetVoucherType) =>
-  async (dispatch: Dispatch<GET_VOUCHER_LIST>) => {
+export const get_all_voucher_actions =
+  (payload: GetVoucherType) => async (dispatch: Dispatch<GET_VOUCHER_LIST>) => {
     try {
       const res = await ListOfVouchers(payload);
       dispatch({
@@ -512,9 +517,8 @@ export const get_voucher_actions =
       console.log(error);
     }
   };
-  export const get_list_of_voucher_actions =
-  (payload:GetVoucherType) =>
-  async (dispatch: Dispatch<GET_LIST_VOUCHER>) => {
+export const get_list_of_voucher_actions =
+  (payload: GetVoucherType) => async (dispatch: Dispatch<GET_LIST_VOUCHER>) => {
     try {
       const res = await ListOfVouchers(payload);
       dispatch({

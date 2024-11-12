@@ -24,4 +24,5 @@ RUN dotnet publish "RestieAPI/RestieAPI.csproj" -c ${BUILD_CONFIGURATION} -o /ap
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY ./RestieAPI/Resources/Images /app/Resources/Images
 ENTRYPOINT ["dotnet", "RestieAPI.dll"]

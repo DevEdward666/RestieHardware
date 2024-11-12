@@ -128,7 +128,7 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   deploy-web-api-dev:
     runs-on: ubuntu-latest
-    needs: build-docker-image-prod
+    needs: build-docker-image
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2

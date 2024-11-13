@@ -239,8 +239,8 @@ const SelectedItemContainer: React.FC = () => {
     };
     initalize();
   }, [addedQty, getSelectedItem, isLoading]);
-  const handleOpenImage = (selected_item: SelectedItemToCart) => {
-    setselectedImage(selected_item.image);
+  const handleOpenImage = (selected_image: string) => {
+    setselectedImage(selected_image);
     setOpenModal(true);
   };
   const handleDismiss = () => {
@@ -337,7 +337,11 @@ const SelectedItemContainer: React.FC = () => {
                 return (
                   <SwiperSlide key={index}>
                     <IonImg
-                      onClick={() => handleOpenImage(getSelectedItem)}
+                      onClick={() =>
+                        handleOpenImage(
+                          `data:${val.contentType};base64,${val?.fileContents}`
+                        )
+                      }
                       className="selected-item-img"
                       src={`data:${val.contentType};base64,${val?.fileContents}`}
                     />
@@ -347,7 +351,7 @@ const SelectedItemContainer: React.FC = () => {
             ) : (
               <SwiperSlide>
                 <IonImg
-                  onClick={() => handleOpenImage(getSelectedItem)}
+                  onClick={() => handleOpenImage(getSelectedItem.image)}
                   className="selected-item-img"
                   src={getSelectedItem.image}
                 />
@@ -465,13 +469,15 @@ const SelectedItemContainer: React.FC = () => {
             {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
               <>
                 <Controls />
-                <TransformComponent>
-                  <img
-                    src={selectedImage}
-                    alt="item image"
-                    className={`modal-image ${isZoomed ? "zoomed" : ""}`}
-                  />
-                </TransformComponent>
+                <div className="image-content">
+                  <TransformComponent>
+                    <img
+                      src={selectedImage}
+                      alt="item image"
+                      className={`modal-image ${isZoomed ? "zoomed" : ""}`}
+                    />
+                  </TransformComponent>
+                </div>
               </>
             )}
           </TransformWrapper>

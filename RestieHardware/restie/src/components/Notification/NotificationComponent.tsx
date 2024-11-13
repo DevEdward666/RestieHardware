@@ -43,10 +43,10 @@ const NotificationComponent: React.FC = () => {
     <IonContent>
       <div>
         {Array.isArray(receivable_list) && receivable_list.length > 0 ? (
-          receivable_list?.map((value) => (
+          receivable_list?.map((value, index) => (
             <IonCard
               className="notification-list-card-container"
-              key={value.transid}
+              key={index}
               onClick={() => handleReceivable(value)}
             >
               <div className="notification-list-card-add-item-container">
@@ -88,6 +88,12 @@ const NotificationComponent: React.FC = () => {
                         </div>
                         <span>&#8369;</span>
                         {value.total.toFixed(2)}
+                      </div>
+                      <div className="notification-list-card-price-details">
+                        <div className="notification-list-card-price">
+                          Total Days Unpaid:{" "}
+                        </div>
+                        {value.total_days}
                       </div>
                     </div>
                   </div>

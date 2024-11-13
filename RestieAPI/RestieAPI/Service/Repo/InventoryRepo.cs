@@ -1780,7 +1780,7 @@ namespace RestieAPI.Service.Repo
                                         status = reader.GetString(reader.GetOrdinal("status")),
                                         type = reader.GetString(reader.GetOrdinal("type")),
                                         total = reader.GetFloat(reader.GetOrdinal("total")),
-                                        totaldiscount = reader.GetFloat(reader.GetOrdinal("totaldiscount")),
+                                        totaldiscount = !reader.IsDBNull(reader.GetOrdinal("totaldiscount")) ? reader.GetFloat(reader.GetOrdinal("totaldiscount")): 0,
                                         voucher = !reader.IsDBNull(reader.GetOrdinal("voucher")) ? reader.GetString(reader.GetOrdinal("voucher")) : null,
                                     };
 
@@ -1919,7 +1919,7 @@ namespace RestieAPI.Service.Repo
         public AgedReceivableResponseModel GetAllAgedReceivable()
         {
             var sql = @"select ors.orderid,tr.transid,ors.total,ors.createdat,cr.contactno,cr.customer_email,
-                        tr.customer,ors.paidthru
+                        tr.customer,ors.paidthru, DATE(now() AT TIME ZONE 'Asia/Manila') - DATE(to_timestamp(tr.createdat / 1000.0)AT TIME ZONE 'Asia/Manila') as total_days
                         from transaction tr join orders ors on tr.orderid = ors.orderid
                         join customer cr on cr.customerid = ors.userid
                         where ors.paidthru ='Debt'
@@ -1964,6 +1964,7 @@ namespace RestieAPI.Service.Repo
                                         customer_email = reader.GetString(reader.GetOrdinal("customer_email")),
                                         contactno = reader.GetString(reader.GetOrdinal("contactno")),
                                         total = reader.GetInt32(reader.GetOrdinal("total")),
+                                        total_days = reader.GetInt32(reader.GetOrdinal("total_days")),
 
                                     };
 

@@ -190,7 +190,6 @@ const checkPayload = (
   if (method.toLowerCase() === paymentMethod.pending.toLowerCase()) {
     update_status = "pending";
   }
-  console.log(payload);
   const updatedPayload = payload.map((val) => ({
     ...val,
     orderid: orderid,
@@ -208,7 +207,6 @@ const checkPayload = (
     customer: customer_payload.name,
     cashier: cashier,
   }));
-  console.log(updatedPayload);
   return updatedPayload;
 };
 export const PostOrder =

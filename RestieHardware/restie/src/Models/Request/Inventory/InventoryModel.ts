@@ -110,6 +110,7 @@ export interface PostAgedReceivable {
   customer_email: string;
   contactno: string;
   total: number;
+  total_days: number;
 }
 export interface PostSelectedOrder {
   orderid: string;

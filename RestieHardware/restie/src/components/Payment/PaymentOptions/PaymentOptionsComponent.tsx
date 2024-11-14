@@ -91,7 +91,19 @@ const PaymentOptionsComponent = () => {
         });
       } else if (type.toLowerCase() === "pending" && getDiscountPerItem > 0) {
         setIsOpenToast({
-          toastMessage: "You can't save an order as draft if it has a voucher",
+          toastMessage: "You can't save an order as Draft if it has a voucher",
+          isOpen: true,
+          type: "toast",
+        });
+      } else if (type.toLowerCase() === "quotation" && getDiscountPerItem > 0) {
+        setIsOpenToast({
+          toastMessage: "You can't Create a Quoatation if it has a voucher",
+          isOpen: true,
+          type: "toast",
+        });
+      } else if (type.toLowerCase() === "debt" && getDiscountPerItem > 0) {
+        setIsOpenToast({
+          toastMessage: "You can't save an order as Terms if it has a voucher",
           isOpen: true,
           type: "toast",
         });
@@ -302,7 +314,7 @@ const PaymentOptionsComponent = () => {
                               key={index}
                               value={JSON.stringify(val)}
                             >
-                              {val.vouchercode}
+                              {val.vouchercode} - {val.description}
                             </IonSelectOption>
                           ))}
                         </IonSelect>
@@ -418,18 +430,13 @@ const PaymentOptionsComponent = () => {
                     Save as Terms
                   </IonButton>
                 </div>
-                {user_login_information?.role.trim().toLowerCase() ===
-                  "admin" ||
-                user_login_information?.role.trim().toLowerCase() ===
-                  "super admin" ? (
-                  <IonButton
-                    color={"medium"}
-                    className="payment-info-card-content-draft"
-                    onClick={() => handlePay("Quotation")}
-                  >
-                    Create a Quotation
-                  </IonButton>
-                ) : null}
+                <IonButton
+                  color={"medium"}
+                  className="payment-info-card-content-draft"
+                  onClick={() => handlePay("Quotation")}
+                >
+                  Create a Quotation
+                </IonButton>
                 {/* <IonButton
                 className="payment-info-card-content-draft"
                 onClick={() => handlePay("Pending")}

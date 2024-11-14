@@ -153,25 +153,24 @@ const ProfileListButtons: React.FC = () => {
                     </IonButton>
                   </div>
                 ) : null}
-
-                <div
-                  className="profile-list-button-list"
-                  onClick={() => router.push("/DeliverOffline")}
-                >
-                  <IonButton fill="clear" className="profile-button-order">
-                    <IonIcon icon={syncOutline}></IonIcon>
-                    <IonText className="profile-button-text">
-                      Offline Deliveries Sync
-                    </IonText>
-                  </IonButton>
-
-                  <IonButton fill="clear" className="profile-button-order">
-                    <IonIcon icon={chevronForwardOutline}></IonIcon>
-                  </IonButton>
-                </div>
               </>
             ) : null}
 
+            <div
+              className="profile-list-button-list"
+              onClick={() => router.push("/DeliverOffline")}
+            >
+              <IonButton fill="clear" className="profile-button-order">
+                <IonIcon icon={syncOutline}></IonIcon>
+                <IonText className="profile-button-text">
+                  Offline Deliveries Sync
+                </IonText>
+              </IonButton>
+
+              <IonButton fill="clear" className="profile-button-order">
+                <IonIcon icon={chevronForwardOutline}></IonIcon>
+              </IonButton>
+            </div>
             <div
               className={`profile-list-button-list-logout-container ${
                 platform.includes("mobileweb") && !platform.includes("tablet")

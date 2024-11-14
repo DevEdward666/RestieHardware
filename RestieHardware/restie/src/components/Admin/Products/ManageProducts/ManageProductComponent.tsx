@@ -81,9 +81,10 @@ const ManageProductComponent = () => {
   const [fetchList, setFetchList] = useState<SearchInventoryModel>({
     page: 1,
     offset: 0, // Assuming offset starts from 0
-    limit: 50,
+    limit: 2050,
     searchTerm: "",
   });
+  const [loading, setLoading] = useState(true);
   const [getDeliveryReceiptInfo, setDeliveryReceiptInfo] =
     useState<PostDeliveryReceipt>();
   const [productInfo, setProductInfo] = useState<PostInventoryModel>({
@@ -100,77 +101,13 @@ const ManageProductComponent = () => {
     createdat: 0,
     updatedAt: 0,
   });
-  const initialize = () => {
-    dispatch(
-      searchAdminInventoryList({
-        page: 1,
-        offset: 0,
-        limit: 50,
-        searchTerm: "",
-      })
-    );
-    dispatch(
-      searchSupplier({
-        page: 1,
-        offset: 0,
-        limit: 500,
-        searchTerm: "",
-      })
-    );
-    const query = new URLSearchParams(location.search);
-    if (query.size > 0) {
-      dispatch(
-        searchAdminInventoryList({
-          page: 1,
-          offset: 0,
-          limit: 2050,
-          searchTerm: "",
-        })
-      );
-      setdrType("multiple");
-      const item = query.get("itemcode");
-      const exists = itemExists(item ?? "");
-      if (exists) {
-        const itemInfo = getItemInfo(item ?? "");
-        // const productExists = products.some(
-        //   (product) => product.code === itemInfo?.code
-        // );
-        // if (productExists) {
-        //   setProducts((prev) =>
-        //     prev.map((product) =>
-        //       product.code === itemInfo?.code
-        //         ? { ...product, addedqty: product.addedqty + 1 }
-        //         : product
-        //     )
-        //   );
-        // }
 
-        setProducts([
-          {
-            item: itemInfo?.item ?? "",
-            addedqty: 1,
-            category: itemInfo?.category ?? "",
-            brand: itemInfo?.brand ?? "",
-            code: itemInfo?.code ?? "",
-            onhandqty: itemInfo?.qty ?? 0,
-            supplierid: "",
-            supplierName: "",
-            cost: parseInt(itemInfo?.cost ?? "0"),
-            price: itemInfo?.price ?? 0,
-          },
-        ]);
-        // }
-      }
-    } else {
-      setdrType("single");
-    }
-  };
   const itemExists = (itemCode: string) => {
     return admin_list_of_items.some((item) => item.code === itemCode);
   };
   const getItemInfo = (itemCode: string) => {
     const item = admin_list_of_items.find((item) => item.code === itemCode);
-    return item || null; // Return the item object if found, otherwise return null
+    return item || null;
   };
   const compareWith = (
     o1: TypeOfDeliveryReceipt,
@@ -246,6 +183,10 @@ const ManageProductComponent = () => {
   const removeProduct = (index: number) => {
     const newProducts = products.filter((_, i) => i !== index);
     setProducts(newProducts);
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("itemcode");
+    window.history.replaceState({}, "", url.toString());
   };
 
   const handleSubmit = async () => {
@@ -262,6 +203,11 @@ const ManageProductComponent = () => {
           "Please ensure all products have valid code, quantity > 0, and price > 0.",
       });
       return;
+    } else if (productInfo.supplierid.length <= 0) {
+      setShowAlert({
+        isOpen: true,
+        message: "Please Select a supplier",
+      });
     } else {
       const res = await PostMultipleInventory({
         items: products,
@@ -331,6 +277,40 @@ const ManageProductComponent = () => {
     }));
   };
   useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    const initialize = async () => {
+      setLoading(true);
+
+      if (query.size > 0) {
+        setdrType("multiple");
+        const itemCode = query.get("itemcode");
+        const itemInfoList = await dispatch(
+          searchAdminInventoryList(fetchList)
+        );
+        const itemInfo = itemInfoList.find(
+          (item: InventoryModel) => item.code === itemCode
+        );
+        setProducts([
+          {
+            item: itemInfo?.item!,
+            addedqty: 1,
+            category: itemInfo?.category!,
+            brand: itemInfo?.brand!,
+            code: itemInfo?.code!,
+            onhandqty: itemInfo?.qty!,
+            supplierid: "",
+            supplierName: "",
+            cost: parseInt(itemInfo?.cost!),
+            price: itemInfo?.price!,
+          },
+        ]);
+        // }
+      } else {
+        setdrType("single");
+      }
+      setLoading(false);
+    };
+
     initialize();
   }, [dispatch]);
   useEffect(() => {
@@ -454,7 +434,6 @@ const ManageProductComponent = () => {
             color: "#125B8C",
           })
         );
-        initialize();
         setProductInfo({
           code: "",
           item: "",
@@ -693,7 +672,9 @@ const ManageProductComponent = () => {
             >
               Add New Product
             </IonButton>
-            {products.length > 0 ? (
+            {loading ? (
+              <div>Loading...</div>
+            ) : products.length > 0 ? (
               products.map((product, index) => (
                 <IonItem key={index}>
                   <IonIcon

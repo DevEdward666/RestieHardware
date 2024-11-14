@@ -44,13 +44,6 @@ const AddNewSupplierPage = () => {
           </IonButtons>
           <IonTitle>Add New Supplier</IonTitle>
         </IonToolbar>
-        <IonToolbar
-          mode="ios"
-          color="tertiary"
-          className="manage-toolbar-logo-container"
-        >
-          <IonImg src={restielogo} className="manage-toolbar-logo"></IonImg>
-        </IonToolbar>
       </IonHeader>
       <AddNewSupplierComponent />
     </IonPage>

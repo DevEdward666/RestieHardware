@@ -157,6 +157,102 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
+        public InventoryItemModel selectedItem(string itemCode)
+        {
+            var sql = @"SELECT * FROM Inventory where code=@itemCode";
+
+            
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "@itemCode", itemCode},
+            };
+
+            var results = new List<InventoryItems>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var inventoryItem = new InventoryItems
+                                    {
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        category = reader.GetString(reader.GetOrdinal("category")),
+                                        brand = reader.GetString(reader.GetOrdinal("brand")),
+                                        qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                        reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                                        cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                                        price = reader.GetFloat(reader.GetOrdinal("price")),
+                                        status = reader.GetString(reader.GetOrdinal("status")),
+                                        image = reader.GetString(reader.GetOrdinal("image")),
+                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                        updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                                    };
+                                    string originalPath = inventoryItem.image;
+                                    string formattedPath = originalPath.Replace("\\", "\\\\");
+                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+
+                                    if (!System.IO.File.Exists(path))
+                                    {
+                                        inventoryItem.image = null;
+                                    }
+                                    else
+                                    {
+                                        string contentType = "image/jpeg";
+                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            contentType = "image/png";
+                                        }
+
+                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+
+                                        inventoryItem.image = Convert.ToBase64String(imageData);
+                                        inventoryItem.image_type = contentType;
+                                    }
+                                    results.Add(inventoryItem);
+                                }
+                            }
+                        }
+
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new InventoryItemModel
+                        {
+                            result = results,
+                            success = true,
+                            statusCode = 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new InventoryItemModel
+                        {
+                            result = [],
+                            success = false,
+                            statusCode = 500
+                        };
+                        throw;
+                    }
+                }
+            }
+        }
         public InventoryItemModel searchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
         {
             var sql = "";
@@ -1455,7 +1551,7 @@ namespace RestieAPI.Service.Repo
             {
                 if (getUserOrder.searchdate.Length <= 0)
                 {
-                    sql = @"select ors.* from orders ors join returns ret on ret.orderid=ors.orderid where  ret.orderid LIKE CONCAT('%', LOWER(@orderid), '%') group by ret.orderid, ors.orderid, cartid, total, paidthru, paidcash, createdby, ors.createdat, status, userid, updateat, type
+                    sql = @"select ors.* from orders ors join returns ret on ret.orderid=ors.orderid where  ret.orderid LIKE CONCAT('%', LOWER(@orderid), '%') group by ret.orderid,ors.voucher ,ors.totaldiscount, ors.orderid, cartid, total, paidthru, paidcash, createdby, ors.createdat, status, userid, updateat, type
                             ORDER BY ors.createdat desc LIMIT @limit OFFSET @offset;";
 
                 }else if (getUserOrder.searchdate.Length > 0)
@@ -1684,7 +1780,7 @@ namespace RestieAPI.Service.Repo
                                         status = reader.GetString(reader.GetOrdinal("status")),
                                         type = reader.GetString(reader.GetOrdinal("type")),
                                         total = reader.GetFloat(reader.GetOrdinal("total")),
-                                        totaldiscount = reader.GetFloat(reader.GetOrdinal("totaldiscount")),
+                                        totaldiscount = !reader.IsDBNull(reader.GetOrdinal("totaldiscount")) ? reader.GetFloat(reader.GetOrdinal("totaldiscount")): 0,
                                         voucher = !reader.IsDBNull(reader.GetOrdinal("voucher")) ? reader.GetString(reader.GetOrdinal("voucher")) : null,
                                     };
 
@@ -1823,7 +1919,7 @@ namespace RestieAPI.Service.Repo
         public AgedReceivableResponseModel GetAllAgedReceivable()
         {
             var sql = @"select ors.orderid,tr.transid,ors.total,ors.createdat,cr.contactno,cr.customer_email,
-                        tr.customer,ors.paidthru
+                        tr.customer,ors.paidthru, DATE(now() AT TIME ZONE 'Asia/Manila') - DATE(to_timestamp(tr.createdat / 1000.0)AT TIME ZONE 'Asia/Manila') as total_days
                         from transaction tr join orders ors on tr.orderid = ors.orderid
                         join customer cr on cr.customerid = ors.userid
                         where ors.paidthru ='Debt'
@@ -1868,6 +1964,7 @@ namespace RestieAPI.Service.Repo
                                         customer_email = reader.GetString(reader.GetOrdinal("customer_email")),
                                         contactno = reader.GetString(reader.GetOrdinal("contactno")),
                                         total = reader.GetInt32(reader.GetOrdinal("total")),
+                                        total_days = reader.GetInt32(reader.GetOrdinal("total_days")),
 
                                     };
 
@@ -2874,9 +2971,10 @@ namespace RestieAPI.Service.Repo
         }
         public RequestRefundResponseModel getItemtoRefund(RequestRefundRequest requestRefundRequest)
         {
-            var sql = @"select  tr.transid, tr.orderid,ct.cartid,ct.code,ct.item,ct.qty,ct.price,ct.total,ct.status,ors.createdat from transaction as tr
+            var sql = @"select  tr.transid, tr.orderid,ct.cartid,i.image,ct.code,ct.item,ct.qty,ct.price,ct.total,ct.status,ors.createdat from transaction as tr
                         join orders as ors on tr.orderid = ors.orderid
-                        join cart as ct on ct.cartid = ors.cartid  where tr.transid=@transid";
+                        join cart as ct on ct.cartid = ors.cartid 
+                        join inventory i on i.code = ct.code   where tr.transid=@transid";
             var parameters = new Dictionary<string, object>
             {
                 { "@transid", requestRefundRequest.transid },
@@ -2911,11 +3009,32 @@ namespace RestieAPI.Service.Repo
                                         status = reader.GetString(reader.GetOrdinal("status")),
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
                                         qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                        image = reader.GetString(reader.GetOrdinal("image")),
                                         onhandqty = reader.GetInt64(reader.GetOrdinal("qty")),
                                         total = reader.GetFloat(reader.GetOrdinal("total")),
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                     };
+                                    string originalPath = refundItemsResponse.image;
+                                    string formattedPath = originalPath.Replace("\\", "\\\\");
+                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
+                                    if (!System.IO.File.Exists(path))
+                                    {
+                                        refundItemsResponse.image = null;
+                                    }
+                                    else
+                                    {
+                                        string contentType = "image/jpeg";
+                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            contentType = "image/png";
+                                        }
+
+                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+
+                                        refundItemsResponse.image = Convert.ToBase64String(imageData);
+                                        refundItemsResponse.image_type = contentType;
+                                    }
                                     results.Add(refundItemsResponse);
                                 }
                             }

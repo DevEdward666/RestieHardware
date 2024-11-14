@@ -160,6 +160,8 @@ namespace RestieAPI.Models.Response
         public string item { get; set; }
         public float total { get; set; }
         public string status { get; set; }
+        public string image {  get; set; }
+        public string image_type {  get; set; }
         public float price { get; set; }
         public long qty { get; set; }
         public long onhandqty { get; set; }
@@ -198,7 +200,7 @@ namespace RestieAPI.Models.Response
         public string? customerid { get; set; }
         public string? voucher {  get; set; }
         public float total { get; set; }
-        public float totaldiscount { get; set; }
+        public float? totaldiscount { get; set; }
     }
 
     public class ItemOrders
@@ -305,6 +307,7 @@ namespace RestieAPI.Models.Response
         public string customer_email { get; set; }
         public string customer { get; set; }
         public string paidthru { get; set; }
+        public int total_days { get; set; }
 
     }
 }

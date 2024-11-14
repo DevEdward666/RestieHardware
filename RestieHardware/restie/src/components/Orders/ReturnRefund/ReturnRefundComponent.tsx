@@ -59,7 +59,15 @@ const ReturnRefundComponent: React.FC = () => {
           <div className="main-return-item-card-div">
             <IonCard className="main-return-card-container">
               <div className="main-return-card-add-item-img">
-                <img alt={card.item} src={stock} />
+                <img
+                  className="return-image"
+                  alt={card.item}
+                  src={
+                    card.image?.length > 0
+                      ? `data:${card.image_type};base64,${card?.image}`
+                      : stock
+                  }
+                />
               </div>
               <div className="main-return-card-add-item-container">
                 <IonCardContent className="main-return-card-main-content">
@@ -374,6 +382,8 @@ const ReturnRefundComponent: React.FC = () => {
                 total={card.total}
                 remarks={card.remarks}
                 onhandqty={card.onhandqty}
+                image={card.image}
+                image_type={card.image_type}
               />
 
               {/* <IonTextarea 

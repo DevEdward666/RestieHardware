@@ -50,7 +50,15 @@ const RefundSubmitComponents: React.FC = () => {
           <div className="return-submit-item-card-div">
             <IonCard className="return-submit-card-container">
               <div className="return-submit-card-add-item-img">
-                <img alt={card.item} src={stock} />
+                <img
+                  className="return-img"
+                  alt={card.item}
+                  src={
+                    card.image?.length > 0
+                      ? `data:${card.image_type};base64,${card?.image}`
+                      : stock
+                  }
+                />
               </div>
               <div className="return-submit-card-add-item-container">
                 <IonCardContent className="return-submit-card-main-content">
@@ -146,6 +154,8 @@ const RefundSubmitComponents: React.FC = () => {
                 transid={card.transid}
                 orderid={card.orderid}
                 total={card.total}
+                image={card.image}
+                image_type={card.image_type}
                 remarks={card.remarks}
               />
             </div>

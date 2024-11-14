@@ -39,7 +39,10 @@ import {
   personCircle,
   card,
 } from "ionicons/icons";
-import { addToCartAction } from "../../Service/Actions/Inventory/InventoryActions";
+import {
+  addToCartAction,
+  selectedItem,
+} from "../../Service/Actions/Inventory/InventoryActions";
 import { v4 as uuidv4 } from "uuid";
 import {
   SelectedItemToCart,
@@ -72,11 +75,11 @@ const SelectedItemContainer: React.FC = () => {
     type: "",
   });
   const dispatch = useTypedDispatch();
-  const selectedItem = useSelector(
+  const getSelectedItem = useSelector(
     (store: RootStore) => store.InventoryReducer.selected_item
   );
 
-  const selectedItemselector = useSelector(
+  const SelectedItemselector = useSelector(
     (store: RootStore) => store.InventoryReducer.add_to_cart
   );
   const modal = useRef<HTMLIonModalElement>(null);
@@ -91,20 +94,20 @@ const SelectedItemContainer: React.FC = () => {
   const [getFile, setFile] = useState<File>();
   const { file, takePhoto } = usePhotoGallery();
   const [base64Image, setBase64Image] = useState("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [imageData, setImageData] = useState<FileMetadata[]>([]);
   const handleDoubleClick = () => {
     setIsZoomed((prevState) => !prevState); // Toggle the zoom state
   };
   const fetchImages = async () => {
-    const response = await GetMultipleimage(`${selectedItem.code}`);
+    const response = await GetMultipleimage(`${getSelectedItem.code}`);
     if (response.status === 200) {
-      console.log(response.result.images.$values);
       setImageData(response.result.images.$values);
     }
   };
   useEffect(() => {
     fetchImages();
-  }, [selectedItem]);
+  }, [getSelectedItem]);
   const dismiss = () => {
     setOpenModal(false);
   };
@@ -133,8 +136,8 @@ const SelectedItemContainer: React.FC = () => {
       cartid = uuidv4();
       localStorage.setItem("cartid", cartid);
     }
-    const qtyAdded = selectedItemselector.filter(
-      (e) => e.code === selectedItem.code
+    const qtyAdded = SelectedItemselector.filter(
+      (e) => e.code === getSelectedItem.code
     );
 
     if (qtyAdded && qtyAdded[0]?.qty >= addedQty) {
@@ -145,10 +148,11 @@ const SelectedItemContainer: React.FC = () => {
       });
       return;
     }
+
     const addeditems = addItem(
       addedQty,
-      selectedItem,
-      selectedItemselector,
+      getSelectedItem,
+      SelectedItemselector,
       cartid
     );
     await dispatch(addToCartAction(addeditems));
@@ -157,11 +161,11 @@ const SelectedItemContainer: React.FC = () => {
       isOpen: true,
       type: "info",
     });
-  }, [dispatch, selectedItemselector, selectedItem, addedQty]);
+  }, [dispatch, SelectedItemselector, getSelectedItem, addedQty]);
 
   const addItem = (
     qtyChange: number,
-    selectedItem: SelectedItemToCart,
+    getSelectedItem: SelectedItemToCart,
     cartItems: Addtocart[] | undefined,
     cartId: string
   ) => {
@@ -172,7 +176,7 @@ const SelectedItemContainer: React.FC = () => {
 
     // Find existing item index
     const existingItemIndex = cartItems.findIndex(
-      (item) => item.code === selectedItem.code
+      (item) => item.code === getSelectedItem.code
     );
     const existingOrder = cartItems.findIndex(
       (item) => item.orderid !== "" || item.orderid !== undefined
@@ -189,7 +193,7 @@ const SelectedItemContainer: React.FC = () => {
     } else {
       // If item doesn't exist, add it to the cart
       const newItem: Addtocart = {
-        ...selectedItem,
+        ...getSelectedItem,
         qty: qtyChange,
         cartid: cartId,
         createdAt: new Date().getTime(),
@@ -209,20 +213,34 @@ const SelectedItemContainer: React.FC = () => {
     }
   };
   useEffect(() => {
-    const initalize = () => {
-      if (addedQty !== undefined && addedQty! > selectedItem.onhandqty!) {
-        setIsOpenToast({
-          toastMessage: "Not enough stocks",
-          isOpen: true,
-          type: "warning",
-        });
-        setAddedQty(selectedItem.onhandqty!);
+    const InitializeDefault = async () => {
+      const params = new URLSearchParams(location.search);
+      const itemcode = params.get("itemcode");
+      const res = await dispatch(selectedItem(itemcode ?? ""));
+      if (res.qty > 0) {
+        setAddedQty(1);
+        setIsLoading(false);
+      }
+    };
+    InitializeDefault();
+  }, [dispatch]);
+  useEffect(() => {
+    const initalize = async () => {
+      if (!isLoading) {
+        if (addedQty !== undefined && addedQty! > getSelectedItem.qty!) {
+          setIsOpenToast({
+            toastMessage: "Not enough stocks",
+            isOpen: true,
+            type: "warning",
+          });
+          setAddedQty(getSelectedItem.qty!);
+        }
       }
     };
     initalize();
-  }, [addedQty, selectedItem]);
-  const handleOpenImage = (selected_item: SelectedItemToCart) => {
-    setselectedImage(selected_item.image);
+  }, [addedQty, getSelectedItem, isLoading]);
+  const handleOpenImage = (selected_image: string) => {
+    setselectedImage(selected_image);
     setOpenModal(true);
   };
   const handleDismiss = () => {
@@ -236,7 +254,7 @@ const SelectedItemContainer: React.FC = () => {
     const formData = new FormData();
 
     const filesPayload: PostMultipleImage = {
-      FolderName: selectedItem.code, // Make sure selectedItem is defined
+      FolderName: getSelectedItem.code, // Make sure getSelectedItem is defined
       FileName: "", // We'll set the FileName once we know the unique name for all files
       FormFile: [], // Array to hold all file objects
     };
@@ -301,7 +319,7 @@ const SelectedItemContainer: React.FC = () => {
           <IonButtons slot="start" onClick={() => router.goBack()}>
             <IonIcon slot="icon-only" icon={arrowBack}></IonIcon>
           </IonButtons>
-          <IonTitle>{selectedItem.item}</IonTitle>
+          <IonTitle>{getSelectedItem.item}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <div className="selected-item-container">
@@ -319,7 +337,11 @@ const SelectedItemContainer: React.FC = () => {
                 return (
                   <SwiperSlide key={index}>
                     <IonImg
-                      onClick={() => handleOpenImage(selectedItem)}
+                      onClick={() =>
+                        handleOpenImage(
+                          `data:${val.contentType};base64,${val?.fileContents}`
+                        )
+                      }
                       className="selected-item-img"
                       src={`data:${val.contentType};base64,${val?.fileContents}`}
                     />
@@ -329,9 +351,9 @@ const SelectedItemContainer: React.FC = () => {
             ) : (
               <SwiperSlide>
                 <IonImg
-                  onClick={() => handleOpenImage(selectedItem)}
+                  onClick={() => handleOpenImage(getSelectedItem.image)}
                   className="selected-item-img"
-                  src={selectedItem.image}
+                  src={getSelectedItem.image}
                 />
               </SwiperSlide>
             )}
@@ -363,7 +385,7 @@ const SelectedItemContainer: React.FC = () => {
                       className="offline-delivery-attachment-button-icon"
                       icon={attachmentIcon}
                     ></IonIcon>
-                    Add More Image
+                    Add More Product Images
                   </div>
                 </>
               </div>
@@ -373,10 +395,10 @@ const SelectedItemContainer: React.FC = () => {
             <div className="selected-item-price-qty-container">
               <IonText className="selected-item-current-price">
                 <span>&#8369;</span>
-                {selectedItem.price.toFixed(2)}
+                {getSelectedItem?.price?.toFixed(2)}
               </IonText>
               <IonText className="selected-item-current-qty">
-                {selectedItem.onhandqty} pcs left
+                {getSelectedItem?.qty} pcs left
               </IonText>
             </div>
             <div className="selected-item-added-qty-container">
@@ -395,12 +417,11 @@ const SelectedItemContainer: React.FC = () => {
               <IonInput
                 class="qty"
                 type="number"
-                readonly
                 value={addedQty}
                 onIonInput={(ev) => handleQty(true)}
               ></IonInput>
               <IonButton
-                disabled={addedQty >= selectedItem.onhandqty! ? true : false}
+                disabled={addedQty >= getSelectedItem.qty! ? true : false}
                 fill="clear"
                 onClick={() => handleQty(true)}
               >
@@ -414,14 +435,16 @@ const SelectedItemContainer: React.FC = () => {
           </div>
         </div>
         <div className="selected-item-information-details-content">
-          <IonText className="selected-item-name">{selectedItem.item}</IonText>
+          <IonText className="selected-item-name">
+            {getSelectedItem.item}
+          </IonText>
           <div className="selected-item-information-details-content-category-brand">
             <IonText className="selected-item-name-brand">
-              Brand: {selectedItem.brand}
+              Brand: {getSelectedItem.brand}
             </IonText>{" "}
             |
             <IonText className="selected-item-name-category">
-              Category: {selectedItem.category}
+              Category: {getSelectedItem.category}
             </IonText>
           </div>
           <IonItem className="selected-item-break-line"></IonItem>
@@ -429,11 +452,11 @@ const SelectedItemContainer: React.FC = () => {
       </div>
       <div className="button-container">
         <IonButton
-          disabled={selectedItem.onhandqty! > 0 ? false : true}
+          disabled={getSelectedItem?.qty! > 0 ? false : true}
           color="medium"
           onClick={() => handleAddToCart()}
         >
-          {selectedItem.onhandqty! > 0 ? "Add to Cart" : "Sold out"}
+          {getSelectedItem.qty! > 0 ? "Add to Cart" : "Sold out"}
         </IonButton>
       </div>
       <IonModal
@@ -446,13 +469,15 @@ const SelectedItemContainer: React.FC = () => {
             {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
               <>
                 <Controls />
-                <TransformComponent>
-                  <img
-                    src={selectedImage}
-                    alt="item image"
-                    className={`modal-image ${isZoomed ? "zoomed" : ""}`}
-                  />
-                </TransformComponent>
+                <div className="image-content">
+                  <TransformComponent>
+                    <img
+                      src={selectedImage}
+                      alt="item image"
+                      className={`modal-image ${isZoomed ? "zoomed" : ""}`}
+                    />
+                  </TransformComponent>
+                </div>
               </>
             )}
           </TransformWrapper>

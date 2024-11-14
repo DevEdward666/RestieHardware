@@ -43,6 +43,16 @@ export const getAllInventory = async (payload: SearchInventoryModel) => {
   );
   return response.result.$values;
 };
+export const getSelectedItem = async (itemCode: string) => {
+  const response = await post(
+    `${baseUrl}api/Inventory/selectedItem/${itemCode}`,
+    {
+      "Content-Type": "application/json",
+    },
+    JSON.stringify(itemCode)
+  );
+  return response.result.$values;
+};
 export const searchInventory = async (payload: SearchInventoryModel) => {
   const response = await post(
     `${baseUrl}api/Inventory/searchInventory/${payload.page}`,

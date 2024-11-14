@@ -50,24 +50,6 @@ const MainProductPage: React.FC = () => {
           </IonButtons>
           <IonTitle>Manage Product</IonTitle>
         </IonToolbar>
-        <IonToolbar
-          mode="ios"
-          color="tertiary"
-          className="main-product-toolbar-logo-container"
-        >
-          <div
-            className={` ${
-              platform.includes("mobileweb") && !platform.includes("tablet")
-                ? ""
-                : "web"
-            }`}
-          >
-            <IonImg
-              src={restielogo}
-              className="main-product-toolbar-logo"
-            ></IonImg>
-          </div>
-        </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <div className="main-product-page-button-container">

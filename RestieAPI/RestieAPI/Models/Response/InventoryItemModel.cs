@@ -160,6 +160,8 @@ namespace RestieAPI.Models.Response
         public string item { get; set; }
         public float total { get; set; }
         public string status { get; set; }
+        public string image {  get; set; }
+        public string image_type {  get; set; }
         public float price { get; set; }
         public long qty { get; set; }
         public long onhandqty { get; set; }

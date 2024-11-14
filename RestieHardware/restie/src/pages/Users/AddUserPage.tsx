@@ -43,13 +43,6 @@ const AddUserPage = () => {
           </IonButtons>
           <IonTitle>Add New User</IonTitle>
         </IonToolbar>
-        <IonToolbar
-          mode="ios"
-          color="tertiary"
-          className="manage-toolbar-logo-container"
-        >
-          <IonImg src={restielogo} className="manage-toolbar-logo"></IonImg>
-        </IonToolbar>
       </IonHeader>
       <AddUserComponent />
     </IonPage>

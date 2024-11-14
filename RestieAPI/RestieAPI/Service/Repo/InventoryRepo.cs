@@ -1551,7 +1551,7 @@ namespace RestieAPI.Service.Repo
             {
                 if (getUserOrder.searchdate.Length <= 0)
                 {
-                    sql = @"select ors.* from orders ors join returns ret on ret.orderid=ors.orderid where  ret.orderid LIKE CONCAT('%', LOWER(@orderid), '%') group by ret.orderid, ors.orderid, cartid, total, paidthru, paidcash, createdby, ors.createdat, status, userid, updateat, type
+                    sql = @"select ors.* from orders ors join returns ret on ret.orderid=ors.orderid where  ret.orderid LIKE CONCAT('%', LOWER(@orderid), '%') group by ret.orderid,ors.voucher ,ors.totaldiscount, ors.orderid, cartid, total, paidthru, paidcash, createdby, ors.createdat, status, userid, updateat, type
                             ORDER BY ors.createdat desc LIMIT @limit OFFSET @offset;";
 
                 }else if (getUserOrder.searchdate.Length > 0)
@@ -2971,9 +2971,10 @@ namespace RestieAPI.Service.Repo
         }
         public RequestRefundResponseModel getItemtoRefund(RequestRefundRequest requestRefundRequest)
         {
-            var sql = @"select  tr.transid, tr.orderid,ct.cartid,ct.code,ct.item,ct.qty,ct.price,ct.total,ct.status,ors.createdat from transaction as tr
+            var sql = @"select  tr.transid, tr.orderid,ct.cartid,i.image,ct.code,ct.item,ct.qty,ct.price,ct.total,ct.status,ors.createdat from transaction as tr
                         join orders as ors on tr.orderid = ors.orderid
-                        join cart as ct on ct.cartid = ors.cartid  where tr.transid=@transid";
+                        join cart as ct on ct.cartid = ors.cartid 
+                        join inventory i on i.code = ct.code   where tr.transid=@transid";
             var parameters = new Dictionary<string, object>
             {
                 { "@transid", requestRefundRequest.transid },
@@ -3008,11 +3009,32 @@ namespace RestieAPI.Service.Repo
                                         status = reader.GetString(reader.GetOrdinal("status")),
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
                                         qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                        image = reader.GetString(reader.GetOrdinal("image")),
                                         onhandqty = reader.GetInt64(reader.GetOrdinal("qty")),
                                         total = reader.GetFloat(reader.GetOrdinal("total")),
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                     };
+                                    string originalPath = refundItemsResponse.image;
+                                    string formattedPath = originalPath.Replace("\\", "\\\\");
+                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
+                                    if (!System.IO.File.Exists(path))
+                                    {
+                                        refundItemsResponse.image = null;
+                                    }
+                                    else
+                                    {
+                                        string contentType = "image/jpeg";
+                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            contentType = "image/png";
+                                        }
+
+                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+
+                                        refundItemsResponse.image = Convert.ToBase64String(imageData);
+                                        refundItemsResponse.image_type = contentType;
+                                    }
                                     results.Add(refundItemsResponse);
                                 }
                             }

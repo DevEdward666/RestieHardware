@@ -305,7 +305,7 @@ const CartComponent: React.FC = () => {
                             key={index}
                             value={JSON.stringify(val)}
                           >
-                            {val.vouchercode}
+                            {val.vouchercode} - {val.description}
                           </IonSelectOption>
                         ))}
                       </IonSelect>

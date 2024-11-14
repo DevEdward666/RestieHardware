@@ -43,13 +43,6 @@ const AddNewItemPage = () => {
           </IonButtons>
           <IonTitle>Add Item</IonTitle>
         </IonToolbar>
-        <IonToolbar
-          mode="ios"
-          color="tertiary"
-          className="manage-toolbar-logo-container"
-        >
-          <IonImg src={restielogo} className="manage-toolbar-logo"></IonImg>
-        </IonToolbar>
       </IonHeader>
       <AddNewItemComponent />
     </IonPage>

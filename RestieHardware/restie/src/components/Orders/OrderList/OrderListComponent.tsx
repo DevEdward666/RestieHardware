@@ -116,10 +116,10 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
       ) : null}
 
       {Array.isArray(order_list) && order_list.length > 0 ? (
-        order_list?.map((orders) => (
+        order_list?.map((orders, index) => (
           <IonCard
             className="order-list-card-container"
-            key={orders.orderid}
+            key={index}
             onClick={() =>
               handleSelectOrder(
                 orders.orderid,

@@ -303,37 +303,36 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
               </div>
             </IonCardContent>
           </div>
-          <div className="inventory-card-button-container">
-            <IonButton
-              fill="clear"
-              className="inventory-card-addtocart-button"
-              disabled={card?.qty <= 0}
-              onClick={(event: any) => handleAddToCart(payload, event)}
-            >
-              <span className="addtocart-btn-text">
-                {card?.qty > 0 ? "Add to cart" : "Sold Out"}
-              </span>
-              <IonIcon
-                color="light"
-                slot="icon-only"
-                size="small"
-                icon={cart}
-              />
-            </IonButton>
-            {hasPermission ? (
+          <div className="inventory-card-buttons-container">
+            <div className="inventory-card-button-container">
               <IonButton
                 fill="clear"
                 className="inventory-card-addtocart-button"
-                onClick={(event: any) => handleAddQty(payload, event)}
+                disabled={card?.qty <= 0}
+                onClick={(event: any) => handleAddToCart(payload, event)}
               >
+                <span className="addtocart-btn-text">
+                  {card?.qty > 0 ? "Add to cart" : "Sold Out"}
+                </span>
                 <IonIcon
                   color="light"
                   slot="icon-only"
-                  size="large"
-                  icon={add}
+                  size="small"
+                  icon={cart}
                 />
               </IonButton>
-            ) : null}
+            </div>
+            <div className="inventory-card-add-button-container">
+              {hasPermission ? (
+                <IonButton
+                  fill="clear"
+                  className="inventory-card-addtocart-button"
+                  onClick={(event: any) => handleAddQty(payload, event)}
+                >
+                  <IonIcon color="light" slot="icon-only" icon={add} />
+                </IonButton>
+              ) : null}
+            </div>
           </div>
         </IonCard>
       </div>

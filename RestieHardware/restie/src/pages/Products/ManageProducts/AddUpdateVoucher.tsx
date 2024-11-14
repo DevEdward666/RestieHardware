@@ -42,13 +42,6 @@ const AddUpdateVoucherPage = () => {
           </IonButtons>
           <IonTitle>Add New Voucher</IonTitle>
         </IonToolbar>
-        <IonToolbar
-          mode="ios"
-          color="tertiary"
-          className="manage-toolbar-logo-container"
-        >
-          <IonImg src={restielogo} className="manage-toolbar-logo"></IonImg>
-        </IonToolbar>
       </IonHeader>
       <AddUpdateVoucherComponent />
     </IonPage>

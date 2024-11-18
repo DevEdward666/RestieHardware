@@ -26,7 +26,6 @@ const AddUserPage = () => {
   const router = useIonRouter();
   useEffect(() => {
     if (
-      user_login_information?.role.trim().toLowerCase() === "admin" ||
       user_login_information?.role.trim().toLowerCase() === "super admin"
     ) {
       setLoaded(true);

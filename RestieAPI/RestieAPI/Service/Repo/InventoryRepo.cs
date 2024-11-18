@@ -2820,8 +2820,8 @@ namespace RestieAPI.Service.Repo
         } 
         public SalesResponseModel GenerateInventoryLogs(GetInventoryLogs getInventoryLogs)
         {
-            var sql = @"select i.code,i.item,i.brand ,iv.addedqty , iv.onhandqty , s.company,iv.createdat from inventorylogs iv join inventory i  on i.code =iv.code join supplier s on s.supplierid = iv.supplierid
-                        where s.supplierid = @supplier and DATE(to_timestamp(iv.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between '2024-10-01' and '2024-10-26';";
+            var sql = @"select i.code,i.item,i.brand ,iv.addedqty , iv.onhandqty,TO_CHAR(TO_TIMESTAMP(iv.createdat / 1000), 'dd/MM/yyyy')  as received_date , s.company,iv.createdat from inventorylogs iv join inventory i  on i.code =iv.code join supplier s on s.supplierid = iv.supplierid 
+                        where s.supplierid = @supplier and DATE(to_timestamp(iv.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate;";
 
             DateTime fromDate = DateTime.Parse(getInventoryLogs.fromDate);
             DateTime toDate = DateTime.Parse(getInventoryLogs.toDate);
@@ -2862,6 +2862,7 @@ namespace RestieAPI.Service.Repo
                                         onhandqty = reader.GetInt16(reader.GetOrdinal("onhandqty")),
                                         brand = reader.GetString(reader.GetOrdinal("brand")),
                                         company = reader.GetString(reader.GetOrdinal("company")),
+                                        received_date = reader.GetString(reader.GetOrdinal("received_date")),
                                     };
 
                                     results.Add(salesResponse);
@@ -2891,7 +2892,7 @@ namespace RestieAPI.Service.Repo
                         {
                             result = null,
                             statusCode = 500,
-                            success = true,
+                            success = false,
                             message=ex.Message
                         };
                         throw;
@@ -3363,9 +3364,9 @@ namespace RestieAPI.Service.Repo
                 doc.Add(title);
 
                 // Add table
-                PdfPTable table = new PdfPTable(6);
+                PdfPTable table = new PdfPTable(7);
                 table.WidthPercentage = 100;
-                table.SetWidths(new float[] { 1, 3, 2, 1.5f, 1.5f, 2 });
+                table.SetWidths(new float[] { 1, 3, 2, 1.5f, 1.5f,1.5f, 2 });
                 table.SpacingBefore = 20f; // Add spacing before the table
                                            // Add table headers
                 table.AddCell(new PdfPCell(new Phrase("Code", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
@@ -3373,7 +3374,8 @@ namespace RestieAPI.Service.Repo
                 table.AddCell(new PdfPCell(new Phrase("Brand", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                 table.AddCell(new PdfPCell(new Phrase("Added Qty", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                 table.AddCell(new PdfPCell(new Phrase("Onhand Qty", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                table.AddCell(new PdfPCell(new Phrase("Company", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Recieved Date", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Supplier", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                 // Add table data
                 foreach (var invLogs in inventoryLogs)
                 {
@@ -3382,6 +3384,7 @@ namespace RestieAPI.Service.Repo
                     table.AddCell(new PdfPCell(new Phrase(invLogs.brand.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(invLogs.addedqty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(invLogs.onhandqty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.received_date.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(invLogs.company.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                  
                 }

@@ -286,6 +286,7 @@ namespace RestieAPI.Models.Response
         public int addedqty { get; set; }
         public int onhandqty { get; set; }
         public string company { get; set; }
+        public string received_date { get; set; }
     }
     public class InventoryResponse
     {

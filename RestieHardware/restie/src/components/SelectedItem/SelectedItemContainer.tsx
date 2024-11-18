@@ -358,9 +358,7 @@ const SelectedItemContainer: React.FC = () => {
               </SwiperSlide>
             )}
           </Swiper>
-          {user_login_information?.role.trim().toLowerCase() === "admin" ||
-          user_login_information?.role.trim().toLowerCase() ===
-            "super admin" ? (
+          {user_login_information?.role.trim().toLowerCase() === "admin" ? (
             <>
               <div className="capture-images-buttons">
                 <>

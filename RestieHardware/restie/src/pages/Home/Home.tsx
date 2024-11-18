@@ -3,6 +3,7 @@ import {
   IonAccordion,
   IonAccordionGroup,
   IonBadge,
+  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
@@ -10,8 +11,10 @@ import {
   IonImg,
   IonItem,
   IonLabel,
+  IonList,
   IonMenu,
   IonMenuButton,
+  IonModal,
   IonPage,
   IonSearchbar,
   IonSelect,
@@ -61,6 +64,10 @@ const Tab1: React.FC = () => {
   const [totalNotifs, setTotalNotifs] = useState<number>(
     receivable_list.length
   );
+  const [openSearchModal, setOpenSearchModal] = useState({
+    isOpen: false,
+    modal: "",
+  });
   const [isFetching, setFetching] = useState<boolean>(false);
   const [getCategoryAndBrand, setCategoryAndBrand] = useState({
     category: "",
@@ -93,6 +100,7 @@ const Tab1: React.FC = () => {
         brand: get_category_and_brand.brand,
         filter: get_category_and_brand.filter,
       });
+      setOpenSearchModal({ isOpen: false, modal: "" })
     },
     [get_category_and_brand]
   );
@@ -103,6 +111,7 @@ const Tab1: React.FC = () => {
         brand: brand,
         filter: get_category_and_brand.filter,
       });
+      setOpenSearchModal({ isOpen: false, modal: "" })
     },
     [get_category_and_brand]
   );
@@ -188,7 +197,12 @@ const Tab1: React.FC = () => {
                 </div>
               </IonItem>
               <div className="brand-content" slot="content">
-                {fetch_category.map((val, index) => (
+              <IonSearchbar
+                onClick={() => setOpenSearchModal({ isOpen: true, modal: "category" })}
+                placeholder="Search Category"
+                autocapitalize={"words"}
+              ></IonSearchbar>
+                {/* {fetch_category.map((val, index) => (
                   <div
                     key={index}
                     className="brands-container"
@@ -198,7 +212,7 @@ const Tab1: React.FC = () => {
                       <IonText className="brand-text">{val.category}</IonText>
                     </div>
                   </div>
-                ))}
+                ))} */}
               </div>
               {/* <div slot="content">
                 <div
@@ -256,6 +270,13 @@ const Tab1: React.FC = () => {
                 </div>
               </IonItem>
               <div className="brand-content" slot="content">
+              <IonSearchbar
+                onClick={() => setOpenSearchModal({ isOpen: true, modal: "brands" })}
+                placeholder="Search Brands"
+                autocapitalize={"words"}
+              ></IonSearchbar>
+              </div>
+              {/* <div className="brand-content" slot="content">
                 {fetch_brands.map((val, index) => (
                   <div
                     key={index}
@@ -267,7 +288,7 @@ const Tab1: React.FC = () => {
                     </div>
                   </div>
                 ))}
-              </div>
+              </div> */}
             </IonAccordion>
           </IonAccordionGroup>
           <IonItem className="filter">
@@ -348,18 +369,16 @@ const Tab1: React.FC = () => {
           </IonToolbar> */}
           <IonToolbar mode="ios" color="tertiary">
             <div
-              className={`home-search-container ${
-                platform.includes("mobileweb") && !platform.includes("tablet")
+              className={`home-search-container ${platform.includes("mobileweb") && !platform.includes("tablet")
                   ? "mobile-container"
                   : "desktop-container"
-              }`}
+                }`}
             >
               <IonSearchbar
-                className={`home-search ${
-                  platform.includes("mobileweb") && !platform.includes("tablet")
+                className={`home-search ${platform.includes("mobileweb") && !platform.includes("tablet")
                     ? "mobile"
                     : "desktop"
-                }`}
+                  }`}
                 debounce={2000}
                 onIonInput={(e) => handleSearch(e)}
                 mode="ios"
@@ -375,6 +394,70 @@ const Tab1: React.FC = () => {
             {isFetching && <IonSpinner color="light" name="lines"></IonSpinner>}
           </div>
           <ExploreContainer data={list_of_items} searchItem={fetchList} />
+          <IonModal
+            isOpen={openSearchModal.isOpen}
+            onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
+            initialBreakpoint={1}
+            breakpoints={[0, 0.25, 0.5, 0.75, 1]}
+          >
+            <IonHeader>
+              <IonToolbar>
+                <IonButtons slot="start">
+                  <IonButton
+                    onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}
+                  >
+                    Cancel
+                  </IonButton>
+                </IonButtons>
+              </IonToolbar>
+            </IonHeader>
+            <IonContent className="ion-padding">
+            {openSearchModal.modal === "category" ? (
+                <>
+                  <IonSearchbar
+                    placeholder="Search Category"
+                    onIonInput={(e) => handleSearch(e)}
+                    autocapitalize={"words"}
+                    debounce={1500}
+                  ></IonSearchbar>
+                  <IonList>
+                    {fetch_category.map((val, index) => (
+                      <IonItem
+                      onClick={() => handleCategory(val.category)}
+                        key={index}
+                      >
+                        <IonLabel>
+                          <h2>{val.category}</h2>
+                        </IonLabel>
+                      </IonItem>
+                    ))}
+                  </IonList>
+                </>
+              ) : null}
+              {openSearchModal.modal === "brands" ? (
+                <>
+                  <IonSearchbar
+                    placeholder="Search Brands"
+                    onIonInput={(e) => handleSearch(e)}
+                    autocapitalize={"words"}
+                    debounce={1500}
+                  ></IonSearchbar>
+                  <IonList>
+                    {fetch_brands.map((val, index) => (
+                      <IonItem
+                      onClick={() => handleBrand(val.brand)}
+                        key={index}
+                      >
+                        <IonLabel>
+                          <h2>{val.brand}</h2>
+                        </IonLabel>
+                      </IonItem>
+                    ))}
+                  </IonList>
+                </>
+              ) : null}
+            </IonContent>
+          </IonModal>
         </IonContent>
       </IonPage>
     </>

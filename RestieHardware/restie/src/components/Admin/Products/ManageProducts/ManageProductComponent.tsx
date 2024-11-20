@@ -61,12 +61,12 @@ const ManageProductComponent = () => {
   const DRtype: TypeOfDeliveryReceipt[] = [
     {
       id: 1,
-      name: "Single",
+      name: "Update",
       type: "single",
     },
     {
       id: 2,
-      name: "Multiple",
+      name: "Received",
       type: "multiple",
     },
   ];
@@ -134,11 +134,53 @@ const ManageProductComponent = () => {
     type: "products",
   });
 
-  const handleQuantityChange = (index: number) => (event: CustomEvent) => {
-    const value = Number(event.detail.value);
+  const handleQuantityChange = (index: number,event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = event.target;
     const newProducts = [...products];
-    newProducts[index].addedqty = value;
-    setProducts(newProducts);
+  
+
+    if (name === "qty") {
+      let qtyValue = parseInt(value);
+      if (qtyValue<= 0 || isNaN(qtyValue)) {
+        newProducts[index].addedqty = 1;
+        setShowAlert({
+          isOpen: true,
+          message:
+            "Please ensure all products have valid code, quantity > 0, and price > 0.",
+        });
+        return;
+      }
+      newProducts[index].addedqty = qtyValue;
+      setProducts(newProducts);
+    }
+    if (name === "cost") {
+      let costValue = parseFloat(value);
+      if (costValue <= 0 || isNaN(costValue)) {
+        newProducts[index].cost = newProducts[index].cost;
+        setShowAlert({
+          isOpen: true,
+          message:
+            "Please ensure all products have valid code, quantity > 0, and price > 0.",
+        });
+        return;
+      }
+      newProducts[index].cost = costValue;
+      setProducts(newProducts);
+    }
+    if (name === "price") {
+      let priceValue = parseFloat(value);
+      if (priceValue <= 0 || isNaN(priceValue)) {
+        newProducts[index].price = newProducts[index].price;
+        setShowAlert({
+          isOpen: true,
+          message:
+            "Please ensure all products have valid code, quantity > 0, and price > 0.",
+        });
+        return;
+      }
+      newProducts[index].price = priceValue;
+      setProducts(newProducts);
+    }
   };
 
   const addNewProduct = (is_submit: boolean) => {
@@ -193,7 +235,12 @@ const ManageProductComponent = () => {
     const noProduct = products.length <= 0;
 
     const invalidProduct = products.find(
-      (product) => !product.code || product.addedqty <= 0 || product.price <= 0
+      (product) =>
+        !product.code ||
+        product.addedqty <= 0 ||
+        product.price <= 0 ||
+        isNaN(product.addedqty) ||
+        isNaN(product.price)
     );
 
     if (invalidProduct || noProduct) {
@@ -341,6 +388,16 @@ const ManageProductComponent = () => {
   const handleInfoChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
+      let qty = parseInt(value);
+      if (name === "addedqty" && qty <= 0) {
+        setShowAlert({
+          isOpen: true,
+          message:
+            "Please ensure all products have valid code, quantity > 0, and price > 0.",
+        });
+        return;
+      }
+
       setProductInfo((prevState) => ({
         ...prevState,
         [name]: value,
@@ -619,6 +676,7 @@ const ManageProductComponent = () => {
               labelPlacement="floating"
               label="Add Quantity"
               name="addedqty"
+              debounce={500}
               type="number"
               onIonInput={(e: any) => handleInfoChange(e)}
               class="product-input"
@@ -670,44 +728,94 @@ const ManageProductComponent = () => {
               expand="block"
               onClick={() => addNewProduct(false)}
             >
-              Add New Product
+              Select Product
             </IonButton>
-            {loading ? (
-              <div>Loading...</div>
-            ) : products.length > 0 ? (
-              products.map((product, index) => (
-                <IonItem key={index}>
-                  <IonIcon
-                    className="product-add-icon"
-                    onClick={() => {
-                      setSelectedProductIndex(index);
-                      setShowModal({ isOpen: true, type: "product" });
-                    }}
-                    icon={addCircle}
-                  ></IonIcon>
-                  <IonLabel className="product-name-selected">
-                    {product.item || "No item selected"}
-                  </IonLabel>
-                  <IonInput
-                    type="number"
-                    class="product-input-qty"
-                    value={product.addedqty || 1}
-                    placeholder="Qty"
-                    onIonChange={handleQuantityChange(index)}
-                  />
-                  <IonIcon
-                    className="product-remove-icon"
-                    icon={closeCircle}
-                    onClick={() => removeProduct(index)}
-                    color="danger"
-                  >
-                    Remove
-                  </IonIcon>
-                </IonItem>
-              ))
-            ) : (
-              <span className="not-yet-span"> No item yet</span>
-            )}
+            <div>
+              {loading ? (
+                <div>Loading...</div>
+              ) : products.length > 0 ? (
+                <>
+                  {/* <div className="product-list-item-header">
+                    <label>Product</label>
+                    <label>Cost</label>
+                    <label>Price</label>
+                    <label>QTY</label>
+                  </div> */}
+                  {products.map((product, index) => (
+                    <IonItem key={index}>
+                      <div className="product-list-item">
+                        <IonIcon
+                          size="large"
+                          className="product-add-icon"
+                          onClick={() => {
+                            setSelectedProductIndex(index);
+                            setShowModal({ isOpen: true, type: "product" });
+                          }}
+                          icon={addCircle}
+                        ></IonIcon>
+                        <div className="product-input-container product-item-text">
+                        <label className="product-input-label">Product</label>
+                        <IonInput
+                          type="text"
+                          name="product"
+                          className="product-name-selected"
+                          value={product.item || "No item selected"}
+                          readonly
+                        />
+                        </div>
+                        <div className="product-input-container">
+                          <label className="product-input-label">Cost</label>
+                        <IonInput
+                          type="number"
+                          name="cost"
+                          className="product-input-qty"
+                          value={product.cost || ""}
+                          placeholder="Cost"
+                          debounce={500}
+                          onIonInput={(e: any) => handleQuantityChange(index,e)}
+                        />
+                        </div>
+                        <div className="product-input-container">
+                        <label className="product-input-label">Price</label>
+                        <IonInput
+                          type="number"
+                          name="price"
+                          className="product-input-qty"
+                          value={product.price || ""}
+                          placeholder="Price"
+                          debounce={500}
+                          onIonInput={(e: any) => handleQuantityChange(index,e)}
+                        />
+                        </div>
+                        <div className="product-input-container">
+                          <label className="product-input-label">Qty</label>
+                          <IonInput
+                            type="number"
+                            name="qty"
+                            className="product-input-qty"
+                            value={product.addedqty || 1}
+                            placeholder="Qty"
+                            debounce={500}
+                            onIonInput={(e: any) => handleQuantityChange(index,e)}
+                          />
+                        </div>
+                        <IonIcon
+                          className="product-remove-icon"
+                          icon={closeCircle}
+                          size="large"
+                          onClick={() => removeProduct(index)}
+                          color="danger"
+                        >
+                          Remove
+                        </IonIcon>
+                      </div>
+                    </IonItem>
+                  ))}
+                </>
+              ) : (
+                <span className="not-yet-span">No item yet</span>
+              )}
+            </div>
 
             <IonButton color="medium" expand="block" onClick={handleSubmit}>
               Submit Products

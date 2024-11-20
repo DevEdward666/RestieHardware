@@ -131,7 +131,8 @@ const CartComponent: React.FC = () => {
     selectedItem: SelectedItemToCart,
     isAdd?: boolean,
     qtyAdded?: number,
-    onhand?: number
+    onhand?: number,
+    input?:boolean
   ) => {
     setOnhand(onhand!);
     let change = 0;
@@ -142,7 +143,7 @@ const CartComponent: React.FC = () => {
       });
       qtyAdded = 1;
     }
-    if ((qtyAdded !== undefined && qtyAdded <= 0) || isNaN(qtyAdded!)) {
+    if ((qtyAdded !== undefined && qtyAdded <= 0) || isNaN(qtyAdded!) && input) {
       setIsOpenToast({
         toastMessage: "Must be atleast 1 qty",
         isOpen: true,
@@ -253,7 +254,7 @@ const CartComponent: React.FC = () => {
                         size="large"
                         fill="clear"
                         onClick={() =>
-                          handleQty(card, false, undefined, card?.onhandqty)
+                          handleQty(card, false, undefined, card?.onhandqty,false)
                         }
                       >
                         <IonIcon
@@ -273,7 +274,8 @@ const CartComponent: React.FC = () => {
                             card,
                             true,
                             parseInt(ev.target.value?.toString()!),
-                            card?.onhandqty
+                            card?.onhandqty,
+                            true
                           )
                         }
                       ></IonInput>
@@ -283,7 +285,7 @@ const CartComponent: React.FC = () => {
                         size="large"
                         fill="clear"
                         onClick={() =>
-                          handleQty(card, true, undefined, card?.onhandqty)
+                          handleQty(card, true, undefined, card?.onhandqty,false)
                         }
                       >
                         <IonIcon

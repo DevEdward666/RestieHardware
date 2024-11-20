@@ -676,7 +676,7 @@ const OrderInfoComponent: React.FC = () => {
       .map(
         (item) =>
           `${item.code}\n${item.item.trim()}\nPrice        Qty      Total\nP${
-            item.price
+            item.price - item.discount_price
           }       |    ${item.qty}    |  P${
             item.price - (item.discount_price ?? 0) * item.qty
           }

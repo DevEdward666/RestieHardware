@@ -2736,13 +2736,13 @@ namespace RestieAPI.Service.Repo
         }
         public SalesResponseModel GenerateSalesReturn(GetSales getSales)
         {
-            var sql = @" select  ct.code, TRIM(ct.item) as item, SUM(ret.price) as price, SUM(ret.qty) as qty, TO_CHAR(SUM(ret.qty* ret.price), 'FM999,999,999.00') AS total_sales
+            var sql = @" select  ct.code, TRIM(ct.item) as item, ret.price, SUM(ret.qty) as qty, TO_CHAR(SUM(ret.qty* ret.price), 'FM999,999,999.00') AS total_sales
                 from transaction as tr right join orders as ors on tr.orderid = ors.orderid
                 join cart as ct on ct.cartid = ors.cartid
                 join returns ret on ret.orderid = ors.orderid
                 where LOWER(ors.status) = 'approved' and LOWER(ct.status) = 'return'
                 AND DATE(to_timestamp(tr.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
-                group by ct.item, ct.code;";
+                group by ct.item, ct.code,ret.price ;";
 
             DateTime fromDate = DateTime.Parse(getSales.fromDate);
             DateTime toDate = DateTime.Parse(getSales.toDate);
@@ -3067,6 +3067,7 @@ namespace RestieAPI.Service.Repo
             var insertReturn = @"insert into returns (transid,orderid,code,item,qty,price,createdat,remarks) 
                                 values(@transid, @orderid, @code, @item, @qty, @price,@createdat,@remarks)";
             var updateCart = @"update cart set status='return' where cartid=@cartid and code=@code";
+            var reconcileInventory = @"update inventory set qty=qty + @qty where code=@code";
             var cmd = new NpgsqlCommand();
             using (var connection = new NpgsqlConnection(_connectionString))
             {
@@ -3076,6 +3077,23 @@ namespace RestieAPI.Service.Repo
                 {
                     try
                     {
+                        foreach (var cartItems in returnItems)
+                        {
+                            // Execute the insertion command for each item
+                            using (cmd = new NpgsqlCommand(reconcileInventory, connection))
+                            {
+                                var parameters = new Dictionary<string, object>
+                                {
+                                    { "@qty", cartItems.qty },
+                                    { "@code", cartItems.code },
+                                };
+                                foreach (var param in parameters)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
                         foreach (var cartItems in returnItems)
                         {
                             // Execute the insertion command for each item

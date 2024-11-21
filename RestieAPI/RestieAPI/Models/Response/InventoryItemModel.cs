@@ -135,6 +135,7 @@ namespace RestieAPI.Models.Response
         public string orderid { get; set; }
         public string cartid { get; set; }
         public float total { get; set; }
+        public float totaldiscount { get; set; }
         public string paidthru { get; set; }
         public float paidcash { get; set; }
         public string createdby { get; set; }
@@ -284,6 +285,8 @@ namespace RestieAPI.Models.Response
         public string item { get; set; }
         public string brand { get; set; }
         public int addedqty { get; set; }
+        public float price { get; set; }
+        public float cost { get; set; }
         public int onhandqty { get; set; }
         public string company { get; set; }
         public string received_date { get; set; }

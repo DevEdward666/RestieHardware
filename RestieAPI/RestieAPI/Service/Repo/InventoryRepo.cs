@@ -1633,6 +1633,7 @@ namespace RestieAPI.Service.Repo
                                         orderid = reader.GetString(reader.GetOrdinal("orderid")),
                                         cartid = reader.GetString(reader.GetOrdinal("cartid")),
                                         total = reader.GetFloat(reader.GetOrdinal("total")),
+                                        totaldiscount = !reader.IsDBNull(reader.GetOrdinal("totaldiscount"))?  reader.GetFloat(reader.GetOrdinal("totaldiscount")) : 0,
                                         paidthru = reader.GetString(reader.GetOrdinal("paidthru")),
                                         paidcash = reader.GetFloat(reader.GetOrdinal("paidcash")),
                                         createdby = reader.GetString(reader.GetOrdinal("createdby")),
@@ -2538,7 +2539,7 @@ namespace RestieAPI.Service.Repo
                 join customer cts on cts.customerid = ors.userid 
                 join inventory AS inv on inv.code = ct.code
                 left join transaction as trans on trans.orderid = ors.orderid
-                where ors.orderid = @orderid  group by cts.customerid, cts.customer_email, inv.category, inv.brand, trans.transid, inv.qty, cts.name, cts.address, cts.contactno, ct.cartid, ors.orderid, ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code, ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type";
+                where ors.orderid = @orderid  group by cts.customerid, cts.customer_email, inv.category, inv.brand, trans.transid, inv.qty, cts.name, cts.address, cts.contactno, ct.cartid, ors.orderid, ors.paidcash, ors.paidthru, ors.total, ors.createdat, ct.code, ct.item, ct.price, ct.qty, ors.status, ors.createdby, ors.type order by trim(ct.item) asc";
 
             var parameters = new Dictionary<string, object>
                 {
@@ -2653,7 +2654,7 @@ namespace RestieAPI.Service.Repo
                 where
                 (LOWER(ors.status)  IN ('approved', 'delivered') OR LOWER(ct.status) IN ('approved', 'delivered'))
                 AND DATE(to_timestamp(ors.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
-                group by ct.item, ct.code,it.cost,it.price;";
+                group by ct.item, ct.code,it.cost,it.price order by trim(ct.item) asc;";
 
             DateTime fromDate = DateTime.Parse(getSales.fromDate);
             DateTime toDate = DateTime.Parse(getSales.toDate); 
@@ -2695,7 +2696,7 @@ namespace RestieAPI.Service.Repo
                                         cost = reader.GetInt16(reader.GetOrdinal("cost")),
                                         total_cost = reader.GetString(reader.GetOrdinal("total_cost")),
                                         total_sales = reader.GetString(reader.GetOrdinal("total_sales")),
-                                        total_discount = reader.GetString(reader.GetOrdinal("total_discount")),
+                                        total_discount = !reader.IsDBNull(reader.GetOrdinal("total_discount"))? reader.GetString(reader.GetOrdinal("total_discount")): "0",
                                         profit = reader.GetString(reader.GetOrdinal("profit")),
                                     };
 
@@ -2742,7 +2743,7 @@ namespace RestieAPI.Service.Repo
                 join returns ret on ret.orderid = ors.orderid
                 where LOWER(ors.status) = 'approved' and LOWER(ct.status) = 'return'
                 AND DATE(to_timestamp(tr.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
-                group by ct.item, ct.code,ret.price ;";
+                group by ct.item, ct.code,ret.price order by trim(ct.item) asc;";
 
             DateTime fromDate = DateTime.Parse(getSales.fromDate);
             DateTime toDate = DateTime.Parse(getSales.toDate);
@@ -2820,8 +2821,8 @@ namespace RestieAPI.Service.Repo
         } 
         public SalesResponseModel GenerateInventoryLogs(GetInventoryLogs getInventoryLogs)
         {
-            var sql = @"select i.code,i.item,i.brand ,iv.addedqty , iv.onhandqty,TO_CHAR(TO_TIMESTAMP(iv.createdat / 1000), 'dd/MM/yyyy')  as received_date , s.company,iv.createdat from inventorylogs iv join inventory i  on i.code =iv.code join supplier s on s.supplierid = iv.supplierid 
-                        where s.supplierid = @supplier and DATE(to_timestamp(iv.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate;";
+            var sql = @"select i.code,trim(i.item) as item ,i.cost ,i.price ,i.brand ,iv.addedqty , iv.onhandqty,TO_CHAR(TO_TIMESTAMP(iv.createdat / 1000), 'dd/MM/yyyy')  as received_date , s.company,iv.createdat from inventorylogs iv join inventory i  on i.code =iv.code join supplier s on s.supplierid = iv.supplierid 
+                        where s.supplierid = @supplier and DATE(to_timestamp(iv.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate order by trim(i.item) asc; ";
 
             DateTime fromDate = DateTime.Parse(getInventoryLogs.fromDate);
             DateTime toDate = DateTime.Parse(getInventoryLogs.toDate);
@@ -2858,6 +2859,8 @@ namespace RestieAPI.Service.Repo
                                     {
                                         code = reader.GetString(reader.GetOrdinal("code")),
                                         item = reader.GetString(reader.GetOrdinal("item")),
+                                        cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                                        price = reader.GetFloat(reader.GetOrdinal("price")),
                                         addedqty = reader.GetInt16(reader.GetOrdinal("addedqty")),
                                         onhandqty = reader.GetInt16(reader.GetOrdinal("onhandqty")),
                                         brand = reader.GetString(reader.GetOrdinal("brand")),
@@ -2904,7 +2907,7 @@ namespace RestieAPI.Service.Repo
         {
             var sql = @"select  inv.code,inv.item,inv.qty as onhandqty, count(ct.qty) as soldqty,inv.cost,inv.price
                         from inventory as inv left join cart ct on inv.code = ct.code 
-                        group by inv.code,inv.item,inv.qty,inv.cost,inv.price order by  inv.qty ASC;";
+                        group by inv.code,inv.item,inv.qty,inv.cost,inv.price order by trim(inv.item) asc;";
 
 
 
@@ -3341,7 +3344,7 @@ namespace RestieAPI.Service.Repo
 
             using (MemoryStream ms = new MemoryStream())
             {
-                Document doc = new Document();
+                Document doc = new Document(PageSize.A4.Rotate());
                 PdfWriter.GetInstance(doc, ms);
                 doc.Open();
 
@@ -3382,14 +3385,16 @@ namespace RestieAPI.Service.Repo
                 doc.Add(title);
 
                 // Add table
-                PdfPTable table = new PdfPTable(7);
+                PdfPTable table = new PdfPTable(9);
                 table.WidthPercentage = 100;
-                table.SetWidths(new float[] { 1, 3, 2, 1.5f, 1.5f,1.5f, 2 });
+                table.SetWidths(new float[] { 1, 3, 2, 1.5f,1.5f,1.5f, 1.5f,1.5f, 2 });
                 table.SpacingBefore = 20f; // Add spacing before the table
                                            // Add table headers
                 table.AddCell(new PdfPCell(new Phrase("Code", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                 table.AddCell(new PdfPCell(new Phrase("Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                 table.AddCell(new PdfPCell(new Phrase("Brand", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Cost", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase("Price", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                 table.AddCell(new PdfPCell(new Phrase("Added Qty", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                 table.AddCell(new PdfPCell(new Phrase("Onhand Qty", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                 table.AddCell(new PdfPCell(new Phrase("Recieved Date", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
@@ -3400,6 +3405,8 @@ namespace RestieAPI.Service.Repo
                     table.AddCell(new PdfPCell(new Phrase(invLogs.code.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(invLogs.item.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(invLogs.brand.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.cost.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(invLogs.price.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(invLogs.addedqty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(invLogs.onhandqty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(invLogs.received_date.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });

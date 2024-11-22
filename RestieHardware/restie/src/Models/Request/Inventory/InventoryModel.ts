@@ -168,6 +168,7 @@ export interface PostDaysSalesModel {
   fromDate: string;
   toDate: string;
   filter?: number;
+  report_type?:number;
 }
 export interface PostInventoryLogsModel {
   fromDate: string;

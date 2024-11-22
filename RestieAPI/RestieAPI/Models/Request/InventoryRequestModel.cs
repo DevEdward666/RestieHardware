@@ -256,6 +256,7 @@ namespace RestieAPI.Models.Request
             public string fromDate { get; set; }
             public string toDate { get; set; }
             public int filter{ get; set; }
+            public int report_type{ get; set; }
 
 
         }

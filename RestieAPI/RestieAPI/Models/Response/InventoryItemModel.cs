@@ -270,6 +270,21 @@ namespace RestieAPI.Models.Response
         public string total_discount { get; set; }
         public string profit { get; set; }
     }
+    public class SalesReportResponse
+    {   
+        public string item { get; set; }
+        public int qty_sold { get; set; }
+        public int return_qty { get; set; }
+        public int price { get; set; }
+        public int total_qty_sold { get; set; }
+        public string total_sales { get; set; }
+        public string total_discount { get; set; }
+        
+        
+        public string transid { get; set; }
+        public string total { get; set; }
+        public int total_returns { get; set; }
+    }
     public class ReturnSalesResponse
     {
         public string code { get; set; }

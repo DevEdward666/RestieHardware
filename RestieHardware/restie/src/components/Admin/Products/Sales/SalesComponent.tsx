@@ -68,6 +68,8 @@ const SalesComponent = () => {
     isOpen: false,
   });
   const [selectedFilter, setSelectedFilter] = useState<number>(0);
+  const [selectedFilterType, setSelectedFilterType] = useState<number>(0);
+
 
   const formatDate = (dateStr?: string) => {
     const dateTimeString = dateStr;
@@ -93,6 +95,7 @@ const SalesComponent = () => {
       fromDate: formatDate(lowestDate),
       toDate: formatDate(highestDate),
       filter: selectedFilter,
+      report_type:selectedFilterType
     };
     const inventory_logs_payload: PostInventoryLogsModel = {
       fromDate: formatDate(lowestDate),
@@ -152,7 +155,7 @@ const SalesComponent = () => {
     });
     // setopenPDFModal({ isOpen: true, modal: "pdf" });
     setFile(res);
-  }, [openPDFModal, selectedDates, selectedSupplier, selectedFilter]);
+  }, [openPDFModal, selectedDates, selectedSupplier, selectedFilter,selectedFilterType]);
   const handleGenerateInventory = async () => {
     setIsOpenToast({
       toastMessage: "Generating PDF",
@@ -257,9 +260,23 @@ const SalesComponent = () => {
       value: 1,
     },
   ];
+  const filterType = [
+    {
+      name: "Details",
+      value: 0,
+    },
+    {
+      name: "Summary",
+      value: 1,
+    },
+  ];
   const handleSelectedFilter = (e: CustomEvent<HTMLIonSelectElement>) => {
     const { value } = e.detail;
     setSelectedFilter(value);
+  };
+  const handleSelectedFilterType = (e: CustomEvent<HTMLIonSelectElement>) => {
+    const { value } = e.detail;
+    setSelectedFilterType(value);
   };
   return (
     <IonContent className="generate-sales-main-content">
@@ -383,6 +400,23 @@ const SalesComponent = () => {
                   value={selectedFilter}
                 >
                   {filterForSales?.map((val, index) => (
+                    <IonSelectOption key={index} value={val.value}>
+                      {val.name}
+                    </IonSelectOption>
+                  ))}
+                </IonSelect>
+              </IonItem>
+              <IonItem>
+                <IonLabel>Type</IonLabel>
+                <IonSelect
+                  name="Filter Report"
+                  onIonChange={(e: any) => handleSelectedFilterType(e)}
+                  aria-label="Filter Report"
+                  className="info-input"
+                  placeholder="Filter Report"
+                  value={selectedFilterType}
+                >
+                  {filterType?.map((val, index) => (
                     <IonSelectOption key={index} value={val.value}>
                       {val.name}
                     </IonSelectOption>

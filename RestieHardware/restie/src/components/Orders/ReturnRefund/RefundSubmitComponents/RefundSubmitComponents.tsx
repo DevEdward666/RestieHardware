@@ -65,8 +65,25 @@ const RefundSubmitComponents: React.FC = () => {
                   <div className="return-submit-card-content">
                     <div className="return-submit-card-title">{card.item}</div>
                     <div className="return-submit-card-price">
-                      <span>&#8369;</span>
-                      {card.price.toFixed(2)}
+                    <span>&#8369;</span>
+                            <span
+                              className={`${
+                                card.discount_price > 0
+                                  ? "order-list-price-with-discount"
+                                  : null
+                              }`}
+                            >
+                              {card.price.toFixed(2)}
+                            </span>
+
+                            {card.discount_price > 0 ? (
+                              <span>
+                                &#8369;
+                                {(card.price - card.discount_price).toFixed(
+                                  2
+                                )}
+                              </span>
+                            ) : null}
                     </div>
                   </div>
                   <div className="return-submit-card-qty">{card?.qty} pcs</div>
@@ -82,7 +99,7 @@ const RefundSubmitComponents: React.FC = () => {
     const initialize = () => {
       let total = 0;
       checked_return_refund.map((val) => {
-        total += val.total;
+        total += val.qty * val.price - val.discount_price * val.qty;
       });
       setTotal(total);
     };
@@ -120,7 +137,7 @@ const RefundSubmitComponents: React.FC = () => {
       }
     };
     initialize();
-  }, [dispatch, complete, getRemarks]);
+  }, [dispatch, complete, getRemarks,checked_return_refund]);
 
   const handleInfoChange = async (
     e: React.ChangeEvent<HTMLTextAreaElement>
@@ -156,8 +173,10 @@ const RefundSubmitComponents: React.FC = () => {
                 total={card.total}
                 image={card.image}
                 image_type={card.image_type}
-                remarks={card.remarks}
-              />
+                remarks={card.remarks} 
+                discount_price={card.discount_price}
+                totaldiscount={card.price - card.discount_price * card.qty}
+                />
             </div>
           </div>
         ))}

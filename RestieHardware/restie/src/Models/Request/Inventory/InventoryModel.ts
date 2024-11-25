@@ -63,6 +63,8 @@ export interface ItemReturns {
   qty: number;
   onhandqty?: number;
   price: number;
+  discount_price:number;
+  totaldiscount:number;
   image: string;
   image_type: string;
   total: number;

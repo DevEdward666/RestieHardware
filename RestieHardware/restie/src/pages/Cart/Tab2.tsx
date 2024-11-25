@@ -77,7 +77,7 @@ const Tab2: React.FC = () => {
           AddCustomerInformation({
             name: "",
             address: "",
-            contactno: 0,
+            contactno: "0",
             ordertype: "",
             newUser: false,
           })

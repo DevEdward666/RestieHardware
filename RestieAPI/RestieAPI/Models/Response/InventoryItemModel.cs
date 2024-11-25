@@ -164,6 +164,8 @@ namespace RestieAPI.Models.Response
         public string image {  get; set; }
         public string image_type {  get; set; }
         public float price { get; set; }
+        public float discount_price { get; set; }
+        public float total_discount { get; set; }
         public long qty { get; set; }
         public long onhandqty { get; set; }
         public long createdat { get; set; }
@@ -283,7 +285,7 @@ namespace RestieAPI.Models.Response
         
         public string transid { get; set; }
         public string total { get; set; }
-        public int total_returns { get; set; }
+        public string total_returns { get; set; }
     }
     public class ReturnSalesResponse
     {

@@ -2661,31 +2661,40 @@ namespace RestieAPI.Service.Repo
                 if (getSales.report_type == 0)
                 {
                     sql =
-                        @"SELECT TRIM(ct.item) as item,SUM(ct.qty) AS qty_sold,COALESCE(SUM(rt.qty), 0) AS return_qty,ct.price,SUM(ct.qty) - COALESCE(SUM(rt.qty), 0) as total_qty_sold,
-                        TO_CHAR(sum(ct.total) - COALESCE(SUM(rt.qty * ct.price), 0),  'FM999,999,999.00') AS total_sales
-                        FROM orders ors
-                        JOIN cart ct ON ct.cartid = ors.cartid
-                        join transaction t on t.orderid  = ors.orderid 
-                        LEFT JOIN returns rt ON rt.item = ct.item
-                        WHERE (LOWER(ors.status) IN ('approved', 'delivered') OR LOWER(ct.status) IN ('approved', 'delivered')) 
-                        AND DATE(to_timestamp(ors.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
-                        GROUP BY ct.item,ct.price ORDER BY ct.item;";
+                        @"SELECT TRIM(ct.item)as item,sum(ct.qty) AS qty_sold,
+                            COALESCE(SUM(rt.qty), 0) AS return_qty,
+                            ct.price,SUM(ct.qty) - COALESCE(SUM(rt.qty), 0) as total_qty_sold,
+                            TO_CHAR(sum(ct.total) - COALESCE(SUM(rt.qty * ct.price), 0),  'FM999,999,999.00') AS total_sales
+                            FROM cart ct
+                            JOIN orders ors ON ct.cartid = ors.cartid
+                            LEFT JOIN returns rt ON rt.orderid = ors.orderid and rt.code = ct.code 
+                            WHERE (LOWER(ors.status) IN ('approved', 'delivered') OR LOWER(ct.status) IN ('approved', 'delivered')) 
+                             AND DATE(to_timestamp(ors.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
+                            GROUP BY ct.item,ct.price ORDER BY ct.item;";
                 }
                 else
                 {
                     sql =
-                        @"  SELECT
-                            split_part(t.transid, '-', 5) AS transid,
-                            TO_CHAR(o.total, 'FM999,999,999.00') AS total,
-                            COALESCE(MAX(rt.qty) * MAX(rt.price), 0)AS total_returns,
-                            TO_CHAR(COALESCE(o.total - (MAX(rt.qty) * MAX(rt.price)), o.total), 'FM999,999,999.00') AS total_sales
-	                        FROM transaction t
-	                        JOIN orders o ON t.orderid = o.orderid
-	                        JOIN cart c ON c.cartid = o.cartid
-	                        LEFT JOIN returns rt ON rt.transid = t.transid
-	                        WHERE (LOWER(o.status) IN ('approved', 'delivered') OR LOWER(c.status) IN ('approved', 'delivered'))
-	                        AND DATE(to_timestamp(o.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
-	                        GROUP BY t.transid, o.total;";
+                        @"SELECT
+                                  split_part(t.transid, '-', 5) AS transid,
+                                  TO_CHAR(o.total - o.totaldiscount , 'FM999,999,999.00') AS total,
+                                  TO_CHAR(COALESCE(sum(rt.qty * rt.price), 0), 'FM999,999,999.00') AS total_returns,
+                                  TO_CHAR(
+                                    COALESCE(
+                                      sum(c.qty * c.price - c.discount_price) - sum(rt.qty * rt.price -rt.discount_price)
+                                    , o.total), 'FM999,999,999.00'
+                                  ) AS total_sales
+                                FROM transaction t
+                                JOIN orders o ON t.orderid = o.orderid
+                                JOIN cart c ON c.cartid = o.cartid
+                                LEFT JOIN returns rt ON rt.transid = t.transid AND rt.code = c.code 
+                                WHERE 
+                                  (LOWER(o.status) IN ('approved', 'delivered') 
+                                   OR LOWER(c.status) IN ('approved', 'delivered'))
+                                AND 
+                                  DATE(to_timestamp(o.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') 
+                                  BETWEEN @fromDate AND @toDate
+                                GROUP BY t.transid, o.total ,o.totaldiscount  ;";
                 }
                 
              
@@ -2695,31 +2704,41 @@ namespace RestieAPI.Service.Repo
                 if (getSales.report_type == 0)
                 {
                     sql =
-                        @"SELECT TRIM(ct.item) as item,SUM(ct.qty) AS qty_sold,COALESCE(SUM(rt.qty), 0) AS return_qty,ct.price,SUM(ct.qty) - COALESCE(SUM(rt.qty), 0) as total_qty_sold, 
-                            TO_CHAR(COALESCE(SUM(ct.discount_price),0), 'FM999,999,999.00') AS total_discount, TO_CHAR(sum(ct.total) - COALESCE(SUM(ct.discount_price),0) - COALESCE(SUM(rt.qty * ct.price), 0),  'FM999,999,999.00') AS total_sales
-                            FROM orders ors
-                            JOIN cart ct ON ct.cartid = ors.cartid
-                            join transaction t on t.orderid  = ors.orderid 
-                            LEFT JOIN returns rt ON rt.item = ct.item
-                            WHERE (LOWER(ors.status) IN ('approved', 'delivered') OR LOWER(ct.status) IN ('approved', 'delivered'))
+                        @"SELECT TRIM(ct.item) as item,sum(ct.qty) AS qty_sold,
+                            COALESCE(SUM(rt.qty), 0) AS return_qty,
+                            ct.price,SUM(ct.qty) - COALESCE(SUM(rt.qty), 0) as total_qty_sold,
+                            TO_CHAR(COALESCE(SUM(ct.discount_price),0), 'FM999,999,999.00') AS total_discount, 
+                            TO_CHAR(sum(ct.total) - COALESCE(SUM(rt.qty * ct.price), 0),  'FM999,999,999.00') AS total_sales
+                            FROM cart ct
+                            JOIN orders ors ON ct.cartid = ors.cartid
+                            LEFT JOIN returns rt ON rt.orderid = ors.orderid and rt.code = ct.code  
+                            WHERE (LOWER(ors.status) IN ('approved', 'delivered') OR LOWER(ct.status) IN ('approved', 'delivered')) 
                              AND DATE(to_timestamp(ors.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
-                            GROUP BY ct.item,ct.price ORDER BY ct.item; ";
+                            GROUP BY ct.item,ct.price ORDER BY ct.item;  ";
                 } else
                 {
                     sql =
-                        @"  SELECT
-                            split_part(t.transid, '-', 5) AS transid,
-                            TO_CHAR(o.total, 'FM999,999,999.00') AS total,
-                            TO_CHAR(COALESCE(MAX(o.totaldiscount), 0), 'FM999,999,999.00') AS total_discount,
-                            COALESCE(MAX(rt.qty) * MAX(rt.price), 0)AS total_returns, 
-                            TO_CHAR(COALESCE(MAX(o.total)-MAX(o.totaldiscount) -(MAX(rt.qty) * MAX(rt.price)), MAX(o.total)), 'FM999,999,999.00') AS total_sales 
-	                        FROM transaction t
-	                        JOIN orders o ON t.orderid = o.orderid
-	                        JOIN cart c ON c.cartid = o.cartid
-	                        LEFT JOIN returns rt ON rt.transid = t.transid
-	                        WHERE (LOWER(o.status) IN ('approved', 'delivered') OR LOWER(c.status) IN ('approved', 'delivered'))
-	                        AND DATE(to_timestamp(o.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
-	                        GROUP BY t.transid, o.total;";
+                        @"SELECT
+                                  split_part(t.transid, '-', 5) AS transid,
+                                  TO_CHAR(o.total - o.totaldiscount , 'FM999,999,999.00') AS total,
+                                  TO_CHAR(COALESCE(o.totaldiscount, 0), 'FM999,999,999.00') AS total_discount,
+                                  TO_CHAR(COALESCE(sum(rt.qty * rt.price), 0), 'FM999,999,999.00') AS total_returns,
+                                  TO_CHAR(
+                                    COALESCE(
+                                      sum(c.qty * c.price - c.discount_price) - sum(rt.qty * rt.price -rt.discount_price)
+                                    , o.total), 'FM999,999,999.00'
+                                  ) AS total_sales
+                                FROM transaction t
+                                JOIN orders o ON t.orderid = o.orderid
+                                JOIN cart c ON c.cartid = o.cartid
+                                LEFT JOIN returns rt ON rt.transid = t.transid AND rt.code = c.code 
+                                WHERE 
+                                  (LOWER(o.status) IN ('approved', 'delivered') 
+                                   OR LOWER(c.status) IN ('approved', 'delivered'))
+                                AND 
+                                  DATE(to_timestamp(o.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') 
+                                  BETWEEN @fromDate AND @toDate
+                                GROUP BY t.transid, o.total ,o.totaldiscount  ;";
                 }
     
             }
@@ -2782,7 +2801,7 @@ namespace RestieAPI.Service.Repo
                                             {
                                                 transid = reader.GetString(reader.GetOrdinal("transid")),
                                                 total = reader.GetString(reader.GetOrdinal("total")),
-                                                total_returns = reader.GetInt16(reader.GetOrdinal("total_returns")),
+                                                total_returns = reader.GetString(reader.GetOrdinal("total_returns")),
                                                 total_sales = reader.GetString(reader.GetOrdinal("total_sales")),
                                             };
 
@@ -2823,7 +2842,7 @@ namespace RestieAPI.Service.Repo
                                                 transid = reader.GetString(reader.GetOrdinal("transid")),
                                                 total = reader.GetString(reader.GetOrdinal("total")),
                                                 total_discount = reader.GetString(reader.GetOrdinal("total_discount")),
-                                                total_returns = reader.GetInt16(reader.GetOrdinal("total_returns")),
+                                                total_returns = reader.GetString(reader.GetOrdinal("total_returns")),
                                                 total_sales = reader.GetString(reader.GetOrdinal("total_sales")),
                                             };
 
@@ -3105,7 +3124,7 @@ namespace RestieAPI.Service.Repo
         }
         public RequestRefundResponseModel getItemtoRefund(RequestRefundRequest requestRefundRequest)
         {
-            var sql = @"select  tr.transid, tr.orderid,ct.cartid,i.image,ct.code,ct.item,ct.qty,ct.price,ct.total,ct.status,ors.createdat from transaction as tr
+            var sql = @"select  tr.transid, tr.orderid,ct.cartid,i.image,ct.code,ct.item,ct.qty,ct.price,ct,discount_price,ct.total_discount,ct.total,ct.status,ors.createdat from transaction as tr
                         join orders as ors on tr.orderid = ors.orderid
                         join cart as ct on ct.cartid = ors.cartid 
                         join inventory i on i.code = ct.code   where tr.transid=@transid";
@@ -3142,6 +3161,8 @@ namespace RestieAPI.Service.Repo
                                         item = reader.GetString(reader.GetOrdinal("item")),
                                         status = reader.GetString(reader.GetOrdinal("status")),
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
+                                        discount_price = reader.GetFloat(reader.GetOrdinal("discount_price")),
+                                        total_discount = reader.GetFloat(reader.GetOrdinal("total_discount")),
                                         qty = reader.GetInt64(reader.GetOrdinal("qty")),
                                         image = reader.GetString(reader.GetOrdinal("image")),
                                         onhandqty = reader.GetInt64(reader.GetOrdinal("qty")),
@@ -3197,8 +3218,8 @@ namespace RestieAPI.Service.Repo
         }
         public PostResponse PostReturnItems(InventoryRequestModel.ReturnItems[] returnItems)
         {
-            var insertReturn = @"insert into returns (transid,orderid,code,item,qty,price,createdat,remarks) 
-                                values(@transid, @orderid, @code, @item, @qty, @price,@createdat,@remarks)";
+            var insertReturn = @"insert into returns (transid,orderid,code,item,qty,price,createdat,remarks,totaldiscount,discount_price) 
+                                values(@transid, @orderid, @code, @item, @qty, @price,@createdat,@remarks,@totaldiscount,@discount_price)";
             var updateCart = @"update cart set status='return' where cartid=@cartid and code=@code";
             var reconcileInventory = @"update inventory set qty=qty + @qty where code=@code";
             var cmd = new NpgsqlCommand();
@@ -3247,6 +3268,7 @@ namespace RestieAPI.Service.Repo
                         foreach (var items in returnItems)
                         {
                             // Execute the insertion command for each item
+                            items.totaldiscount = items.discount_price * items.qty;
                             using (cmd = new NpgsqlCommand(insertReturn, connection))
                             {
                             
@@ -3258,6 +3280,8 @@ namespace RestieAPI.Service.Repo
                                     { "@item", items.item },
                                     { "@qty", items.qty },
                                     { "@price", items.price },
+                                    { "@discount_price", items.discount_price },
+                                    { "@totaldiscount", items.totaldiscount },
                                     { "@createdat", items.createdat },
                                     { "@remarks", items.remarks },
                                 };

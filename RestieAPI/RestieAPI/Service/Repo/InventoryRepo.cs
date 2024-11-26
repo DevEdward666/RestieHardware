@@ -2664,7 +2664,11 @@ namespace RestieAPI.Service.Repo
                         @"SELECT TRIM(ct.item)as item,sum(ct.qty) AS qty_sold,
                             COALESCE(SUM(rt.qty), 0) AS return_qty,
                             ct.price,SUM(ct.qty) - COALESCE(SUM(rt.qty), 0) as total_qty_sold,
-                            TO_CHAR(sum(ct.total) - COALESCE(SUM(rt.qty * ct.price), 0),  'FM999,999,999.00') AS total_sales
+                                  TO_CHAR(
+                                    COALESCE(
+                                      sum(ct.qty * ct.price) - sum(rt.qty * rt.price)
+                                    , sum(ct.qty * ct.price)), 'FM999,999,999.00'
+                                  ) AS total_sales
                             FROM cart ct
                             JOIN orders ors ON ct.cartid = ors.cartid
                             LEFT JOIN returns rt ON rt.orderid = ors.orderid and rt.code = ct.code 
@@ -2677,11 +2681,11 @@ namespace RestieAPI.Service.Repo
                     sql =
                         @"SELECT
                                   split_part(t.transid, '-', 5) AS transid,
-                                  TO_CHAR(o.total - o.totaldiscount , 'FM999,999,999.00') AS total,
+                                  TO_CHAR(o.total , 'FM999,999,999.00') AS total,
                                   TO_CHAR(COALESCE(sum(rt.qty * rt.price), 0), 'FM999,999,999.00') AS total_returns,
-                                  TO_CHAR(
+                               TO_CHAR(
                                     COALESCE(
-                                      sum(c.qty * c.price - c.discount_price) - sum(rt.qty * rt.price -rt.discount_price)
+                                      sum(c.qty * c.price) - sum(rt.qty * rt.price)
                                     , o.total), 'FM999,999,999.00'
                                   ) AS total_sales
                                 FROM transaction t
@@ -2706,22 +2710,26 @@ namespace RestieAPI.Service.Repo
                     sql =
                         @"SELECT TRIM(ct.item) as item,sum(ct.qty) AS qty_sold,
                             COALESCE(SUM(rt.qty), 0) AS return_qty,
-                            ct.price,SUM(ct.qty) - COALESCE(SUM(rt.qty), 0) as total_qty_sold,
-                            TO_CHAR(COALESCE(SUM(ct.discount_price),0), 'FM999,999,999.00') AS total_discount, 
-                            TO_CHAR(sum(ct.total) - COALESCE(SUM(rt.qty * ct.price), 0),  'FM999,999,999.00') AS total_sales
+                            COALESCE(ct.price - ct.discount_price,ct.price) as price,SUM(ct.qty) - COALESCE(SUM(rt.qty), 0) as total_qty_sold,
+                            TO_CHAR(COALESCE(SUM(ct.discount_price * ct.qty), 0), 'FM999,999,999.00') AS total_discount,
+                                 TO_CHAR(
+                                    COALESCE(
+                                      sum(ct.qty * ct.price - ct.discount_price) - sum(rt.qty * rt.price -rt.discount_price)
+                                    , sum(ct.qty * ct.price - ct.discount_price)), 'FM999,999,999.00'
+                                  ) AS total_sales
                             FROM cart ct
                             JOIN orders ors ON ct.cartid = ors.cartid
                             LEFT JOIN returns rt ON rt.orderid = ors.orderid and rt.code = ct.code  
                             WHERE (LOWER(ors.status) IN ('approved', 'delivered') OR LOWER(ct.status) IN ('approved', 'delivered')) 
                              AND DATE(to_timestamp(ors.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
-                            GROUP BY ct.item,ct.price ORDER BY ct.item;  ";
+                            GROUP BY ct.item,ct.price,ct.discount_price ORDER BY ct.item;  ";
                 } else
                 {
                     sql =
                         @"SELECT
                                   split_part(t.transid, '-', 5) AS transid,
                                   TO_CHAR(o.total - o.totaldiscount , 'FM999,999,999.00') AS total,
-                                  TO_CHAR(COALESCE(o.totaldiscount, 0), 'FM999,999,999.00') AS total_discount,
+                                TO_CHAR(COALESCE(SUM(c.discount_price * c.qty), 0), 'FM999,999,999.00') AS total_discount,
                                   TO_CHAR(COALESCE(sum(rt.qty * rt.price), 0), 'FM999,999,999.00') AS total_returns,
                                   TO_CHAR(
                                     COALESCE(
@@ -3704,16 +3712,17 @@ namespace RestieAPI.Service.Repo
                     }
 
                     // Add total row
-                    PdfPCell totalCellPrice = new PdfPCell(new Phrase("Overall Total Sales", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    
                     PdfPCell totalCellDiscount = new PdfPCell(new Phrase("Overall Total Discount", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                    PdfPCell totalCellPrice = new PdfPCell(new Phrase("Overall Total Sales", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
                  
                     totalCellPrice.Colspan = 4;
                     totalCellPrice.HorizontalAlignment = Element.ALIGN_RIGHT;
                     totalCellDiscount.Colspan = 4;
                     totalCellDiscount.HorizontalAlignment = Element.ALIGN_RIGHT;
 
-                    table.AddCell(totalCellPrice);
                     table.AddCell(totalCellDiscount);
+                    table.AddCell(totalCellPrice);
 
                  
                     PdfPCell totalPriceData = new PdfPCell(new Phrase(totalSales.ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
@@ -3725,8 +3734,8 @@ namespace RestieAPI.Service.Repo
                     totalDiscountData.HorizontalAlignment = Element.ALIGN_RIGHT;
                     totalDiscountData.Colspan = 4;
 
-                    table.AddCell(totalPriceData);
                     table.AddCell(totalDiscountData);
+                    table.AddCell(totalPriceData);
                     doc.Add(table);
                     doc.Close();
 

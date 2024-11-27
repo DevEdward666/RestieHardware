@@ -774,6 +774,7 @@ namespace RestieAPI.Service.Repo
             {
                 connection.Open();
                 var total = 0.0;
+                var overAllTotalDiscount = 0.0;
                 var transid = Guid.NewGuid().ToString();
                 using (var tran = connection.BeginTransaction())
                 {
@@ -781,6 +782,7 @@ namespace RestieAPI.Service.Repo
                     {
                         foreach (var addToCart in addToCartItems)
                         {
+                          
                             var parameters = new Dictionary<string, object>
                             {
                                 { "@cartid", addToCart.cartid },
@@ -806,6 +808,7 @@ namespace RestieAPI.Service.Repo
                                 cmd.ExecuteNonQuery();
                             }
                             total = total + addToCart.qty * addToCart.price;
+                            overAllTotalDiscount = overAllTotalDiscount+ (addToCart.discount ?? 0.0f) * addToCart.qty;
                         }
                           
                             // Execute the insertOrder command for each item
@@ -816,7 +819,7 @@ namespace RestieAPI.Service.Repo
                                     { "@orderid", orderid },
                                     { "@cartid", addToCartItems[0].cartid },
                                     { "@total",  total},
-                                    { "@totaldiscount",  addToCartItems[0].total_discount},
+                                    { "@totaldiscount",  addToCartItems[0].total_discount  + overAllTotalDiscount},
                                     { "@order_voucher",  addToCartItems[0].order_voucher},
                                     { "@paidthru", addToCartItems[0].paidthru },
                                     { "@paidcash", addToCartItems[0].paidcash },
@@ -2708,45 +2711,73 @@ namespace RestieAPI.Service.Repo
                 if (getSales.report_type == 0)
                 {
                     sql =
-                        @"SELECT TRIM(ct.item) as item,sum(ct.qty) AS qty_sold,
+                        @"SELECT     
+                           TO_CHAR(
+                                    (to_timestamp(MAX(ors.createdat) / 1000.0) AT TIME ZONE 'Asia/Manila')::DATE,
+                                    'YYYY-MM-DD'
+                                ) AS transaction_date,
+                                      split_part(t.transid, '-', 5) AS transid,TRIM(ct.item) as item,sum(ct.qty) AS qty_sold,
                             COALESCE(SUM(rt.qty), 0) AS return_qty,
-                            COALESCE(ct.price - ct.discount_price,ct.price) as price,SUM(ct.qty) - COALESCE(SUM(rt.qty), 0) as total_qty_sold,
-                            TO_CHAR(COALESCE(SUM(ct.discount_price * ct.qty), 0), 'FM999,999,999.00') AS total_discount,
-                                 TO_CHAR(
+                           COALESCE(SUM(ct.qty) - SUM(rt.qty), SUM(ct.qty)) as total_qty_sold,
+
+                            TO_CHAR(COALESCE(ct.price,ct.price), 'FM999,999,999.00'
+                            )  as gross_sp,
+
+                             TO_CHAR(COALESCE(ct.discount_price,'0'), 'FM999,999,999.00'
+                            )  as disc_per_Item,
+                             TO_CHAR(COALESCE(ct.price - ct.discount_price,ct.price), 'FM999,999,999.00'
+                            )  as Selling_Price_after_Disc_per_Item,
+                             TO_CHAR(COALESCE((ct.price - ct.discount_price) * ct.qty,0), 'FM999,999,999.00'
+                            )  as Sales_after_Disc_per_Item,
+                             TO_CHAR(
+                                COALESCE( MAX(ct.total_discount) / 
+                                    (SELECT SUM(qty) FROM cart c WHERE c.cartid = ct.cartid), 
+                                    0
+                                ), 'FM999,999,999.00'
+                            ) AS total_discount,
+                            TO_CHAR(
                                     COALESCE(
-                                      sum(ct.qty * ct.price - ct.discount_price) - sum(rt.qty * rt.price -rt.discount_price)
-                                    , sum(ct.qty * ct.price - ct.discount_price)), 'FM999,999,999.00'
-                                  ) AS total_sales
+                                      (ct.price - ct.discount_price) * ct.qty- MAX(ct.total_discount) / 
+                                        (SELECT SUM(qty) FROM cart c WHERE c.cartid = ct.cartid) - sum(rt.qty * rt.price - rt.discount_price) + MAX(ct.total_discount) / 
+                                        (SELECT SUM(qty) FROM cart c WHERE c.cartid = ct.cartid)
+                                    ,  (ct.price - ct.discount_price) * ct.qty- MAX(ct.total_discount) / 
+                                        (SELECT SUM(qty) FROM cart c WHERE c.cartid = ct.cartid)), 'FM999,999,999.00'
+                                  ) AS net_sales
                             FROM cart ct
                             JOIN orders ors ON ct.cartid = ors.cartid
+                            join transaction t on t.orderid  = ors.orderid
                             LEFT JOIN returns rt ON rt.orderid = ors.orderid and rt.code = ct.code  
                             WHERE (LOWER(ors.status) IN ('approved', 'delivered') OR LOWER(ct.status) IN ('approved', 'delivered')) 
-                             AND DATE(to_timestamp(ors.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') between @fromDate and @toDate
-                            GROUP BY ct.item,ct.price,ct.discount_price ORDER BY ct.item;  ";
+                             AND DATE(to_timestamp(ors.createdat / 1000.0) AT TIME ZONE 'Asia/Manila')     BETWEEN '2024-11-22' and '2024-11-27'
+                            GROUP BY t.transid ,ct.item,ct.price,ct.discount_price,ct.cartid,ct.qty ORDER BY  DATE(to_timestamp(max(ors.createdat)/ 1000.0) AT TIME ZONE 'Asia/Manila') ;  ";
                 } else
                 {
                     sql =
-                        @"SELECT
+                        @"select
+                            DATE(to_timestamp(max(t.createdat)/ 1000.0) AT TIME ZONE 'Asia/Manila') as transaction_date,
                                   split_part(t.transid, '-', 5) AS transid,
-                                  TO_CHAR(o.total - o.totaldiscount , 'FM999,999,999.00') AS total,
-                                TO_CHAR(COALESCE(SUM(c.discount_price * c.qty), 0), 'FM999,999,999.00') AS total_discount,
-                                  TO_CHAR(COALESCE(sum(rt.qty * rt.price), 0), 'FM999,999,999.00') AS total_returns,
-                                  TO_CHAR(
-                                    COALESCE(
-                                      sum(c.qty * c.price - c.discount_price) - sum(rt.qty * rt.price -rt.discount_price)
-                                    , o.total), 'FM999,999,999.00'
-                                  ) AS total_sales
-                                FROM transaction t
-                                JOIN orders o ON t.orderid = o.orderid
-                                JOIN cart c ON c.cartid = o.cartid
-                                LEFT JOIN returns rt ON rt.transid = t.transid AND rt.code = c.code 
-                                WHERE 
-                                  (LOWER(o.status) IN ('approved', 'delivered') 
-                                   OR LOWER(c.status) IN ('approved', 'delivered'))
-                                AND 
-                                  DATE(to_timestamp(o.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') 
-                                  BETWEEN @fromDate AND @toDate
-                                GROUP BY t.transid, o.total ,o.totaldiscount  ;";
+                          TO_CHAR(o.total - o.totaldiscount , 'FM999,999,999.00') AS total,
+                        TO_CHAR( coalesce(SUM(c.discount_price * c.qty)+ MAX(c.total_discount),0), 'FM999,999,999.00') AS total_discount,
+                          TO_CHAR(COALESCE(sum(rt.qty * rt.price), 0), 'FM999,999,999.00') AS total_returns,
+                         TO_CHAR(
+                            COALESCE(
+                              sum(c.qty * c.price - c.discount_price)- MAX(c.total_discount) / 
+                                (SELECT SUM(qty) FROM cart c WHERE c.cartid = c.cartid) - sum(rt.qty * rt.price - rt.discount_price) - MAX(c.total_discount) / 
+                                (SELECT SUM(qty) FROM cart c WHERE c.cartid = c.cartid)
+                            , sum(c.qty * c.price - c.discount_price) - MAX(c.total_discount) / 
+                                (SELECT SUM(qty) FROM cart c WHERE c.cartid = c.cartid)), 'FM999,999,999.00'
+                          ) AS total_sales
+                        FROM transaction t
+                        JOIN orders o ON t.orderid = o.orderid
+                        JOIN cart c ON c.cartid = o.cartid
+                        LEFT JOIN returns rt ON rt.transid = t.transid AND rt.code = c.code 
+                        WHERE 
+                          (LOWER(o.status) IN ('approved', 'delivered') 
+                           OR LOWER(c.status) IN ('approved', 'delivered'))
+                        AND 
+                          DATE(to_timestamp(o.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') 
+                        BETWEEN @fromDate AND @toDate
+                        GROUP BY t.transid, o.total ,o.totaldiscount ;";
                 }
     
             }
@@ -2807,6 +2838,8 @@ namespace RestieAPI.Service.Repo
                                         {
                                             var salesResponse = new SalesReportResponse
                                             {
+                                                
+                                                transaction_date = reader.GetString(reader.GetOrdinal("transaction_date")),
                                                 transid = reader.GetString(reader.GetOrdinal("transid")),
                                                 total = reader.GetString(reader.GetOrdinal("total")),
                                                 total_returns = reader.GetString(reader.GetOrdinal("total_returns")),
@@ -2829,13 +2862,18 @@ namespace RestieAPI.Service.Repo
                                         {
                                             var salesResponse = new SalesReportResponse
                                             {
+                                                transaction_date = reader.GetString(reader.GetOrdinal("transaction_date")),
+                                                transid = reader.GetString(reader.GetOrdinal("transid")),
                                                 item = reader.GetString(reader.GetOrdinal("item")),
                                                 qty_sold = reader.GetInt16(reader.GetOrdinal("qty_sold")),
-                                                price = reader.GetInt16(reader.GetOrdinal("price")),
+                                                gross_sp = reader.GetString(reader.GetOrdinal("gross_sp")),
                                                 return_qty = reader.GetInt16(reader.GetOrdinal("return_qty")),
                                                 total_qty_sold = reader.GetInt16(reader.GetOrdinal("total_qty_sold")),
-                                                total_sales = reader.GetString(reader.GetOrdinal("total_sales")),
+                                                disc_per_Item = reader.GetString(reader.GetOrdinal("disc_per_Item")),
+                                                Selling_Price_after_Disc_per_Item = reader.GetString(reader.GetOrdinal("Selling_Price_after_Disc_per_Item")),
+                                                Sales_after_Disc_per_Item = reader.GetString(reader.GetOrdinal("Sales_after_Disc_per_Item")),
                                                 total_discount = !reader.IsDBNull(reader.GetOrdinal("total_discount"))? reader.GetString(reader.GetOrdinal("total_discount")): "0",
+                                                net_sales = !reader.IsDBNull(reader.GetOrdinal("net_sales"))? reader.GetString(reader.GetOrdinal("net_sales")): "0",
                                             };
 
                                             results.Add(salesResponse);
@@ -3636,12 +3674,12 @@ namespace RestieAPI.Service.Repo
                     doc.Add(title);
 
                     // Add table
-                    PdfPTable table = new PdfPTable(report_type == 0?7:5);
+                    PdfPTable table = new PdfPTable(report_type == 0?12:5);
                     table.WidthPercentage = 100;
                     if (report_type == 0)
                     {
                     
-                        table.SetWidths(new float[] { 3, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f });
+                        table.SetWidths(new float[] {2, 2, 2, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f });
                     }
                     else
                     {
@@ -3651,13 +3689,18 @@ namespace RestieAPI.Service.Repo
                                                // Add table headers
                    if (report_type == 0)
                    {
+                       table.AddCell(new PdfPCell(new Phrase("Trans Date", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                       table.AddCell(new PdfPCell(new Phrase("Trans ID", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                        table.AddCell(new PdfPCell(new Phrase("Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                        table.AddCell(new PdfPCell(new Phrase("Qty Sold", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                        table.AddCell(new PdfPCell(new Phrase("Qty Return", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                        table.AddCell(new PdfPCell(new Phrase("Total Qty Sold", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                       table.AddCell(new PdfPCell(new Phrase("Total Discount", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                       table.AddCell(new PdfPCell(new Phrase("Price", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                       table.AddCell(new PdfPCell(new Phrase("Total Sales", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                       table.AddCell(new PdfPCell(new Phrase("Gross Price", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                       table.AddCell(new PdfPCell(new Phrase("Disc/Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                       table.AddCell(new PdfPCell(new Phrase("Selling Price after Disc/Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                       table.AddCell(new PdfPCell(new Phrase("Sales after Disc/Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                       table.AddCell(new PdfPCell(new Phrase("Overall Discount", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                       table.AddCell(new PdfPCell(new Phrase("Net Sales", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                    }
                    else
                     {
@@ -3683,14 +3726,19 @@ namespace RestieAPI.Service.Repo
                         
                         foreach (var sale in sales)
                         {
+                            table.AddCell(sale.transaction_date.ToString());
+                            table.AddCell(sale.transid);
                             table.AddCell(sale.item);
                             table.AddCell(new PdfPCell(new Phrase(sale.qty_sold.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                             table.AddCell(new PdfPCell(new Phrase(sale.return_qty.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                             table.AddCell(new PdfPCell(new Phrase(sale.total_qty_sold.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                            table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.total_discount).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER }); 
-                            table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.price.ToString()).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                            table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.total_sales).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                            totalSales += Decimal.Parse(sale.total_sales);
+                            table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.gross_sp).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER }); 
+                            table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.disc_per_Item).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER }); 
+                            table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.Selling_Price_after_Disc_per_Item).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER }); 
+                            table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.Sales_after_Disc_per_Item).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER }); 
+                            table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.total_discount.ToString()).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                            table.AddCell(new PdfPCell(new Phrase(Decimal.Parse(sale.net_sales).ToString("N2"), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                            totalSales += Decimal.Parse(sale.net_sales);
                             totalDiscount += Decimal.Parse(sale.total_discount);
                         }
                        
@@ -3716,9 +3764,9 @@ namespace RestieAPI.Service.Repo
                     PdfPCell totalCellDiscount = new PdfPCell(new Phrase("Overall Total Discount", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
                     PdfPCell totalCellPrice = new PdfPCell(new Phrase("Overall Total Sales", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
                  
-                    totalCellPrice.Colspan = 4;
+                    totalCellPrice.Colspan = 6;
                     totalCellPrice.HorizontalAlignment = Element.ALIGN_RIGHT;
-                    totalCellDiscount.Colspan = 4;
+                    totalCellDiscount.Colspan = 6;
                     totalCellDiscount.HorizontalAlignment = Element.ALIGN_RIGHT;
 
                     table.AddCell(totalCellDiscount);
@@ -3730,9 +3778,9 @@ namespace RestieAPI.Service.Repo
                   
                   
                     totalPriceData.HorizontalAlignment = Element.ALIGN_RIGHT;
-                    totalPriceData.Colspan = 4;
+                    totalPriceData.Colspan = 6;
                     totalDiscountData.HorizontalAlignment = Element.ALIGN_RIGHT;
-                    totalDiscountData.Colspan = 4;
+                    totalDiscountData.Colspan = 6;
 
                     table.AddCell(totalDiscountData);
                     table.AddCell(totalPriceData);

@@ -240,9 +240,6 @@ const PaymentOptionsComponent = () => {
         });
         OverAllDiscount = ((totalAmount - totalDiscount) *  JSON.parse(selectedVoucher).discount);
         OverAllTotal = totalAmount - totalDiscount - OverAllDiscount;
-        console.log(totalAmount)
-        console.log(totalDiscount)
-        console.log(OverAllDiscount)
 
         setDiscountPerItem(totalDiscount + OverAllDiscount);
         setOverallTotal(OverAllTotal);

@@ -277,15 +277,29 @@ namespace RestieAPI.Models.Response
         public string item { get; set; }
         public int qty_sold { get; set; }
         public int return_qty { get; set; }
+        public string gross_sp { get; set; }
+        public string disc_per_Item { get; set; }
+        public string Selling_Price_after_Disc_per_Item { get; set; }
+        public string Sales_after_Disc_per_Item { get; set; }
+        public string net_sales { get; set; }
+
         public int price { get; set; }
         public int total_qty_sold { get; set; }
         public string total_sales { get; set; }
         public string total_discount { get; set; }
         
         
+        public string transaction_date { get; set; }
         public string transid { get; set; }
         public string total { get; set; }
         public string total_returns { get; set; }
+        
+        
+        public string gross_total { get; set; }
+        public string overall_discount_per_item { get; set; }
+        public string overall_order_discount { get; set; }
+        public string overall_discount { get; set; }
+
     }
     public class ReturnSalesResponse
     {

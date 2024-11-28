@@ -2683,6 +2683,10 @@ namespace RestieAPI.Service.Repo
                 {
                     sql =
                         @"SELECT
+                                TO_CHAR(
+                                    (to_timestamp(MAX(o.createdat) / 1000.0) AT TIME ZONE 'Asia/Manila')::DATE,
+                                    'YYYY-MM-DD'
+                                ) AS transaction_date,
                                   split_part(t.transid, '-', 5) AS transid,
                                   TO_CHAR(o.total , 'FM999,999,999.00') AS total,
                                   TO_CHAR(COALESCE(sum(rt.qty * rt.price), 0), 'FM999,999,999.00') AS total_returns,
@@ -2729,12 +2733,23 @@ namespace RestieAPI.Service.Repo
                             )  as Selling_Price_after_Disc_per_Item,
                              TO_CHAR(COALESCE((ct.price - ct.discount_price) * ct.qty,0), 'FM999,999,999.00'
                             )  as Sales_after_Disc_per_Item,
-                             TO_CHAR(
-                                COALESCE( MAX(ct.total_discount) / 
-                                    (SELECT SUM(qty) FROM cart c WHERE c.cartid = ct.cartid), 
-                                    0
-                                ), 'FM999,999,999.00'
+                            TO_CHAR(
+                                CASE 
+                                    WHEN COALESCE(SUM(rt.qty), 0) = 0 THEN
+                                        -- No returns, use full discount calculation
+                                        COALESCE(MAX(ct.total_discount) / 
+                                            (SELECT SUM(c.qty) FROM cart c WHERE c.cartid = ct.cartid), 0) +
+                                        (COALESCE(ct.discount_price, 0) * SUM(ct.qty))  -- Add the disc_per_item * qty
+                                    ELSE
+                                        -- Returns exist, deduct return qty from total qty and adjust discount
+                                        COALESCE(MAX(ct.total_discount) / 
+                                            (SELECT SUM(c.qty) FROM cart c WHERE c.cartid = ct.cartid), 0) * 
+                                        (SUM(ct.qty) - COALESCE(SUM(rt.qty), 0)) +  -- Deduct return quantity
+                                        (COALESCE(ct.discount_price, 0) * (SUM(ct.qty) - COALESCE(SUM(rt.qty), 0)))  -- Add disc_per_item * qty after returns
+                                END, 'FM999,999,999.00'
                             ) AS total_discount,
+
+
                             TO_CHAR(
                                     COALESCE(
                                       (ct.price - ct.discount_price) * ct.qty- MAX(ct.total_discount) / 
@@ -2748,36 +2763,41 @@ namespace RestieAPI.Service.Repo
                             join transaction t on t.orderid  = ors.orderid
                             LEFT JOIN returns rt ON rt.orderid = ors.orderid and rt.code = ct.code  
                             WHERE (LOWER(ors.status) IN ('approved', 'delivered') OR LOWER(ct.status) IN ('approved', 'delivered')) 
-                             AND DATE(to_timestamp(ors.createdat / 1000.0) AT TIME ZONE 'Asia/Manila')     BETWEEN '2024-11-22' and '2024-11-27'
+                             AND DATE(to_timestamp(ors.createdat / 1000.0) AT TIME ZONE 'Asia/Manila')  BETWEEN @fromDate AND @toDate
                             GROUP BY t.transid ,ct.item,ct.price,ct.discount_price,ct.cartid,ct.qty ORDER BY  DATE(to_timestamp(max(ors.createdat)/ 1000.0) AT TIME ZONE 'Asia/Manila') ;  ";
                 } else
                 {
                     sql =
-                        @"select
-                            DATE(to_timestamp(max(t.createdat)/ 1000.0) AT TIME ZONE 'Asia/Manila') as transaction_date,
-                                  split_part(t.transid, '-', 5) AS transid,
-                          TO_CHAR(o.total - o.totaldiscount , 'FM999,999,999.00') AS total,
-                        TO_CHAR( coalesce(SUM(c.discount_price * c.qty)+ MAX(c.total_discount),0), 'FM999,999,999.00') AS total_discount,
-                          TO_CHAR(COALESCE(sum(rt.qty * rt.price), 0), 'FM999,999,999.00') AS total_returns,
-                         TO_CHAR(
-                            COALESCE(
-                              sum(c.qty * c.price - c.discount_price)- MAX(c.total_discount) / 
-                                (SELECT SUM(qty) FROM cart c WHERE c.cartid = c.cartid) - sum(rt.qty * rt.price - rt.discount_price) - MAX(c.total_discount) / 
-                                (SELECT SUM(qty) FROM cart c WHERE c.cartid = c.cartid)
-                            , sum(c.qty * c.price - c.discount_price) - MAX(c.total_discount) / 
-                                (SELECT SUM(qty) FROM cart c WHERE c.cartid = c.cartid)), 'FM999,999,999.00'
-                          ) AS total_sales
-                        FROM transaction t
-                        JOIN orders o ON t.orderid = o.orderid
-                        JOIN cart c ON c.cartid = o.cartid
-                        LEFT JOIN returns rt ON rt.transid = t.transid AND rt.code = c.code 
-                        WHERE 
-                          (LOWER(o.status) IN ('approved', 'delivered') 
-                           OR LOWER(c.status) IN ('approved', 'delivered'))
-                        AND 
-                          DATE(to_timestamp(o.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') 
-                        BETWEEN @fromDate AND @toDate
-                        GROUP BY t.transid, o.total ,o.totaldiscount ;";
+                        @"SELECT
+                              TO_CHAR(
+                                    (to_timestamp(MAX(o.createdat) / 1000.0) AT TIME ZONE 'Asia/Manila')::DATE,
+                                    'YYYY-MM-DD'
+                                ) AS transaction_date,
+                              split_part(t.transid, '-', 5) AS transid,
+                              TO_CHAR(o.total, 'FM999,999,999.00') AS gross_total,
+                              TO_CHAR(COALESCE(sum(c.discount_price *c.qty) , 0), 'FM999,999,999.00') AS overall_discount_per_item,
+                              TO_CHAR(COALESCE(MAX(c.total_discount) , 0), 'FM999,999,999.00') AS overall_order_discount,
+                                TO_CHAR(COALESCE(sum(c.discount_price *c.qty) + MAX(c.total_discount) , 0), 'FM999,999,999.00') AS overall_discount,
+                              TO_CHAR(COALESCE(MAX(o.totaldiscount) - SUM(rt.qty * rt.discount_price), 0), 'FM999,999,999.00') AS total_discount,
+                                TO_CHAR(COALESCE(SUM(rt.qty * rt.price) + sum( rt.qty* rt.discount_price), 0), 'FM999,999,999.00') AS total_returns,
+                              TO_CHAR(
+                                COALESCE(
+                                  SUM(c.qty * c.price) - SUM(c.discount_price * c.qty) - MAX(c.total_discount) - 
+                                  SUM(rt.qty * rt.price) - SUM(rt.discount_price * rt.qty), 
+                                  o.total
+                                ), 'FM999,999,999.00'
+                              ) AS total_sales
+                            FROM transaction t
+                            JOIN orders o ON t.orderid = o.orderid
+                            JOIN cart c ON c.cartid = o.cartid
+                            LEFT JOIN returns rt ON rt.transid = t.transid AND rt.code = c.code
+                            WHERE 
+                              (LOWER(o.status) IN ('approved', 'delivered') 
+                               OR LOWER(c.status) IN ('approved', 'delivered'))
+                            AND 
+                              DATE(to_timestamp(o.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') 
+                            BETWEEN @fromDate AND @toDate
+                            GROUP BY t.transid, o.total, o.totaldiscount;";
                 }
     
             }
@@ -2885,8 +2905,12 @@ namespace RestieAPI.Service.Repo
                                         {
                                             var salesResponse = new SalesReportResponse
                                             {
+                                                transaction_date =  reader.GetString(reader.GetOrdinal("transaction_date")),
                                                 transid = reader.GetString(reader.GetOrdinal("transid")),
-                                                total = reader.GetString(reader.GetOrdinal("total")),
+                                                gross_total = reader.GetString(reader.GetOrdinal("gross_total")),
+                                                overall_discount_per_item = reader.GetString(reader.GetOrdinal("overall_discount_per_item")),
+                                                overall_order_discount = reader.GetString(reader.GetOrdinal("overall_order_discount")),
+                                                overall_discount = reader.GetString(reader.GetOrdinal("overall_discount")),
                                                 total_discount = reader.GetString(reader.GetOrdinal("total_discount")),
                                                 total_returns = reader.GetString(reader.GetOrdinal("total_returns")),
                                                 total_sales = reader.GetString(reader.GetOrdinal("total_sales")),
@@ -3643,10 +3667,19 @@ namespace RestieAPI.Service.Repo
                 // Add company logo
                 //if (logoBytes != null)
                 //{
+                var report_title_type = "";
+                if (report_type == 0 )
+                {
+                    report_title_type = "Restie Hardware Sales Per Item with discount";
+                }
+                else
+                {
+                    report_title_type = "Restie Hardware Sales Summary with discount";
+                }
                     Paragraph logotitle = new Paragraph();
                         logotitle.Alignment = Element.ALIGN_CENTER;
                         logotitle.Add(Chunk.NEWLINE);
-                        logotitle.Add(new Chunk("Restie Hardware Sales Details", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
+                        logotitle.Add(new Chunk(report_title_type, FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 24)));
                         logotitle.Add(Chunk.NEWLINE);
                         logotitle.Add(Chunk.NEWLINE);
                         logotitle.Add(new Chunk($"Address: SIR Bucana 76-A", FontFactory.GetFont(FontFactory.HELVETICA, 12)));
@@ -3674,7 +3707,7 @@ namespace RestieAPI.Service.Repo
                     doc.Add(title);
 
                     // Add table
-                    PdfPTable table = new PdfPTable(report_type == 0?12:5);
+                    PdfPTable table = new PdfPTable(report_type == 0?12:9);
                     table.WidthPercentage = 100;
                     if (report_type == 0)
                     {
@@ -3683,7 +3716,7 @@ namespace RestieAPI.Service.Repo
                     }
                     else
                     {
-                        table.SetWidths(new float[] { 2, 1.5f, 1.5f, 1.5f, 1.5f});
+                        table.SetWidths(new float[] { 2, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f});
                     }
                     table.SpacingBefore = 50f; // Add spacing before the table
                                                // Add table headers
@@ -3704,11 +3737,15 @@ namespace RestieAPI.Service.Repo
                    }
                    else
                     {
-                        table.AddCell(new PdfPCell(new Phrase("Transaction ID", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                        table.AddCell(new PdfPCell(new Phrase("Total", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                        table.AddCell(new PdfPCell(new Phrase("Total Discount", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                        table.AddCell(new PdfPCell(new Phrase("Total Return", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                        table.AddCell(new PdfPCell(new Phrase("Total Sales", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase("Trans Date", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase("Trans ID", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase("Gross Total", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase("Overall discount per item ", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase("Overall order discount", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase("Overall discount", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase("Total discount", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase("Total returns", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase("Total sales", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     }
 
 
@@ -3748,8 +3785,12 @@ namespace RestieAPI.Service.Repo
                         
                         foreach (var sale in sales)
                         {
+                            table.AddCell(sale.transaction_date);
                             table.AddCell(sale.transid);
-                            table.AddCell(new PdfPCell(new Phrase(sale.total.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                            table.AddCell(new PdfPCell(new Phrase(sale.gross_total.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                            table.AddCell(new PdfPCell(new Phrase(sale.overall_discount_per_item.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                            table.AddCell(new PdfPCell(new Phrase(sale.overall_order_discount.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                            table.AddCell(new PdfPCell(new Phrase(sale.overall_discount.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                             table.AddCell(new PdfPCell(new Phrase(sale.total_discount.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                             table.AddCell(new PdfPCell(new Phrase(sale.total_returns.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                             table.AddCell(new PdfPCell(new Phrase(sale.total_sales.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
@@ -3805,6 +3846,15 @@ namespace RestieAPI.Service.Repo
                 // Add company logo
                 //if (logoBytes != null)
                 //{
+                var report_title_type = "";
+                if (report_type == 0 )
+                {
+                    report_title_type = "Restie Hardware Sales Per Item without discount";
+                }
+                else
+                {
+                    report_title_type = "Restie Hardware Sales Summary without discount";
+                }
                 Paragraph logotitle = new Paragraph();
                 logotitle.Alignment = Element.ALIGN_CENTER;
                 logotitle.Add(Chunk.NEWLINE);
@@ -3837,16 +3887,16 @@ namespace RestieAPI.Service.Repo
 
                 // Add table
                 
-                PdfPTable table = new PdfPTable(report_type == 0?6:4);
+                PdfPTable table = new PdfPTable(report_type == 0?6:5);
                 table.WidthPercentage = 100;
                 if (report_type == 0)
                 {
                     
-                    table.SetWidths(new float[] {3, 1.5f, 1, 1.5f, 1.5f, 1.5f });
+                    table.SetWidths(new float[] {2, 1.5f, 1, 1.5f, 1.5f, 1.5f });
                 }
                 else
                 {
-                    table.SetWidths(new float[] {1.5f, 1.5f, 1, 1.5f});
+                    table.SetWidths(new float[] {2, 1.5f, 1, 1.5f, 1.5f});
                 }
                 table.SpacingBefore = 50f; // Add spacing before the table
                                            // Add table headers
@@ -3861,10 +3911,11 @@ namespace RestieAPI.Service.Repo
                }
                else
                {
-                   table.AddCell(new PdfPCell(new Phrase("Transaction ID", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                   table.AddCell(new PdfPCell(new Phrase("Trans Date", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                   table.AddCell(new PdfPCell(new Phrase("Trans ID", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                    table.AddCell(new PdfPCell(new Phrase("Total", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                   table.AddCell(new PdfPCell(new Phrase("Total Return", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                   table.AddCell(new PdfPCell(new Phrase("Total Sales", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                   table.AddCell(new PdfPCell(new Phrase("Total returns", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                   table.AddCell(new PdfPCell(new Phrase("Total sales", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                }
             
 
@@ -3899,6 +3950,7 @@ namespace RestieAPI.Service.Repo
                 {
                     foreach (var sale in sales)
                     {
+                        table.AddCell(sale.transaction_date);
                         table.AddCell(sale.transid);
                         table.AddCell(new PdfPCell(new Phrase(sale.total.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                         table.AddCell(new PdfPCell(new Phrase(sale.total_returns.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });

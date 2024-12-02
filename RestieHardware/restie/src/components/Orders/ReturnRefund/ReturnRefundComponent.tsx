@@ -74,8 +74,25 @@ const ReturnRefundComponent: React.FC = () => {
                   <div className="main-return-card-content">
                     <div className="main-return-card-title">{card.item}</div>
                     <div className="main-return-card-price">
-                      <span>&#8369;</span>
-                      {card.price.toFixed(2)}
+                    <span>&#8369;</span>
+                            <span
+                              className={`${
+                                card.discount_price > 0
+                                  ? "order-list-price-with-discount"
+                                  : null
+                              }`}
+                            >
+                              {card.price.toFixed(2)}
+                            </span>
+
+                            {card.discount_price > 0 ? (
+                              <span>
+                                &#8369;
+                                {(card.price - card.discount_price).toFixed(
+                                  2
+                                )}
+                              </span>
+                            ) : null}
                     </div>
                   </div>
                   <div className="main-return-item-added-qty-container">
@@ -375,6 +392,8 @@ const ReturnRefundComponent: React.FC = () => {
                 item={card.item}
                 qty={card.qty}
                 price={card.price}
+                discount_price={card.discount_price}
+                totaldiscount={card.price - card.discount_price * card.qty}
                 createdat={card.createdat}
                 status={card.status}
                 transid={card.transid}

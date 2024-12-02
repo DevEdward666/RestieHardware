@@ -2,7 +2,7 @@ export interface GetCustomerInformation {
   customerid?: string;
   name: string;
   address: string;
-  contactno: number;
+  contactno: string;
   ordertype: string;
   customer_email?: string;
   newUser?: boolean;
@@ -22,5 +22,5 @@ export interface GetCustomers {
   customerid: string;
   name: string;
   address: string;
-  contactno: number;
+  contactno: string;
 }

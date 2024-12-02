@@ -8,6 +8,7 @@ export interface GetListOrder {
   createdat: number;
   status: string;
   userid: string;
+  totaldiscount?:number;
 }
 
 export interface GetListOrderInfo {

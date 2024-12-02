@@ -63,6 +63,8 @@ export interface ItemReturns {
   qty: number;
   onhandqty?: number;
   price: number;
+  discount_price:number;
+  totaldiscount:number;
   image: string;
   image_type: string;
   total: number;
@@ -168,6 +170,7 @@ export interface PostDaysSalesModel {
   fromDate: string;
   toDate: string;
   filter?: number;
+  report_type?:number;
 }
 export interface PostInventoryLogsModel {
   fromDate: string;

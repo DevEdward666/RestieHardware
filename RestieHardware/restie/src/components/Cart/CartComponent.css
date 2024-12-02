@@ -11,6 +11,7 @@
     align-items: center;
     max-width: 200px;
     max-height: 200px;
+    min-width: 100px;
   }  
   .main-cart-card-main-content{
     flex: 1;
@@ -118,6 +119,7 @@ ion-input.main-cart-qty {
     width: 100%;
     align-content: center;
     align-items: center;
+    padding: 0 10px 0 10px;
   }
 ion-select::part(text) {
   white-space: nowrap;

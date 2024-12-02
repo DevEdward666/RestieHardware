@@ -68,7 +68,7 @@ const CustomerInformationComponent: React.FC = () => {
       customerid: "",
       name: "",
       address: "",
-      contactno: 0,
+      contactno: "0",
       ordertype: "",
       customer_email: "",
       newUser: true,
@@ -79,7 +79,7 @@ const CustomerInformationComponent: React.FC = () => {
       setCustomerInformation({
         name: "",
         address: "",
-        contactno: 0,
+        contactno: "0",
         ordertype: "",
         customer_email: "",
         newUser: true,
@@ -95,7 +95,7 @@ const CustomerInformationComponent: React.FC = () => {
     setCustomerInformation({
       name: "",
       address: "",
-      contactno: 0,
+      contactno: "0",
       ordertype: "",
       customer_email: "",
       newUser: true,
@@ -118,9 +118,9 @@ const CustomerInformationComponent: React.FC = () => {
     if (!customerInformation.address) {
       errors.push("Please enter your address");
     }
-    if (customerInformation.contactno === 0) {
-      errors.push("Please enter your contact no");
-    }
+    // if (customerInformation.contactno === 0) {
+    //   errors.push("Please enter your contact no");
+    // }
 
     if (errors.length > 0) {
       errors.forEach((error) => {
@@ -191,7 +191,7 @@ const CustomerInformationComponent: React.FC = () => {
       customerid: "",
       name: "",
       address: "",
-      contactno: 0,
+      contactno: "0",
       customer_email: "",
       ordertype: "",
     });

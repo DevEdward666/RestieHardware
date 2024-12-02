@@ -241,6 +241,8 @@ namespace RestieAPI.Models.Request
             public long qty { get; set; }
             public float total { get; set; }
             public float price { get; set; }
+            public float totaldiscount { get; set; }
+            public float discount_price { get; set; }
             public long createdat { get; set; }
             public string? remarks {  get; set; }
 
@@ -256,6 +258,7 @@ namespace RestieAPI.Models.Request
             public string fromDate { get; set; }
             public string toDate { get; set; }
             public int filter{ get; set; }
+            public int report_type{ get; set; }
 
 
         }

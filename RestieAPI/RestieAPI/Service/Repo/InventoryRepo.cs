@@ -2733,30 +2733,27 @@ namespace RestieAPI.Service.Repo
                             )  as Selling_Price_after_Disc_per_Item,
                              TO_CHAR(COALESCE((ct.price - ct.discount_price) * ct.qty,0), 'FM999,999,999.00'
                             )  as Sales_after_Disc_per_Item,
-                            TO_CHAR(
-                                CASE 
-                                    WHEN COALESCE(SUM(rt.qty), 0) = 0 THEN
-                                        -- No returns, use full discount calculation
-                                        COALESCE(MAX(ct.total_discount) / 
-                                            (SELECT SUM(c.qty) FROM cart c WHERE c.cartid = ct.cartid), 0) +
-                                        (COALESCE(ct.discount_price, 0) * SUM(ct.qty))  -- Add the disc_per_item * qty
-                                    ELSE
-                                        -- Returns exist, deduct return qty from total qty and adjust discount
-                                        COALESCE(MAX(ct.total_discount) / 
-                                            (SELECT SUM(c.qty) FROM cart c WHERE c.cartid = ct.cartid), 0) * 
-                                        (SUM(ct.qty) - COALESCE(SUM(rt.qty), 0)) +  -- Deduct return quantity
-                                        (COALESCE(ct.discount_price, 0) * (SUM(ct.qty) - COALESCE(SUM(rt.qty), 0)))  -- Add disc_per_item * qty after returns
-                                END, 'FM999,999,999.00'
+                           TO_CHAR(
+                            CASE 
+                            WHEN COALESCE(SUM(rt.qty), 0) = 0 THEN
+                            COALESCE(MAX(ct.total_discount) / 
+                            (SELECT SUM(c.qty) FROM cart c WHERE c.cartid = ct.cartid) * sum(ct.qty), 0) +
+                            (COALESCE(ct.discount_price, 1) * SUM(ct.qty))
+                            ELSE
+                            -- Returns exist, deduct return qty from total qty and adjust discount
+                            COALESCE(MAX(ct.total_discount) / 
+                            (SELECT SUM(c.qty) FROM cart c WHERE c.cartid = ct.cartid), 0) * 
+                            (SUM(ct.qty) - COALESCE(SUM(rt.qty), 0)) +  -- Deduct return quantity
+                            (COALESCE(ct.discount_price, 0) * (SUM(ct.qty) - COALESCE(SUM(rt.qty), 0)))  -- Add disc_per_item * qty after returns
+                            END, 'FM999,999,999.00'
                             ) AS total_discount,
-
-
                             TO_CHAR(
                                     COALESCE(
                                       (ct.price - ct.discount_price) * ct.qty- MAX(ct.total_discount) / 
                                         (SELECT SUM(qty) FROM cart c WHERE c.cartid = ct.cartid) - sum(rt.qty * rt.price - rt.discount_price) + MAX(ct.total_discount) / 
                                         (SELECT SUM(qty) FROM cart c WHERE c.cartid = ct.cartid)
                                     ,  (ct.price - ct.discount_price) * ct.qty- MAX(ct.total_discount) / 
-                                        (SELECT SUM(qty) FROM cart c WHERE c.cartid = ct.cartid)), 'FM999,999,999.00'
+                                        (SELECT SUM(qty) FROM cart c WHERE c.cartid = ct.cartid)* sum(ct.qty) ), 'FM999,999,999.00'
                                   ) AS net_sales
                             FROM cart ct
                             JOIN orders ors ON ct.cartid = ors.cartid
@@ -2771,20 +2768,22 @@ namespace RestieAPI.Service.Repo
                         @"SELECT
                               TO_CHAR(
                                     (to_timestamp(MAX(o.createdat) / 1000.0) AT TIME ZONE 'Asia/Manila')::DATE,
-                                    'YYYY-MM-DD'
+                            'YYYY-MM-DD'
                                 ) AS transaction_date,
                               split_part(t.transid, '-', 5) AS transid,
                               TO_CHAR(o.total, 'FM999,999,999.00') AS gross_total,
                               TO_CHAR(COALESCE(sum(c.discount_price *c.qty) , 0), 'FM999,999,999.00') AS overall_discount_per_item,
                               TO_CHAR(COALESCE(MAX(c.total_discount) , 0), 'FM999,999,999.00') AS overall_order_discount,
-                                TO_CHAR(COALESCE(sum(c.discount_price *c.qty) + MAX(c.total_discount) , 0), 'FM999,999,999.00') AS overall_discount,
-                              TO_CHAR(COALESCE(MAX(o.totaldiscount) - SUM(rt.qty * rt.discount_price), 0), 'FM999,999,999.00') AS total_discount,
-                                TO_CHAR(COALESCE(SUM(rt.qty * rt.price) + sum( rt.qty* rt.discount_price), 0), 'FM999,999,999.00') AS total_returns,
-                              TO_CHAR(
+                            TO_CHAR(COALESCE(sum(c.discount_price *c.qty) + MAX(c.total_discount) , sum(c.discount_price *c.qty)), 'FM999,999,999.00') AS overall_discount,
+                            TO_CHAR(COALESCE(MAX(o.totaldiscount) - SUM(rt.qty * rt.discount_price) - MAX(c.total_discount) / 
+                            (SELECT SUM(cat.qty) FROM cart cat WHERE cat.cartid = max(c.cartid)), o.totaldiscount), 'FM999,999,999.00') AS total_discount,
+                            TO_CHAR(COALESCE((max(rt.qty * rt.price) - max( rt.qty* rt.discount_price)), 0), 'FM999,999,999.00') AS total_returns,
+                            TO_CHAR(
                                 COALESCE(
-                                  SUM(c.qty * c.price) - SUM(c.discount_price * c.qty) - MAX(c.total_discount) - 
-                                  SUM(rt.qty * rt.price) - SUM(rt.discount_price * rt.qty), 
-                                  o.total
+                                  SUM(c.qty * c.price) - SUM(c.discount_price * c.qty) - MAX(c.total_discount) / 
+                                  (SELECT SUM(cat.qty) FROM cart cat WHERE cat.cartid = max(c.cartid))  - 
+                                  SUM(rt.qty * rt.price) + SUM(rt.discount_price * rt.qty), 
+                                  o.total- o.totaldiscount 
                                 ), 'FM999,999,999.00'
                               ) AS total_sales
                             FROM transaction t
@@ -2796,7 +2795,7 @@ namespace RestieAPI.Service.Repo
                                OR LOWER(c.status) IN ('approved', 'delivered'))
                             AND 
                               DATE(to_timestamp(o.createdat / 1000.0) AT TIME ZONE 'Asia/Manila') 
-                            BETWEEN @fromDate AND @toDate
+                                BETWEEN @fromDate AND @toDate
                             GROUP BY t.transid, o.total, o.totaldiscount;";
                 }
     
@@ -3732,7 +3731,7 @@ namespace RestieAPI.Service.Repo
                        table.AddCell(new PdfPCell(new Phrase("Disc/Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                        table.AddCell(new PdfPCell(new Phrase("Selling Price after Disc/Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                        table.AddCell(new PdfPCell(new Phrase("Sales after Disc/Item", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                       table.AddCell(new PdfPCell(new Phrase("Overall Discount", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                       table.AddCell(new PdfPCell(new Phrase("Overall Discount/Qty", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                        table.AddCell(new PdfPCell(new Phrase("Net Sales", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                    }
                    else
@@ -3743,7 +3742,7 @@ namespace RestieAPI.Service.Repo
                         table.AddCell(new PdfPCell(new Phrase("Overall discount per item ", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                         table.AddCell(new PdfPCell(new Phrase("Overall order discount", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                         table.AddCell(new PdfPCell(new Phrase("Overall discount", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
-                        table.AddCell(new PdfPCell(new Phrase("Total discount", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
+                        table.AddCell(new PdfPCell(new Phrase("Total discount - returns disc", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                         table.AddCell(new PdfPCell(new Phrase("Total returns", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                         table.AddCell(new PdfPCell(new Phrase("Total sales", FontFactory.GetFont(FontFactory.HELVETICA, 12))) { HorizontalAlignment = Element.ALIGN_CENTER });
                     }

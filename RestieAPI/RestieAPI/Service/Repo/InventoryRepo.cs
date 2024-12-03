@@ -2775,17 +2775,32 @@ namespace RestieAPI.Service.Repo
                               TO_CHAR(COALESCE(sum(c.discount_price *c.qty) , 0), 'FM999,999,999.00') AS overall_discount_per_item,
                               TO_CHAR(COALESCE(MAX(c.total_discount) , 0), 'FM999,999,999.00') AS overall_order_discount,
                             TO_CHAR(COALESCE(sum(c.discount_price *c.qty) + MAX(c.total_discount) , sum(c.discount_price *c.qty)), 'FM999,999,999.00') AS overall_discount,
-                            TO_CHAR(COALESCE(MAX(o.totaldiscount) - SUM(rt.qty * rt.discount_price) - MAX(c.total_discount) / 
-                            (SELECT SUM(cat.qty) FROM cart cat WHERE cat.cartid = max(c.cartid)), o.totaldiscount), 'FM999,999,999.00') AS total_discount,
-                            TO_CHAR(COALESCE((max(rt.qty * rt.price) - max( rt.qty* rt.discount_price)), 0), 'FM999,999,999.00') AS total_returns,
                             TO_CHAR(
                                 COALESCE(
-                                  SUM(c.qty * c.price) - SUM(c.discount_price * c.qty) - MAX(c.total_discount) / 
-                                  (SELECT SUM(cat.qty) FROM cart cat WHERE cat.cartid = max(c.cartid))  - 
+                                    MAX(o.totaldiscount) - 
+                                    SUM(rt.qty * rt.discount_price) - 
+                                    MAX(c.total_discount) / 
+                                    (SELECT SUM(cat.qty) FROM cart cat WHERE cat.cartid = MAX(c.cartid)) * sum(rt.qty),
+                                    o.totaldiscount
+                                ), 
+                                'FM999,999,999.00'
+                            ) AS total_discount,
+                            TO_CHAR(COALESCE(sum(rt.qty * rt.price), 0) - COALESCE(sum(rt.discount_price * rt.qty),0), 'FM999,999,999.00') AS total_returns,
+                            TO_CHAR(
+                              GREATEST(
+                                COALESCE(
+                                  SUM(c.qty * c.price) - SUM(c.discount_price * c.qty) - 
+                                  (CASE 
+                                    WHEN (SELECT SUM(cat.qty) FROM cart cat WHERE cat.cartid = max(c.cartid)) = 0 THEN 0
+                                    ELSE MAX(c.total_discount) / 
+                                       (SELECT SUM(cat.qty) FROM cart cat WHERE cat.cartid = max(c.cartid)) 
+                                  END) - 
                                   SUM(rt.qty * rt.price) + SUM(rt.discount_price * rt.qty), 
-                                  o.total- o.totaldiscount 
-                                ), 'FM999,999,999.00'
-                              ) AS total_sales
+                                  o.total - o.totaldiscount
+                                ), 
+                                0
+                              ), 'FM999,999,999.00'
+                            ) AS total_sales
                             FROM transaction t
                             JOIN orders o ON t.orderid = o.orderid
                             JOIN cart c ON c.cartid = o.cartid

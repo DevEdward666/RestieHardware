@@ -131,7 +131,8 @@ const CartComponent: React.FC = () => {
     selectedItem: SelectedItemToCart,
     isAdd?: boolean,
     qtyAdded?: number,
-    onhand?: number
+    onhand?: number,
+    input?:boolean
   ) => {
     setOnhand(onhand!);
     let change = 0;
@@ -142,7 +143,13 @@ const CartComponent: React.FC = () => {
       });
       qtyAdded = 1;
     }
-
+    if ((qtyAdded !== undefined && qtyAdded <= 0) || isNaN(qtyAdded!) && input) {
+      setIsOpenToast({
+        toastMessage: "Must be atleast 1 qty",
+        isOpen: true,
+      });
+      qtyAdded = 1;
+    }
     change = isAdd ? (qtyAdded !== undefined ? qtyAdded : 1) : -1;
     let totalchange = change + selectedItem.qty!;
     if (totalchange > onhand!) {
@@ -247,7 +254,7 @@ const CartComponent: React.FC = () => {
                         size="large"
                         fill="clear"
                         onClick={() =>
-                          handleQty(card, false, undefined, card?.onhandqty)
+                          handleQty(card, false, undefined, card?.onhandqty,false)
                         }
                       >
                         <IonIcon
@@ -261,13 +268,14 @@ const CartComponent: React.FC = () => {
                         class="main-cart-qty"
                         type="number"
                         value={card.qty}
-                        debounce={1500}
+                        debounce={500}
                         onIonInput={(ev) =>
                           handleQty(
                             card,
                             true,
                             parseInt(ev.target.value?.toString()!),
-                            card?.onhandqty
+                            card?.onhandqty,
+                            true
                           )
                         }
                       ></IonInput>
@@ -277,7 +285,7 @@ const CartComponent: React.FC = () => {
                         size="large"
                         fill="clear"
                         onClick={() =>
-                          handleQty(card, true, undefined, card?.onhandqty)
+                          handleQty(card, true, undefined, card?.onhandqty,false)
                         }
                       >
                         <IonIcon
@@ -304,6 +312,7 @@ const CartComponent: React.FC = () => {
                           <IonSelectOption
                             key={index}
                             value={JSON.stringify(val)}
+                            className="voucher-description"
                           >
                             {val.vouchercode} - {val.description}
                           </IonSelectOption>

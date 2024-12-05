@@ -143,7 +143,12 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
                   <div className="order-list-card-price-details">
                     <div className="order-list-card-price">Total Cost: </div>
                     <span>&#8369;</span>
-                    {orders.total.toFixed(2)}
+                    {(orders.total - (orders.totaldiscount??0)).toFixed(2)}
+                  </div>
+                  <div className="order-list-card-price-details">
+                    <div className="order-list-card-price">Total Discount: </div>
+                    <span>&#8369;</span>
+                    {orders.totaldiscount?.toFixed(2)??0}
                   </div>
                   <div className="order-list-card-price-details">
                     <div className="order-list-card-price">Total Pay: </div>

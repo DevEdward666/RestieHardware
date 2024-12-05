@@ -135,6 +135,7 @@ namespace RestieAPI.Models.Response
         public string orderid { get; set; }
         public string cartid { get; set; }
         public float total { get; set; }
+        public float totaldiscount { get; set; }
         public string paidthru { get; set; }
         public float paidcash { get; set; }
         public string createdby { get; set; }
@@ -163,6 +164,8 @@ namespace RestieAPI.Models.Response
         public string image {  get; set; }
         public string image_type {  get; set; }
         public float price { get; set; }
+        public float discount_price { get; set; }
+        public float total_discount { get; set; }
         public long qty { get; set; }
         public long onhandqty { get; set; }
         public long createdat { get; set; }
@@ -269,6 +272,35 @@ namespace RestieAPI.Models.Response
         public string total_discount { get; set; }
         public string profit { get; set; }
     }
+    public class SalesReportResponse
+    {   
+        public string item { get; set; }
+        public int qty_sold { get; set; }
+        public int return_qty { get; set; }
+        public string gross_sp { get; set; }
+        public string disc_per_Item { get; set; }
+        public string Selling_Price_after_Disc_per_Item { get; set; }
+        public string Sales_after_Disc_per_Item { get; set; }
+        public string net_sales { get; set; }
+
+        public int price { get; set; }
+        public int total_qty_sold { get; set; }
+        public string total_sales { get; set; }
+        public string total_discount { get; set; }
+        
+        
+        public string transaction_date { get; set; }
+        public string transid { get; set; }
+        public string total { get; set; }
+        public string total_returns { get; set; }
+        
+        
+        public string gross_total { get; set; }
+        public string overall_discount_per_item { get; set; }
+        public string overall_order_discount { get; set; }
+        public string overall_discount { get; set; }
+
+    }
     public class ReturnSalesResponse
     {
         public string code { get; set; }
@@ -284,8 +316,11 @@ namespace RestieAPI.Models.Response
         public string item { get; set; }
         public string brand { get; set; }
         public int addedqty { get; set; }
+        public float price { get; set; }
+        public float cost { get; set; }
         public int onhandqty { get; set; }
         public string company { get; set; }
+        public string received_date { get; set; }
     }
     public class InventoryResponse
     {

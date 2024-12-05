@@ -274,7 +274,7 @@ const AddUserComponent = () => {
                  </IonAvatar> */}
                     <IonLabel>
                       <h2>{val.name}</h2>
-                      <p>{val.username}</p>
+                      <p>{val.role}</p>
                     </IonLabel>
                   </IonItem>
                 ))}

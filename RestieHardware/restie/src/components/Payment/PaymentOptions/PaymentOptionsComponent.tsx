@@ -135,7 +135,7 @@ const PaymentOptionsComponent = () => {
           voucher: item.voucher,
           order_voucher: customerPayemntInfo.voucher ?? "",
           voucher_id: item.voucher?.id ?? 0,
-          total_discount: getDiscountPerItem ?? 0,
+          total_discount: getDiscount ?? 0,
         };
       });
       const addedOrder: ResponseModel = await dispatch(
@@ -170,7 +170,7 @@ const PaymentOptionsComponent = () => {
       add_to_cart,
       customer_information,
       customerPayemntInfo,
-      getDiscountPerItem,
+      getDiscount,
     ]
   );
   useEffect(() => {
@@ -192,11 +192,12 @@ const PaymentOptionsComponent = () => {
       totalDiscount += val.qty * (val.discount ?? 0);
       totalAmount += val.price * val.qty;
     });
-    OverAllDiscount = (totalDiscount ?? 0) + (getDiscount ?? 0);
+    OverAllDiscount = (totalDiscount ?? 0);
+
     OverAllTotal = totalAmount - OverAllDiscount;
     setDiscountPerItem(OverAllDiscount);
     setOverallTotal(OverAllTotal);
-  }, [add_to_cart, getDiscount]);
+  }, [add_to_cart]);
   const handleInfoChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -228,12 +229,29 @@ const PaymentOptionsComponent = () => {
       const { value } = val.detail;
       if (value) {
         const selectedVoucher = value;
-        const totalDiscount =
-          JSON.parse(selectedVoucher).discount * getOverallTotal;
-        setDiscount(totalDiscount);
+        let totalAmount = 0;
+        let totalDiscount: number = 0;
+        let OverAllTotal: number = 0;
+        let OverAllDiscount: number = 0;
+    
+        add_to_cart.forEach((val: any) => {
+          totalDiscount += val.qty * (val.discount ?? 0);
+          totalAmount += val.price * val.qty;
+        });
+        OverAllDiscount = ((totalAmount - totalDiscount) *  JSON.parse(selectedVoucher).discount);
+        OverAllTotal = totalAmount - totalDiscount - OverAllDiscount;
+
+        setDiscountPerItem(totalDiscount + OverAllDiscount);
+        setOverallTotal(OverAllTotal);
+
+        //-----//
+        // const totalDiscount =
+        //   JSON.parse(selectedVoucher).discount * getOverallTotal;
+
+        setDiscount(OverAllDiscount);
       }
     },
-    [getOverallTotal]
+    [getOverallTotal,add_to_cart]
   );
   // const handleRemoveVoucher = useCallback(() => {
   //   dispatch(remove_voucher_actions());

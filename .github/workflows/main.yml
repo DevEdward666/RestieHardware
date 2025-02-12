@@ -103,7 +103,7 @@ jobs:
       - name: Publish
         run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieAPI/RestieAPI/restieapi
       - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: restieapi
           path: RestieAPI/RestieAPI/restieapi

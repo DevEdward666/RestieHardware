@@ -267,7 +267,7 @@ namespace RestieAPI.Controllers.Inventory
                 {
                     result = new SaveImageResponse
                     {
-                        imagePath = Path.Combine("Resources", "Images", file.FolderName, file.FileName)
+                        imagePath = Path.Combine("/mnt/images", file.FolderName, file.FileName)
                     },
                     status = StatusCodes.Status201Created,
                     message = "Image Uploaded Successfully"

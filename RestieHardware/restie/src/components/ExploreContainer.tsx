@@ -11,6 +11,7 @@ import {
   IonLoading,
   IonRefresher,
   IonRefresherContent,
+  IonToast,
   RefresherEventDetail,
   useIonRouter,
 } from "@ionic/react";
@@ -68,7 +69,10 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
   const [items, setItems] = useState(data);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-
+  const [isOpenMessageToast, setMessageToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+  });
   const selectedItemselector = useSelector(
     (store: RootStore) => store.InventoryReducer.add_to_cart
   );
@@ -216,8 +220,9 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           FolderName: "Inventory",
           FormFile: fileImage!,
         };
-
+        setMessageToast({ toastMessage: "Uploading", isOpen: true });
         const uploaded = await UploadDeliveryImages(imagePayload);
+        setMessageToast({ toastMessage: "Upload successful", isOpen: true });
         if (uploaded.status === 201) {
           const updateInventoryImage: PutInventoryImage = {
             image: uploaded.result.imagePath,
@@ -503,6 +508,16 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
         }
       ></IonToast> */}
+       <IonToast
+        isOpen={isOpenMessageToast?.isOpen}
+        message={isOpenMessageToast.toastMessage}
+        position="middle"
+        color={"medium"}
+        duration={3000}
+        onDidDismiss={() =>
+          setMessageToast({ toastMessage: "", isOpen: false })
+        }
+      ></IonToast>
     </IonContent>
   );
 };

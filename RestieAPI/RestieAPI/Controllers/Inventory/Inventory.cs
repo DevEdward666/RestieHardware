@@ -249,12 +249,8 @@ namespace RestieAPI.Controllers.Inventory
         {
             try
             {
-                string samplepath = Path.Combine("/tmp", "Images", file.FolderName);
-                if (!Directory.Exists(samplepath))
-                {
-                    Directory.CreateDirectory(samplepath);
-                }
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Images", file.FolderName);
+                string path = Path.Combine("/mnt/images", file.FolderName);
+
                 Console.WriteLine($"Trying to access path: {path}");
                 if (!Directory.Exists(path))
                 {

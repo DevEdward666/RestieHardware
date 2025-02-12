@@ -708,7 +708,7 @@ namespace RestieAPI.Service.Repo
         public PostInventoryAddResponse AddNewVoucher(PostVouchers postVouchers)
         {
             var sql = @"insert into vouchers (voucher_seq,vouchercode,name,description,maxredemption,discount,type,voucher_for,createdat,createdby) 
-                        values(nextval('voucher_seq_seq'), @vouchercode,@name,@description,@maxredemption,@discount,@type,@voucher_for,@createdat,@createdby)";
+                        values(nextval('voucher_seq'), @vouchercode,@name,@description,@maxredemption,@discount,@type,@voucher_for,@createdat,@createdby)";
 
             var results = new List<PostVouchers>();
             var insert = 0;

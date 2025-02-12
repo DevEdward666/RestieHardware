@@ -103,7 +103,7 @@ jobs:
       - name: Publish
         run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieAPI/RestieAPI/restieapi
       - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
         with:
           name: restieapi
           path: RestieAPI/RestieAPI/restieapi
@@ -143,6 +143,7 @@ jobs:
       - name: Create Fly volume
         run: |
           /home/runner/.fly/bin/flyctl volume create inventory_images --size 1 -r sin -n 1
+
       - name: Deploy .NET API to Fly.io
         run: |
           cd RestieAPI
@@ -206,7 +207,7 @@ jobs:
       - name: Publish
         run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieAPI/RestieAPI/restieapi
       - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: restieapi
           path: RestieAPI/RestieAPI/restieapi

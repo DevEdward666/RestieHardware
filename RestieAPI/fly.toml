@@ -8,6 +8,10 @@ primary_region = 'sin'
 
 [build]
 
+[mounts]
+  source = "inventory_images"
+  destination = "/mnt/images"
+
 [http_service]
   internal_port = 8080
   force_https = true

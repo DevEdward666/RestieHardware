@@ -249,7 +249,9 @@ namespace RestieAPI.Controllers.Inventory
         {
             try
             {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Images", file.FolderName);
+                string path = Path.Combine("/mnt/images", file.FolderName);
+
+                Console.WriteLine($"Trying to access path: {path}");
                 if (!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);
@@ -273,6 +275,7 @@ namespace RestieAPI.Controllers.Inventory
             }
             catch (Exception e)
             {
+                Console.WriteLine($"Error: {e.Message}");
                 return StatusCode(StatusCodes.Status500InternalServerError, new PostImageResponse
                 {
                     result = null,

@@ -142,7 +142,7 @@ jobs:
           /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
       - name: Create Fly volume
         run: |
-          /home/runner/.fly/bin/flyctl volume create inventory_images --size 1 -r sin -n 1 -a restieapi
+          /home/runner/.fly/bin/flyctl volumes list | grep -q "inventory_images" -a restieapi || /home/runner/.fly/bin/flyctl volume create inventory_images --size 1 -r sin -n 1 -a restieapi
       - name: Deploy .NET API to Fly.io
         run: |
           cd RestieAPI
@@ -264,6 +264,9 @@ jobs:
       - name: Login to flyctl
         run: |
           /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
+      - name: Create Fly volume
+        run: |
+          /home/runner/.fly/bin/flyctl volumes list | grep -q "inventory_images" -a restieapi || /home/runner/.fly/bin/flyctl volume create inventory_images --size 1 -r sin -n 1 -a restieapi
       - name: Deploy .NET API to Fly.io
         run: |
           cd RestieAPI

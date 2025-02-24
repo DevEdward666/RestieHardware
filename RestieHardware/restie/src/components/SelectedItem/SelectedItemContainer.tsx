@@ -247,7 +247,7 @@ const SelectedItemContainer: React.FC = () => {
     initalize();
   }, [addedQty, getSelectedItem, isLoading]);
   const handleOpenImage = (selected_image: string) => {
-    setselectedImage(selected_image);
+    setselectedImage(selected_image!==null? selected_image : stock);
     setOpenModal(true);
   };
   const handleDismiss = () => {
@@ -357,6 +357,7 @@ const SelectedItemContainer: React.FC = () => {
               })
             ) : (
               <SwiperSlide>
+                <p>{getSelectedItem.image}</p>
                 <IonImg
                   onClick={() => handleOpenImage(getSelectedItem.image)}
                   className="selected-item-img"

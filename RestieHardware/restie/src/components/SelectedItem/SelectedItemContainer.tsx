@@ -32,7 +32,7 @@ import "swiper/css/scrollbar";
 import "swiper/css/zoom";
 import "@ionic/react/css/ionic-swiper.css";
 import sample from "../../assets/images/Sample.png";
-import stock from "../assets/images/Image_not_available.png";
+import stock from "../../assets/images/Image_not_available.png";
 
 import {
   addCircle,

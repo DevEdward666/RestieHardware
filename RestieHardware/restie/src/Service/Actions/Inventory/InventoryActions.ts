@@ -104,7 +104,8 @@ export const selectedItem =
   (itemCode: string) => async (dispatch: Dispatch<SELECTED_ITEM>) => {
     try {
       const res = await getSelectedItem(itemCode);
-      res[0].image = `data:image/jpeg;base64,${res[0]?.image}`;
+      
+        res[0].image = `data:image/jpeg;base64,${res[0]?.image}`;
       dispatch({
         type: "SELECTED_ITEM",
         selected_item: res[0],

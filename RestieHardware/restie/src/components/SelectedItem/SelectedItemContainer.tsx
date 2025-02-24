@@ -32,6 +32,8 @@ import "swiper/css/scrollbar";
 import "swiper/css/zoom";
 import "@ionic/react/css/ionic-swiper.css";
 import sample from "../../assets/images/Sample.png";
+import stock from "../assets/images/Image_not_available.png";
+
 import {
   addCircle,
   removeCircle,
@@ -358,7 +360,7 @@ const SelectedItemContainer: React.FC = () => {
                 <IonImg
                   onClick={() => handleOpenImage(getSelectedItem.image)}
                   className="selected-item-img"
-                  src={getSelectedItem.image}
+                  src={getSelectedItem.image!==null? getSelectedItem.image : stock}
                 />
               </SwiperSlide>
             )}

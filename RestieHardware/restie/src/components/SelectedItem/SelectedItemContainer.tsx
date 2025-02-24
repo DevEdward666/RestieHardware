@@ -357,7 +357,6 @@ const SelectedItemContainer: React.FC = () => {
               })
             ) : (
               <SwiperSlide>
-                <p>{getSelectedItem.image}</p>
                 <IonImg
                   onClick={() => handleOpenImage(getSelectedItem.image)}
                   className="selected-item-img"

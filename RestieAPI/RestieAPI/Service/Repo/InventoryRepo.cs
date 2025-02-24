@@ -347,7 +347,27 @@ namespace RestieAPI.Service.Repo
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                         updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                                     };
+                                    string originalPath = inventoryItem.image;
+                                    string formattedPath = originalPath.Replace("\\", "\\\\");
+                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
+                                    if (!System.IO.File.Exists(path))
+                                    {
+                                        inventoryItem.image = null; 
+                                    }
+                                    else
+                                    {
+                                        string contentType = "image/jpeg";
+                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            contentType = "image/png";
+                                        }
+
+                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+
+                                        inventoryItem.image = Convert.ToBase64String(imageData); 
+                                        inventoryItem.image_type = contentType;
+                                    }
                                     results.Add(inventoryItem);
                                 }
                             }

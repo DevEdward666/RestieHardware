@@ -100,10 +100,15 @@ const SelectedItemContainer: React.FC = () => {
     setIsZoomed((prevState) => !prevState); // Toggle the zoom state
   };
   const fetchImages = async () => {
-    const response = await GetMultipleimage(`${getSelectedItem.code}`);
-    if (response.status === 200) {
-      setImageData(response.result.images.$values);
+    try {
+      const response = await GetMultipleimage(`${getSelectedItem.image}`);
+      if (response.status === 200) {
+        setImageData(response.result.images.$values);
+      }
+    } catch (error) {
+      console.warn(error)
     }
+    
   };
   useEffect(() => {
     fetchImages();

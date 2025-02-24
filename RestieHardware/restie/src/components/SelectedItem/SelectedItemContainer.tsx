@@ -339,7 +339,7 @@ const SelectedItemContainer: React.FC = () => {
             scrollbar={false}
             zoom={true}
           >
-            {imageData.length > 0 ? (
+            {imageData.length > 0 && imageData !== null? (
               imageData?.map((val, index) => {
                 return (
                   <SwiperSlide key={index}>

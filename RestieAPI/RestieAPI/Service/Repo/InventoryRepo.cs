@@ -350,7 +350,7 @@ namespace RestieAPI.Service.Repo
                                     string originalPath = inventoryItem.image;
                                     string formattedPath = originalPath.Replace("\\", "\\\\");
                                     string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
-
+                                    Console.WriteLine("Final Path: " + path);
                                     if (!System.IO.File.Exists(path))
                                     {
                                         inventoryItem.image = null; 
@@ -364,10 +364,13 @@ namespace RestieAPI.Service.Repo
                                         }
 
                                         byte[] imageData = System.IO.File.ReadAllBytes(path);
+                                        string base64String = Convert.ToBase64String(imageData);
+                                        Console.WriteLine("Base64 Image: " + base64String);
 
-                                        inventoryItem.image = Convert.ToBase64String(imageData); 
+                                        inventoryItem.image = base64String; 
                                         inventoryItem.image_type = contentType;
                                     }
+                                    
                                     results.Add(inventoryItem);
                                 }
                             }
@@ -379,7 +382,8 @@ namespace RestieAPI.Service.Repo
                         {
                             result = results,
                             success=true,
-                            statusCode= 200
+                            statusCode= 200,
+                            message=""
                         };
                     }
                     catch (Exception ex)

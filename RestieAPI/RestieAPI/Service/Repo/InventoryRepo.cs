@@ -1,22 +1,11 @@
 ﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
-using Npgsql.Internal;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.Collections;
 using RestieAPI.Configs;
 using RestieAPI.Models.Request;
 using RestieAPI.Models.Response;
-using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.Globalization;
-using System.Reflection.Metadata;
 using static RestieAPI.Models.Request.InventoryRequestModel;
-using static RestieAPI.Models.Response.AdminResponseModel;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using Document = iTextSharp.text.Document;
 
 namespace RestieAPI.Service.Repo
@@ -37,29 +26,38 @@ namespace RestieAPI.Service.Repo
         public InventoryItemModel fetchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
         {
             var sql = "";
-            if(getAllInventory.filter == "asc")
+            if (getAllInventory.filter == "asc")
             {
-                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY price ASC LIMIT @limit OFFSET @offset;";
+                sql =
+                    @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY price ASC LIMIT @limit OFFSET @offset;";
 
             }
-            if(getAllInventory.filter == "desc")
+
+            if (getAllInventory.filter == "desc")
             {
-                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY price DESC LIMIT @limit OFFSET @offset;";
+                sql =
+                    @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY price DESC LIMIT @limit OFFSET @offset;";
 
             }
+
             if (getAllInventory.filter == "alphaAZ")
             {
-                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item ASC LIMIT @limit OFFSET @offset;";
+                sql =
+                    @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item ASC LIMIT @limit OFFSET @offset;";
 
             }
+
             if (getAllInventory.filter == "alphaZA")
             {
-                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item DESC LIMIT @limit OFFSET @offset;";
+                sql =
+                    @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item DESC LIMIT @limit OFFSET @offset;";
 
             }
-            if(getAllInventory.filter == "")
+
+            if (getAllInventory.filter == "")
             {
-                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item LIMIT @limit OFFSET @offset;";
+                sql =
+                    @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item LIMIT @limit OFFSET @offset;";
 
             }
 
@@ -84,27 +82,42 @@ namespace RestieAPI.Service.Repo
                     {
                         using (var cmd = new NpgsqlCommand(sql, connection))
                         {
+                            // Adding parameters to the command
                             foreach (var param in parameters)
                             {
                                 cmd.Parameters.AddWithValue(param.Key, param.Value);
                             }
 
+                            // Execute the query and read the data
                             using (var reader = cmd.ExecuteReader())
                             {
                                 while (reader.Read())
                                 {
                                     string originalPath = reader.GetString(reader.GetOrdinal("image"));
-                                    string formattedPath = originalPath.Replace("\\", "\\\\");
-                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
-                                   
+
+                                    // Assuming the path is correct, we use it directly
+                                    string path = originalPath;
+
+                                    // Determine the image content type
                                     string contentType = "image/jpeg";
                                     if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
                                     {
                                         contentType = "image/png";
                                     }
 
+                                    // Check if the file exists
+                                    if (!System.IO.File.Exists(path))
+                                    {
+                                        // Handle the case where the image file does not exist
+                                        // You might want to set image to null or some placeholder value
+                                        continue;
+                                    }
+
+                                    // Read the image data and convert it to Base64
                                     byte[] imageData = System.IO.File.ReadAllBytes(path);
                                     string base64String = Convert.ToBase64String(imageData);
+
+                                    // Create InventoryItem object from the reader data
                                     var inventoryItem = new InventoryItems
                                     {
                                         code = reader.GetString(reader.GetOrdinal("code")),
@@ -121,7 +134,8 @@ namespace RestieAPI.Service.Repo
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                         updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                                     };
-                                   
+
+                                    // Add to results
                                     results.Add(inventoryItem);
                                 }
                             }
@@ -139,17 +153,21 @@ namespace RestieAPI.Service.Repo
                     catch (Exception ex)
                     {
                         tran.Rollback();
+                        // Log the exception message if necessary
+                        Console.WriteLine($"Error: {ex.Message}");
+
                         return new InventoryItemModel
                         {
-                            result = [],
+                            result = new List<InventoryItems>(), // Return an empty list in case of error
                             success = false,
                             statusCode = 500
                         };
-                        throw;
                     }
                 }
             }
         }
+
+
         public InventoryItemModel selectedItem(string itemCode)
         {
             var sql = @"SELECT * FROM Inventory where code=@itemCode";
@@ -246,10 +264,11 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
+
         public InventoryItemModel searchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
         {
             var sql = "";
-            if(getAllInventory.filter == "asc")
+            if (getAllInventory.filter == "asc")
             {
                 sql = @"SELECT * FROM Inventory 
                         WHERE LOWER(code) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
@@ -258,6 +277,7 @@ namespace RestieAPI.Service.Repo
                         ORDER BY price ASC 
                         LIMIT @limit;";
             }
+
             if (getAllInventory.filter == "desc")
             {
                 sql = @"SELECT * FROM Inventory 
@@ -267,6 +287,7 @@ namespace RestieAPI.Service.Repo
                         ORDER BY price DESC 
                         LIMIT @limit;";
             }
+
             if (getAllInventory.filter == "alphaAZ")
             {
                 sql = @"SELECT * FROM Inventory 
@@ -276,6 +297,7 @@ namespace RestieAPI.Service.Repo
                         ORDER BY item ASC 
                         LIMIT @limit;";
             }
+
             if (getAllInventory.filter == "alphaZA")
             {
                 sql = @"SELECT * FROM Inventory 
@@ -285,6 +307,7 @@ namespace RestieAPI.Service.Repo
                         ORDER BY item DESC 
                         LIMIT @limit;";
             }
+
             if (getAllInventory.filter == "")
             {
                 sql = @"SELECT * FROM Inventory 
@@ -316,27 +339,42 @@ namespace RestieAPI.Service.Repo
                     {
                         using (var cmd = new NpgsqlCommand(sql, connection))
                         {
+                            // Adding parameters to the command
                             foreach (var param in parameters)
                             {
                                 cmd.Parameters.AddWithValue(param.Key, param.Value);
                             }
 
+                            // Execute the query and read the data
                             using (var reader = cmd.ExecuteReader())
                             {
                                 while (reader.Read())
                                 {
                                     string originalPath = reader.GetString(reader.GetOrdinal("image"));
-                                    string formattedPath = originalPath.Replace("\\", "\\\\");
-                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
-                                   
+
+                                    // Assuming the path is correct, we use it directly
+                                    string path = originalPath;
+
+                                    // Determine the image content type
                                     string contentType = "image/jpeg";
                                     if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
                                     {
                                         contentType = "image/png";
                                     }
 
+                                    // Check if the file exists
+                                    if (!System.IO.File.Exists(path))
+                                    {
+                                        // Handle the case where the image file does not exist
+                                        // You might want to set image to null or some placeholder value
+                                        continue;
+                                    }
+
+                                    // Read the image data and convert it to Base64
                                     byte[] imageData = System.IO.File.ReadAllBytes(path);
                                     string base64String = Convert.ToBase64String(imageData);
+
+                                    // Create InventoryItem object from the reader data
                                     var inventoryItem = new InventoryItems
                                     {
                                         code = reader.GetString(reader.GetOrdinal("code")),
@@ -348,13 +386,13 @@ namespace RestieAPI.Service.Repo
                                         cost = reader.GetFloat(reader.GetOrdinal("cost")),
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
                                         status = reader.GetString(reader.GetOrdinal("status")),
-                                        image =base64String,
+                                        image = base64String,
                                         image_type = contentType,
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                         updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                                     };
-                                  
-                                    
+
+                                    // Add to results
                                     results.Add(inventoryItem);
                                 }
                             }
@@ -365,91 +403,91 @@ namespace RestieAPI.Service.Repo
                         return new InventoryItemModel
                         {
                             result = results,
-                            success=true,
-                            statusCode= 200,
-                            message=""
+                            success = true,
+                            statusCode = 200
                         };
                     }
                     catch (Exception ex)
                     {
                         tran.Rollback();
+                        // Log the exception message if necessary
+                        Console.WriteLine($"Error: {ex.Message}");
+
                         return new InventoryItemModel
                         {
-                            result = [],
+                            result = new List<InventoryItems>(), // Return an empty list in case of error
                             success = false,
                             statusCode = 500
                         };
-                        throw;
                     }
                 }
             }
-
-            return new InventoryItemModel
-            {
-                result = results
-            };
         }
-
-
-      
-        public PostResponse AddCustomerInfo(InventoryRequestModel.PostCustomerInfo postCustomerInfo)
-        {
-            var sql = @"insert into customer (customerid,name,contactno,address,createdat,customer_email) 
-                values(@customerid,@name,@contactno,@address,@createdat,@customer_email)";
         
-            var parameters = new Dictionary<string, object>
+
+
+
+        public PostResponse AddCustomerInfo(InventoryRequestModel.PostCustomerInfo postCustomerInfo)
             {
-                { "@customerid", postCustomerInfo.customerid },
-                { "@name", postCustomerInfo.name },
-                { "@contactno", postCustomerInfo.contactno },
-                { "@address", postCustomerInfo.address },
-                { "@createdat", postCustomerInfo.createdat },
-                { "@customer_email", postCustomerInfo.customer_email },
-            };
+                var sql = @"insert into customer (customerid,name,contactno,address,createdat,customer_email) 
+                values(@customerid,@name,@contactno,@address,@createdat,@customer_email)";
 
-            var results = new List<InventoryItems>();
-
-            using (var connection = new NpgsqlConnection(_connectionString))
-            {
-                connection.Open();
-
-                using (var tran = connection.BeginTransaction())
+                var parameters = new Dictionary<string, object>
                 {
-                    try
+                    { "@customerid", postCustomerInfo.customerid },
+                    { "@name", postCustomerInfo.name },
+                    { "@contactno", postCustomerInfo.contactno },
+                    { "@address", postCustomerInfo.address },
+                    { "@createdat", postCustomerInfo.createdat },
+                    { "@customer_email", postCustomerInfo.customer_email },
+                };
+
+                var results = new List<InventoryItems>();
+
+                using (var connection = new NpgsqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    using (var tran = connection.BeginTransaction())
                     {
-                        var insert = 0;
-                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        try
                         {
-                            foreach (var param in parameters)
+                            var insert = 0;
+                            using (var cmd = new NpgsqlCommand(sql, connection))
                             {
-                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                foreach (var param in parameters)
+                                {
+                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                                }
+
+                                insert = cmd.ExecuteNonQuery();
                             }
 
-                            insert = cmd.ExecuteNonQuery();
+                            // Commit the transaction after the reader has been fully processed
+                            tran.Commit();
+                            return new PostResponse
+                            {
+                                Message = "Successfully added",
+                                status = 200
+                            };
                         }
-                        // Commit the transaction after the reader has been fully processed
-                        tran.Commit();
-                        return new PostResponse
+                        catch (Exception ex)
                         {
-                            Message = "Successfully added",
-                            status = 200
-                        };
-                    }
-                    catch (Exception ex)
-                    {
-                        tran.Rollback();
-                        return new PostResponse
-                        {
-                            status = 500,
-                            Message = ex.Message
-                        };
-                        throw;
+                            tran.Rollback();
+                            return new PostResponse
+                            {
+                                status = 500,
+                                Message = ex.Message
+                            };
+                            throw;
+                        }
                     }
                 }
+
+
             }
+        
 
-
-        }
         public PostResponse UpdateInventoryImage(InventoryRequestModel.PutInventoryImage putInventoryImage)
         {
             var sql = @"update inventory set image=@image where code= @code";

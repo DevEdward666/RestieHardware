@@ -133,6 +133,11 @@ namespace RestieAPI.Service.Repo
                                             inventoryItem.image_type = contentType;
                                         }
                                     }
+                                    else
+                                    {
+                                        inventoryItem.image = null;
+                                        inventoryItem.image_type = null;
+                                    }
 
                                     results.Add(inventoryItem);
                                 }
@@ -377,12 +382,15 @@ namespace RestieAPI.Service.Repo
                                             }
 
                                             byte[] imageData = System.IO.File.ReadAllBytes(path);
-                                            string base64String = Convert.ToBase64String(imageData);
-                                            Console.WriteLine("Base64 Image: " + base64String);
 
-                                            inventoryItem.image = base64String;
+                                            inventoryItem.image = Convert.ToBase64String(imageData);;
                                             inventoryItem.image_type = contentType;
                                         }
+                                    }
+                                    else
+                                    {
+                                        inventoryItem.image = null;
+                                        inventoryItem.image_type = null;
                                     }
 
                                     results.Add(inventoryItem);
@@ -3314,6 +3322,11 @@ namespace RestieAPI.Service.Repo
                                             refundItemsResponse.image = Convert.ToBase64String(imageData);
                                             refundItemsResponse.image_type = contentType;
                                         }
+                                    }    
+                                    else
+                                    {
+                                        refundItemsResponse.image = null;
+                                        refundItemsResponse.image_type = null;
                                     }
 
                                     results.Add(refundItemsResponse);

@@ -93,6 +93,18 @@ namespace RestieAPI.Service.Repo
                             {
                                 while (reader.Read())
                                 {
+                                    string originalPath = reader.GetString(reader.GetOrdinal("image"));
+                                    string formattedPath = originalPath.Replace("\\", "\\\\");
+                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+                                   
+                                    string contentType = "image/jpeg";
+                                    if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        contentType = "image/png";
+                                    }
+
+                                    byte[] imageData = System.IO.File.ReadAllBytes(path);
+                                    string base64String = Convert.ToBase64String(imageData);
                                     var inventoryItem = new InventoryItems
                                     {
                                         code = reader.GetString(reader.GetOrdinal("code")),
@@ -104,31 +116,12 @@ namespace RestieAPI.Service.Repo
                                         cost = reader.GetFloat(reader.GetOrdinal("cost")),
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
                                         status = reader.GetString(reader.GetOrdinal("status")),
-                                        image = reader.GetString(reader.GetOrdinal("image")),
+                                        image = base64String,
+                                        image_type = contentType,
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                         updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                                     };
-                                    string originalPath = inventoryItem.image;
-                                    string formattedPath = originalPath.Replace("\\", "\\\\");
-                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
-
-                                    if (!System.IO.File.Exists(path))
-                                    {
-                                        inventoryItem.image = null; 
-                                    }
-                                    else
-                                    {
-                                        string contentType = "image/jpeg";
-                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            contentType = "image/png";
-                                        }
-
-                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
-
-                                        inventoryItem.image = Convert.ToBase64String(imageData); 
-                                        inventoryItem.image_type = contentType;
-                                    }
+                                   
                                     results.Add(inventoryItem);
                                 }
                             }
@@ -332,6 +325,18 @@ namespace RestieAPI.Service.Repo
                             {
                                 while (reader.Read())
                                 {
+                                    string originalPath = reader.GetString(reader.GetOrdinal("image"));
+                                    string formattedPath = originalPath.Replace("\\", "\\\\");
+                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+                                   
+                                    string contentType = "image/jpeg";
+                                    if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        contentType = "image/png";
+                                    }
+
+                                    byte[] imageData = System.IO.File.ReadAllBytes(path);
+                                    string base64String = Convert.ToBase64String(imageData);
                                     var inventoryItem = new InventoryItems
                                     {
                                         code = reader.GetString(reader.GetOrdinal("code")),
@@ -343,33 +348,12 @@ namespace RestieAPI.Service.Repo
                                         cost = reader.GetFloat(reader.GetOrdinal("cost")),
                                         price = reader.GetFloat(reader.GetOrdinal("price")),
                                         status = reader.GetString(reader.GetOrdinal("status")),
-                                        image = reader.GetString(reader.GetOrdinal("image")),
+                                        image =base64String,
+                                        image_type = contentType,
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                         updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                                     };
-                                    string originalPath = inventoryItem.image;
-                                    string formattedPath = originalPath.Replace("\\", "\\\\");
-                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
-                                    Console.WriteLine("Final Path: " + path);
-                                    if (!System.IO.File.Exists(path))
-                                    {
-                                        inventoryItem.image = null; 
-                                    }
-                                    else
-                                    {
-                                        string contentType = "image/jpeg";
-                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            contentType = "image/png";
-                                        }
-
-                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
-                                        string base64String = Convert.ToBase64String(imageData);
-                                        Console.WriteLine("Base64 Image: " + base64String);
-
-                                        inventoryItem.image = base64String; 
-                                        inventoryItem.image_type = contentType;
-                                    }
+                                  
                                     
                                     results.Add(inventoryItem);
                                 }

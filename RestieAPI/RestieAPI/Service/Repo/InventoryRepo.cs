@@ -109,26 +109,31 @@ namespace RestieAPI.Service.Repo
                                         updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                                     };
                                     string originalPath = inventoryItem.image;
-                                    string formattedPath = originalPath.Replace("//", "////");
-                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+                                    if (originalPath != "0")
+                                    {
+                                        string formattedPath = originalPath.Replace("\\", "\\\\");
+                                        string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
-                                    if (!System.IO.File.Exists(path))
-                                    {
-                                        inventoryItem.image = null; 
-                                    }
-                                    else
-                                    {
-                                        string contentType = "image/jpeg";
-                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        if (!System.IO.File.Exists(path))
                                         {
-                                            contentType = "image/png";
+                                            inventoryItem.image = null;
                                         }
+                                        else
+                                        {
+                                            string contentType = "image/jpeg";
+                                            if (Path.GetExtension(path)
+                                                .Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                contentType = "image/png";
+                                            }
 
-                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+                                            byte[] imageData = System.IO.File.ReadAllBytes(path);
 
-                                        inventoryItem.image = Convert.ToBase64String(imageData); 
-                                        inventoryItem.image_type = contentType;
+                                            inventoryItem.image = Convert.ToBase64String(imageData);
+                                            inventoryItem.image_type = contentType;
+                                        }
                                     }
+
                                     results.Add(inventoryItem);
                                 }
                             }
@@ -205,26 +210,31 @@ namespace RestieAPI.Service.Repo
                                         updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                                     };
                                     string originalPath = inventoryItem.image;
-                                    string formattedPath = originalPath.Replace("//", "////");
-                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+                                    if (originalPath != "0")
+                                    {
+                                        string formattedPath = originalPath.Replace("\\", "\\\\");
+                                        string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
-                                    if (!System.IO.File.Exists(path))
-                                    {
-                                        inventoryItem.image = null;
-                                    }
-                                    else
-                                    {
-                                        string contentType = "image/jpeg";
-                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        if (!System.IO.File.Exists(path))
                                         {
-                                            contentType = "image/png";
+                                            inventoryItem.image = null;
                                         }
+                                        else
+                                        {
+                                            string contentType = "image/jpeg";
+                                            if (Path.GetExtension(path)
+                                                .Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                contentType = "image/png";
+                                            }
 
-                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+                                            byte[] imageData = System.IO.File.ReadAllBytes(path);
 
-                                        inventoryItem.image = Convert.ToBase64String(imageData);
-                                        inventoryItem.image_type = contentType;
+                                            inventoryItem.image = Convert.ToBase64String(imageData);
+                                            inventoryItem.image_type = contentType;
+                                        }
                                     }
+
                                     results.Add(inventoryItem);
                                 }
                             }
@@ -348,29 +358,33 @@ namespace RestieAPI.Service.Repo
                                         updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                                     };
                                     string originalPath = inventoryItem.image;
-                                    string formattedPath = originalPath.Replace("//", "////");
-                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+                                    if (originalPath != "0")
+                                    {
+                                        string formattedPath = originalPath.Replace("\\", "\\\\");
+                                        string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
-                                    if (!System.IO.File.Exists(path))
-                                    {
-                                        inventoryItem.image = null; 
-                                    }
-                                    else
-                                    {
-                                        string contentType = "image/jpeg";
-                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        if (!System.IO.File.Exists(path))
                                         {
-                                            contentType = "image/png";
+                                            inventoryItem.image = null;
                                         }
+                                        else
+                                        {
+                                            string contentType = "image/jpeg";
+                                            if (Path.GetExtension(path)
+                                                .Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                contentType = "image/png";
+                                            }
 
-                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
-                                        string base64String = Convert.ToBase64String(imageData);
-                                        Console.WriteLine("Base64 Image: " + base64String);
+                                            byte[] imageData = System.IO.File.ReadAllBytes(path);
+                                            string base64String = Convert.ToBase64String(imageData);
+                                            Console.WriteLine("Base64 Image: " + base64String);
 
-                                        inventoryItem.image = base64String; 
-                                        inventoryItem.image_type = contentType;
+                                            inventoryItem.image = base64String;
+                                            inventoryItem.image_type = contentType;
+                                        }
                                     }
-                                    
+
                                     results.Add(inventoryItem);
                                 }
                             }
@@ -3277,26 +3291,31 @@ namespace RestieAPI.Service.Repo
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                     };
                                     string originalPath = refundItemsResponse.image;
-                                    string formattedPath = originalPath.Replace("//", "////");
-                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+                                    if (originalPath != "0")
+                                    {
+                                        string formattedPath = originalPath.Replace("\\", "\\\\");
+                                        string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
-                                    if (!System.IO.File.Exists(path))
-                                    {
-                                        refundItemsResponse.image = null;
-                                    }
-                                    else
-                                    {
-                                        string contentType = "image/jpeg";
-                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        if (!System.IO.File.Exists(path))
                                         {
-                                            contentType = "image/png";
+                                            refundItemsResponse.image = null;
                                         }
+                                        else
+                                        {
+                                            string contentType = "image/jpeg";
+                                            if (Path.GetExtension(path)
+                                                .Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                contentType = "image/png";
+                                            }
 
-                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+                                            byte[] imageData = System.IO.File.ReadAllBytes(path);
 
-                                        refundItemsResponse.image = Convert.ToBase64String(imageData);
-                                        refundItemsResponse.image_type = contentType;
+                                            refundItemsResponse.image = Convert.ToBase64String(imageData);
+                                            refundItemsResponse.image_type = contentType;
+                                        }
                                     }
+
                                     results.Add(refundItemsResponse);
                                 }
                             }

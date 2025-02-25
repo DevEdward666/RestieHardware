@@ -1,11 +1,22 @@
 ﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
+using Npgsql.Internal;
+using Org.BouncyCastle.Utilities;
+using Org.BouncyCastle.Utilities.Collections;
 using RestieAPI.Configs;
 using RestieAPI.Models.Request;
 using RestieAPI.Models.Response;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.Globalization;
+using System.Reflection.Metadata;
 using static RestieAPI.Models.Request.InventoryRequestModel;
+using static RestieAPI.Models.Response.AdminResponseModel;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using Document = iTextSharp.text.Document;
 
 namespace RestieAPI.Service.Repo
@@ -26,38 +37,29 @@ namespace RestieAPI.Service.Repo
         public InventoryItemModel fetchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
         {
             var sql = "";
-            if (getAllInventory.filter == "asc")
+            if(getAllInventory.filter == "asc")
             {
-                sql =
-                    @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY price ASC LIMIT @limit OFFSET @offset;";
+                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY price ASC LIMIT @limit OFFSET @offset;";
 
             }
-
-            if (getAllInventory.filter == "desc")
+            if(getAllInventory.filter == "desc")
             {
-                sql =
-                    @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY price DESC LIMIT @limit OFFSET @offset;";
+                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY price DESC LIMIT @limit OFFSET @offset;";
 
             }
-
             if (getAllInventory.filter == "alphaAZ")
             {
-                sql =
-                    @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item ASC LIMIT @limit OFFSET @offset;";
+                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item ASC LIMIT @limit OFFSET @offset;";
 
             }
-
             if (getAllInventory.filter == "alphaZA")
             {
-                sql =
-                    @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item DESC LIMIT @limit OFFSET @offset;";
+                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item DESC LIMIT @limit OFFSET @offset;";
 
             }
-
-            if (getAllInventory.filter == "")
+            if(getAllInventory.filter == "")
             {
-                sql =
-                    @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item LIMIT @limit OFFSET @offset;";
+                sql = @"SELECT * FROM Inventory where LOWER(category) LIKE CONCAT('%', LOWER(@category), '%') and LOWER(brand) LIKE CONCAT('%', LOWER(@brand), '%') ORDER BY item LIMIT @limit OFFSET @offset;";
 
             }
 
@@ -76,89 +78,77 @@ namespace RestieAPI.Service.Repo
             {
                 connection.Open();
 
-                using (var tran = connection.BeginTransaction())
+                // If you're only reading, transaction may not be necessary
+                using (var cmd = new NpgsqlCommand(sql, connection))
                 {
                     try
                     {
-                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        foreach (var param in parameters)
                         {
-                            // Adding parameters to the command
-                            foreach (var param in parameters)
-                            {
-                                cmd.Parameters.AddWithValue(param.Key, param.Value);
-                            }
+                            cmd.Parameters.AddWithValue(param.Key, param.Value);
+                        }
 
-                            // Execute the query and read the data
-                            using (var reader = cmd.ExecuteReader())
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
                             {
-                                while (reader.Read())
+                                var inventoryItem = new InventoryItems
                                 {
-                                    string originalPath = reader.GetString(reader.GetOrdinal("image"));
+                                    code = reader.GetString(reader.GetOrdinal("code")),
+                                    item = reader.GetString(reader.GetOrdinal("item")),
+                                    category = reader.GetString(reader.GetOrdinal("category")),
+                                    brand = reader.GetString(reader.GetOrdinal("brand")),
+                                    qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                    reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                                    cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                                    price = reader.GetFloat(reader.GetOrdinal("price")),
+                                    status = reader.GetString(reader.GetOrdinal("status")),
+                                    image = reader.GetString(reader.GetOrdinal("image")),
+                                    createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                    updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                                };
 
-                                    // Assuming the path is correct, we use it directly
-                                    string path = originalPath;
+                                string originalPath = inventoryItem.image;
+                                string formattedPath = originalPath.Replace("\\", "\\\\");
+                                string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
-                                    // Determine the image content type
+                                if (!System.IO.File.Exists(path))
+                                {
+                                    inventoryItem.image = null;
+                                }
+                                else
+                                {
                                     string contentType = "image/jpeg";
                                     if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
                                     {
                                         contentType = "image/png";
                                     }
 
-                                    // Check if the file exists
-                                    if (!System.IO.File.Exists(path))
-                                    {
-                                        // Handle the case where the image file does not exist
-                                        // You might want to set image to null or some placeholder value
-                                        continue;
-                                    }
-
-                                    // Read the image data and convert it to Base64
                                     byte[] imageData = System.IO.File.ReadAllBytes(path);
                                     string base64String = Convert.ToBase64String(imageData);
+                                    Console.WriteLine("Base64 Image: " + base64String);
 
-                                    // Create InventoryItem object from the reader data
-                                    var inventoryItem = new InventoryItems
-                                    {
-                                        code = reader.GetString(reader.GetOrdinal("code")),
-                                        item = reader.GetString(reader.GetOrdinal("item")),
-                                        category = reader.GetString(reader.GetOrdinal("category")),
-                                        brand = reader.GetString(reader.GetOrdinal("brand")),
-                                        qty = reader.GetInt64(reader.GetOrdinal("qty")),
-                                        reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
-                                        cost = reader.GetFloat(reader.GetOrdinal("cost")),
-                                        price = reader.GetFloat(reader.GetOrdinal("price")),
-                                        status = reader.GetString(reader.GetOrdinal("status")),
-                                        image = base64String,
-                                        image_type = contentType,
-                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
-                                        updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
-                                    };
-
-                                    // Add to results
-                                    results.Add(inventoryItem);
+                                    inventoryItem.image = base64String;
+                                    inventoryItem.image_type = contentType;
                                 }
+
+                                results.Add(inventoryItem);
                             }
                         }
 
-                        // Commit the transaction after the reader has been fully processed
-                        tran.Commit();
                         return new InventoryItemModel
                         {
                             result = results,
                             success = true,
-                            statusCode = 200
+                            statusCode = 200,
                         };
                     }
                     catch (Exception ex)
                     {
-                        tran.Rollback();
-                        // Log the exception message if necessary
-                        Console.WriteLine($"Error: {ex.Message}");
-
+                        Console.WriteLine("Error: " + ex.Message); // Log the exception
                         return new InventoryItemModel
                         {
-                            result = new List<InventoryItems>(), // Return an empty list in case of error
+                            result = new List<InventoryItems>(), // Return an empty list
                             success = false,
                             statusCode = 500
                         };
@@ -166,8 +156,6 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
-
-
         public InventoryItemModel selectedItem(string itemCode)
         {
             var sql = @"SELECT * FROM Inventory where code=@itemCode";
@@ -196,100 +184,48 @@ namespace RestieAPI.Service.Repo
                                 cmd.Parameters.AddWithValue(param.Key, param.Value);
                             }
 
-                           using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        // Get the image path, handle null values
-                        string originalPath = reader.IsDBNull(reader.GetOrdinal("image")) 
-                            ? null 
-                            : reader.GetString(reader.GetOrdinal("image"));
-
-                        // If the image path is null or empty, set image to null in InventoryItem
-                        if (string.IsNullOrEmpty(originalPath))
-                        {
-                            var inventoryItem = new InventoryItems
+                            using (var reader = cmd.ExecuteReader())
                             {
-                                code = reader.GetString(reader.GetOrdinal("code")),
-                                item = reader.GetString(reader.GetOrdinal("item")),
-                                category = reader.GetString(reader.GetOrdinal("category")),
-                                brand = reader.GetString(reader.GetOrdinal("brand")),
-                                qty = reader.GetInt64(reader.GetOrdinal("qty")),
-                                reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
-                                cost = reader.GetFloat(reader.GetOrdinal("cost")),
-                                price = reader.GetFloat(reader.GetOrdinal("price")),
-                                status = reader.GetString(reader.GetOrdinal("status")),
-                                image = null,  // Set the image to null since there's no valid path
-                                image_type = null,  // No image type if no image exists
-                                createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
-                                updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
-                            };
+                                while (reader.Read())
+                                {
+                                    var inventoryItem = new InventoryItems
+                                    {
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        category = reader.GetString(reader.GetOrdinal("category")),
+                                        brand = reader.GetString(reader.GetOrdinal("brand")),
+                                        qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                        reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                                        cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                                        price = reader.GetFloat(reader.GetOrdinal("price")),
+                                        status = reader.GetString(reader.GetOrdinal("status")),
+                                        image = reader.GetString(reader.GetOrdinal("image")),
+                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                        updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                                    };
+                                    string originalPath = inventoryItem.image;
+                                    string formattedPath = originalPath.Replace("\\", "\\\\");
+                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
-                            results.Add(inventoryItem);
-                            continue;  // Skip the rest of the processing for this item
-                        }
+                                    if (!System.IO.File.Exists(path))
+                                    {
+                                        inventoryItem.image = null;
+                                    }
+                                    else
+                                    {
+                                        string contentType = "image/jpeg";
+                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            contentType = "image/png";
+                                        }
 
-                        // Assuming the path is correct, use it directly
-                        string path = originalPath;
+                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
 
-                        // Determine the image content type based on file extension
-                        string contentType = "image/jpeg";
-                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
-                        {
-                            contentType = "image/png";
-                        }
-
-                        // Check if the file exists
-                        if (!System.IO.File.Exists(path))
-                        {
-                            // Handle the case where the image file does not exist
-                            // Set the image to null if the file doesn't exist
-                            var inventoryItem = new InventoryItems
-                            {
-                                code = reader.GetString(reader.GetOrdinal("code")),
-                                item = reader.GetString(reader.GetOrdinal("item")),
-                                category = reader.GetString(reader.GetOrdinal("category")),
-                                brand = reader.GetString(reader.GetOrdinal("brand")),
-                                qty = reader.GetInt64(reader.GetOrdinal("qty")),
-                                reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
-                                cost = reader.GetFloat(reader.GetOrdinal("cost")),
-                                price = reader.GetFloat(reader.GetOrdinal("price")),
-                                status = reader.GetString(reader.GetOrdinal("status")),
-                                image = null,  // Set the image to null if file does not exist
-                                image_type = null,  // No image type if no image file
-                                createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
-                                updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
-                            };
-
-                            results.Add(inventoryItem);
-                            continue;  // Skip further processing for this item
-                        }
-
-                        // Read the image data and convert it to Base64
-                        byte[] imageData = System.IO.File.ReadAllBytes(path);
-                        string base64String = Convert.ToBase64String(imageData);
-
-                        // Create InventoryItem object from the reader data
-                        var inventoryItemWithImage = new InventoryItems
-                        {
-                            code = reader.GetString(reader.GetOrdinal("code")),
-                            item = reader.GetString(reader.GetOrdinal("item")),
-                            category = reader.GetString(reader.GetOrdinal("category")),
-                            brand = reader.GetString(reader.GetOrdinal("brand")),
-                            qty = reader.GetInt64(reader.GetOrdinal("qty")),
-                            reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
-                            cost = reader.GetFloat(reader.GetOrdinal("cost")),
-                            price = reader.GetFloat(reader.GetOrdinal("price")),
-                            status = reader.GetString(reader.GetOrdinal("status")),
-                            image = base64String,  // Set the Base64 image string
-                            image_type = contentType,  // Set the image content type
-                            createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
-                            updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
-                        };
-
-                        // Add to results
-                        results.Add(inventoryItemWithImage);
-                    }
+                                        inventoryItem.image = Convert.ToBase64String(imageData);
+                                        inventoryItem.image_type = contentType;
+                                    }
+                                    results.Add(inventoryItem);
+                                }
                             }
                         }
 
@@ -316,11 +252,10 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
-
         public InventoryItemModel searchInventory(InventoryRequestModel.GetAllInventory getAllInventory)
         {
             var sql = "";
-            if (getAllInventory.filter == "asc")
+            if(getAllInventory.filter == "asc")
             {
                 sql = @"SELECT * FROM Inventory 
                         WHERE LOWER(code) LIKE CONCAT('%', LOWER(@searchTerm), '%') OR 
@@ -329,7 +264,6 @@ namespace RestieAPI.Service.Repo
                         ORDER BY price ASC 
                         LIMIT @limit;";
             }
-
             if (getAllInventory.filter == "desc")
             {
                 sql = @"SELECT * FROM Inventory 
@@ -339,7 +273,6 @@ namespace RestieAPI.Service.Repo
                         ORDER BY price DESC 
                         LIMIT @limit;";
             }
-
             if (getAllInventory.filter == "alphaAZ")
             {
                 sql = @"SELECT * FROM Inventory 
@@ -349,7 +282,6 @@ namespace RestieAPI.Service.Repo
                         ORDER BY item ASC 
                         LIMIT @limit;";
             }
-
             if (getAllInventory.filter == "alphaZA")
             {
                 sql = @"SELECT * FROM Inventory 
@@ -359,7 +291,6 @@ namespace RestieAPI.Service.Repo
                         ORDER BY item DESC 
                         LIMIT @limit;";
             }
-
             if (getAllInventory.filter == "")
             {
                 sql = @"SELECT * FROM Inventory 
@@ -381,98 +312,25 @@ namespace RestieAPI.Service.Repo
 
             var results = new List<InventoryItems>();
 
-            using (var connection = new NpgsqlConnection(_connectionString))
+    using (var connection = new NpgsqlConnection(_connectionString))
+    {
+        connection.Open();
+
+        // If you're only reading, transaction may not be necessary
+        using (var cmd = new NpgsqlCommand(sql, connection))
+        {
+            try
             {
-                connection.Open();
-
-                using (var tran = connection.BeginTransaction())
+                foreach (var param in parameters)
                 {
-                    try
-                    {
-                        using (var cmd = new NpgsqlCommand(sql, connection))
-                        {
-                            // Adding parameters to the command
-                            foreach (var param in parameters)
-                            {
-                                cmd.Parameters.AddWithValue(param.Key, param.Value);
-                            }
+                    cmd.Parameters.AddWithValue(param.Key, param.Value);
+                }
 
-                            // Execute the query and read the data
-                           using (var reader = cmd.ExecuteReader())
+                using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        // Get the image path, handle null values
-                        string originalPath = reader.IsDBNull(reader.GetOrdinal("image")) 
-                            ? null 
-                            : reader.GetString(reader.GetOrdinal("image"));
-
-                        // If the image path is null or empty, set image to null in InventoryItem
-                        if (string.IsNullOrEmpty(originalPath))
-                        {
-                            var inventoryItem = new InventoryItems
-                            {
-                                code = reader.GetString(reader.GetOrdinal("code")),
-                                item = reader.GetString(reader.GetOrdinal("item")),
-                                category = reader.GetString(reader.GetOrdinal("category")),
-                                brand = reader.GetString(reader.GetOrdinal("brand")),
-                                qty = reader.GetInt64(reader.GetOrdinal("qty")),
-                                reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
-                                cost = reader.GetFloat(reader.GetOrdinal("cost")),
-                                price = reader.GetFloat(reader.GetOrdinal("price")),
-                                status = reader.GetString(reader.GetOrdinal("status")),
-                                image = null,  // Set the image to null since there's no valid path
-                                image_type = null,  // No image type if no image exists
-                                createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
-                                updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
-                            };
-
-                            results.Add(inventoryItem);
-                            continue;  // Skip the rest of the processing for this item
-                        }
-
-                        // Assuming the path is correct, use it directly
-                        string path = originalPath;
-
-                        // Determine the image content type based on file extension
-                        string contentType = "image/jpeg";
-                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
-                        {
-                            contentType = "image/png";
-                        }
-
-                        // Check if the file exists
-                        if (!System.IO.File.Exists(path))
-                        {
-                            // Handle the case where the image file does not exist
-                            // Set the image to null if the file doesn't exist
-                            var inventoryItem = new InventoryItems
-                            {
-                                code = reader.GetString(reader.GetOrdinal("code")),
-                                item = reader.GetString(reader.GetOrdinal("item")),
-                                category = reader.GetString(reader.GetOrdinal("category")),
-                                brand = reader.GetString(reader.GetOrdinal("brand")),
-                                qty = reader.GetInt64(reader.GetOrdinal("qty")),
-                                reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
-                                cost = reader.GetFloat(reader.GetOrdinal("cost")),
-                                price = reader.GetFloat(reader.GetOrdinal("price")),
-                                status = reader.GetString(reader.GetOrdinal("status")),
-                                image = null,  // Set the image to null if file does not exist
-                                image_type = null,  // No image type if no image file
-                                createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
-                                updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
-                            };
-
-                            results.Add(inventoryItem);
-                            continue;  // Skip further processing for this item
-                        }
-
-                        // Read the image data and convert it to Base64
-                        byte[] imageData = System.IO.File.ReadAllBytes(path);
-                        string base64String = Convert.ToBase64String(imageData);
-
-                        // Create InventoryItem object from the reader data
-                        var inventoryItemWithImage = new InventoryItems
+                        var inventoryItem = new InventoryItems
                         {
                             code = reader.GetString(reader.GetOrdinal("code")),
                             item = reader.GetString(reader.GetOrdinal("item")),
@@ -483,108 +341,126 @@ namespace RestieAPI.Service.Repo
                             cost = reader.GetFloat(reader.GetOrdinal("cost")),
                             price = reader.GetFloat(reader.GetOrdinal("price")),
                             status = reader.GetString(reader.GetOrdinal("status")),
-                            image = base64String,  // Set the Base64 image string
-                            image_type = contentType,  // Set the image content type
+                            image = reader.GetString(reader.GetOrdinal("image")),
                             createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                             updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                         };
 
-                        // Add to results
-                        results.Add(inventoryItemWithImage);
-                    }
+                        string originalPath = inventoryItem.image;
+                        string formattedPath = originalPath.Replace("\\", "\\\\");
+                        string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+
+                        if (!System.IO.File.Exists(path))
+                        {
+                            inventoryItem.image = null;
+                        }
+                        else
+                        {
+                            string contentType = "image/jpeg";
+                            if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                            {
+                                contentType = "image/png";
                             }
+
+                            byte[] imageData = System.IO.File.ReadAllBytes(path);
+                            string base64String = Convert.ToBase64String(imageData);
+                            Console.WriteLine("Base64 Image: " + base64String);
+
+                            inventoryItem.image = base64String;
+                            inventoryItem.image_type = contentType;
                         }
 
+                        results.Add(inventoryItem);
+                    }
+                }
+
+                return new InventoryItemModel
+                {
+                    result = results,
+                    success = true,
+                    statusCode = 200,
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message); // Log the exception
+                return new InventoryItemModel
+                {
+                    result = new List<InventoryItems>(), // Return an empty list
+                    success = false,
+                    statusCode = 500
+                };
+            }
+        }
+    }
+
+
+            return new InventoryItemModel
+            {
+                result = results
+            };
+        }
+
+
+      
+        public PostResponse AddCustomerInfo(InventoryRequestModel.PostCustomerInfo postCustomerInfo)
+        {
+            var sql = @"insert into customer (customerid,name,contactno,address,createdat,customer_email) 
+                values(@customerid,@name,@contactno,@address,@createdat,@customer_email)";
+        
+            var parameters = new Dictionary<string, object>
+            {
+                { "@customerid", postCustomerInfo.customerid },
+                { "@name", postCustomerInfo.name },
+                { "@contactno", postCustomerInfo.contactno },
+                { "@address", postCustomerInfo.address },
+                { "@createdat", postCustomerInfo.createdat },
+                { "@customer_email", postCustomerInfo.customer_email },
+            };
+
+            var results = new List<InventoryItems>();
+
+            using (var connection = new NpgsqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var tran = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        var insert = 0;
+                        using (var cmd = new NpgsqlCommand(sql, connection))
+                        {
+                            foreach (var param in parameters)
+                            {
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
+
+                            insert = cmd.ExecuteNonQuery();
+                        }
                         // Commit the transaction after the reader has been fully processed
                         tran.Commit();
-                        return new InventoryItemModel
+                        return new PostResponse
                         {
-                            result = results,
-                            success = true,
-                            statusCode = 200
+                            Message = "Successfully added",
+                            status = 200
                         };
                     }
                     catch (Exception ex)
                     {
                         tran.Rollback();
-                        // Log the exception message if necessary
-                        Console.WriteLine($"Error: {ex.Message}");
-
-                        return new InventoryItemModel
+                        return new PostResponse
                         {
-                            result = new List<InventoryItems>(), // Return an empty list in case of error
-                            success = false,
-                            statusCode = 500
+                            status = 500,
+                            Message = ex.Message
                         };
+                        throw;
                     }
                 }
             }
+
+
         }
-        
-
-
-
-        public PostResponse AddCustomerInfo(InventoryRequestModel.PostCustomerInfo postCustomerInfo)
-            {
-                var sql = @"insert into customer (customerid,name,contactno,address,createdat,customer_email) 
-                values(@customerid,@name,@contactno,@address,@createdat,@customer_email)";
-
-                var parameters = new Dictionary<string, object>
-                {
-                    { "@customerid", postCustomerInfo.customerid },
-                    { "@name", postCustomerInfo.name },
-                    { "@contactno", postCustomerInfo.contactno },
-                    { "@address", postCustomerInfo.address },
-                    { "@createdat", postCustomerInfo.createdat },
-                    { "@customer_email", postCustomerInfo.customer_email },
-                };
-
-                var results = new List<InventoryItems>();
-
-                using (var connection = new NpgsqlConnection(_connectionString))
-                {
-                    connection.Open();
-
-                    using (var tran = connection.BeginTransaction())
-                    {
-                        try
-                        {
-                            var insert = 0;
-                            using (var cmd = new NpgsqlCommand(sql, connection))
-                            {
-                                foreach (var param in parameters)
-                                {
-                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
-                                }
-
-                                insert = cmd.ExecuteNonQuery();
-                            }
-
-                            // Commit the transaction after the reader has been fully processed
-                            tran.Commit();
-                            return new PostResponse
-                            {
-                                Message = "Successfully added",
-                                status = 200
-                            };
-                        }
-                        catch (Exception ex)
-                        {
-                            tran.Rollback();
-                            return new PostResponse
-                            {
-                                status = 500,
-                                Message = ex.Message
-                            };
-                            throw;
-                        }
-                    }
-                }
-
-
-            }
-        
-
         public PostResponse UpdateInventoryImage(InventoryRequestModel.PutInventoryImage putInventoryImage)
         {
             var sql = @"update inventory set image=@image where code= @code";

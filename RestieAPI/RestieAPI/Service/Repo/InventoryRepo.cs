@@ -196,48 +196,100 @@ namespace RestieAPI.Service.Repo
                                 cmd.Parameters.AddWithValue(param.Key, param.Value);
                             }
 
-                            using (var reader = cmd.ExecuteReader())
+                           using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        // Get the image path, handle null values
+                        string originalPath = reader.IsDBNull(reader.GetOrdinal("image")) 
+                            ? null 
+                            : reader.GetString(reader.GetOrdinal("image"));
+
+                        // If the image path is null or empty, set image to null in InventoryItem
+                        if (string.IsNullOrEmpty(originalPath))
+                        {
+                            var inventoryItem = new InventoryItems
                             {
-                                while (reader.Read())
-                                {
-                                    var inventoryItem = new InventoryItems
-                                    {
-                                        code = reader.GetString(reader.GetOrdinal("code")),
-                                        item = reader.GetString(reader.GetOrdinal("item")),
-                                        category = reader.GetString(reader.GetOrdinal("category")),
-                                        brand = reader.GetString(reader.GetOrdinal("brand")),
-                                        qty = reader.GetInt64(reader.GetOrdinal("qty")),
-                                        reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
-                                        cost = reader.GetFloat(reader.GetOrdinal("cost")),
-                                        price = reader.GetFloat(reader.GetOrdinal("price")),
-                                        status = reader.GetString(reader.GetOrdinal("status")),
-                                        image = reader.GetString(reader.GetOrdinal("image")),
-                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
-                                        updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
-                                    };
-                                    string originalPath = inventoryItem.image;
-                                    string formattedPath = originalPath.Replace("\\", "\\\\");
-                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+                                code = reader.GetString(reader.GetOrdinal("code")),
+                                item = reader.GetString(reader.GetOrdinal("item")),
+                                category = reader.GetString(reader.GetOrdinal("category")),
+                                brand = reader.GetString(reader.GetOrdinal("brand")),
+                                qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                                cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                                price = reader.GetFloat(reader.GetOrdinal("price")),
+                                status = reader.GetString(reader.GetOrdinal("status")),
+                                image = null,  // Set the image to null since there's no valid path
+                                image_type = null,  // No image type if no image exists
+                                createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                            };
 
-                                    if (!System.IO.File.Exists(path))
-                                    {
-                                        inventoryItem.image = null;
-                                    }
-                                    else
-                                    {
-                                        string contentType = "image/jpeg";
-                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            contentType = "image/png";
-                                        }
+                            results.Add(inventoryItem);
+                            continue;  // Skip the rest of the processing for this item
+                        }
 
-                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+                        // Assuming the path is correct, use it directly
+                        string path = originalPath;
 
-                                        inventoryItem.image = Convert.ToBase64String(imageData);
-                                        inventoryItem.image_type = contentType;
-                                    }
-                                    results.Add(inventoryItem);
-                                }
+                        // Determine the image content type based on file extension
+                        string contentType = "image/jpeg";
+                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                        {
+                            contentType = "image/png";
+                        }
+
+                        // Check if the file exists
+                        if (!System.IO.File.Exists(path))
+                        {
+                            // Handle the case where the image file does not exist
+                            // Set the image to null if the file doesn't exist
+                            var inventoryItem = new InventoryItems
+                            {
+                                code = reader.GetString(reader.GetOrdinal("code")),
+                                item = reader.GetString(reader.GetOrdinal("item")),
+                                category = reader.GetString(reader.GetOrdinal("category")),
+                                brand = reader.GetString(reader.GetOrdinal("brand")),
+                                qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                                cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                                price = reader.GetFloat(reader.GetOrdinal("price")),
+                                status = reader.GetString(reader.GetOrdinal("status")),
+                                image = null,  // Set the image to null if file does not exist
+                                image_type = null,  // No image type if no image file
+                                createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                            };
+
+                            results.Add(inventoryItem);
+                            continue;  // Skip further processing for this item
+                        }
+
+                        // Read the image data and convert it to Base64
+                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+                        string base64String = Convert.ToBase64String(imageData);
+
+                        // Create InventoryItem object from the reader data
+                        var inventoryItemWithImage = new InventoryItems
+                        {
+                            code = reader.GetString(reader.GetOrdinal("code")),
+                            item = reader.GetString(reader.GetOrdinal("item")),
+                            category = reader.GetString(reader.GetOrdinal("category")),
+                            brand = reader.GetString(reader.GetOrdinal("brand")),
+                            qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                            reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                            cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                            price = reader.GetFloat(reader.GetOrdinal("price")),
+                            status = reader.GetString(reader.GetOrdinal("status")),
+                            image = base64String,  // Set the Base64 image string
+                            image_type = contentType,  // Set the image content type
+                            createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                            updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                        };
+
+                        // Add to results
+                        results.Add(inventoryItemWithImage);
+                    }
                             }
                         }
 
@@ -346,55 +398,100 @@ namespace RestieAPI.Service.Repo
                             }
 
                             // Execute the query and read the data
-                            using (var reader = cmd.ExecuteReader())
+                           using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        // Get the image path, handle null values
+                        string originalPath = reader.IsDBNull(reader.GetOrdinal("image")) 
+                            ? null 
+                            : reader.GetString(reader.GetOrdinal("image"));
+
+                        // If the image path is null or empty, set image to null in InventoryItem
+                        if (string.IsNullOrEmpty(originalPath))
+                        {
+                            var inventoryItem = new InventoryItems
                             {
-                                while (reader.Read())
-                                {
-                                    string originalPath = reader.GetString(reader.GetOrdinal("image"));
+                                code = reader.GetString(reader.GetOrdinal("code")),
+                                item = reader.GetString(reader.GetOrdinal("item")),
+                                category = reader.GetString(reader.GetOrdinal("category")),
+                                brand = reader.GetString(reader.GetOrdinal("brand")),
+                                qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                                cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                                price = reader.GetFloat(reader.GetOrdinal("price")),
+                                status = reader.GetString(reader.GetOrdinal("status")),
+                                image = null,  // Set the image to null since there's no valid path
+                                image_type = null,  // No image type if no image exists
+                                createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                            };
 
-                                    // Assuming the path is correct, we use it directly
-                                    string path = originalPath;
+                            results.Add(inventoryItem);
+                            continue;  // Skip the rest of the processing for this item
+                        }
 
-                                    // Determine the image content type
-                                    string contentType = "image/jpeg";
-                                    if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        contentType = "image/png";
-                                    }
+                        // Assuming the path is correct, use it directly
+                        string path = originalPath;
 
-                                    // Check if the file exists
-                                    if (!System.IO.File.Exists(path))
-                                    {
-                                        // Handle the case where the image file does not exist
-                                        // You might want to set image to null or some placeholder value
-                                        continue;
-                                    }
+                        // Determine the image content type based on file extension
+                        string contentType = "image/jpeg";
+                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                        {
+                            contentType = "image/png";
+                        }
 
-                                    // Read the image data and convert it to Base64
-                                    byte[] imageData = System.IO.File.ReadAllBytes(path);
-                                    string base64String = Convert.ToBase64String(imageData);
+                        // Check if the file exists
+                        if (!System.IO.File.Exists(path))
+                        {
+                            // Handle the case where the image file does not exist
+                            // Set the image to null if the file doesn't exist
+                            var inventoryItem = new InventoryItems
+                            {
+                                code = reader.GetString(reader.GetOrdinal("code")),
+                                item = reader.GetString(reader.GetOrdinal("item")),
+                                category = reader.GetString(reader.GetOrdinal("category")),
+                                brand = reader.GetString(reader.GetOrdinal("brand")),
+                                qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                                cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                                price = reader.GetFloat(reader.GetOrdinal("price")),
+                                status = reader.GetString(reader.GetOrdinal("status")),
+                                image = null,  // Set the image to null if file does not exist
+                                image_type = null,  // No image type if no image file
+                                createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                            };
 
-                                    // Create InventoryItem object from the reader data
-                                    var inventoryItem = new InventoryItems
-                                    {
-                                        code = reader.GetString(reader.GetOrdinal("code")),
-                                        item = reader.GetString(reader.GetOrdinal("item")),
-                                        category = reader.GetString(reader.GetOrdinal("category")),
-                                        brand = reader.GetString(reader.GetOrdinal("brand")),
-                                        qty = reader.GetInt64(reader.GetOrdinal("qty")),
-                                        reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
-                                        cost = reader.GetFloat(reader.GetOrdinal("cost")),
-                                        price = reader.GetFloat(reader.GetOrdinal("price")),
-                                        status = reader.GetString(reader.GetOrdinal("status")),
-                                        image = base64String,
-                                        image_type = contentType,
-                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
-                                        updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
-                                    };
+                            results.Add(inventoryItem);
+                            continue;  // Skip further processing for this item
+                        }
 
-                                    // Add to results
-                                    results.Add(inventoryItem);
-                                }
+                        // Read the image data and convert it to Base64
+                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+                        string base64String = Convert.ToBase64String(imageData);
+
+                        // Create InventoryItem object from the reader data
+                        var inventoryItemWithImage = new InventoryItems
+                        {
+                            code = reader.GetString(reader.GetOrdinal("code")),
+                            item = reader.GetString(reader.GetOrdinal("item")),
+                            category = reader.GetString(reader.GetOrdinal("category")),
+                            brand = reader.GetString(reader.GetOrdinal("brand")),
+                            qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                            reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                            cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                            price = reader.GetFloat(reader.GetOrdinal("price")),
+                            status = reader.GetString(reader.GetOrdinal("status")),
+                            image = base64String,  // Set the Base64 image string
+                            image_type = contentType,  // Set the image content type
+                            createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                            updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                        };
+
+                        // Add to results
+                        results.Add(inventoryItemWithImage);
+                    }
                             }
                         }
 

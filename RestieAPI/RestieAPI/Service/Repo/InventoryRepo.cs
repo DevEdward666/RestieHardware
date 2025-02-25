@@ -78,80 +78,81 @@ namespace RestieAPI.Service.Repo
             {
                 connection.Open();
 
-                // If you're only reading, transaction may not be necessary
-                using (var cmd = new NpgsqlCommand(sql, connection))
+                using (var tran = connection.BeginTransaction())
                 {
                     try
                     {
-                        foreach (var param in parameters)
+                        using (var cmd = new NpgsqlCommand(sql, connection))
                         {
-                            cmd.Parameters.AddWithValue(param.Key, param.Value);
-                        }
-
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
+                            foreach (var param in parameters)
                             {
-                                var inventoryItem = new InventoryItems
-                                {
-                                    code = reader.GetString(reader.GetOrdinal("code")),
-                                    item = reader.GetString(reader.GetOrdinal("item")),
-                                    category = reader.GetString(reader.GetOrdinal("category")),
-                                    brand = reader.GetString(reader.GetOrdinal("brand")),
-                                    qty = reader.GetInt64(reader.GetOrdinal("qty")),
-                                    reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
-                                    cost = reader.GetFloat(reader.GetOrdinal("cost")),
-                                    price = reader.GetFloat(reader.GetOrdinal("price")),
-                                    status = reader.GetString(reader.GetOrdinal("status")),
-                                    image = reader.GetString(reader.GetOrdinal("image")),
-                                    createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
-                                    updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
-                                };
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
+                            }
 
-                                string originalPath = inventoryItem.image;
-                                string formattedPath = originalPath.Replace("\\", "\\\\");
-                                string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
-
-                                if (!System.IO.File.Exists(path))
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
                                 {
-                                    inventoryItem.image = null;
-                                }
-                                else
-                                {
-                                    string contentType = "image/jpeg";
-                                    if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                    var inventoryItem = new InventoryItems
                                     {
-                                        contentType = "image/png";
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        category = reader.GetString(reader.GetOrdinal("category")),
+                                        brand = reader.GetString(reader.GetOrdinal("brand")),
+                                        qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                        reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                                        cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                                        price = reader.GetFloat(reader.GetOrdinal("price")),
+                                        status = reader.GetString(reader.GetOrdinal("status")),
+                                        image = reader.GetString(reader.GetOrdinal("image")),
+                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                        updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                                    };
+                                    string originalPath = inventoryItem.image;
+                                    string formattedPath = originalPath.Replace("//", "////");
+                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+
+                                    if (!System.IO.File.Exists(path))
+                                    {
+                                        inventoryItem.image = null; 
                                     }
+                                    else
+                                    {
+                                        string contentType = "image/jpeg";
+                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            contentType = "image/png";
+                                        }
 
-                                    byte[] imageData = System.IO.File.ReadAllBytes(path);
-                                    string base64String = Convert.ToBase64String(imageData);
-                                    Console.WriteLine("Base64 Image: " + base64String);
+                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
 
-                                    inventoryItem.image = base64String;
-                                    inventoryItem.image_type = contentType;
+                                        inventoryItem.image = Convert.ToBase64String(imageData); 
+                                        inventoryItem.image_type = contentType;
+                                    }
+                                    results.Add(inventoryItem);
                                 }
-
-                                results.Add(inventoryItem);
                             }
                         }
 
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
                         return new InventoryItemModel
                         {
                             result = results,
                             success = true,
-                            statusCode = 200,
+                            statusCode = 200
                         };
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Error: " + ex.Message); // Log the exception
+                        tran.Rollback();
                         return new InventoryItemModel
                         {
-                            result = new List<InventoryItems>(), // Return an empty list
+                            result = [],
                             success = false,
                             statusCode = 500
                         };
+                        throw;
                     }
                 }
             }
@@ -204,7 +205,7 @@ namespace RestieAPI.Service.Repo
                                         updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
                                     };
                                     string originalPath = inventoryItem.image;
-                                    string formattedPath = originalPath.Replace("\\", "\\\\");
+                                    string formattedPath = originalPath.Replace("//", "////");
                                     string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
                                     if (!System.IO.File.Exists(path))
@@ -312,88 +313,91 @@ namespace RestieAPI.Service.Repo
 
             var results = new List<InventoryItems>();
 
-    using (var connection = new NpgsqlConnection(_connectionString))
-    {
-        connection.Open();
-
-        // If you're only reading, transaction may not be necessary
-        using (var cmd = new NpgsqlCommand(sql, connection))
-        {
-            try
+            using (var connection = new NpgsqlConnection(_connectionString))
             {
-                foreach (var param in parameters)
-                {
-                    cmd.Parameters.AddWithValue(param.Key, param.Value);
-                }
+                connection.Open();
 
-                using (var reader = cmd.ExecuteReader())
+                using (var tran = connection.BeginTransaction())
                 {
-                    while (reader.Read())
+                    try
                     {
-                        var inventoryItem = new InventoryItems
+                        using (var cmd = new NpgsqlCommand(sql, connection))
                         {
-                            code = reader.GetString(reader.GetOrdinal("code")),
-                            item = reader.GetString(reader.GetOrdinal("item")),
-                            category = reader.GetString(reader.GetOrdinal("category")),
-                            brand = reader.GetString(reader.GetOrdinal("brand")),
-                            qty = reader.GetInt64(reader.GetOrdinal("qty")),
-                            reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
-                            cost = reader.GetFloat(reader.GetOrdinal("cost")),
-                            price = reader.GetFloat(reader.GetOrdinal("price")),
-                            status = reader.GetString(reader.GetOrdinal("status")),
-                            image = reader.GetString(reader.GetOrdinal("image")),
-                            createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
-                            updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
-                        };
-
-                        string originalPath = inventoryItem.image;
-                        string formattedPath = originalPath.Replace("\\", "\\\\");
-                        string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
-
-                        if (!System.IO.File.Exists(path))
-                        {
-                            inventoryItem.image = null;
-                        }
-                        else
-                        {
-                            string contentType = "image/jpeg";
-                            if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                            foreach (var param in parameters)
                             {
-                                contentType = "image/png";
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
                             }
 
-                            byte[] imageData = System.IO.File.ReadAllBytes(path);
-                            string base64String = Convert.ToBase64String(imageData);
-                            Console.WriteLine("Base64 Image: " + base64String);
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    var inventoryItem = new InventoryItems
+                                    {
+                                        code = reader.GetString(reader.GetOrdinal("code")),
+                                        item = reader.GetString(reader.GetOrdinal("item")),
+                                        category = reader.GetString(reader.GetOrdinal("category")),
+                                        brand = reader.GetString(reader.GetOrdinal("brand")),
+                                        qty = reader.GetInt64(reader.GetOrdinal("qty")),
+                                        reorderqty = reader.GetInt32(reader.GetOrdinal("reorderqty")),
+                                        cost = reader.GetFloat(reader.GetOrdinal("cost")),
+                                        price = reader.GetFloat(reader.GetOrdinal("price")),
+                                        status = reader.GetString(reader.GetOrdinal("status")),
+                                        image = reader.GetString(reader.GetOrdinal("image")),
+                                        createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
+                                        updatedat = reader.GetInt64(reader.GetOrdinal("updatedat"))
+                                    };
+                                    string originalPath = inventoryItem.image;
+                                    string formattedPath = originalPath.Replace("//", "////");
+                                    string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
-                            inventoryItem.image = base64String;
-                            inventoryItem.image_type = contentType;
+                                    if (!System.IO.File.Exists(path))
+                                    {
+                                        inventoryItem.image = null; 
+                                    }
+                                    else
+                                    {
+                                        string contentType = "image/jpeg";
+                                        if (Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            contentType = "image/png";
+                                        }
+
+                                        byte[] imageData = System.IO.File.ReadAllBytes(path);
+                                        string base64String = Convert.ToBase64String(imageData);
+                                        Console.WriteLine("Base64 Image: " + base64String);
+
+                                        inventoryItem.image = base64String; 
+                                        inventoryItem.image_type = contentType;
+                                    }
+                                    
+                                    results.Add(inventoryItem);
+                                }
+                            }
                         }
 
-                        results.Add(inventoryItem);
+                        // Commit the transaction after the reader has been fully processed
+                        tran.Commit();
+                        return new InventoryItemModel
+                        {
+                            result = results,
+                            success=true,
+                            statusCode= 200
+                        };
+                    }
+                    catch (Exception ex)
+                    {
+                        tran.Rollback();
+                        return new InventoryItemModel
+                        {
+                            result = [],
+                            success = false,
+                            statusCode = 500
+                        };
+                        throw;
                     }
                 }
-
-                return new InventoryItemModel
-                {
-                    result = results,
-                    success = true,
-                    statusCode = 200,
-                };
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex.Message); // Log the exception
-                return new InventoryItemModel
-                {
-                    result = new List<InventoryItems>(), // Return an empty list
-                    success = false,
-                    statusCode = 500
-                };
-            }
-        }
-    }
-
 
             return new InventoryItemModel
             {
@@ -3273,7 +3277,7 @@ namespace RestieAPI.Service.Repo
                                         createdat = reader.GetInt64(reader.GetOrdinal("createdat")),
                                     };
                                     string originalPath = refundItemsResponse.image;
-                                    string formattedPath = originalPath.Replace("\\", "\\\\");
+                                    string formattedPath = originalPath.Replace("//", "////");
                                     string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
 
                                     if (!System.IO.File.Exists(path))

@@ -239,6 +239,11 @@ namespace RestieAPI.Service.Repo
                                             inventoryItem.image_type = contentType;
                                         }
                                     }
+                                    else
+                                    {
+                                        inventoryItem.image = null;
+                                        inventoryItem.image_type = null;
+                                    }
 
                                     results.Add(inventoryItem);
                                 }

@@ -13,4 +13,8 @@ namespace RestieAPI.Config
         public int AccessTokenExpiration { get; set; }
         public int RefreshTokenExpiration { get; set; }
     }
+    public class CheckLocal
+    {
+        public bool isLocal { get; set; }
+    }
 }

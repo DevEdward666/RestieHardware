@@ -9,6 +9,9 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    max-width: 200px;
+    max-height: 200px;
+    min-width: 100px;
   }  
   .main-cart-card-main-content{
     flex: 1;
@@ -57,7 +60,8 @@
 .main-cart-item-card{
     /* --background: #ffffff00; */
     --background: white;
-
+    display: flex;
+    flex-direction: column;
 }
 .main-cart-card-qty{
     color:#FE3434;
@@ -103,3 +107,23 @@ ion-input.main-cart-qty {
       font-family: "Gotham-Light";
     }
   }
+  .cart-mobile{
+    width: 100%!important;
+  }
+  .cart-desktop{
+    width: 100%!important;
+  }
+  .main-cart-item-container{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-content: center;
+    align-items: center;
+    padding: 0 10px 0 10px;
+  }
+ion-select::part(text) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}

@@ -19,6 +19,9 @@
         padding-inline-end: 0px;
         justify-content: space-between;
         align-items: center;
+        &.all{
+            opacity: .5;
+        }
         .order-list-info-card-content{
             display: flex;
             flex-direction: column;
@@ -36,6 +39,18 @@
                     font-family: "Gotham-Medium";
                     font-size: 14px;
                 }
+               
+            }
+            .order-list-info-card-title-details-returns{
+                display: flex;
+                background: grey;
+                color: white;
+                padding: 2px;
+                font-size: 12px;
+                flex-direction: row;
+                align-content: center;
+                align-items: center;
+             
             }
             .order-list-info-card-category-details{
                 display: flex;
@@ -89,26 +104,9 @@
 .order-list-info-footer-total-main{
     display: flex;
     flex-direction: column;
-    .order-list-info-footer-total-details{
-    display: flex;
-    font-size: 24px;
-    flex-direction: row;
-    font-weight: bolder;
-    gap: 5px;
-    justify-content: space-between;
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 5px;
-    .order-list-info-footer-total{
-        font-family: "Gotham-Medium";
-        font-size: 24px;
-    }
-    .order-list-info-footer-total-info{
-        font-family: "Gotham-Black";
-        color: #f02b2b;
-        font-size: 24px;
-    }
-}}
+
+}
+
 .order-list-info-footer-approved-details{
     display: flex;
     font-size: 24px;
@@ -149,6 +147,45 @@
         font-size: 16px;
     }
 }
+.order-list-info-hardware-details{
+    display: flex;
+    font-size: 16px;
+    flex-direction: row;
+    gap: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+
+    .order-list-info-hardware{
+        font-family: "Gotham-Medium";
+        font-size: 24px;
+    }
+   
+    .order-list-info-hardware-info{
+        font-family: "Gotham-Light";
+        color: #125B8C;
+        font-size: 16px;
+    }
+}
+.order-list-info-hardware-details-address{
+    display: flex;
+    font-size: 16px;
+    flex-direction: column;
+    gap: 5px;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+.order-list-info-hardware-address{
+    font-family: "Gotham-Light";
+    font-size: 18px;
+}
+}
 .order-list-info-main-container{
     padding-top: 5px;
 }
@@ -178,7 +215,9 @@
     padding:10px ;
     font-family: "Gotham-Medium";
 }
-
+.order-list-info-main-content{
+    font-family: "Gotham-Medium";
+}
 .delivered-info-container{
     display: flex;
     flex-direction: column;
@@ -206,4 +245,158 @@
 }
 .cancelled{
     color:#f02b2b
+}
+hr {
+    border: 1px dotted #ff0000;
+    border-style: none none dotted; 
+    color: #fff; 
+    background-color: #fff;
+}
+ion-modal#email-modal {
+    --width: fit-content;
+    --min-width: 250px;
+    --height: fit-content;
+    --border-radius: 6px;
+    --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+  }
+  ion-modal#email-modal .wrapper {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 0 20px;
+  }
+
+.email-header{
+    font-size: 20px;
+    font-family: "Gotham-Medium";
+}
+.order-info-button-list-normal{
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    text-align: center;
+    font-family: Gotham-Book;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    align-items: center;
+    border-radius: 30px;
+    border-color: #125B8C;
+    border-style: solid;
+    border-width: 2px;
+    width: 100%;
+    .order-info-button-order{
+        font-family: Gotham-Book;
+        font-size: 14px;
+        --color:#125B8C;
+    }
+    .order-info-button-text{
+        padding-left: 10px;
+        color: #125B8C;
+    }
+}
+.order-info-button-list-close{
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    text-align: center;
+    font-family: Gotham-Book;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    align-items: center;
+    border-radius: 30px;
+    border-color: #125B8C;
+    border-style: solid;
+    border-width: 2px;
+    width: 100%;
+    background-color: #125B8C;
+    .order-info-button-order{
+        font-family: Gotham-Book;
+        font-size: 14px;
+        --color:white;
+    }
+    .order-info-button-text{
+        padding-left: 10px;
+        color: white;
+        
+    }
+}
+
+.order-info-footer-button{
+    display: flex;
+    flex-direction: row;
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: row;
+    padding: 20px 10px;
+    gap: 8px;
+    width: 100%;
+}
+.order-list-info-footer-total-details-remarks{
+    display: flex;
+    font-size: 24px;
+    flex-direction: column;
+    font-weight: bolder;
+    gap: 5px;
+    justify-content: space-between;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    .order-list-info-footer-remarks{
+        font-family: "Gotham-Medium";
+        font-size: 24px;
+    }
+    .order-list-info-footer-info-remarks{
+        font-family: "Gotham-Light";
+        color:black;
+        font-size: 16px;
+        padding-top: 10px;
+        padding-left: 10px;
+    }
+}  
+.order-list-info-footer-approved-info{
+    padding: 20px;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+}
+.order-list-info-footer-total-details{
+    display: flex;
+    font-size: 24px;
+    flex-direction: row;
+    font-weight: bolder;
+    gap: 5px;
+    justify-content: space-between;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 5px;
+    .order-list-info-footer-total{
+        font-family: "Gotham-Medium";
+        font-size: 24px;
+    }
+    .order-list-info-footer-total-info{
+        font-family: "Gotham-Black";
+        color: #f02b2b;
+        font-size: 24px;
+    }
+}
+.order-info-cash-input {
+    border: 1px solid #383737;
+    border-radius: 5px;
+    padding: 10px !important;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.order-info-cash-input-container{
+    padding: 10px;
+}
+.order-info-cash-input:focus {
+    outline: none;
+    border-color: #5c91f3; /* Example focus color */
+}
+.order-list-price-with-discount{
+    text-decoration: line-through;
 }

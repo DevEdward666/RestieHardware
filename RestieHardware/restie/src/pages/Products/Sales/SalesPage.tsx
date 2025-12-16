@@ -8,13 +8,29 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import React from "react";
+import React, { useEffect } from "react";
 import SalesComponent from "../../../components/Admin/Products/Sales/SalesComponent";
 import { arrowBack } from "ionicons/icons";
 import restielogo from "../../../assets/images/Icon@3.png";
 import "./SalesPage.css";
+import { useTypedDispatch } from "../../../Service/Store";
+import { searchSupplier } from "../../../Service/Actions/Admin/AdminActions";
 const SalesPage = () => {
   const router = useIonRouter();
+  const dispatch = useTypedDispatch();
+  useEffect(() => {
+    const initialize = () => {
+      dispatch(
+        searchSupplier({
+          page: 1,
+          offset: 0,
+          limit: 50,
+          searchTerm: "",
+        })
+      );
+    };
+    initialize();
+  }, [dispatch]);
   return (
     <IonPage className="sales-page-container">
       <IonHeader className="sales-page-header">
@@ -24,13 +40,13 @@ const SalesPage = () => {
           </IonButtons>
           <IonTitle>Sales</IonTitle>
         </IonToolbar>
-        <IonToolbar
+        {/* <IonToolbar
           mode="ios"
           color="tertiary"
           className="sales-toolbar-logo-container"
         >
           <IonImg src={restielogo} className="sales-toolbar-logo"></IonImg>
-        </IonToolbar>
+        </IonToolbar> */}
       </IonHeader>
       <SalesComponent />
     </IonPage>

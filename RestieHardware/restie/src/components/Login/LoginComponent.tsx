@@ -1,5 +1,3 @@
-import React, { useCallback, useEffect, useState } from "react";
-import "./LoginComponent.css";
 import {
   IonButton,
   IonCard,
@@ -9,26 +7,16 @@ import {
   IonImg,
   IonInput,
   IonItem,
-  IonLabel,
   IonLoading,
   useIonRouter,
 } from "@ionic/react";
-import {
-  GetCustomerInformation,
-  PostCustomer,
-} from "../../Models/Response/Customer/GetCustomerModel";
-import { GetOneCustomer } from "../../Service/Actions/Customer/CustomerActions";
+import { eyeOffOutline, eyeOutline, lockClosed, mail } from "ionicons/icons";
+import React, { useCallback, useEffect, useState } from "react";
 import { PostLogin } from "../../Models/Request/Login/LoginModel";
-import restie from "../../assets/images/Icon@3.png";
-import {
-  lockClosed,
-  eyeOutline,
-  eyeOffOutline,
-  mail,
-  star,
-} from "ionicons/icons";
-import { useTypedDispatch } from "../../Service/Store";
 import { GetLoginUser, Login } from "../../Service/Actions/Login/LoginActions";
+import { useTypedDispatch } from "../../Service/Store";
+import restie from "../../assets/images/Icon@3x.png";
+import "./LoginComponent.css";
 const LoginComponent = () => {
   const [customerInformation, setCustomerInformation] = useState<PostLogin>({
     username: "",
@@ -42,16 +30,13 @@ const LoginComponent = () => {
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
-  const handleInfoChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      const { name, value } = e.target;
-      setCustomerInformation((prevState) => ({
-        ...prevState,
-        [name]: name === "contact" ? parseInt(value) : value,
-      }));
-    },
-    []
-  );
+  const handleInfoChange = (e: any) => {
+    const { name, value } = e.target;
+    setCustomerInformation((prevState) => ({
+      ...prevState,
+      [name]: name === "contact" ? parseInt(value) : value,
+    }));
+  };
   const handleShowPassword = useCallback(() => {
     if (showPassword) {
       setShowPassword(false);
@@ -60,19 +45,22 @@ const LoginComponent = () => {
     }
   }, [showPassword]);
   const handleLogin = useCallback(async () => {
+    console.log(customerInformation);
+    setIsOpenToast((prev) => ({ ...prev, isOpen: true }));
     const payload: PostLogin = {
       username: customerInformation.username,
       password: customerInformation.password,
     };
     const res = await dispatch(Login(payload));
-    setIsOpenToast((prev) => ({ ...prev, isOpen: true }));
     if (res?.accessToken) {
       const res2 = await dispatch(GetLoginUser());
       if (res2?.name.length! > 0) {
+        setIsOpenToast((prev) => ({ ...prev, isOpen: false }));
         router.push("/home/main");
       }
     } else {
-      alert(res);
+      setIsOpenToast((prev) => ({ ...prev, isOpen: false }));
+      alert("Wrong Username/Password");
     }
   }, [dispatch, customerInformation]);
   useEffect(() => {
@@ -89,7 +77,6 @@ const LoginComponent = () => {
       <IonLoading
         isOpen={isOpenToast?.isOpen}
         message="Loading"
-        duration={3000}
         spinner="circles"
         onDidDismiss={() =>
           setIsOpenToast((prev) => ({
@@ -106,8 +93,48 @@ const LoginComponent = () => {
                 <IonImg src={restie} className="login-card-logo"></IonImg>
               </div>
               <div className="login-card-input-main-container">
-                <IonItem>
-                  <IonInput
+                {" "}
+                <div className="input-3">
+                  <input
+                    name="username"
+                    type="text"
+                    placeholder="Username"
+                    onInput={(e: any) => handleInfoChange(e)}
+                    required
+                  />
+                  <span className="material-symbols-outlined">
+                    {" "}
+                    <IonIcon
+                      slot="start"
+                      icon={mail}
+                      aria-hidden="true"
+                    ></IonIcon>{" "}
+                  </span>
+                </div>
+                <div className="input-1">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    required
+                    onInput={(e: any) => handleInfoChange(e)}
+                  />
+                  <span className="material-symbols-outlined">
+                    <IonIcon
+                      slot="start"
+                      icon={lockClosed}
+                      aria-hidden="true"
+                    ></IonIcon>
+                    <IonIcon
+                      onClick={() => handleShowPassword()}
+                      className="show-hide-icon"
+                      slot="start"
+                      aria-hidden="true"
+                      icon={showPassword ? eyeOutline : eyeOffOutline}
+                    ></IonIcon>
+                  </span>
+                </div>
+                {/* <IonInput
                     labelPlacement="stacked"
                     label="Username"
                     name="username"
@@ -126,10 +153,8 @@ const LoginComponent = () => {
                       slot="end"
                       aria-label="Show/hide"
                     ></IonButton>
-                  </IonInput>
-                </IonItem>
-                <IonItem>
-                  <IonInput
+                  </IonInput> */}
+                {/* <IonInput
                     labelPlacement="stacked"
                     label="Password"
                     // class="login-input"
@@ -153,15 +178,13 @@ const LoginComponent = () => {
                         icon={showPassword ? eyeOutline : eyeOffOutline}
                       ></IonIcon>
                     </IonButton>
-                  </IonInput>
-                </IonItem>
+                  </IonInput> */}
                 <IonButton
-                  expand="block"
                   color="medium"
                   className="login-button"
                   onClick={() => handleLogin()}
                 >
-                  Login
+                  <span className="login-button-text">Login</span>
                 </IonButton>
                 <IonButton
                   expand="block"

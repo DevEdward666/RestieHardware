@@ -7,7 +7,7 @@ const defaultState: CustomerTypesModel = {
   customer_information: {
     name: "",
     address: "",
-    contactno: 0,
+    contactno: "0",
     ordertype: "",
     customerid: "",
   },
@@ -16,7 +16,7 @@ const defaultState: CustomerTypesModel = {
     customerid: "",
     name: "",
     address: "",
-    contactno: 0,
+    contactno: "0",
   },
 };
 

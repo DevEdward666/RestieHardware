@@ -1,0 +1,47 @@
+.main-product-page-container{
+    display: flex;
+    .main-product-page-header{
+        display: flex;
+        flex-direction: column;
+    }
+    .main-product-page-content{
+        --background: linear-gradient(180deg, #0F0526, #125B8C);
+        .main-product-spinner{
+            text-align: center;
+            color: white;
+        }
+    }
+    .main-product-toolbar-logo-container{
+        display: flex;
+        flex-direction: row;
+        justify-self: center;
+        align-items: center;
+        text-align: center;
+        .main-product-toolbar-logo{
+            height: 100px;
+            margin: 10px;
+            display: block;
+            height: 100%;
+            -o-object-fit: inherit;
+            object-fit: fill;
+            -o-object-position: inherit;
+            object-position: inherit;
+        }
+        .web{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 120px;
+            padding-bottom: 20px;
+          }
+    }
+ 
+}
+
+    .main-product-page-button-container{
+        display: flex;
+        flex: 1;
+        height: 100%;
+        padding: 10px;
+    }

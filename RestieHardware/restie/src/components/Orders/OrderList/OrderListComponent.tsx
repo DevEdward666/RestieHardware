@@ -3,6 +3,7 @@ import {
   IonCard,
   IonCardContent,
   IonSpinner,
+  getPlatforms,
 } from "@ionic/react";
 import { useSelector } from "react-redux";
 import {
@@ -25,6 +26,7 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
   );
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
+  const platform = getPlatforms();
   const [isLoading, setisLoading] = useState<boolean>(false);
   const formatDate = (datetime: number) => {
     const timestamp = datetime;
@@ -49,6 +51,8 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
         limit: 100,
         offset: 0,
         userid: user_id!,
+        paidThru:
+          filter.filter.status.trim().toLowerCase() === "debt" ? "debt" : "",
         status: filter.filter.status.trim().toLowerCase(),
         searchdate: filter.filter.date,
         orderid: filter.filter.search,
@@ -63,7 +67,12 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
     initialize();
   }, [filter]);
   const handleSelectOrder = useCallback(
-    (orderid: string, status: string, cartid: string) => {
+    (
+      orderid: string,
+      status: string,
+      cartid: string,
+      return_status: string
+    ) => {
       const statusList = {
         pending: "pending",
         approved: "approved",
@@ -76,27 +85,48 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
       };
       if (status.toLowerCase() === statusList.pending.toLowerCase()) {
         dispatch(getOrderInfo(payload));
-        router.push(`/orderInfo?orderid=${payload.orderid}`);
+        router.push(
+          `/orderInfo?orderid=${payload.orderid}&return=false&notification=false`
+        );
       } else {
         dispatch(getOrderInfo(payload));
-        router.push(`/orderInfo?orderid=${payload.orderid}`);
+        if (return_status === "returns") {
+          router.push(
+            `/orderInfo?orderid=${payload.orderid}&return=true&notification=false`
+          );
+        } else {
+          router.push(
+            `/orderInfo?orderid=${payload.orderid}&return=false&notification=false`
+          );
+        }
       }
     },
     [dispatch]
   );
   return (
-    <div>
+    <div
+      className={`order-list-main-content ${
+        platform.includes("mobileweb") && !platform.includes("tablet")
+          ? "mobile"
+          : "desktop"
+      }`}
+    >
       {isLoading ? (
         <IonSpinner className="loader" name="lines-sharp"></IonSpinner>
       ) : null}
 
       {Array.isArray(order_list) && order_list.length > 0 ? (
-        order_list?.map((orders) => (
+        order_list?.map((orders, index) => (
           <IonCard
             className="order-list-card-container"
-            key={orders.orderid}
+            key={index}
             onClick={() =>
-              handleSelectOrder(orders.orderid, orders.status, orders.cartid)
+              handleSelectOrder(
+                orders.orderid,
+                orders.status,
+                orders.cartid,
+                filter.filter.status
+              )
             }
           >
             <div className="order-list-card-add-item-container">
@@ -113,7 +143,12 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
                   <div className="order-list-card-price-details">
                     <div className="order-list-card-price">Total Cost: </div>
                     <span>&#8369;</span>
-                    {orders.total.toFixed(2)}
+                    {(orders.total - (orders.totaldiscount??0)).toFixed(2)}
+                  </div>
+                  <div className="order-list-card-price-details">
+                    <div className="order-list-card-price">Total Discount: </div>
+                    <span>&#8369;</span>
+                    {orders.totaldiscount?.toFixed(2)??0}
                   </div>
                   <div className="order-list-card-price-details">
                     <div className="order-list-card-price">Total Pay: </div>
@@ -121,13 +156,21 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
                     {orders.paidcash.toFixed(2)}
                   </div>
                   <div
-                    className={`order-list-card-qty ${orders?.status
-                      .trim()
-                      .toLowerCase()}`}
+                    className={`order-list-card-qty ${
+                      filter.filter.status.toLowerCase() === "returns"
+                        ? "returns"
+                        : orders?.paidthru.toLowerCase() === "debt"
+                        ? orders?.paidthru.toLowerCase()
+                        : orders?.status.trim().toLowerCase()
+                    }`}
                   >
                     Status:{" "}
-                    {orders?.status.toLowerCase() === "approved"
-                      ? "Completed".toUpperCase()
+                    {filter.filter.status.toLowerCase() === "returns"
+                      ? "Return/Refund".toUpperCase()
+                      : orders?.status.toLowerCase() === "approved"
+                      ? orders?.paidthru.toLowerCase() === "debt"
+                        ? "Receivable".toUpperCase()
+                        : "Completed".toUpperCase()
                       : orders?.status.toUpperCase()}
                   </div>
                 </div>

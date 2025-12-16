@@ -1,0 +1,192 @@
+.return-submit-card-add-item-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  margin-left: 10px;
+}
+.return-submit-card-add-item-container-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+.return-submit-card-add-item-img {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+.return-submit-card-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  webkit-padding-start: 0px;
+  padding-inline-start: 0px;
+  -webkit-padding-end: 0px;
+  padding-inline-end: 0px;
+}
+.return-submit-card-main-content-total {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 20px;
+  webkit-padding-start: 0px;
+  padding-inline-start: 0px;
+  -webkit-padding-end: 0px;
+  padding-inline-end: 0px;
+}
+.return-submit-card-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /* width: 100%; */
+  justify-content: center;
+}
+.return-submit-card-container-total {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /* width: 100%; */
+  justify-content: center;
+}
+.return-submit-card-content {
+  display: flex;
+  flex-direction: column;
+  .return-submit-card-title {
+    font-family: "Gotham-Medium";
+    font-size: 12px;
+  }
+  .return-submit-card-price {
+    color: #fe3434;
+    font-family: "Gotham-Black";
+    font-size: 12px;
+  }
+}
+
+.return-submit-item-added-qty-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  .selected-item-added-qty-input {
+    color: black;
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    justify-content: center;
+    width: 30px;
+  }
+}
+.return-submit-item-card {
+  /* --background: #ffffff00; */
+  --background: white;
+  display: flex;
+  flex-direction: column;
+}
+.return-submit-item-card-div {
+  display: flex;
+  flex-direction: column;
+}
+.return-submit-card-qty {
+  color: #fe3434;
+  padding-top: 10px;
+  font-family: "Gotham-black";
+  font-size: 12px;
+}
+ion-input.main-cart-qty {
+  --padding-start: 10px !important;
+  width: 50px;
+  text-align: center;
+  --background: #fff;
+  --color: #141414;
+  --placeholder-color: #070707;
+  --placeholder-opacity: 0.5;
+
+  --padding-bottom: 0;
+  --padding-end: 10px;
+  --padding-start: 10px;
+  --padding-top: 0;
+  min-height: 48px !important;
+  border: 2px solid #9fa3a6 !important;
+  border-radius: 10px;
+  --border-radius: 10px;
+  --border-color: black;
+  --border-style: solid;
+  --border-width: 5px;
+}
+.empty-cart-container {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  align-items: center;
+  height: 100%;
+  justify-content: center;
+  .empty-cart-img {
+    width: 150px;
+    height: 150px;
+  }
+  .empty-cart-text {
+    font-size: 24px;
+    font-family: "Gotham-Light";
+  }
+}
+.checkbox-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.checkbox-card-container {
+  display: flex;
+  flex-direction: column;
+}
+.checkbox-content {
+  padding-left: 20px;
+}
+ion-textarea.remarks-input {
+  margin-top: 15px;
+  margin-bottom: 15px;
+
+  width: 100%;
+  --background: #fff;
+  --color: #141414;
+  --placeholder-color: #070707;
+  --placeholder-opacity: 0.5;
+  --padding-bottom: 0;
+  --padding-end: 10px;
+  --padding-start: 10px;
+  --padding-top: 0;
+  border: 2px solid #9fa3a6 !important;
+  border-radius: 10px;
+  --border-radius: 10px;
+  --border-color: black;
+  --border-style: solid;
+  --border-width: 5px;
+}
+.return-submit-card-title {
+  font-family: "Gotham-Black";
+  font-size: 24px;
+}
+.return-submit-card-total {
+  color: #fe3434;
+  font-family: "Gotham-Black";
+  font-size: 18px;
+}
+
+.return-submit-card-content-total {
+  display: flex;
+  flex-direction: column;
+}
+.return-submit-reason-content {
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+}
+.return-img {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+}

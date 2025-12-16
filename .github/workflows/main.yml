@@ -8,6 +8,56 @@ on:
   workflow_dispatch:
 
 jobs:
+  # modify-file:
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v2
+  #       with:
+  #         repository: DevEdward666/RestieHardware
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  #         fetch-depth: 0 # This ensures full history is available for commits
+
+  #     - name: Install Octokit
+  #       run: npm install @octokit/rest@latest
+  #       working-directory: ./RestieHardware/restie
+
+  #     - name: Read file content
+  #       id: read-file
+  #       run: |
+  #         content=$(cat RestieHardware/restie/src/Helpers/environment.prod.ts)
+  #         echo "::set-output name=file_content::$content"
+
+  #     - name: Modify file content
+  #       id: modify-file
+  #       run: |
+  #         updated_content=$(echo "${{ steps.read-file.outputs.file_content }}" | sed 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "NEW_VALUE";#')
+  #         echo "$updated_content" > RestieHardware/restie/src/Helpers/environment.prod.ts
+
+  #     - name: Update file
+  #       uses: actions/github-script@v4
+  #       with:
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         script: |
+  #           import { Octokit } from "@octokit/rest";
+  #           const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+  #           const { data: { sha } } = await octokit.repos.getContent({
+  #             owner: 'DevEdward666',
+  #             repo: 'RestieHardware',
+  #             path: 'RestieHardware/restie/src/Helpers/environment.prod.ts'
+  #           });
+
+  #           const { data: { content } } = await octokit.repos.createOrUpdateFileContents({
+  #             owner: 'DevEdward666',
+  #             repo: 'RestieHardware',
+  #             path: 'RestieHardware/restie/src/Helpers/environment.prod.ts',
+  #             message: 'Update prodBaseUrl value',
+  #             content: Buffer.from('${{ steps.modify-file.outputs.modified_content }}', 'utf-8').toString('base64'),
+  #             sha: sha,
+  #             branch: 'release'
+  #           });
   build-dotnet:
     if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-latest
@@ -18,14 +68,42 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
+      - name: App Settings Variable Substitution
+        run: |
+          echo '{
+                  "ConnectionStrings": {
+                    "MyDatabase": "Host=${{ secrets.DB_HOST }};Port=${{ secrets.DB_PORT }};Database=${{ secrets.DB_NAME }};Username=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};"
+                  },
+                
+                  "jwtTokenConfig": {
+                    "secret": "${{ secrets.JWT_SECRET }}",
+                    "issuer": "https://localhost:44364/",
+                    "audience": "https://localhost:44364/",
+                    "accessTokenExpiration": 999,
+                    "refreshTokenExpiration": 999
+                  },
+                  "Logging": {
+                    "LogLevel": {
+                      "Default": "Information",
+                      "Microsoft.AspNetCore": "Warning"
+                    }
+                  },
+                  "AllowedHosts": "*"
+                }'
       - name: Restore dependencies
         run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
+      - name: App Settings Variable Substitution
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: "RestieAPI/RestieAPI/appsettings.json"
+        env:
+          ConnectionStrings.MyDatabase: Host=${{ secrets.DB_HOST }};Port=${{ secrets.DB_PORT }};Database=${{ secrets.DB_NAME }};Username=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};
       - name: Build
         run: dotnet build RestieAPI/RestieAPI/RestieAPI.csproj --no-restore
       - name: Publish
         run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieAPI/RestieAPI/restieapi
       - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: restieapi
           path: RestieAPI/RestieAPI/restieapi
@@ -33,43 +111,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-dotnet
     steps:
-    - uses: actions/checkout@v2
- 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
- 
-    - name: Build Docker image
-      run: docker build . -t ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
-      working-directory: ./RestieAPI
- 
-    - name: Push Docker image to Docker Hub
-      run: |
-        echo ${{ secrets.DOCKER_ACCESSTOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-        docker push ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  deploy-ionic-react:
-    runs-on: ubuntu-latest
-    needs: build-docker-image
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '21.5.0' # Change the version according to your project
-      - name: Determine Environment File
+      - uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build Docker image
+        run: docker build . -t ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
+        working-directory: ./RestieAPI
+
+      - name: Push Docker image to Docker Hub
         run: |
-          echo "ENV_FILE=$(if [ ${{ github.event_name }} == 'push' ]; then echo 'environment.dev.ts'; else echo 'environment.dev.ts'; fi)" >> $GITHUB_ENV
-      - name: Build Ionic React app
-        run: |
-          cd RestieHardware/restie
-          npm install
-          npm run build
-  deploy-web-api:
+          echo ${{ secrets.DOCKER_ACCESSTOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker push ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  deploy-web-api-dev:
     runs-on: ubuntu-latest
     needs: build-docker-image
     steps:
@@ -82,11 +139,56 @@ jobs:
           source $HOME/.bashrc
       - name: Login to flyctl
         run: |
-         /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
+          /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
+      - name: Create Fly volume
+        run: |
+          /home/runner/.fly/bin/flyctl volumes list -a restieapi | grep -q "inventory_images" || /home/runner/.fly/bin/flyctl volume create inventory_images --size 1 -r sin -n 1 -a restieapi
       - name: Deploy .NET API to Fly.io
         run: |
           cd RestieAPI
           /home/runner/.fly/bin/flyctl deploy -a restieapi
+  deploy-ionic-react:
+    runs-on: ubuntu-latest
+    needs: build-docker-image
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      - name: Update environment.prod.ts
+        run: echo 'export const prodBaseUrl = "https://restiehardware.onrender.com/";' > RestieHardware/restie/src/Helpers/environment.prod.ts
+      - name: Display changed file
+        run: cat RestieHardware/restie/src/Helpers/environment.prod.ts
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "21.5.0"
+      - name: Build Ionic React app
+        run: |
+          cd RestieHardware/restie
+          sed -i 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "https://restiehardware.onrender.com/";#g' src/Helpers/environment.prod.ts
+          npm install
+          npm run build
+
+  # deploy-web-api:
+  #   runs-on: ubuntu-latest
+  #   needs: build-docker-image
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v2
+  #     - name: Install Flyctl and Set PATH
+  #       run: |
+  #         curl -L https://fly.io/install.sh | sh
+  #         echo "export PATH=\"$HOME/.fly/bin:$PATH\"" >> $HOME/.bashrc
+  #         source $HOME/.bashrc
+  #     - name: Login to flyctl
+  #       run: |
+  #        /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
+  #     - name: Deploy .NET API to Fly.io
+  #       run: |
+  #         cd RestieAPI
+  #         /home/runner/.fly/bin/flyctl deploy -a restieapi
   build-dotnet-prod:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
@@ -104,7 +206,7 @@ jobs:
       - name: Publish
         run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o RestieAPI/RestieAPI/restieapi
       - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: restieapi
           path: RestieAPI/RestieAPI/restieapi
@@ -112,21 +214,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-dotnet-prod
     steps:
-    - uses: actions/checkout@v2
- 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
- 
-    - name: Build Docker image
-      run: docker build . -t ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
-      working-directory: ./RestieAPI
- 
-    - name: Push Docker image to Docker Hub
-      run: |
-        echo ${{ secrets.DOCKER_ACCESSTOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-        docker push ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      - uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build Docker image
+        run: docker build . -t ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
+        working-directory: ./RestieAPI
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          echo ${{ secrets.DOCKER_ACCESSTOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker push ${{ secrets.DOCKER_USERNAME }}/restieapi:latest
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   deploy-ionic-react-prod:
     runs-on: ubuntu-latest
     needs: build-docker-image-prod
@@ -139,7 +241,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '21.5.0' # Change the version according to your project
+          node-version: "21.5.0" # Change the version according to your project
       - name: Determine Environment File
         run: |
           echo "ENV_FILE=$(if [ ${{ github.event_name }} == 'push' ]; then echo 'environment.prod.ts'; else echo 'environment.dev.ts'; fi)" >> $GITHUB_ENV
@@ -161,9 +263,11 @@ jobs:
           source $HOME/.bashrc
       - name: Login to flyctl
         run: |
-         /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
+          /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
+      - name: Create Fly volume
+        run: |
+          /home/runner/.fly/bin/flyctl volumes list -a restieapi | grep -q "inventory_images" || /home/runner/.fly/bin/flyctl volume create inventory_images --size 1 -r sin -n 1 -a restieapi
       - name: Deploy .NET API to Fly.io
         run: |
           cd RestieAPI
           /home/runner/.fly/bin/flyctl deploy -a restieapi
-   

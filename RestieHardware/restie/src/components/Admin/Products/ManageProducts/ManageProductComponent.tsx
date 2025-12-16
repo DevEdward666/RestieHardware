@@ -1,37 +1,52 @@
 import {
-  IonAvatar,
+  IonAlert,
   IonButton,
   IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
-  IonImg,
   IonInput,
   IonItem,
   IonLabel,
   IonList,
   IonModal,
+  IonPopover,
+  IonRadio,
+  IonRadioGroup,
   IonSearchbar,
+  IonSelect,
+  IonSelectOption,
+  IonTitle,
   IonToolbar,
+  RadioGroupChangeEventDetail,
   useIonRouter,
 } from "@ionic/react";
+import { addCircle, closeCircle, cropSharp, saveOutline } from "ionicons/icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { searchInventoryList } from "../../../../Service/Actions/Inventory/InventoryActions";
-import { RootStore, useTypedDispatch } from "../../../../Service/Store";
+import { useSelector } from "react-redux";
+import {
+  PostDeliveryReceipt,
+  PostInventoryModel,
+  ProductInfo,
+} from "../../../../Models/Request/Admin/AdminRequestModel";
+import { InventoryModel } from "../../../../Models/Request/Inventory/InventoryModel";
+import { SearchInventoryModel } from "../../../../Models/Request/searchInventory";
+import { SuppliersModel } from "../../../../Models/Response/Admin/AdminModelResponse";
 import {
   PostInventory,
+  PostMultipleInventory,
   searchAdminInventoryList,
   searchSupplier,
 } from "../../../../Service/Actions/Admin/AdminActions";
-import { useSelector } from "react-redux";
-import { SearchInventoryModel } from "../../../../Models/Request/searchInventory";
-import { mail, saveOutline } from "ionicons/icons";
-import { PostInventoryModel } from "../../../../Models/Request/Admin/AdminRequestModel";
-import "./ManageProductComponent.css";
-import { InventoryModel } from "../../../../Models/Request/Inventory/InventoryModel";
-import { IonicSelectableComponent } from "ionic-selectable";
-import { SuppliersModel } from "../../../../Models/Response/Admin/AdminModelResponse";
 import { set_toast } from "../../../../Service/Actions/Commons/CommonsActions";
+import { RootStore, useTypedDispatch } from "../../../../Service/Store";
+import "./ManageProductComponent.css";
+import { TypeOfDeliveryReceipt } from "../../../../Models/Response/Commons/Commons";
+import { IonRadioGroupCustomEvent } from "@ionic/core";
+interface Product {
+  item: string;
+  quantity: number;
+}
 const ManageProductComponent = () => {
   const admin_list_of_items =
     useSelector((store: RootStore) => store.AdminReducer.admin_list_of_items) ||
@@ -43,9 +58,22 @@ const ManageProductComponent = () => {
   const user_login_information = useSelector(
     (store: RootStore) => store.LoginReducer.user_login_information
   );
+  const DRtype: TypeOfDeliveryReceipt[] = [
+    {
+      id: 1,
+      name: "Update",
+      type: "single",
+    },
+    {
+      id: 2,
+      name: "Received",
+      type: "multiple",
+    },
+  ];
   const modal = useRef<HTMLIonModalElement>(null);
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
+  const [getdrType, setdrType] = useState<string>("single");
   const [openSearchModal, setOpenSearchModal] = useState({
     isOpen: false,
     modal: "",
@@ -53,9 +81,12 @@ const ManageProductComponent = () => {
   const [fetchList, setFetchList] = useState<SearchInventoryModel>({
     page: 1,
     offset: 0, // Assuming offset starts from 0
-    limit: 50,
+    limit: 2050,
     searchTerm: "",
   });
+  const [loading, setLoading] = useState(true);
+  const [getDeliveryReceiptInfo, setDeliveryReceiptInfo] =
+    useState<PostDeliveryReceipt>();
   const [productInfo, setProductInfo] = useState<PostInventoryModel>({
     code: "",
     item: "",
@@ -65,31 +96,268 @@ const ManageProductComponent = () => {
     addedqty: 0,
     supplierid: "",
     supplierName: "",
-
     cost: 0,
     price: 0.0,
     createdat: 0,
     updatedAt: 0,
   });
-  const initialize = () => {
-    dispatch(
-      searchAdminInventoryList({
-        page: 1,
-        offset: 0,
-        limit: 50,
-        searchTerm: "",
-      })
+
+  const itemExists = (itemCode: string) => {
+    return admin_list_of_items.some((item) => item.code === itemCode);
+  };
+  const getItemInfo = (itemCode: string) => {
+    const item = admin_list_of_items.find((item) => item.code === itemCode);
+    return item || null;
+  };
+  const compareWith = (
+    o1: TypeOfDeliveryReceipt,
+    o2: TypeOfDeliveryReceipt
+  ) => {
+    return o1.id === o2.id;
+  };
+  const handleRadioChange = (
+    e: IonRadioGroupCustomEvent<RadioGroupChangeEventDetail>
+  ) => {
+    let value = e.detail.value;
+    setdrType(value);
+  };
+  const [products, setProducts] = useState<ProductInfo[]>([]);
+  const [previousProducts, setPreviousProducts] = useState<ProductInfo[]>([]);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showAlert, setShowAlert] = useState({ isOpen: false, message: "" });
+  const [selectedProductIndex, setSelectedProductIndex] = useState<
+    number | null
+  >(null);
+  const [showModal, setShowModal] = useState({
+    isOpen: false,
+    type: "products",
+  });
+
+  const handleQuantityChange = (index: number,event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = event.target;
+    const newProducts = [...products];
+  
+
+    if (name === "qty") {
+      let qtyValue = parseInt(value);
+      if (qtyValue<= 0 || isNaN(qtyValue)) {
+        newProducts[index].addedqty = 1;
+        setShowAlert({
+          isOpen: true,
+          message:
+            "Please ensure all products have valid code, quantity > 0, and price > 0.",
+        });
+        return;
+      }
+      newProducts[index].addedqty = qtyValue;
+      setProducts(newProducts);
+    }
+    if (name === "cost") {
+      let costValue = parseFloat(value);
+      if (costValue <= 0 || isNaN(costValue)) {
+        newProducts[index].cost = newProducts[index].cost;
+        setShowAlert({
+          isOpen: true,
+          message:
+            "Please ensure all products have valid code, quantity > 0, and price > 0.",
+        });
+        return;
+      }
+      newProducts[index].cost = costValue;
+      setProducts(newProducts);
+    }
+    if (name === "price") {
+      let priceValue = parseFloat(value);
+      if (priceValue <= 0 || isNaN(priceValue)) {
+        newProducts[index].price = newProducts[index].price;
+        setShowAlert({
+          isOpen: true,
+          message:
+            "Please ensure all products have valid code, quantity > 0, and price > 0.",
+        });
+        return;
+      }
+      newProducts[index].price = priceValue;
+      setProducts(newProducts);
+    }
+  };
+
+  const addNewProduct = (is_submit: boolean) => {
+    if (is_submit) {
+      setPreviousProducts(products);
+      setProducts([
+        {
+          item: "",
+          addedqty: 1,
+          category: "",
+          brand: "",
+          code: "",
+          onhandqty: 0,
+          supplierid: "",
+          supplierName: "",
+          cost: 0,
+          price: 0,
+        },
+      ]);
+      return;
+    }
+    setPreviousProducts(products);
+    setProducts((prev) => [
+      ...prev,
+      {
+        item: "",
+        addedqty: 1,
+        category: "",
+        brand: "",
+        code: "",
+        onhandqty: 0,
+        supplierid: "",
+        supplierName: "",
+        cost: 0,
+        price: 0,
+      },
+    ]);
+    setSelectedProductIndex(products.length);
+    setShowModal({ isOpen: true, type: "product" });
+  };
+
+  const removeProduct = (index: number) => {
+    const newProducts = products.filter((_, i) => i !== index);
+    setProducts(newProducts);
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("itemcode");
+    window.history.replaceState({}, "", url.toString());
+  };
+
+  const handleSubmit = async () => {
+    const noProduct = products.length <= 0;
+
+    const invalidProduct = products.find(
+      (product) =>
+        !product.code ||
+        product.addedqty <= 0 ||
+        product.price <= 0 ||
+        isNaN(product.addedqty) ||
+        isNaN(product.price)
     );
-    dispatch(
-      searchSupplier({
-        page: 1,
-        offset: 0,
-        limit: 50,
-        searchTerm: "",
-      })
-    );
+
+    if (invalidProduct || noProduct) {
+      setShowAlert({
+        isOpen: true,
+        message:
+          "Please ensure all products have valid code, quantity > 0, and price > 0.",
+      });
+      return;
+    } else if (productInfo.supplierid.length <= 0) {
+      setShowAlert({
+        isOpen: true,
+        message: "Please Select a supplier",
+      });
+    } else {
+      const res = await PostMultipleInventory({
+        items: products,
+        supplierId: productInfo.supplierid,
+      });
+      if (res.status === 200) {
+        addNewProduct(true);
+        setProductInfo({
+          code: "",
+          item: "",
+          category: "",
+          brand: "",
+          onhandqty: 0,
+          addedqty: 0,
+          supplierid: "",
+          supplierName: "",
+
+          cost: 0,
+          price: 0.0,
+          createdat: 0,
+          updatedAt: 0,
+        });
+        setShowAlert({
+          isOpen: true,
+          message: "Successfully Submitted",
+        });
+      } else {
+        setShowAlert({
+          isOpen: true,
+          message: res.message,
+        });
+      }
+    }
+  };
+
+  const handleSelectProduct = (item: InventoryModel, index: number) => {
+    const exists = products.some((product) => product.code === item.code);
+
+    if (exists) {
+      setShowAlert({ isOpen: true, message: "Item is already in the list." });
+      return;
+    }
+    const newProducts = [...products];
+
+    // Update the product properties with the selected item details
+    newProducts[index] = {
+      ...newProducts[index],
+      item: item.item,
+      addedqty: 1,
+      onhandqty: item.qty,
+      code: item.code,
+      cost: parseInt(item.cost),
+      price: item.price,
+      brand: item.brand ?? "",
+      category: item.category ?? "",
+    };
+
+    setProducts(newProducts);
+    setShowModal({ isOpen: false, type: "product" });
+  };
+  const handleSelectedSupplierMultiple = (val: SuppliersModel) => {
+    setShowModal({ isOpen: false, type: "" });
+    setProductInfo((prev) => ({
+      ...prev,
+      supplierid: val.supplierid,
+      supplierName: val.company,
+    }));
   };
   useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    const initialize = async () => {
+      setLoading(true);
+
+      if (query.size > 0) {
+        setdrType("multiple");
+        const itemCode = query.get("itemcode");
+        const itemInfoList = await dispatch(
+          searchAdminInventoryList(fetchList)
+        );
+        const itemInfo = itemInfoList.find(
+          (item: InventoryModel) => item.code === itemCode
+        );
+        setProducts([
+          {
+            item: itemInfo?.item!,
+            addedqty: 1,
+            category: itemInfo?.category!,
+            brand: itemInfo?.brand!,
+            code: itemInfo?.code!,
+            onhandqty: itemInfo?.qty!,
+            supplierid: "",
+            supplierName: "",
+            cost: parseInt(itemInfo?.cost!),
+            price: itemInfo?.price!,
+          },
+        ]);
+        // }
+      } else {
+        setdrType("single");
+      }
+      setLoading(false);
+    };
+
     initialize();
   }, [dispatch]);
   useEffect(() => {
@@ -99,12 +367,13 @@ const ManageProductComponent = () => {
     const searchSuppliers = () => {
       dispatch(searchSupplier(fetchList));
     };
-    if (openSearchModal.modal === "products") {
+    if (openSearchModal.modal === "products" || showModal.type === "product") {
       searchInventory();
-    } else {
+    }
+    if (showModal.type === "supplier") {
       searchSuppliers();
     }
-  }, [dispatch, fetchList, openSearchModal]);
+  }, [dispatch, fetchList, openSearchModal, showModal]);
   const handleSearch = (ev: Event) => {
     let query = "";
     const target = ev.target as HTMLIonSearchbarElement;
@@ -119,6 +388,16 @@ const ManageProductComponent = () => {
   const handleInfoChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
+      let qty = parseInt(value);
+      if (name === "addedqty" && qty <= 0) {
+        setShowAlert({
+          isOpen: true,
+          message:
+            "Please ensure all products have valid code, quantity > 0, and price > 0.",
+        });
+        return;
+      }
+
       setProductInfo((prevState) => ({
         ...prevState,
         [name]: value,
@@ -212,7 +491,6 @@ const ManageProductComponent = () => {
             color: "#125B8C",
           })
         );
-        initialize();
         setProductInfo({
           code: "",
           item: "",
@@ -231,170 +509,395 @@ const ManageProductComponent = () => {
       }
     }
   }, [dispatch, productInfo]);
+  const handleCloseListOfItemsModal = useCallback(() => {
+    setShowModal({ isOpen: false, type: "product" });
+    setProducts(previousProducts);
+  }, [previousProducts]);
   return (
     <IonContent>
-      <IonSearchbar
-        onClick={() => setOpenSearchModal({ isOpen: true, modal: "products" })}
-        placeholder="Search Product"
-        autocapitalize={"words"}
-      ></IonSearchbar>
-      <IonModal
-        isOpen={openSearchModal.isOpen}
-        onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
-        initialBreakpoint={1}
-        breakpoints={[0, 0.25, 0.5, 0.75, 1]}
-      >
-        <IonHeader>
-          <IonToolbar>
-            <IonButtons slot="start">
-              <IonButton
-                onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}
-              >
-                Cancel
-              </IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent className="ion-padding">
-          {openSearchModal.modal === "products" ? (
-            <>
-              <IonSearchbar
-                placeholder="Search Product"
-                onIonInput={(e) => handleSearch(e)}
-                autocapitalize={"words"}
-                debounce={1500}
-              ></IonSearchbar>
-              <IonList>
-                {admin_list_of_items.map((val, index) => (
-                  <IonItem
-                    onClick={() => handleSelectedProduct(val)}
-                    key={index}
-                  >
-                    {/* <IonAvatar slot="start">
-                  <IonImg src="https://i.pravatar.cc/300?u=b" />
-                </IonAvatar> */}
-                    <IonLabel>
-                      <h2>{val.item}</h2>
-                      <p>QTY {val.qty}</p>
-                    </IonLabel>
-                  </IonItem>
-                ))}
-              </IonList>
-            </>
-          ) : (
-            <>
-              <IonSearchbar
-                placeholder="Search Supplier"
-                onIonInput={(e) => handleSearch(e)}
-                autocapitalize={"words"}
-                debounce={1500}
-              ></IonSearchbar>
-              <IonList>
-                {admin_list_of_supplier.map((val, index) => (
-                  <IonItem
-                    onClick={() => handleSelectedSupplier(val)}
-                    key={index}
-                  >
-                    {/* <IonAvatar slot="start">
-                  <IonImg src="https://i.pravatar.cc/300?u=b" />
-                </IonAvatar> */}
-                    <IonLabel>
-                      <h2>{val.company}</h2>
-                      <p>{val.address}</p>
-                    </IonLabel>
-                  </IonItem>
-                ))}
-              </IonList>
-            </>
-          )}
-        </IonContent>
-      </IonModal>
-      <div className="manage-product-input-container">
-        <IonInput
-          labelPlacement="floating"
-          label="Product Name"
-          name="name"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.item}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Category"
-          name="category"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.category}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Brand"
-          name="brand"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.brand}
-        ></IonInput>
-        <IonInput
-          required
-          onClick={() =>
-            setOpenSearchModal({ isOpen: true, modal: "supplier" })
-          }
-          labelPlacement="floating"
-          label="Supplier"
-          name="supplier"
-          type="text"
-          class="product-input"
-          value={productInfo.supplierName}
-        ></IonInput>
-        <IonInput
-          readonly
-          labelPlacement="floating"
-          label="Quantity"
-          name="qty"
-          type="number"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.onhandqty}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Add Quantity"
-          name="addedqty"
-          type="number"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.addedqty}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Cost"
-          name="cost"
-          type="number"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.cost}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Price"
-          name="price"
-          type="number"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.price}
-        ></IonInput>
-        <IonButton
-          color="medium"
-          expand="block"
-          onClick={() => handleSaveProduct()}
+      <IonList>
+        <IonRadioGroup
+          value={getdrType}
+          onIonChange={(ev) => handleRadioChange(ev)}
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-around",
+          }}
         >
-          <IonIcon slot="start" icon={saveOutline}></IonIcon>
-          Update Product
-        </IonButton>
-      </div>
+          {DRtype.map((val) => (
+            <IonItem
+              key={val.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                padding: "0 10px",
+              }}
+            >
+              <IonRadio mode="ios" value={val.type} />
+              <IonLabel>{val.name}</IonLabel>
+            </IonItem>
+          ))}
+        </IonRadioGroup>
+      </IonList>
+      {getdrType === "single" ? (
+        <div>
+          {" "}
+          <IonSearchbar
+            onClick={() =>
+              setOpenSearchModal({ isOpen: true, modal: "products" })
+            }
+            placeholder="Search Product"
+            autocapitalize={"words"}
+          ></IonSearchbar>
+          <IonModal
+            isOpen={openSearchModal.isOpen}
+            onDidDismiss={() =>
+              setOpenSearchModal({ isOpen: false, modal: "" })
+            }
+            initialBreakpoint={1}
+            breakpoints={[0, 0.25, 0.5, 0.75, 1]}
+          >
+            <IonHeader>
+              <IonToolbar>
+                <IonButtons slot="start">
+                  <IonButton
+                    onClick={() =>
+                      setOpenSearchModal({ isOpen: false, modal: "" })
+                    }
+                  >
+                    Cancel
+                  </IonButton>
+                </IonButtons>
+              </IonToolbar>
+            </IonHeader>
+            <IonContent className="ion-padding">
+              {openSearchModal.modal === "products" ? (
+                <>
+                  <IonSearchbar
+                    placeholder="Search Product"
+                    onIonInput={(e) => handleSearch(e)}
+                    autocapitalize={"words"}
+                    debounce={500}
+                  ></IonSearchbar>
+                  <IonList>
+                    {admin_list_of_items.map((val, index) => (
+                      <IonItem
+                        onClick={() => handleSelectedProduct(val)}
+                        key={index}
+                      >
+                        {/* <IonAvatar slot="start">
+                  <IonImg src="https://i.pravatar.cc/300?u=b" />
+                </IonAvatar> */}
+                        <IonLabel>
+                          <h2>{val.item}</h2>
+                          <p>QTY {val.qty}</p>
+                        </IonLabel>
+                      </IonItem>
+                    ))}
+                  </IonList>
+                </>
+              ) : (
+                <>
+                  <IonSearchbar
+                    placeholder="Search Supplier"
+                    onIonInput={(e) => handleSearch(e)}
+                    autocapitalize={"words"}
+                    debounce={1500}
+                  ></IonSearchbar>
+                  <IonList>
+                    {admin_list_of_supplier.map((val, index) => (
+                      <IonItem
+                        onClick={() => handleSelectedSupplier(val)}
+                        key={index}
+                      >
+                        <IonLabel>
+                          <h2>{val.company}</h2>
+                          <p>{val.address}</p>
+                        </IonLabel>
+                      </IonItem>
+                    ))}
+                  </IonList>
+                </>
+              )}
+            </IonContent>
+          </IonModal>
+          <div className="manage-product-input-container">
+            <IonInput
+              labelPlacement="floating"
+              label="Product Name"
+              name="name"
+              type="text"
+              onIonInput={(e: any) => handleInfoChange(e)}
+              class="product-input"
+              value={productInfo.item}
+            ></IonInput>
+            <IonInput
+              labelPlacement="floating"
+              label="Category"
+              name="category"
+              type="text"
+              onIonInput={(e: any) => handleInfoChange(e)}
+              class="product-input"
+              value={productInfo.category}
+            ></IonInput>
+            <IonInput
+              labelPlacement="floating"
+              label="Brand"
+              name="brand"
+              type="text"
+              onIonInput={(e: any) => handleInfoChange(e)}
+              class="product-input"
+              value={productInfo.brand}
+            ></IonInput>
+            <IonInput
+              required
+              onClick={() =>
+                setOpenSearchModal({ isOpen: true, modal: "supplier" })
+              }
+              labelPlacement="floating"
+              label="Supplier"
+              name="supplier"
+              type="text"
+              class="product-input"
+              value={productInfo.supplierName}
+            ></IonInput>
+            <IonInput
+              readonly
+              labelPlacement="floating"
+              label="Quantity"
+              name="qty"
+              type="number"
+              onIonInput={(e: any) => handleInfoChange(e)}
+              class="product-input"
+              value={productInfo.onhandqty}
+            ></IonInput>
+            <IonInput
+              labelPlacement="floating"
+              label="Add Quantity"
+              name="addedqty"
+              debounce={500}
+              type="number"
+              onIonInput={(e: any) => handleInfoChange(e)}
+              class="product-input"
+              value={productInfo.addedqty}
+            ></IonInput>
+            <IonInput
+              labelPlacement="floating"
+              label="Cost"
+              name="cost"
+              type="number"
+              onIonInput={(e: any) => handleInfoChange(e)}
+              class="product-input"
+              value={productInfo.cost}
+            ></IonInput>
+            <IonInput
+              labelPlacement="floating"
+              label="Price"
+              name="price"
+              type="number"
+              onIonInput={(e: any) => handleInfoChange(e)}
+              class="product-input"
+              value={productInfo.price}
+            ></IonInput>
+            <IonButton
+              color="medium"
+              expand="block"
+              onClick={() => handleSaveProduct()}
+            >
+              <IonIcon slot="start" icon={saveOutline}></IonIcon>
+              Update Product
+            </IonButton>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <div>
+            <IonInput
+              required
+              onClick={() => setShowModal({ isOpen: true, type: "supplier" })}
+              labelPlacement="floating"
+              label="Supplier"
+              name="supplier"
+              type="text"
+              class="product-input"
+              value={productInfo.supplierName}
+            ></IonInput>
+            <IonButton
+              color="medium"
+              expand="block"
+              onClick={() => addNewProduct(false)}
+            >
+              Select Product
+            </IonButton>
+            <div>
+              {loading ? (
+                <div>Loading...</div>
+              ) : products.length > 0 ? (
+                <>
+                  {/* <div className="product-list-item-header">
+                    <label>Product</label>
+                    <label>Cost</label>
+                    <label>Price</label>
+                    <label>QTY</label>
+                  </div> */}
+                  {products.map((product, index) => (
+                    <IonItem key={index}>
+                      <div className="product-list-item">
+                        <IonIcon
+                          size="large"
+                          className="product-add-icon"
+                          onClick={() => {
+                            setSelectedProductIndex(index);
+                            setShowModal({ isOpen: true, type: "product" });
+                          }}
+                          icon={addCircle}
+                        ></IonIcon>
+                        <div className="product-input-container product-item-text">
+                        <label className="product-input-label">Product</label>
+                        <IonInput
+                          type="text"
+                          name="product"
+                          className="product-name-selected"
+                          value={product.item || "No item selected"}
+                          readonly
+                        />
+                        </div>
+                        <div className="product-input-container">
+                          <label className="product-input-label">Cost</label>
+                        <IonInput
+                          type="number"
+                          name="cost"
+                          className="product-input-qty"
+                          value={product.cost || ""}
+                          placeholder="Cost"
+                          debounce={500}
+                          onIonInput={(e: any) => handleQuantityChange(index,e)}
+                        />
+                        </div>
+                        <div className="product-input-container">
+                        <label className="product-input-label">Price</label>
+                        <IonInput
+                          type="number"
+                          name="price"
+                          className="product-input-qty"
+                          value={product.price || ""}
+                          placeholder="Price"
+                          debounce={500}
+                          onIonInput={(e: any) => handleQuantityChange(index,e)}
+                        />
+                        </div>
+                        <div className="product-input-container">
+                          <label className="product-input-label">Qty</label>
+                          <IonInput
+                            type="number"
+                            name="qty"
+                            className="product-input-qty"
+                            value={product.addedqty || 1}
+                            placeholder="Qty"
+                            debounce={500}
+                            onIonInput={(e: any) => handleQuantityChange(index,e)}
+                          />
+                        </div>
+                        <IonIcon
+                          className="product-remove-icon"
+                          icon={closeCircle}
+                          size="large"
+                          onClick={() => removeProduct(index)}
+                          color="danger"
+                        >
+                          Remove
+                        </IonIcon>
+                      </div>
+                    </IonItem>
+                  ))}
+                </>
+              ) : (
+                <span className="not-yet-span">No item yet</span>
+              )}
+            </div>
+
+            <IonButton color="medium" expand="block" onClick={handleSubmit}>
+              Submit Products
+            </IonButton>
+
+            <IonAlert
+              isOpen={showAlert.isOpen}
+              onDidDismiss={() => setShowAlert({ isOpen: false, message: "" })}
+              header={"Alert"}
+              message={showAlert.message}
+              buttons={["OK"]}
+            />
+
+            <IonModal
+              isOpen={showModal.isOpen}
+              onDidDismiss={() =>
+                setShowModal({ isOpen: false, type: "product" })
+              }
+            >
+              <IonHeader>
+                <IonToolbar>
+                  <IonTitle>Select Item</IonTitle>
+
+                  <IonIcon
+                    slot="end"
+                    color="medium"
+                    size="large"
+                    onClick={() => handleCloseListOfItemsModal()}
+                    icon={closeCircle}
+                  ></IonIcon>
+                </IonToolbar>
+              </IonHeader>
+              <IonContent>
+                {showModal.type === "product" ? (
+                  <>
+                    <IonSearchbar
+                      placeholder="Search Product"
+                      onIonInput={(e) => handleSearch(e)}
+                      autocapitalize={"words"}
+                      debounce={500}
+                    ></IonSearchbar>
+                    <IonList>
+                      {admin_list_of_items.map((item, index) => (
+                        <IonItem
+                          key={index}
+                          onClick={() =>
+                            handleSelectProduct(item, selectedProductIndex!)
+                          }
+                        >
+                          <IonLabel>{item.item}</IonLabel>
+                        </IonItem>
+                      ))}
+                    </IonList>{" "}
+                  </>
+                ) : (
+                  <>
+                    <IonSearchbar
+                      placeholder="Search Supplier"
+                      onIonInput={(e) => handleSearch(e)}
+                      autocapitalize={"words"}
+                      debounce={1500}
+                    ></IonSearchbar>
+                    <IonList>
+                      {admin_list_of_supplier.map((val, index) => (
+                        <IonItem
+                          onClick={() => handleSelectedSupplierMultiple(val)}
+                          key={index}
+                        >
+                          <IonLabel>
+                            <h2>{val.company}</h2>
+                            <p>{val.address}</p>
+                          </IonLabel>
+                        </IonItem>
+                      ))}
+                    </IonList>
+                  </>
+                )}
+              </IonContent>
+            </IonModal>
+          </div>
+        </div>
+      )}
     </IonContent>
   );
 };

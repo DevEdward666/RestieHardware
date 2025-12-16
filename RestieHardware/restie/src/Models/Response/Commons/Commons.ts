@@ -12,3 +12,9 @@ export interface ToastModel {
   color: string;
   position: string;
 }
+
+export interface TypeOfDeliveryReceipt {
+  id: number;
+  name: string;
+  type: string;
+}

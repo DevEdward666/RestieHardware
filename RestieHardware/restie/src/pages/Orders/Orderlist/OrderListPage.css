@@ -19,10 +19,23 @@
         text-align: center;
         .order-list-toolbar-logo{
             height: 100px;
-            width: 100%;
             margin: 10px;
+            display: block;
+            height: 100%;
+            -o-object-fit: inherit;
+            object-fit: fill;
+            -o-object-position: inherit;
+            object-position: inherit;
         }
     }
+    .web{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        height: 120px;
+        padding-bottom: 20px;
+      }
  
 }
 .order-list-filter{
@@ -34,8 +47,13 @@
     .order-list-search{
         display: flex;
         flex-direction: row;
-        width: 100%;
         justify-content: center;
+        .desktop{
+            width: 50%;
+        }
+        .mobile{
+            width: 100%;
+        }
     }
 }
 ion-toolbar .sc-ion-searchbar-ios-h{
@@ -43,9 +61,28 @@ ion-toolbar .sc-ion-searchbar-ios-h{
     padding-bottom: 15px;
     min-height: 52px;
 }
+.react-calendar {
+    width: 100% !important;
+}
 .order-list-datetime{
     display: flex;
     max-width: 100%;
     background-color: #ffffff00;
     padding-top:20px;
+}
+.orderlist-segment{
+    width: 100%;
+}
+.order-list-container-page{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.order-list-search-container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+   
+    justify-content: center;
+  
 }

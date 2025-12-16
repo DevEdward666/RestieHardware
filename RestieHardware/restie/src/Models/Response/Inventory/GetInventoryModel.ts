@@ -8,10 +8,12 @@ export interface GetListOrder {
   createdat: number;
   status: string;
   userid: string;
+  totaldiscount?:number;
 }
 
 export interface GetListOrderInfo {
   order_item: GetOrderItems[];
+  return_item: ReturnItems[];
   order_info: GetOrderInfo;
 }
 export interface GetOrderInfo {
@@ -19,6 +21,7 @@ export interface GetOrderInfo {
   orderid: string;
   cartid: string;
   total: number;
+  totaldiscount: number;
   paidthru: string;
   paidcash: number;
   createdby: string;
@@ -28,8 +31,20 @@ export interface GetOrderInfo {
   name: string;
   address: string;
   contactno: number;
+  customerid?: string;
+  customer_email?: string;
 }
-
+export interface ReturnItems {
+  transid: string;
+  orderid: string;
+  code: string;
+  item: string;
+  remarks: string;
+  qty: number;
+  total: number;
+  price: number;
+  createdat: number;
+}
 export interface GetOrderItems {
   code: string;
   item: string;
@@ -38,6 +53,7 @@ export interface GetOrderItems {
   onhandqty?: number;
   category: string;
   brand: string;
+  discount_price:number;
 }
 export interface SelectedOrder {
   cartid: string;
@@ -67,11 +83,18 @@ export interface FileResponse {
   lastModified: number;
 }
 export interface GetVouhcerResponse {
+  vouchercode:string;
   name: string;
   description: string;
   maxredemption: string;
   discount: number;
+  type: string;
+  voucher_for: string;
+
 }
 export interface GetBrandsModel {
   brand: string;
+}
+export interface GetCategoryModel {
+  category: string;
 }

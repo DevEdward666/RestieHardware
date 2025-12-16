@@ -5,15 +5,18 @@ import {
   IonText,
   useIonRouter,
   IonLoading,
+  getPlatforms,
 } from "@ionic/react";
 import "./ProfileListButtons.css";
 import {
   bagOutline,
   barChartOutline,
   cartOutline,
+  cashOutline,
   chevronForwardOutline,
   logInOutline,
   logOutOutline,
+  personAdd,
   syncCircle,
   syncCircleOutline,
   syncCircleSharp,
@@ -35,6 +38,7 @@ const ProfileListButtons: React.FC = () => {
     (store: RootStore) => store.LoginReducer.user_login_information
   );
   const router = useIonRouter();
+  const platform = getPlatforms();
   const dispatch = useTypedDispatch();
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
@@ -50,6 +54,7 @@ const ProfileListButtons: React.FC = () => {
       status: "pending",
       searchdate: "",
       orderid: "",
+      paidThru: "",
     };
     dispatch(getOrderList(payload));
     router.push("/orders");
@@ -60,7 +65,6 @@ const ProfileListButtons: React.FC = () => {
     setIsOpenToast((prev) => ({ ...prev, isOpen: true }));
     router.push("/login");
   }, [dispatch]);
-  console.log(user_login_information);
   return (
     <IonContent>
       <IonLoading
@@ -77,7 +81,13 @@ const ProfileListButtons: React.FC = () => {
       />
       <div className="profile-list-button-main-content">
         {user_login_information?.name?.length > 0 ? (
-          <div className="profile-list-button-list-container">
+          <div
+            className={`profile-list-button-list-container ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? "profile-list-mobile"
+                : "profile-list-desktop"
+            }`}
+          >
             <div
               className="profile-list-button-list"
               onClick={() => handleOrderListClick()}
@@ -97,7 +107,7 @@ const ProfileListButtons: React.FC = () => {
               <>
                 <div
                   className="profile-list-button-list"
-                  onClick={() => router.push("/admin/manageproduct")}
+                  onClick={() => router.push("/admin/mainmanageproduct")}
                 >
                   <IonButton fill="clear" className="profile-button-order">
                     <IonIcon icon={bagOutline}></IonIcon>
@@ -125,25 +135,49 @@ const ProfileListButtons: React.FC = () => {
                     <IonIcon icon={chevronForwardOutline}></IonIcon>
                   </IonButton>
                 </div>
-                <div
-                  className="profile-list-button-list"
-                  onClick={() => router.push("/DeliverOffline")}
-                >
-                  <IonButton fill="clear" className="profile-button-order">
-                    <IonIcon icon={syncOutline}></IonIcon>
-                    <IonText className="profile-button-text">
-                      Offline Deliveries Sync
-                    </IonText>
-                  </IonButton>
+                {user_login_information?.role.trim().toLowerCase() ===
+                "super admin" ? (
+                  <div
+                    className="profile-list-button-list"
+                    onClick={() => router.push("/admin/add-new-user")}
+                  >
+                    <IonButton fill="clear" className="profile-button-order">
+                      <IonIcon icon={personAdd}></IonIcon>
+                      <IonText className="profile-button-text">
+                        Manage User
+                      </IonText>
+                    </IonButton>
 
-                  <IonButton fill="clear" className="profile-button-order">
-                    <IonIcon icon={chevronForwardOutline}></IonIcon>
-                  </IonButton>
-                </div>
+                    <IonButton fill="clear" className="profile-button-order">
+                      <IonIcon icon={chevronForwardOutline}></IonIcon>
+                    </IonButton>
+                  </div>
+                ) : null}
               </>
             ) : null}
 
-            <div className="profile-list-button-list-logout-container">
+            <div
+              className="profile-list-button-list"
+              onClick={() => router.push("/DeliverOffline")}
+            >
+              <IonButton fill="clear" className="profile-button-order">
+                <IonIcon icon={syncOutline}></IonIcon>
+                <IonText className="profile-button-text">
+                  Offline Deliveries Sync
+                </IonText>
+              </IonButton>
+
+              <IonButton fill="clear" className="profile-button-order">
+                <IonIcon icon={chevronForwardOutline}></IonIcon>
+              </IonButton>
+            </div>
+            <div
+              className={`profile-list-button-list-logout-container ${
+                platform.includes("mobileweb") && !platform.includes("tablet")
+                  ? "profile-logout-mobile"
+                  : "profile-logout-desktop"
+              }`}
+            >
               <div
                 className="profile-list-button-list-logout"
                 onClick={() => handleLogout()}
@@ -159,7 +193,13 @@ const ProfileListButtons: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="profile-list-button-list-logout-container">
+          <div
+            className={`profile-list-button-list-logout-container ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? "profile-logout-mobile"
+                : "profile-logout-desktop"
+            }`}
+          >
             <div
               className="profile-list-button-list-logout"
               onClick={() => router.push("/login")}

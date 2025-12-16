@@ -41,6 +41,8 @@ import MainProductPage from "./pages/Products/ManageProducts/MainProductPage";
 import AddNewSupplierPage from "./pages/Products/ManageProducts/AddNewSupplierPage";
 import AddUpdateVoucherPage from "./pages/Products/ManageProducts/AddUpdateVoucher";
 import AddUserPage from "./pages/Users/AddUserPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicy/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/TermsOfService/TermsOfServicePage";
 
 setupIonicReact({ mode: "ios" });
 
@@ -147,6 +149,10 @@ const App: React.FC = () => {
 
       {/* 404 Page not found */}
       <Route path="/pageNotFound" render={() => <PageNotFoundPage />} />
+      {/* Privacy Policy */}
+      <Route path="/privacy" render={() => <PrivacyPolicyPage />} />
+      {/* Terms of Service */}
+      <Route path="/terms" render={() => <TermsOfServicePage />} />
       {/* Offline */}
       <Route path="/DeliverOffline" render={() => <OfflineDeliveryPage />} />
       {/* Onboarding */}

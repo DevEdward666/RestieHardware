@@ -32,6 +32,8 @@ import { useEffect, useState } from "react";
 import { Network } from "@capacitor/network";
 import OfflineDeliveryPage from "./pages/Delivery/OfflineDelivery/OfflineDeliveryPage";
 import SalesPage from "./pages/Products/Sales/SalesPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicy/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/TermsOfService/TermsOfServicePage";
 
 setupIonicReact({ mode: "ios" });
 
@@ -85,6 +87,10 @@ const App: React.FC = () => {
 
       {/* 404 Page not found */}
       <Route path="/pageNotFound" render={() => <PageNotFoundPage />} />
+      {/* Privacy Policy */}
+      <Route path="/privacy" render={() => <PrivacyPolicyPage />} />
+      {/* Terms of Service */}
+      <Route path="/terms" render={() => <TermsOfServicePage />} />
       {/* Offline */}
       <Route path="/DeliverOffline" render={() => <OfflineDeliveryPage />} />
     </IonApp>

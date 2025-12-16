@@ -1,0 +1,131 @@
+.terms-content {
+    --background: #f5f5f5;
+}
+
+.terms-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+.terms-container h1 {
+    color: #333;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.terms-container .last-updated {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.terms-container section {
+    margin-bottom: 30px;
+}
+
+.terms-container h2 {
+    color: #1976d2;
+    font-size: 22px;
+    font-weight: 600;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #1976d2;
+    padding-bottom: 8px;
+}
+
+.terms-container h3 {
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.terms-container p {
+    color: #555;
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 12px;
+    text-align: justify;
+}
+
+.terms-container ul {
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+.terms-container li {
+    color: #555;
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 8px;
+}
+
+.terms-container a {
+    color: #1976d2;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.terms-container a:hover {
+    text-decoration: underline;
+}
+
+.terms-container .contact-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 15px 0;
+}
+
+.terms-container .contact-info p {
+    margin-bottom: 8px;
+}
+
+.terms-container .acknowledgment-section {
+    background-color: #e3f2fd;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #1976d2;
+}
+
+.terms-container .acknowledgment-section p {
+    margin-bottom: 0;
+    font-weight: 500;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .terms-container {
+        padding: 15px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        border-radius: 0;
+    }
+
+    .terms-container h1 {
+        font-size: 24px;
+    }
+
+    .terms-container h2 {
+        font-size: 20px;
+    }
+
+    .terms-container h3 {
+        font-size: 16px;
+    }
+
+    .terms-container p,
+    .terms-container li {
+        font-size: 14px;
+    }
+}

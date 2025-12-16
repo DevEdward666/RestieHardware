@@ -1,0 +1,39 @@
+.privacy-consent-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    margin: 15px 0;
+}
+
+.privacy-checkbox {
+    margin-right: 12px;
+}
+
+.privacy-label {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.5;
+    white-space: normal;
+}
+
+.privacy-link {
+    color: #1976d2;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+.privacy-link:hover {
+    color: #1565c0;
+}
+
+.privacy-link:active {
+    color: #0d47a1;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .privacy-label {
+        font-size: 13px;
+    }
+}

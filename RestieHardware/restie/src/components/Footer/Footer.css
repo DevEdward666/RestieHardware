@@ -1,0 +1,79 @@
+.app-footer {
+    --background: #2c3e50;
+    --color: #ecf0f1;
+    margin-top: auto;
+}
+
+.footer-toolbar {
+    --background: #2c3e50;
+    --color: #ecf0f1;
+    padding: 20px 10px 10px 10px;
+}
+
+.footer-content {
+    padding: 20px 10px;
+}
+
+.footer-section {
+    padding: 15px;
+}
+
+.footer-section h3 {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 8px;
+    display: inline-block;
+}
+
+.footer-section p {
+    color: #bdc3c7;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.footer-link {
+    color: #3498db !important;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+    color: #5dade2 !important;
+    text-decoration: underline;
+}
+
+.footer-bottom {
+    border-top: 1px solid #34495e;
+    padding-top: 15px;
+    margin-top: 10px;
+}
+
+.footer-bottom p {
+    margin: 0;
+    font-size: 13px;
+    color: #95a5a6;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .footer-section {
+        text-align: center;
+        padding: 10px;
+    }
+
+    .footer-section h3 {
+        font-size: 16px;
+    }
+
+    .footer-section p {
+        font-size: 13px;
+    }
+}

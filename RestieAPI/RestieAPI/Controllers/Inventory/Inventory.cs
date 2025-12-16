@@ -42,6 +42,29 @@ namespace RestieAPI.Controllers.Inventory
             getAllInventory.limit = itemsPerPage;
             return Ok(_inventoryRepo.fetchInventory(getAllInventory));
         }
+        
+        [HttpGet("getAllInventory")]
+        public ActionResult<InventoryItemModel> GetAllInventory(
+            [FromQuery] int limit = 1000,
+            [FromQuery] int offset = 0,
+            [FromQuery] string searchTerm = "",
+            [FromQuery] string category = "",
+            [FromQuery] string brand = "",
+            [FromQuery] string filter = "")
+        {
+            var getAllInventory = new GetAllInventory
+            {
+                searchTerm = searchTerm ?? "",
+                category = category ?? "",
+                brand = brand ?? "",
+                filter = filter ?? "",
+                offset = offset,
+                limit = limit
+            };
+            
+            return Ok(_inventoryRepo.fetchInventory(getAllInventory));
+        }
+        
         [HttpPost("selectedItem/{itemCode}")]
         public ActionResult<InventoryItemModel> SelectedItem(string itemCode)
         {
@@ -377,7 +400,7 @@ namespace RestieAPI.Controllers.Inventory
 
             // Format the path to avoid issues with backslashes
             string formattedPath = folderPath.Replace("\\", "////");
-            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Images", getMultipleImages.folderPath);
+            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), getMultipleImages.folderPath);
             Console.WriteLine($"Directory path: {directoryPath}");
             // Check if the directory exists
             if (!Directory.Exists(directoryPath))

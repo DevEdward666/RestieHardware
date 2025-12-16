@@ -32,6 +32,8 @@ import "swiper/css/scrollbar";
 import "swiper/css/zoom";
 import "@ionic/react/css/ionic-swiper.css";
 import sample from "../../assets/images/Sample.png";
+import stock from "../../assets/images/Image_not_available.png";
+
 import {
   addCircle,
   removeCircle,
@@ -100,10 +102,15 @@ const SelectedItemContainer: React.FC = () => {
     setIsZoomed((prevState) => !prevState); // Toggle the zoom state
   };
   const fetchImages = async () => {
-    const response = await GetMultipleimage(`${getSelectedItem.code}`);
-    if (response.status === 200) {
-      setImageData(response.result.images.$values);
+    try {
+      const response = await GetMultipleimage(`${getSelectedItem.image}`);
+      if (response.status === 200) {
+        setImageData(response.result.images.$values);
+      }
+    } catch (error) {
+      console.warn(error)
     }
+    
   };
   useEffect(() => {
     fetchImages();
@@ -240,7 +247,7 @@ const SelectedItemContainer: React.FC = () => {
     initalize();
   }, [addedQty, getSelectedItem, isLoading]);
   const handleOpenImage = (selected_image: string) => {
-    setselectedImage(selected_image);
+    setselectedImage(selected_image!==null? selected_image : stock);
     setOpenModal(true);
   };
   const handleDismiss = () => {
@@ -332,7 +339,7 @@ const SelectedItemContainer: React.FC = () => {
             scrollbar={false}
             zoom={true}
           >
-            {imageData.length > 0 ? (
+            {imageData.length > 0 && imageData !== null? (
               imageData?.map((val, index) => {
                 return (
                   <SwiperSlide key={index}>
@@ -353,7 +360,7 @@ const SelectedItemContainer: React.FC = () => {
                 <IonImg
                   onClick={() => handleOpenImage(getSelectedItem.image)}
                   className="selected-item-img"
-                  src={getSelectedItem.image}
+                  src={getSelectedItem.image!==null? getSelectedItem.image : stock}
                 />
               </SwiperSlide>
             )}

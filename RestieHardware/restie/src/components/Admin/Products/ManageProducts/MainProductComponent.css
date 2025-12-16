@@ -1,0 +1,29 @@
+.main-manage-list-button-list{
+    display: flex;
+    flex-direction: row;
+    background-color: #125B8C;
+    text-align: center;
+    /* Body - 16/Regular */
+    font-family: Gotham-Book;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px; /* 150% */
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 20px;
+    .main-manage-button-order{
+        font-family: Gotham-Book;
+        font-size: 16px;
+        --color:white;
+    }
+    .main-manage-button-text{
+        padding-left: 10px;
+        color: white;
+    }
+}
+.main-manage-list-button-list-container{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}

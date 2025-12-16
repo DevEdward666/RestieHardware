@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 using RestieAPI.Service.Repo;
 using static RestieAPI.Models.Request.UserRequestModel;
 using static RestieAPI.Models.Response.UserResponseModel;
+using RestieAPI.Models.Response;
+using static RestieAPI.Models.Request.AdminRequestModel;
 
 namespace RestieAPI.Controllers
 {
@@ -134,6 +136,18 @@ namespace RestieAPI.Controllers
             _jwtAuthManager.RemoveRefreshTokenByUserName(userName);
 
             return Ok();
+        }
+        [Authorize(Roles = "Admin, Super Admin")]
+        [HttpPost("api/user/AddNewUser")]
+        public ActionResult<PostResponse> AddNewUser(Adduser adduser)
+        {
+            return Ok(_userRepo.AddNewUser(adduser));
+        }
+        [Authorize(Roles = "Admin, Super Admin")]
+        [HttpPost("api/user/UpdateNewUser")]
+        public ActionResult<PostResponse> UpdateNewUser(Adduser adduser)
+        {
+            return Ok(_userRepo.UpdateNewUser(adduser));
         }
 
 

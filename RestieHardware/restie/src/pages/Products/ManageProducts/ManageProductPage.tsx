@@ -33,9 +33,6 @@ const ManageProductPage = () => {
       router.push("/pageNotFound");
     }
   }, [user_login_information]);
-  console.log(
-    user_login_information?.role.trim().toLowerCase() === "super admin"
-  );
   return isLoaded ? (
     <IonPage className="manage-page-container">
       <IonHeader className="manage-page-header">
@@ -43,14 +40,7 @@ const ManageProductPage = () => {
           <IonButtons slot="start" onClick={() => router.goBack()}>
             <IonIcon slot="icon-only" icon={arrowBack}></IonIcon>
           </IonButtons>
-          <IonTitle>Manage Products</IonTitle>
-        </IonToolbar>
-        <IonToolbar
-          mode="ios"
-          color="tertiary"
-          className="manage-toolbar-logo-container"
-        >
-          <IonImg src={restielogo} className="manage-toolbar-logo"></IonImg>
+          <IonTitle>Update Item</IonTitle>
         </IonToolbar>
       </IonHeader>
       <ManageProductComponent />

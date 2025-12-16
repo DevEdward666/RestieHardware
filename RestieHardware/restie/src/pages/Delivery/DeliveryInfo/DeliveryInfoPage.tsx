@@ -13,8 +13,10 @@ import "./DeliveryInfoPage.css";
 import DeliveryInfoComponent from "../../../components/Delivery/DeliveryInfo/DeliveryInfoComponent";
 import { arrowBack } from "ionicons/icons";
 import restielogo from "../../../assets/images/Icon@3.png";
+import { getPlatforms } from "@ionic/react";
 const DeliveryInfoPage = () => {
   const router = useIonRouter();
+  const platform = getPlatforms();
   return (
     <IonPage>
       <IonHeader className="delivery-info-page-header">
@@ -29,7 +31,15 @@ const DeliveryInfoPage = () => {
           color="tertiary"
           className="delivery-toolbar-logo-container"
         >
-          <IonImg src={restielogo} className="delivery-toolbar-logo"></IonImg>
+          <div
+            className={` ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? ""
+                : "web"
+            }`}
+          >
+            <IonImg src={restielogo} className="delivery-toolbar-logo"></IonImg>
+          </div>
         </IonToolbar>
       </IonHeader>
       <DeliveryInfoComponent />

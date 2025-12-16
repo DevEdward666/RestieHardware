@@ -17,6 +17,7 @@ import {
   IonTitle,
   IonToolbar,
   SegmentChangeEventDetail,
+  getPlatforms,
   useIonRouter,
 } from "@ionic/react";
 import React, { useState } from "react";
@@ -24,6 +25,7 @@ import OrderListComponent from "../../../components/Orders/OrderList/OrderListCo
 import restielogo from "../../../assets/images/Icon@3.png";
 import { arrowBack, calendar } from "ionicons/icons";
 import "./OrderListPage.css";
+import MyCalendar from "../../../Hooks/MyCalendar";
 const OrderListPage = () => {
   const router = useIonRouter();
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
@@ -32,10 +34,15 @@ const OrderListPage = () => {
     date: "",
     search: "",
   });
+  const platform = getPlatforms();
   const [selectedDate, setSelectedDate] = useState<string | null>(
     new Date().toISOString()
   );
   const handleSelectFilter = (val: CustomEvent<SegmentChangeEventDetail>) => {
+    let statusValue = "";
+    if (statusValue === "debt") {
+      statusValue = "approved";
+    }
     setSelectedFilter((prev) => ({
       ...prev,
       status: val.detail.value?.toString()!,
@@ -73,21 +80,34 @@ const OrderListPage = () => {
     <IonPage className="order-list-page-container">
       <IonHeader className="order-list-page-header">
         <IonToolbar mode="ios" color="tertiary">
-          <IonButtons slot="start" onClick={() => router.goBack()}>
+          <IonButtons slot="start" onClick={() => router.push("/home/profile")}>
             <IonIcon slot="icon-only" icon={arrowBack}></IonIcon>
           </IonButtons>
           <IonTitle>Order List</IonTitle>
         </IonToolbar>
-        <IonToolbar
+        {/* <IonToolbar
           mode="ios"
           color="tertiary"
           className="order-list-toolbar-logo-container"
         >
-          <IonImg src={restielogo} className="order-list-toolbar-logo"></IonImg>
-        </IonToolbar>
+          <div
+            className={` ${
+              platform.includes("mobileweb") && !platform.includes("tablet")
+                ? ""
+                : "web"
+            }`}
+          >
+            <IonImg
+              src={restielogo}
+              className="order-list-toolbar-logo"
+            ></IonImg>
+          </div>
+        </IonToolbar> */}
         <IonToolbar mode="ios" color="tertiary">
           <div className="order-list-filter">
             <IonSegment
+              className="orderlist-segment"
+              scrollable={true}
               value={selectedFilter.status}
               onIonChange={(val) => handleSelectFilter(val)}
             >
@@ -103,29 +123,46 @@ const OrderListPage = () => {
               <IonSegmentButton value="delivered">
                 <IonLabel>Delivered</IonLabel>
               </IonSegmentButton>
+              <IonSegmentButton value="debt">
+                <IonLabel>Debts</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="cancel">
+                <IonLabel>Cancelled</IonLabel>
+              </IonSegmentButton>
+              <IonSegmentButton value="returns">
+                <IonLabel>Return/Refund</IonLabel>
+              </IonSegmentButton>
             </IonSegment>
-            <div className="order-list-search">
-              <IonSearchbar
-                className="order-list-searchbar"
-                animated={true}
-                placeholder="Search Order ID"
-                onIonInput={(val) => handleSearch(val)}
-                debounce={500}
-                autocapitalize={""}
-              ></IonSearchbar>
-              <IonButton
-                color="light"
-                fill="clear"
-                onClick={() => setIsOpenModal(true)}
+            <div className={`order-list-search-container`}>
+              <div
+                className={`order-list-search  ${
+                  platform.includes("mobileweb") && !platform.includes("tablet")
+                    ? "mobile"
+                    : "desktop"
+                }`}
               >
-                <IonIcon src={calendar}></IonIcon>
-              </IonButton>
+                <IonSearchbar
+                  className="order-list-searchbar"
+                  animated={true}
+                  placeholder="Search Order ID"
+                  onIonInput={(val) => handleSearch(val)}
+                  debounce={500}
+                  autocapitalize={""}
+                ></IonSearchbar>
+                <IonButton
+                  color="light"
+                  fill="clear"
+                  onClick={() => setIsOpenModal(true)}
+                >
+                  <IonIcon src={calendar}></IonIcon>
+                </IonButton>
+              </div>
             </div>
           </div>
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <div>
+        <div className="order-list-container-page">
           <OrderListComponent filter={selectedFilter} />
         </div>
         <IonModal

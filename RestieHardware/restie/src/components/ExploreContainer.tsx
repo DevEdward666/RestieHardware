@@ -11,17 +11,19 @@ import {
   IonLoading,
   IonRefresher,
   IonRefresherContent,
+  IonToast,
   RefresherEventDetail,
   useIonRouter,
 } from "@ionic/react";
-import { baseUrl } from "../Helpers/environment";
-import { cart, close } from "ionicons/icons";
-import { MouseEvent, useCallback, useEffect, useState } from "react";
+import { add, cart, close, cloudUpload } from "ionicons/icons";
+import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 import {
   Addtocart,
   InventoryModel,
+  PostDeliveryImage,
+  PutInventoryImage,
   SelectedItemToCart,
 } from "../Models/Request/Inventory/InventoryModel";
 import { SearchInventoryModel } from "../Models/Request/searchInventory";
@@ -34,22 +36,30 @@ import {
 } from "../Service/Actions/Inventory/InventoryActions";
 import { RootStore, useTypedDispatch } from "../Service/Store";
 import stock from "../assets/images/Image_not_available.png";
+
 import "./ExploreContainer.css";
-import { GetItemImage } from "../Service/API/Inventory/InventoryApi";
+import {
+  GetItemImage,
+  UpdateInventoryImage,
+  UploadDeliveryImages,
+} from "../Service/API/Inventory/InventoryApi";
 import { FileResponse } from "../Models/Response/Inventory/GetInventoryModel";
+import {
+  productFilename,
+  base64toFile,
+} from "./Admin/Products/ManageProducts/ProductComponentsService";
 interface ContainerProps {
   data: any;
   searchItem: SearchInventoryModel;
 }
-
 interface SelectedItem {
   code: string;
   item: string;
   price: number;
 }
-
 const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
   const dispatch = useTypedDispatch();
+  const cardRef = useRef(null);
   const router = useIonRouter();
   const [isOpenToast, setIsOpenToast] = useState({
     toastMessage: "",
@@ -59,11 +69,18 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
   const [items, setItems] = useState(data);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [isOpenMessageToast, setMessageToast] = useState({
+    toastMessage: "",
+    isOpen: false,
+  });
   const selectedItemselector = useSelector(
     (store: RootStore) => store.InventoryReducer.add_to_cart
   );
   const get_category_and_brand = useSelector(
     (store: RootStore) => store.InventoryReducer.set_category_and_brand
+  );
+  const user_login_information = useSelector(
+    (store: RootStore) => store.LoginReducer.user_login_information
   );
 
   useEffect(() => {
@@ -74,11 +91,14 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     };
     checkCartId();
   }, [selectedItemselector]);
-  const handleSelectedItem = useCallback((payload: SelectedItemToCart) => {
-    payload.qty = 1;
-    dispatch(selectedItem(payload));
-    router.push("/selectedItem");
-  }, []);
+  const handleSelectedItem = useCallback(
+    (payload: SelectedItemToCart) => {
+      payload.qty = 1;
+      dispatch(selectedItem(payload.code));
+      router.push(`/selectedItem?itemcode=${payload.code}`);
+    },
+    [dispatch]
+  );
   const handleAddToCart = async (
     selectedItem: SelectedItemToCart,
     event: MouseEvent<HTMLButtonElement, MouseEvent>
@@ -117,6 +137,13 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       isOpen: true,
       type: "warning",
     });
+    scrollToElement(cardRef);
+  };
+  const handleAddQty = (
+    selectedItem: SelectedItemToCart,
+    event: MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    router.push(`/admin/manageproduct?itemcode=${selectedItem.code}`);
   };
   const addItem = (
     selectedItem: SelectedItemToCart,
@@ -161,7 +188,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
         onhandqty: selectedItem.onhandqty,
         orderid: "",
         qty: 1,
-        image: selectedItem.image.includes("base64") ? selectedItem.image : "",
+        image: selectedItem.image.length > 0 ? selectedItem.image : "",
         price: selectedItem.price,
         createdAt: new Date().getTime(),
         status: "pending",
@@ -172,8 +199,42 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       return [...cartItems, newItem];
     }
   };
-  const CardList = (card: InventoryModel) => {
+  const CardList = ({ card }: { card: InventoryModel }) => {
     const [getItemImage, setImage] = useState<FileResponse>();
+    const [hasPermission, setHavePermission] = useState<boolean>(false);
+    const fileInput = useRef<HTMLInputElement | null>(null);
+
+    // Function to handle file selection and upload
+    const onSelectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const selectedFile = e.target.files?.[0];
+      if (!selectedFile) return;
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+        const imageName = productFilename(card.code, "jpg");
+        const fileImage = base64toFile(base64String, imageName, "image/jpg");
+
+        const imagePayload: PostDeliveryImage = {
+          FileName: imageName,
+          FolderName: "Inventory",
+          FormFile: fileImage!,
+        };
+        setMessageToast({ toastMessage: "Uploading", isOpen: true });
+        const uploaded = await UploadDeliveryImages(imagePayload);
+        setMessageToast({ toastMessage: "Upload successful", isOpen: true });
+        if (uploaded.status === 201) {
+          const updateInventoryImage: PutInventoryImage = {
+            image: uploaded.result.imagePath,
+            code: card.code,
+          };
+          await UpdateInventoryImage(updateInventoryImage);
+        }
+      };
+      reader.readAsDataURL(selectedFile);
+    };
+
+    // Payload setup for selected item
     const payload: SelectedItemToCart = {
       code: card.code,
       item: card.item,
@@ -182,65 +243,101 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       category: card.category,
       brand: card.brand,
       image:
-        card.image.length <= 0
-          ? stock
-          : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`,
+        card.image?.length > 0
+          ? `data:${card.image_type};base64,${card?.image}`
+          : stock,
     };
+
     useEffect(() => {
-      if (card.image.length > 0) {
-        GetItemImage({ imagePath: card.image }).then((res: any) => {
-          setImage(res.result.image);
-        });
+      // if (location.pathname === "/home/main" && card.image?.length > 0) {
+      //   GetItemImage({ imagePath: card.image }).then((res: any) => {
+      //     setImage(res.result.image);
+      //   });
+      // }
+      setHavePermission(
+        ["admin", "super admin"].includes(
+          user_login_information?.role.trim().toLowerCase()
+        )
+      );
+    }, [card.image, user_login_information]);
+
+    // Click handler for the image
+    const handleClickImage = useCallback(() => {
+      if (hasPermission) {
+        fileInput.current?.click();
+      } else {
+        handleSelectedItem(payload);
       }
-    }, [card.image]);
+    }, [hasPermission, payload]);
 
     return (
-      <div
-        className="inventory-card-main-div"
-        onClick={() => handleSelectedItem(payload)}
-      >
+      <div className="inventory-card-main-div">
         <IonCard className="inventory-card-main">
           <div className="inventory-card-add-item-img">
+            <input
+              ref={fileInput}
+              hidden
+              type="file"
+              accept="image/*"
+              onChange={onSelectFile}
+            />
             <img
+              className="inventory-card-image"
               alt={card?.item}
-              src={
-                card.image.length <= 0
-                  ? stock
-                  : `data:${getItemImage?.contentType};base64,${getItemImage?.fileContents}`
-              }
+              src={payload.image}
+              onClick={handleClickImage}
             />
           </div>
           <div className="inventory-card-add-item-container">
             <IonCardContent
-              key={card.code}
+              onClick={() => handleSelectedItem(payload)}
               className="inventory-card-main-content"
             >
               <div className="inventory-card-content">
                 <div className="inventory-card-title">{card?.item}</div>
                 <div className="inventory-card-price">
-                  <div>
-                    <span>&#8369;</span>
+                  <span>
+                    &#8369;
                     {card?.price.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
-                  </div>
+                  </span>
                   <div className="inventory-qty">QTY: {card?.qty}</div>
                 </div>
               </div>
             </IonCardContent>
           </div>
-
-          <div className="inventory-card-addtocart">
-            <IonButton
-              size="default"
-              disabled={card?.qty > 0 ? false : true}
-              color="medium"
-              onClick={(event: any) => handleAddToCart(payload, event)}
-            >
-              {card?.qty > 0 ? "Add to cart" : "Sold Out"}
-              <IonIcon color="light" slot="icon-only" icon={cart}></IonIcon>
-            </IonButton>
+          <div className="inventory-card-buttons-container">
+            <div className="inventory-card-button-container">
+              <IonButton
+                fill="clear"
+                className="inventory-card-addtocart-button"
+                disabled={card?.qty <= 0}
+                onClick={(event: any) => handleAddToCart(payload, event)}
+              >
+                <span className="addtocart-btn-text">
+                  {card?.qty > 0 ? "Add to cart" : "Sold Out"}
+                </span>
+                <IonIcon
+                  color="light"
+                  slot="icon-only"
+                  size="small"
+                  icon={cart}
+                />
+              </IonButton>
+            </div>
+            <div className="inventory-card-add-button-container">
+              {hasPermission ? (
+                <IonButton
+                  fill="clear"
+                  className="inventory-card-addtocart-button"
+                  onClick={(event: any) => handleAddQty(payload, event)}
+                >
+                  <IonIcon color="light" slot="icon-only" icon={add} />
+                </IonButton>
+              ) : null}
+            </div>
           </div>
         </IonCard>
       </div>
@@ -323,28 +420,36 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     };
     initializeItems();
   }, [searchItem]);
+  const handleRemove = useCallback(
+    (newCategory: string, newBrand: string) => {
+      const { filter } = get_category_and_brand;
+      dispatch(
+        set_category_and_brand({
+          category: newCategory,
+          brand: newBrand,
+          filter,
+        })
+      );
+    },
+    [dispatch, get_category_and_brand]
+  );
+
   const handleRemoveCategory = useCallback(() => {
-    dispatch(
-      set_category_and_brand({
-        category: "",
-        brand: get_category_and_brand.brand,
-        filter: get_category_and_brand.filter,
-      })
-    );
-  }, [dispatch, get_category_and_brand]);
+    handleRemove("", get_category_and_brand.brand);
+  }, [get_category_and_brand.brand]);
+
   const handleRemoveBrand = useCallback(() => {
-    dispatch(
-      set_category_and_brand({
-        category: get_category_and_brand.category,
-        brand: "",
-        filter: get_category_and_brand.filter,
-      })
-    );
-  }, [dispatch, get_category_and_brand]);
+    handleRemove(get_category_and_brand.category, "");
+  }, [get_category_and_brand.category]);
   const handleRefresh = async (event: CustomEvent<RefresherEventDetail>) => {
     const newItems = await getMoreInventory();
     setItems(newItems.response);
     event.detail.complete();
+  };
+  const scrollToElement = (elementRef: any) => {
+    if (elementRef && elementRef.current) {
+      elementRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   };
   return (
     <IonContent>
@@ -385,20 +490,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
       <IonList className="container" lines="none">
         {items?.map((res: InventoryModel, index: number) => (
           <IonItem className="Item-Card" key={index}>
-            <CardList
-              code={res.code}
-              item={res.item}
-              price={res.price}
-              qty={res.qty}
-              category={res.category}
-              reorderqty={res.reorderqty}
-              cost={res.cost}
-              image={res.image}
-              status={res.status}
-              brand={res.brand}
-              createdat={res.createdat}
-              updatedAt={res.updatedAt}
-            />
+            <CardList card={res} />
           </IonItem>
         ))}
       </IonList>
@@ -416,6 +508,16 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
         }
       ></IonToast> */}
+       <IonToast
+        isOpen={isOpenMessageToast?.isOpen}
+        message={isOpenMessageToast.toastMessage}
+        position="middle"
+        color={"medium"}
+        duration={3000}
+        onDidDismiss={() =>
+          setMessageToast({ toastMessage: "", isOpen: false })
+        }
+      ></IonToast>
     </IonContent>
   );
 };

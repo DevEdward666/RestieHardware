@@ -19,6 +19,7 @@ import {
   IonHeader,
   IonTitle,
   IonToolbar,
+  getPlatforms,
 } from "@ionic/react";
 import { chevronForwardOutline } from "ionicons/icons";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
@@ -49,6 +50,7 @@ const CustomerInformationComponent: React.FC = () => {
     toastMessage: "",
     isOpen: false,
   });
+  const platform = getPlatforms();
   const [customers, setCustomers] = useState(getcustomers);
   const [fetchList, setFetchList] = useState<SearchInventoryModel>({
     page: 1,
@@ -66,8 +68,9 @@ const CustomerInformationComponent: React.FC = () => {
       customerid: "",
       name: "",
       address: "",
-      contactno: 0,
+      contactno: "0",
       ordertype: "",
+      customer_email: "",
       newUser: true,
     });
   const dispatch = useTypedDispatch();
@@ -76,8 +79,9 @@ const CustomerInformationComponent: React.FC = () => {
       setCustomerInformation({
         name: "",
         address: "",
-        contactno: 0,
+        contactno: "0",
         ordertype: "",
+        customer_email: "",
         newUser: true,
       });
       dispatch(GetAllCustomers());
@@ -91,8 +95,9 @@ const CustomerInformationComponent: React.FC = () => {
     setCustomerInformation({
       name: "",
       address: "",
-      contactno: 0,
+      contactno: "0",
       ordertype: "",
+      customer_email: "",
       newUser: true,
     });
     router.push("/paymentoptions");
@@ -113,9 +118,9 @@ const CustomerInformationComponent: React.FC = () => {
     if (!customerInformation.address) {
       errors.push("Please enter your address");
     }
-    if (customerInformation.contactno === 0) {
-      errors.push("Please enter your contact no");
-    }
+    // if (customerInformation.contactno === 0) {
+    //   errors.push("Please enter your contact no");
+    // }
 
     if (errors.length > 0) {
       errors.forEach((error) => {
@@ -173,6 +178,7 @@ const CustomerInformationComponent: React.FC = () => {
         address: get_customer.address,
         contactno: get_customer.contactno,
         ordertype: "deliver",
+        customer_email: "",
         newUser: false,
       });
     };
@@ -185,7 +191,8 @@ const CustomerInformationComponent: React.FC = () => {
       customerid: "",
       name: "",
       address: "",
-      contactno: 0,
+      contactno: "0",
+      customer_email: "",
       ordertype: "",
     });
     // Handle checkbox change
@@ -205,89 +212,97 @@ const CustomerInformationComponent: React.FC = () => {
   }, [getcustomers]);
   return (
     <IonContent className="customer-information-content">
-      <div className="customer-information-main-content">
-        <div className="customer-information-list-container">
-          <div className="customer-information-list">
-            <IonItem className="customer-info-item">
-              <IonCheckbox
-                labelPlacement="start"
-                checked={isNewCustomer}
-                onIonChange={(e) => handleNewCustomer(e)}
-              >
-                New Customer?
-              </IonCheckbox>
-            </IonItem>
-            <IonItem className="customer-info-item">
-              <IonText className="info-text">Name: </IonText>
+      <div className="customer-information-main">
+        <div
+          className={`customer-information-main-content ${
+            platform.includes("mobileweb") && !platform.includes("tablet")
+              ? "mobile"
+              : "desktop"
+          }`}
+        >
+          <div className="customer-information-list-container">
+            <div className="customer-information-list">
+              <IonItem className="customer-info-item">
+                <IonCheckbox
+                  labelPlacement="start"
+                  checked={isNewCustomer}
+                  onIonChange={(e) => handleNewCustomer(e)}
+                >
+                  New Customer?
+                </IonCheckbox>
+              </IonItem>
+              <IonItem className="customer-info-item">
+                <IonText className="info-text">Name: </IonText>
 
-              <IonInput
-                onClick={() =>
-                  !isNewCustomer
-                    ? setOpenSearchModal({ isOpen: true, modal: "" })
-                    : null
-                }
-                readonly={!isNewCustomer ? true : false}
-                name="name"
-                type="text"
-                onIonInput={(e: any) => handleInfoChange(e)}
-                className="info-input"
-                label="Customer Name"
-                labelPlacement="floating"
-                placeholder="Enter Name"
-                value={customerInformation.name}
-              ></IonInput>
-            </IonItem>
+                <IonInput
+                  onClick={() =>
+                    !isNewCustomer
+                      ? setOpenSearchModal({ isOpen: true, modal: "" })
+                      : null
+                  }
+                  readonly={!isNewCustomer ? true : false}
+                  name="name"
+                  type="text"
+                  onIonInput={(e: any) => handleInfoChange(e)}
+                  className="info-input"
+                  label="Customer Name"
+                  labelPlacement="floating"
+                  placeholder="Enter Name"
+                  value={customerInformation.name}
+                ></IonInput>
+              </IonItem>
 
-            <IonItem className="customer-info-item">
-              <IonText className="info-text">Address: </IonText>
-              <IonInput
-                disabled={!isNewCustomer}
-                name="address"
-                onIonInput={(e: any) => handleInfoChange(e)}
-                className="info-input"
-                label="Customer Address"
-                labelPlacement="floating"
-                value={customerInformation.address}
-                placeholder="Enter Address"
-              ></IonInput>
-            </IonItem>
-            <IonItem className="customer-info-item">
-              <IonText className="info-text">Contact No: </IonText>
-              <IonInput
-                disabled={!isNewCustomer}
-                name="contactno"
-                onIonInput={(e: any) => handleInfoChange(e)}
-                className="info-input"
-                label="Contact No"
-                labelPlacement="floating"
-                value={customerInformation.contactno}
-                type="number"
-                placeholder="Enter No"
-              ></IonInput>
-            </IonItem>
-            <IonItem className="customer-info-item">
-              <IonText className="info-text">Order Type: </IonText>
-              <IonSelect
-                name="ordertype"
-                onIonChange={(e: any) => handleInfoChange(e)}
-                aria-label="Order Type"
-                value={
-                  customerInformation?.ordertype !== ""
-                    ? customerInformation.ordertype
-                    : "none"
-                }
-                className="info-input"
-              >
-                <IonSelectOption value="none">Select</IonSelectOption>
-                <IonSelectOption value="deliver">Deliver</IonSelectOption>
-                <IonSelectOption value="pickup">Pick-up</IonSelectOption>
-              </IonSelect>
-            </IonItem>
+              <IonItem className="customer-info-item">
+                <IonText className="info-text">Address: </IonText>
+                <IonInput
+                  disabled={!isNewCustomer}
+                  name="address"
+                  onIonInput={(e: any) => handleInfoChange(e)}
+                  className="info-input"
+                  label="Customer Address"
+                  labelPlacement="floating"
+                  value={customerInformation.address}
+                  placeholder="Enter Address"
+                ></IonInput>
+              </IonItem>
+              <IonItem className="customer-info-item">
+                <IonText className="info-text">Contact No: </IonText>
+                <IonInput
+                  disabled={!isNewCustomer}
+                  name="contactno"
+                  onIonInput={(e: any) => handleInfoChange(e)}
+                  className="info-input"
+                  label="Contact No"
+                  labelPlacement="floating"
+                  value={customerInformation.contactno}
+                  type="number"
+                  placeholder="Enter No"
+                ></IonInput>
+              </IonItem>
+              <IonItem className="customer-info-item">
+                <IonText className="info-text">Order Type: </IonText>
+                <IonSelect
+                  name="ordertype"
+                  onIonChange={(e: any) => handleInfoChange(e)}
+                  aria-label="Order Type"
+                  value={
+                    customerInformation?.ordertype !== ""
+                      ? customerInformation.ordertype
+                      : "none"
+                  }
+                  className="info-input"
+                >
+                  <IonSelectOption value="none">Select</IonSelectOption>
+                  <IonSelectOption value="deliver">Deliver</IonSelectOption>
+                  <IonSelectOption value="pickup">Pick-up</IonSelectOption>
+                </IonSelect>
+              </IonItem>
+            </div>
           </div>
+          <IonButton color="medium" onClick={() => handleSaveCustomerInfo()}>
+            Proceed
+          </IonButton>
         </div>
-        <IonButton color="medium" onClick={() => handleSaveCustomerInfo()}>
-          Proceed
-        </IonButton>
       </div>
       <IonModal
         isOpen={openSearchModal.isOpen}

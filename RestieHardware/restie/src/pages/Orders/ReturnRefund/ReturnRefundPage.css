@@ -1,0 +1,38 @@
+.return-refund-page-main{
+    background-color: white;
+}
+
+.return-refund-button-list-normal{
+    display: flex;
+    flex-direction: row;
+    background-color: #125B8C;
+    text-align: center;
+    font-family: Gotham-Book;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    align-items: center;
+    border-radius: 20px;
+    border-color: #125B8C;
+    border-style: solid;
+    border-width: 2px;
+    width: 80%;
+    
+    .return-refund-button-order{
+        font-family: Gotham-Book;
+        font-size: 16px;
+        --color:#125B8C;
+    }
+    .return-refund-button-text{
+        padding-left: 10px;
+        color: #125B8C;
+    }
+}
+
+.return-refund-button-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 10px;
+}

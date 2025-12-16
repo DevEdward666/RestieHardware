@@ -1,0 +1,22 @@
+.add-user-button-container{
+    display:flex;
+    flex-direction: row;
+}
+.add-user-button{
+    width: 100%;
+}
+.info-input{
+    width: 100%;
+}
+
+.password-strength-container {
+    width: 100%;
+    background-color: #ffffff; /* Background color for the strength bar */
+    border-radius: 5px;
+    margin-top: 5px;
+  }
+  
+  .password-strength-bar {
+    height: 5px;
+    border-radius: 5px;
+  }

@@ -29,7 +29,9 @@ const defaultState: InventoryTypesModel = {
       name: "",
       address: "",
       contactno: 0,
+      totaldiscount: 0
     },
+    return_item: [],
   },
   get_delivery_info: {
     deliveryid: "",
@@ -48,7 +50,18 @@ const defaultState: InventoryTypesModel = {
     description: "",
     maxredemption: "",
     discount: 0,
+    type: "",
+    voucher_for: "",
+    vouchercode: ""
   },
+  get_item_returns: [],
+  submit_return_refund: { submit: false },
+  checked_return_refund: [],
+  complete_return_refund: { complete: false },
+  receivable_list: [],
+  get_voucher_list: [],
+  get_list_voucher: [],
+  get_category: []
 };
 
 const InventoryReducer = (
@@ -104,10 +117,58 @@ const InventoryReducer = (
         get_brands: action.get_brands,
       };
     }
+    case "GET_CATEGORY": {
+      return {
+        ...state,
+        get_category: action.get_category,
+      };
+    }
     case "GET_VOUCHER": {
       return {
         ...state,
         get_voucher: action.get_voucher,
+      };
+    }
+    case "GET_VOUCHER_LIST": {
+      return {
+        ...state,
+        get_voucher_list: action.get_voucher_list,
+      };
+    }
+    case "GET_LIST_VOUCHER": {
+      return {
+        ...state,
+        get_list_voucher: action.get_list_voucher,
+      };
+    }
+    case "GET_ITEM_RETURNS": {
+      return {
+        ...state,
+        get_item_returns: action.get_item_returns,
+      };
+    }
+    case "SUBMIT_RETURN_REFUND": {
+      return {
+        ...state,
+        submit_return_refund: action.submit_return_refund,
+      };
+    }
+    case "COMPLETE_RETURN_REFUND": {
+      return {
+        ...state,
+        complete_return_refund: action.complete_return_refund,
+      };
+    }
+    case "CHECKED_RETURN_REFUND": {
+      return {
+        ...state,
+        checked_return_refund: action.checked_return_refund,
+      };
+    }
+    case "RECEIVABLE_LIST": {
+      return {
+        ...state,
+        receivable_list: action.receivable_list,
       };
     }
     default:

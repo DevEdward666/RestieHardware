@@ -21,7 +21,7 @@ using Document = iTextSharp.text.Document;
 
 namespace RestieAPI.Service.Repo
 {
-    public class InventoryRepo
+    public partial class InventoryRepo
     {
         public IConfiguration configuration;
         private readonly DatabaseService _databaseService;

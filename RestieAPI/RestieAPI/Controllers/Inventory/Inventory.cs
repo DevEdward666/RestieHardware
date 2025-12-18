@@ -478,5 +478,157 @@ namespace RestieAPI.Controllers.Inventory
             }
         }
 
+        [HttpPost("chatQuery")]
+        public ActionResult<InventoryChatQueryResponse> ChatQuery([FromBody] InventoryChatQueryRequest request)
+        {
+            var intent = (request.Intent ?? "").Trim().ToLowerInvariant();
+            var q = (request.Q ?? "").Trim();
+            var code = (request.Code ?? "").Trim();
+            var category = (request.Category ?? "").Trim();
+            var brand = (request.Brand ?? "").Trim();
+
+            var limit = Math.Clamp(request.Limit <= 0 ? 10 : request.Limit, 1, 25);
+            var offset = Math.Max(0, request.Offset);
+            var sort = (request.Sort ?? "").Trim();
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(intent)) intent = "search";
+
+                if (intent == "details")
+                {
+                    if (string.IsNullOrWhiteSpace(code))
+                    {
+                        return BadRequest(new InventoryChatQueryResponse
+                        {
+                            success = false,
+                            statusCode = StatusCodes.Status400BadRequest,
+                            message = "code is required for intent=details",
+                            intent = intent,
+                            query = request
+                        });
+                    }
+
+                    // Keep compatibility: details uses the existing full endpoint (may include base64 image).
+                    var result = _inventoryRepo.selectedItem(code);
+                    return Ok(new InventoryChatQueryResponse
+                    {
+                        success = true,
+                        statusCode = StatusCodes.Status200OK,
+                        intent = intent,
+                        query = request,
+                        data = new { item = result.result?.FirstOrDefault() }
+                    });
+                }
+
+                if (intent == "list_brands")
+                {
+                    var brands = _inventoryRepo.getBrands(new InventoryRequestModel.GetBrand { category = category ?? "" });
+                    return Ok(new InventoryChatQueryResponse
+                    {
+                        success = true,
+                        statusCode = StatusCodes.Status200OK,
+                        intent = intent,
+                        query = request,
+                        data = new { category, brands = brands.result.Select(b => b.brand).ToList() }
+                    });
+                }
+
+                if (intent == "cheapest")
+                {
+                    var cheapest = _inventoryRepo.GetCheapestLite(q, category, brand);
+                    return Ok(new InventoryChatQueryResponse
+                    {
+                        success = true,
+                        statusCode = StatusCodes.Status200OK,
+                        intent = intent,
+                        query = request,
+                        data = new { currency = "PHP", item = cheapest }
+                    });
+                }
+
+                if (intent == "price")
+                {
+                    var key = !string.IsNullOrWhiteSpace(code) ? code : q;
+                    if (string.IsNullOrWhiteSpace(key))
+                    {
+                        return BadRequest(new InventoryChatQueryResponse
+                        {
+                            success = false,
+                            statusCode = StatusCodes.Status400BadRequest,
+                            message = "q or code is required for intent=price",
+                            intent = intent,
+                            query = request
+                        });
+                    }
+
+                    var matches = _inventoryRepo.SearchInventoryLite(key, category, brand, sort: "asc", limit: 5, offset: 0);
+                    var best = matches.OrderBy(m => m.price).FirstOrDefault();
+
+                    return Ok(new InventoryChatQueryResponse
+                    {
+                        success = true,
+                        statusCode = StatusCodes.Status200OK,
+                        intent = intent,
+                        query = request,
+                        data = new { currency = "PHP", found = best != null, item = best, matches }
+                    });
+                }
+
+                if (intent == "exists")
+                {
+                    var key = !string.IsNullOrWhiteSpace(code) ? code : q;
+                    if (string.IsNullOrWhiteSpace(key))
+                    {
+                        return BadRequest(new InventoryChatQueryResponse
+                        {
+                            success = false,
+                            statusCode = StatusCodes.Status400BadRequest,
+                            message = "q or code is required for intent=exists",
+                            intent = intent,
+                            query = request
+                        });
+                    }
+
+                    var (exists, topMatches) = _inventoryRepo.ExistsLite(key, category, brand, top: 5);
+
+                    return Ok(new InventoryChatQueryResponse
+                    {
+                        success = true,
+                        statusCode = StatusCodes.Status200OK,
+                        intent = intent,
+                        query = request,
+                        data = new { exists, matches = topMatches }
+                    });
+                }
+
+                // Default: search
+                var items = _inventoryRepo.SearchInventoryLite(q, category, brand,
+                    sort: string.Equals(sort, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc",
+                    limit: limit,
+                    offset: offset);
+
+                return Ok(new InventoryChatQueryResponse
+                {
+                    success = true,
+                    statusCode = StatusCodes.Status200OK,
+                    intent = "search",
+                    query = request,
+                    data = new { items }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new InventoryChatQueryResponse
+                {
+                    success = false,
+                    statusCode = StatusCodes.Status500InternalServerError,
+                    message = ex.Message,
+                    intent = intent,
+                    query = request
+                });
+            }
+        }
+
     }
 }

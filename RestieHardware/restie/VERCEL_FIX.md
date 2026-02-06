@@ -19,25 +19,29 @@ The `canvas` package (peer dependency of `jspdf-html2canvas`) requires native sy
 ```
 This tells npm that canvas can fail to install without breaking the build.
 
-### 2. Created Vercel Configuration
+### 2. Added NPM Overrides (Key Fix!)
+**File:** `package.json`
+```json
+"overrides": {
+  "canvas": "npm:empty-npm-package@1.0.0"
+}
+```
+**This is the critical solution** - npm overrides replace the `canvas` dependency (required by `jspdf-html2canvas`) with an empty placeholder package. This works because:
+- Vercel build environment will install the empty package instead of canvas
+- No native compilation needed
+- App still works because browser provides Canvas API
+
+### 3. Simplified Vercel Configuration
 **File:** `vercel.json`
 ```json
 {
-  "buildCommand": "npm run build:vercel",
-  "installCommand": "npm install --legacy-peer-deps --ignore-scripts",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install --legacy-peer-deps",
   "framework": "vite",
   "outputDirectory": "dist"
 }
 ```
-- `--ignore-scripts` skips canvas build (which requires native libraries)
-- `--legacy-peer-deps` handles React Router v5 peer dependency warnings
-
-### 3. Simplified Vercel Build Script
-**File:** `package.json`
-```json
-"build:vercel": "tsc && vite build"
-```
-No need to reinstall - the install command already handles it.
+Standard npm install - the overrides field handles canvas automatically.
 
 ### 4. Created .npmrc Configuration
 **File:** `.npmrc`
@@ -45,19 +49,6 @@ No need to reinstall - the install command already handles it.
 legacy-peer-deps=true
 ```
 Handles React Router v5 peer dependency warnings.
-
-## Local Development Setup
-
-### First-Time Setup or After Clean Install
-```bash
-# Install dependencies (canvas will fail, that's OK)
-npm install --ignore-scripts
-
-# Run dev server (works without canvas)
-npm run dev
-```
-
-**Note:** The `canvas` package will fail to install locally because it requires system libraries (`pkg-config`, `pixman-1`, `cairo`). This is expected and doesn't affect development - canvas is only used for PDF generation which works in the browser using the native Canvas API.
 
 ## Why This Works
 

@@ -1,2 +1,1 @@
-//export const prodBaseUrl = "https://restiehardware.onrender.com/";
-export const prodBaseUrl = "https://restiehardware.fly.dev/";
+export const prodBaseUrl = "https://api.siklabtech.org/";

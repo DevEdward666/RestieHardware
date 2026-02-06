@@ -250,24 +250,24 @@ jobs:
           cd RestieHardware/restie
           npm install
           npm run build
-  deploy-web-api-prod:
-    runs-on: ubuntu-latest
-    needs: build-docker-image-prod
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-      - name: Install Flyctl and Set PATH
-        run: |
-          curl -L https://fly.io/install.sh | sh
-          echo "export PATH=\"$HOME/.fly/bin:$PATH\"" >> $HOME/.bashrc
-          source $HOME/.bashrc
-      - name: Login to flyctl
-        run: |
-          /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
-      - name: Create Fly volume
-        run: |
-          /home/runner/.fly/bin/flyctl volumes list -a restieapi | grep -q "inventory_images" || /home/runner/.fly/bin/flyctl volume create inventory_images --size 1 -r sin -n 1 -a restieapi
-      - name: Deploy .NET API to Fly.io
-        run: |
-          cd RestieAPI
-          /home/runner/.fly/bin/flyctl deploy -a restieapi
+  # deploy-web-api-prod:
+  #   runs-on: ubuntu-latest
+  #   needs: build-docker-image-prod
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v2
+  #     - name: Install Flyctl and Set PATH
+  #       run: |
+  #         curl -L https://fly.io/install.sh | sh
+  #         echo "export PATH=\"$HOME/.fly/bin:$PATH\"" >> $HOME/.bashrc
+  #         source $HOME/.bashrc
+  #     - name: Login to flyctl
+  #       run: |
+  #         /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
+  #     - name: Create Fly volume
+  #       run: |
+  #         /home/runner/.fly/bin/flyctl volumes list -a restieapi | grep -q "inventory_images" || /home/runner/.fly/bin/flyctl volume create inventory_images --size 1 -r sin -n 1 -a restieapi
+  #     - name: Deploy .NET API to Fly.io
+  #       run: |
+  #         cd RestieAPI
+  #         /home/runner/.fly/bin/flyctl deploy -a restieapi

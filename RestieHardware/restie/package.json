@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:vercel": "npm install --no-optional && tsc && vite build",
+    "build:vercel": "npm run build",
     "preview": "vite preview",
     "test.e2e": "cypress run",
     "test.unit": "vitest",
@@ -50,6 +50,9 @@
     "redux-thunk": "^3.1.0",
     "swiper": "^11.0.7",
     "uuid": "^9.0.1"
+  },
+  "overrides": {
+    "canvas": "npm:empty-npm-package@1.0.0"
   },
   "optionalDependencies": {
     "canvas": "^2.11.2"

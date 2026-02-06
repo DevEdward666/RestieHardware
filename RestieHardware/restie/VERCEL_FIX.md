@@ -24,19 +24,20 @@ This tells npm that canvas can fail to install without breaking the build.
 ```json
 {
   "buildCommand": "npm run build:vercel",
-  "installCommand": "npm install --legacy-peer-deps --no-optional",
+  "installCommand": "npm install --legacy-peer-deps --ignore-scripts",
   "framework": "vite",
   "outputDirectory": "dist"
 }
 ```
-- `--no-optional` skips canvas installation
+- `--ignore-scripts` skips canvas build (which requires native libraries)
 - `--legacy-peer-deps` handles React Router v5 peer dependency warnings
 
-### 3. Added Vercel-Specific Build Script
+### 3. Simplified Vercel Build Script
 **File:** `package.json`
 ```json
-"build:vercel": "npm install --no-optional && tsc && vite build"
+"build:vercel": "tsc && vite build"
 ```
+No need to reinstall - the install command already handles it.
 
 ### 4. Created .npmrc Configuration
 **File:** `.npmrc`

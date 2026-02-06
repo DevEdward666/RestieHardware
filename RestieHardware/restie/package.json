@@ -51,12 +51,6 @@
     "swiper": "^11.0.7",
     "uuid": "^9.0.1"
   },
-  "overrides": {
-    "canvas": "npm:empty-npm-package@1.0.0"
-  },
-  "optionalDependencies": {
-    "canvas": "^2.11.2"
-  },
   "devDependencies": {
     "@capacitor/cli": "5.7.3",
     "@testing-library/dom": ">=7.21.4",

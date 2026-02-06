@@ -142,11 +142,11 @@ jobs:
           /home/runner/.fly/bin/flyctl auth login -t ${{ secrets.FLY_AUTH_TOKEN }}
       - name: Create Fly volume
         run: |
-          /home/runner/.fly/bin/flyctl volumes list -a restieapi | grep -q "inventory_images" || /home/runner/.fly/bin/flyctl volume create inventory_images --size 1 -r sin -n 1 -a restieapi
+          /home/runner/.fly/bin/flyctl volumes list -a restiehardware | grep -q "inventory_images" || /home/runner/.fly/bin/flyctl volume create inventory_images --size 1 -r sin -n 1 -a restiehardware
       - name: Deploy .NET API to Fly.io
         run: |
           cd RestieAPI
-          /home/runner/.fly/bin/flyctl deploy -a restieapi
+          /home/runner/.fly/bin/flyctl deploy -a restiehardware
   deploy-ionic-react:
     runs-on: ubuntu-latest
     needs: build-docker-image
@@ -167,7 +167,7 @@ jobs:
       - name: Build Ionic React app
         run: |
           cd RestieHardware/restie
-          sed -i 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "https://restiehardware.onrender.com/";#g' src/Helpers/environment.prod.ts
+          sed -i 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "https://restiehardware.fly.dev/";#g' src/Helpers/environment.prod.ts
           npm install
           npm run build
 

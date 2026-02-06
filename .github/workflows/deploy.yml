@@ -12,17 +12,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      - name: Debug: list repo files
+        run: |
+          pwd
+          ls -la
+          echo "---- tree (top 3 levels) ----"
+          find . -maxdepth 3 -type d -print
+          echo "---- csproj files ----"
+          find . -name "*.csproj" -print
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
       - name: Restore
-        run: dotnet restore ./RestieAPI/RestieAPI.csproj
+        run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
 
       - name: Publish
-        run: dotnet publish ./RestieAPI/RestieAPI.csproj -c Release -o publish
+        run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o publish
 
       - name: Configure SSH
         shell: bash

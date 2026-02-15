@@ -111,6 +111,12 @@ namespace RestieAPI.Controllers.Inventory
         {
             return Ok(_inventoryRepo.SavetoCartandUpdateInventory(addToCart));
         }
+        // THIS IS FOR N8N INTEGRATION, DO NOT DELETE
+        [HttpPost("AddOrdern8n")]
+        public ActionResult<PostResponse> AddOrdern8n(AddToCart[] addToCart)
+        {
+            return Ok(_inventoryRepo.SavetoCartandUpdateInventoryn8n(addToCart));
+        }
         [Authorize]
         [HttpPost("UpdatedOrderAndCart")]
         public ActionResult<PostResponse> updatedOrderAndCart(AddToCart[] addToCart)

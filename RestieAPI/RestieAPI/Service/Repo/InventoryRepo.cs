@@ -4344,8 +4344,8 @@ namespace RestieAPI.Service.Repo
                                 {
                                     { "@orderid", orderid },
                                     { "@transid", transid},
-                                    { "@customer", addToCartItems[0].customer },
-                                    { "@cashier", addToCartItems[0].cashier },
+                                    { "@customer", addToCartItems[0].customer ?? (object)DBNull.Value},
+                                    { "@cashier", addToCartItems[0].cashier ?? (object)DBNull.Value},
                                     { "@createdat", addToCartItems[0].createdat },
                                     { "@status", addToCartItems[0].status },
                                 };

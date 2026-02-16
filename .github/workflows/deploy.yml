@@ -3,8 +3,8 @@ name: Deploy RestieAPI to VPS
 on:
   push:
     branches:
-      - master
       - release
+      - master
   workflow_dispatch:
 
 jobs:

@@ -4306,7 +4306,7 @@ namespace RestieAPI.Service.Repo
                                     { "@cartid", addToCartItems[0].cartid },
                                     { "@total",  total},
                                     { "@totaldiscount",  addToCartItems[0].total_discount  + overAllTotalDiscount},
-                                    { "@order_voucher",  addToCartItems[0].order_voucher},
+                                    { "@order_voucher",  addToCartItems[0].order_voucher ?? (object)DBNull.Value },
                                     { "@paidthru", addToCartItems[0].paidthru },
                                     { "@paidcash", addToCartItems[0].paidcash },
                                     { "@createdby", addToCartItems[0].createdby },

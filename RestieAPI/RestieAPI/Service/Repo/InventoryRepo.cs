@@ -14,6 +14,7 @@ using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.Reflection.Metadata;
+using Microsoft.IdentityModel.Tokens;
 using static RestieAPI.Models.Request.InventoryRequestModel;
 using static RestieAPI.Models.Response.AdminResponseModel;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -4233,16 +4234,17 @@ namespace RestieAPI.Service.Repo
         //}
         public PostResponse SavetoCartandUpdateInventoryn8n(InventoryRequestModel.AddToCart[] addToCartItems)
         {
+            var checkOrderSql = @"SELECT 1 FROM orders WHERE orderid = @orderid LIMIT 1;";
+
             var sql = @"insert into cart (cartid,code,item,qty,price,total,createdat,status,voucher_id,discount_price,total_discount) 
                 values(@cartid,@code,@item,@qty,@price,@total,@createdat,@status,@voucher_id,@discount,@total_discount)";
             var insertOrder = @"insert into orders (orderid,cartid,total,paidthru,paidcash,createdby,createdat,status,userid,type,totaldiscount,voucher) 
                         values(@orderid,@cartid,@total,@paidthru,@paidcash,@createdby,@createdat,@status,@userid,@type,@totaldiscount,@order_voucher)";
-            //var updatecart = @"update cart set status=@status,qty=@qty,total=@total,updateat=@updateat where cartid=@cartid";
-            //var updateOrder = @"update orders set total=@total,paidthru=@paidthru,paidcash=@paidcash,updateat=@updateat  where orderid = @orderid";
             var updatesql = @"update  inventory set qty=@onhandqty where code=@code";
             var InsertTransaction = @"insert into transaction (transid,orderid,customer,cashier,status,createdat) 
                                     values(@transid,@orderid,@customer,@cashier,@status,@createdat)";
-            var orderid = Guid.NewGuid();
+            
+            var orderid =  addToCartItems[0].orderid.IsNullOrEmpty() ?  Guid.NewGuid().ToString() : addToCartItems[0].orderid;
             using (var connection = new NpgsqlConnection(_connectionString))
             {
                 connection.Open();
@@ -4251,8 +4253,19 @@ namespace RestieAPI.Service.Repo
                 var transid = Guid.NewGuid().ToString();
                 using (var tran = connection.BeginTransaction())
                 {
+                    
                     try
                     {
+                        using (var checkCmd = new NpgsqlCommand(checkOrderSql, connection, tran))
+                        {
+                            checkCmd.Parameters.AddWithValue("@orderid", orderid);
+
+                            var exists = checkCmd.ExecuteScalar();
+                            if (exists != null)
+                            {
+                                throw new Exception("Order ID already exists.");
+                            }
+                        }
                         foreach (var addToCart in addToCartItems)
                         {
                           
@@ -4266,7 +4279,7 @@ namespace RestieAPI.Service.Repo
                                 { "@total", addToCart.qty * addToCart.price },
                                 { "@createdat", addToCart.createdat },
                                 { "@status", addToCart.status },
-                                { "@voucher_id", addToCart.voucher_id },
+                                { "@voucher_id", addToCart.voucher_id ?? (object)DBNull.Value },
                                 { "@discount", addToCart.discount },
                                 { "@total_discount", addToCart.total_discount },
                             };

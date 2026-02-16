@@ -3,42 +3,25 @@ name: Deploy RestieAPI to VPS
 on:
   push:
     branches:
-      - release
       - master
+      - release
   workflow_dispatch:
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    environment: master
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: list repo files
-        run: |
-          pwd
-          ls -la
-          echo "---- tree (top 3 levels) ----"
-          find . -maxdepth 3 -type d -print
-          echo "---- csproj files ----"
-          find . -name "*.csproj" -print
-
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
-
-      - name: Restore
-        run: dotnet restore RestieAPI/RestieAPI/RestieAPI.csproj
+          dotnet-version: 8.0.x
 
       - name: Publish
         run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o publish
 
       - name: Configure SSH
-        shell: bash
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
@@ -46,51 +29,20 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy (rsync)
-        shell: bash
+      - name: Deploy
         run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
+            TARGET="/var/www/myapi/"
+            RESTART="sudo -n /usr/local/bin/restart-restieapi"
+          else
+            TARGET="/var/www/myapi-dev/"
+            RESTART="sudo systemctl restart restieapi-dev"
+          fi
+
           rsync -az --delete -e "ssh -i ~/.ssh/id_ed25519" \
             ./publish/ \
-            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/myapi/"
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${TARGET}"
 
-      - name: Restart service
-        shell: bash
-        run: |
-          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
-            "sudo -n /usr/local/bin/restart-restieapi"
-
-  deploy-dev:
-    if: github.ref == 'refs/heads/release'
-    runs-on: ubuntu-latest
-    environment: release
-  
-    steps:
-      - uses: actions/checkout@v4
-  
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
-  
-      - run: dotnet publish -c Release -o publish
-  
-      - name: Configure SSH
-        shell: bash
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
-  
-      - name: Deploy via rsync
-        run: |
-          rsync -az --delete -e "ssh -i ~/.ssh/id_ed25519" \
-            ./publish/ \
-            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/myapi-dev/"
-  
-      - name: Restart dev service
-        run: |
           ssh -i ~/.ssh/id_ed25519 \
             "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
-            "sudo systemctl restart restieapi-dev"
-
+            "${RESTART}"

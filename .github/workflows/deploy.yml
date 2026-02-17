@@ -31,18 +31,29 @@ jobs:
 
       - name: Deploy
         run: |
+          # 1. Determine targets based on branch
           if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
             TARGET="/var/www/myapi/"
-            RESTART="sudo -n /usr/local/bin/restart-restieapi"
+            SERVICE="restieapi"
+            STOP="sudo -n /bin/systemctl stop $SERVICE"
+            START="sudo -n /bin/systemctl start $SERVICE"
           else
             TARGET="/var/www/myapi-dev/"
-            RESTART="sudo systemctl restart restieapi-dev"
+            SERVICE="restieapi-dev"
+            STOP="sudo -n /bin/systemctl stop $SERVICE"
+            START="sudo -n /bin/systemctl start $SERVICE"
           fi
 
+          # 2. Stop the service to release file locks
+          echo "Stopping $SERVICE..."
+          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "$STOP"
+
+          # 3. Sync the files (now that they aren't locked)
+          echo "Syncing files to $TARGET..."
           rsync -az --delete -e "ssh -i ~/.ssh/id_ed25519" \
             ./publish/ \
             "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${TARGET}"
 
-          ssh -i ~/.ssh/id_ed25519 \
-            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
-            "${RESTART}"
+          # 4. Start the service back up
+          echo "Starting $SERVICE..."
+          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "$START"

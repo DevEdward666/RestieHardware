@@ -192,6 +192,8 @@ namespace RestieAPI.Models.Request
             public string? customer { get; set; }
 
         }
+            
+        
         public class FileModel
         {
 

@@ -157,7 +157,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       - name: Update environment.prod.ts
-        run: echo 'export const prodBaseUrl = "https://restiehardware.onrender.com/";' > RestieHardware/restie/src/Helpers/environment.prod.ts
+        run: echo 'export const prodBaseUrl = "https://api.siklabtech.org/";' > RestieHardware/restie/src/Helpers/environment.prod.ts
       - name: Display changed file
         run: cat RestieHardware/restie/src/Helpers/environment.prod.ts
       - name: Setup Node.js
@@ -167,7 +167,7 @@ jobs:
       - name: Build Ionic React app
         run: |
           cd RestieHardware/restie
-          sed -i 's#export const prodBaseUrl = "https://restieapi.fly.dev/";#export const prodBaseUrl = "https://restiehardware.fly.dev/";#g' src/Helpers/environment.prod.ts
+          sed -i 's#export const prodBaseUrl = "https://api.siklabtech.org/";#export const prodBaseUrl = "https://api.siklabtech.org/";#g' src/Helpers/environment.prod.ts
           npm install
           npm run build
 

@@ -34,16 +34,21 @@ namespace RestieAPI.Service.Repo
 
             // The SQL now uses 'OR' logic for the hint @q across multiple columns
             // and calculates a similarity score to prioritize the best "guess"
-            var sql = @"
-                SELECT code, item, category, brand, price, qty,
-                       (word_similarity(@q, item) + word_similarity(@q, category)) as match_score
-                FROM inventory
-                WHERE 
-                    (@q = '' OR item ILIKE '%' || @q || '%' OR category ILIKE '%' || @q || '%' OR code ILIKE '%' || @q || '%')
-                    AND (@category = '' OR category ILIKE '%' || @category || '%')
-                    AND (@brand = '' OR brand ILIKE '%' || @brand || '%')
-                ORDER BY match_score DESC, price " + (sort.ToLower() == "desc" ? "DESC" : "ASC") + @"
-                LIMIT @limit;";
+            var sql = @"SELECT code, item, category, brand, price, qty,
+                    word_similarity(@q, item) + word_similarity(@category, category)) as match_score
+                    FROM inventory
+                    WHERE 
+                    -- 1. Search the 'Hint' (q) across everything
+                    (@q = '' OR item ILIKE '%' || @q || '%' OR similarity(item, @q) > 0.2)
+                    
+                    -- 2. Fuzzy match the Category (This fixes the Pipe vs Pipes issue)
+                    AND (@category = '' OR category ILIKE '%' || @category || '%' OR @category ILIKE '%' || category || '%' OR similarity(category, @category) > 0.2)
+                    
+                    -- 3. Fuzzy match the Brand
+                    AND (@brand = '' OR brand ILIKE '%' || @brand || '%' OR similarity(brand, @brand) > 0.2)
+
+                    ORDER BY match_score DESC
+                    LIMIT @limit;";
 
             var results = new List<InventoryLiteItem>();
             using var connection = new NpgsqlConnection(_connectionString);

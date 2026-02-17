@@ -19,8 +19,12 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish
-        run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o publish
-
+        run: |
+          # Remove old publish folder if it exists
+          rm -rf publish
+          # Force a clean build to ensure we aren't using old DLLs
+          dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o publish --configuration Release --no-self-contained /p:UseAppHost=false
+      
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh

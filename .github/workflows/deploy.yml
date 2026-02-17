@@ -34,14 +34,14 @@ jobs:
           # 1. Determine targets based on branch
           if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
             TARGET="/var/www/myapi/"
-            SERVICE="restieapi" # Assuming your production service name
-            STOP="sudo systemctl stop $SERVICE"
-            START="sudo systemctl start $SERVICE"
+            SERVICE="restieapi"
+            STOP="sudo -n /bin/systemctl stop $SERVICE"
+            START="sudo -n /bin/systemctl start $SERVICE"
           else
             TARGET="/var/www/myapi-dev/"
             SERVICE="restieapi-dev"
-            STOP="sudo systemctl stop $SERVICE"
-            START="sudo systemctl start $SERVICE"
+            STOP="sudo -n /bin/systemctl stop $SERVICE"
+            START="sudo -n /bin/systemctl start $SERVICE"
           fi
 
           # 2. Stop the service to release file locks

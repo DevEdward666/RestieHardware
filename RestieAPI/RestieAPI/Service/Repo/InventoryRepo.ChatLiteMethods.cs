@@ -34,16 +34,25 @@ namespace RestieAPI.Service.Repo
 
     // 2. Use a cleaner SQL string structure. 
     // Note: I removed the extra parentheses around the @q check that often cause "Pos 126" errors.
-    var sql = @"
-        SELECT code, item, category, brand, price, qty,
-               ((word_similarity(@q, item) * 2) + similarity(category, @category)) AS match_score
-        FROM inventory
-        WHERE 
-            (@q = '' OR item ILIKE '%' || @q || '%' OR item % @q OR category ILIKE '%' || @q || '%')
-            AND (@category = '' OR category ILIKE '%' || @category || '%' OR category % @category)
-            AND (@brand = '' OR brand ILIKE '%' || @brand || '%' OR brand % @brand)
-        ORDER BY match_score DESC, price " + (sort.ToLower() == "desc" ? "DESC" : "ASC") + @"
-        LIMIT @limit;";
+    var sql = @"SELECT code, item, category, brand, price, qty,
+       -- We use word_similarity to score how well the 'hint' fits the item name
+       (word_similarity(@q, item) + similarity(category, @category)) as match_score
+FROM inventory
+WHERE 
+    -- 1. Search the main 'Hint' (q)
+    (@q = '' OR item ILIKE '%' || @q || '%' OR item % @q)
+    
+    -- 2. Category Filter (Handles Pipe vs Pipes)
+    AND (@category = '' 
+         OR category ILIKE '%' || @category || '%' 
+         OR @category ILIKE '%' || category || '%' -- Symmetric ILIKE
+         OR category % @category)                   -- Fuzzy match
+    
+    -- 3. Brand Filter
+    AND (@brand = '' OR brand ILIKE '%' || @brand || '%' OR brand % @brand)
+
+ORDER BY match_score DESC
+LIMIT @limit;";
 
     var results = new List<InventoryLiteItem>();
 

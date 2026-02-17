@@ -4244,7 +4244,10 @@ namespace RestieAPI.Service.Repo
             var InsertTransaction = @"insert into transaction (transid,orderid,customer,cashier,status,createdat) 
                                     values(@transid,@orderid,@customer,@cashier,@status,@createdat)";
             
-            var orderid =  addToCartItems[0].orderid.IsNullOrEmpty() ?  Guid.NewGuid().ToString() : addToCartItems[0].orderid;
+            var orderid = !string.IsNullOrEmpty(addToCartItems[0].orderid) 
+                ? addToCartItems[0].orderid 
+                : Guid.NewGuid().ToString();
+
             using (var connection = new NpgsqlConnection(_connectionString))
             {
                 connection.Open();

@@ -568,7 +568,7 @@ namespace RestieAPI.Controllers.Inventory
                         });
                     }
 
-                    var matches = _inventoryRepo.SearchInventoryLite(key, category, brand, sort: "asc", limit: 5, offset: 0);
+                    var matches = _inventoryRepo.SearchInventoryLite(key, category, brand, sort: "asc", limit: 5);
                     var best = matches.OrderBy(m => m.price).FirstOrDefault();
 
                     return Ok(new InventoryChatQueryResponse
@@ -611,8 +611,7 @@ namespace RestieAPI.Controllers.Inventory
                 // Default: search
                 var items = _inventoryRepo.SearchInventoryLite(q, category, brand,
                     sort: string.Equals(sort, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc",
-                    limit: limit,
-                    offset: offset);
+                    limit: limit);
 
                 return Ok(new InventoryChatQueryResponse
                 {

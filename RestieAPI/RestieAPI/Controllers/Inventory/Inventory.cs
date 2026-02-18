@@ -147,7 +147,7 @@ namespace RestieAPI.Controllers.Inventory
         {
             return Ok(_inventoryRepo.getOrder(getUserOrder));
         }
-        [Authorize]
+        
         [HttpPost("userOrderInfo")]
         public ActionResult<PostResponse> GetOrderInfo(GetSelectedOrder getUserOrder)
         {

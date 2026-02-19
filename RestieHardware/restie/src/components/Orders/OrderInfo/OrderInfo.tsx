@@ -189,7 +189,7 @@ const OrderInfoComponent: React.FC = () => {
       } else {
         setTotalAmount(
           order_list_info.order_info?.total -
-            (order_list_info.order_info.totaldiscount ?? 0)
+          (order_list_info.order_info.totaldiscount ?? 0)
         );
         setDiscount(order_list_info.order_info.totaldiscount);
       }
@@ -521,21 +521,20 @@ const OrderInfoComponent: React.FC = () => {
     )
       .toString()
       .padStart(2, "0")}-${currentDate
-      .getDate()
-      .toString()
-      .padStart(2, "0")}-${currentDate
-      .getHours()
-      .toString()
-      .padStart(2, "0")}:${currentDate
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}:${currentDate
-      .getSeconds()
-      .toString()
-      .padStart(2, "0")}`;
-    const filename = `./invoice/${formattedDate}/${
-      order_list_info.order_info?.transid?.split("-")[0]
-    }.pdf`;
+        .getDate()
+        .toString()
+        .padStart(2, "0")}-${currentDate
+          .getHours()
+          .toString()
+          .padStart(2, "0")}:${currentDate
+            .getMinutes()
+            .toString()
+            .padStart(2, "0")}:${currentDate
+              .getSeconds()
+              .toString()
+              .padStart(2, "0")}`;
+    const filename = `./invoice/${formattedDate}/${order_list_info.order_info?.transid?.split("-")[0]
+      }.pdf`;
 
     // await bluetoothSerial.write(printData);
     // await bluetoothSerial.disconnect();
@@ -567,8 +566,7 @@ const OrderInfoComponent: React.FC = () => {
       await SendEmail(
         "fernandezedward6653@gmail.com",
         getEmail,
-        `Your E-Receipt from Restie Hardware: Ensuring a Seamless Transaction:${
-          order_list_info.order_info?.transid?.split("-")[0]
+        `Your E-Receipt from Restie Hardware: Ensuring a Seamless Transaction:${order_list_info.order_info?.transid?.split("-")[0]
         }`,
         `<h2>Dear Valued Customer,</h2><br>
   
@@ -640,9 +638,8 @@ const OrderInfoComponent: React.FC = () => {
   }, [dispatch, order_list_info]);
   // Generate receipt header
   const generateReceiptHeader = (order_list_info: GetListOrderInfo) => {
-    return `Delivery Receipt\nRestie Hardware\nAddress: SIR Bucana 76-A\nSandawa Matina Davao City\nDavao City, Philippines\nContact No.: (082) 224 1362\nInvoice #: ${
-      order_list_info.order_info?.transid?.split("-")[0]
-    }\n--------------------------------`;
+    return `Delivery Receipt\nRestie Hardware\nAddress: SIR Bucana 76-A\nSandawa Matina Davao City\nDavao City, Philippines\nContact No.: (082) 224 1362\nInvoice #: ${order_list_info.order_info?.transid?.split("-")[0]
+      }\n--------------------------------`;
   };
 
   // Generate customer receipt header
@@ -675,10 +672,8 @@ const OrderInfoComponent: React.FC = () => {
     return order_list_info.order_item
       .map(
         (item) =>
-          `${item.code}\n${item.item.trim()}\nPrice        Qty      Total\nP${
-            item.price - item.discount_price
-          }       |    ${item.qty}    |  P${
-            item.price - (item.discount_price ?? 0) * item.qty
+          `${item.code}\n${item.item.trim()}\nPrice        Qty      Total\nP${item.price - item.discount_price
+          }       |    ${item.qty}    |  P${item.price - (item.discount_price ?? 0) * item.qty
           }
         \n--------------------------------`
       )
@@ -837,21 +832,21 @@ const OrderInfoComponent: React.FC = () => {
         <div className="order-list-info-customer">Customer Name: </div>
 
         <div className="order-list-info-customer-info">
-          {order_list_info.order_info?.name}
+          {order_list_info.order_info.createdby === 'system_ai' ? "FB_CUSTOMER" : order_list_info.order_info?.name}
         </div>
       </div>
       <div className="order-list-info-customer-details">
         <div className="order-list-info-customer">Address: </div>
 
         <div className="order-list-info-customer-info">
-          {order_list_info.order_info?.address}
+          {order_list_info.order_info.createdby === 'system_ai' ? "N/A" : order_list_info.order_info?.address}
         </div>
       </div>
       <div className="order-list-info-customer-details">
         <div className="order-list-info-customer">Contact No: </div>
 
         <div className="order-list-info-customer-info">
-          {order_list_info.order_info?.contactno}
+          {order_list_info.order_info.createdby === 'system_ai' ? "N/A" : order_list_info.order_info?.contactno}
         </div>
       </div>
       <div className="order-list-info-customer-details">
@@ -907,7 +902,7 @@ const OrderInfoComponent: React.FC = () => {
         {getReturnsFromUrl === "true" ? (
           <div>
             {Array.isArray(order_list_info.order_item) &&
-            order_list_info.return_item.length > 0 ? (
+              order_list_info.return_item.length > 0 ? (
               order_list_info.return_item.map((items, index) => {
                 const returnItems = order_list_info.return_item.find(
                   (returns) => returns.code === items.code
@@ -966,7 +961,7 @@ const OrderInfoComponent: React.FC = () => {
         ) : (
           <div>
             {Array.isArray(order_list_info.order_item) &&
-            order_list_info.order_item.length > 0 ? (
+              order_list_info.order_item.length > 0 ? (
               order_list_info.order_item.map((items, index) => {
                 const correspondingReturn = order_list_info.return_item.find(
                   (returns) =>
@@ -989,9 +984,8 @@ const OrderInfoComponent: React.FC = () => {
                   >
                     <div className="order-list-info-card-add-item-container">
                       <div
-                        className={`order-list-info-card-main-content ${
-                          correspondingReturn ? "all" : ""
-                        }`}
+                        className={`order-list-info-card-main-content ${correspondingReturn ? "all" : ""
+                          }`}
                       >
                         <div className="order-list-info-card-content">
                           <div
@@ -1013,11 +1007,10 @@ const OrderInfoComponent: React.FC = () => {
                           <div className="order-list-info-card-price-details">
                             <span>&#8369;</span>
                             <span
-                              className={`${
-                                items.discount_price > 0
-                                  ? "order-list-price-with-discount"
-                                  : null
-                              }`}
+                              className={`${items.discount_price > 0
+                                ? "order-list-price-with-discount"
+                                : null
+                                }`}
                             >
                               {items.price.toFixed(2)}
                             </span>
@@ -1135,7 +1128,7 @@ const OrderInfoComponent: React.FC = () => {
               </div>
             </div>
             {order_list_info.order_info?.paidcash > 0 ||
-            order_list_info.order_info?.paidthru === "Cash" ? (
+              order_list_info.order_info?.paidthru === "Cash" ? (
               <>
                 <div className="order-list-info-footer-total-details">
                   <div className="order-list-info-footer-total">Cash: </div>
@@ -1152,8 +1145,8 @@ const OrderInfoComponent: React.FC = () => {
                     <span>&#8369;</span>
                     {order_list_info.order_info?.paidcash - getTotalAmount > 0
                       ? (
-                          order_list_info.order_info?.paidcash - getTotalAmount
-                        ).toFixed(2)
+                        order_list_info.order_info?.paidcash - getTotalAmount
+                      ).toFixed(2)
                       : (0).toFixed(2)}
                   </div>
                 </div>
@@ -1186,7 +1179,7 @@ const OrderInfoComponent: React.FC = () => {
           </>
         ) : null}
         {order_list_info.order_info?.paidthru?.toLowerCase() === "cash" &&
-        order_list_info?.return_item.length === 0 ? (
+          order_list_info?.return_item.length === 0 ? (
           <div
             className="order-info-button-list-normal"
             onClick={() => handleRefund()}
@@ -1236,7 +1229,7 @@ const OrderInfoComponent: React.FC = () => {
           {getReturnsFromUrl === "false" ? (
             <div className="list-of-process-button">
               {order_list_info.order_info?.paidthru?.toLowerCase() ===
-              "cancel" ? (
+                "cancel" ? (
                 <div className="order-list-info-footer-approved-info">
                   <>
                     <IonButton color="light" onClick={() => handleEdit(true)}>
@@ -1248,12 +1241,12 @@ const OrderInfoComponent: React.FC = () => {
 
               {order_list_info.order_info?.paidthru?.toLowerCase() ===
                 "pending" ||
-              order_list_info.order_info?.paidthru?.toLowerCase() ===
+                order_list_info.order_info?.paidthru?.toLowerCase() ===
                 "quotation" ? (
                 <div className="order-list-info-footer-approved-info">
                   <>
                     {order_list_info.order_info?.paidthru?.toLowerCase() ===
-                    "pending" ? (
+                      "pending" ? (
                       <IonButton color="light" onClick={() => handleCancel()}>
                         Cancel Order
                       </IonButton>
@@ -1268,7 +1261,7 @@ const OrderInfoComponent: React.FC = () => {
                 </div>
               ) : null}
               {order_list_info.order_info?.status?.toLowerCase() ===
-              "delivered" ? (
+                "delivered" ? (
                 <div className="order-list-info-footer-approved-info">
                   <>
                     <IonButton
@@ -1294,7 +1287,7 @@ const OrderInfoComponent: React.FC = () => {
                       Open Delivery Info
                     </IonButton>
                     {order_list_info.order_info?.paidthru.toLowerCase() ===
-                    "debt" ? (
+                      "debt" ? (
                       <IonButton
                         color="light"
                         onClick={() => handleReceivedPayment()}
@@ -1333,7 +1326,7 @@ const OrderInfoComponent: React.FC = () => {
                       Process Item Delivered
                     </IonButton>
                     {order_list_info.order_info?.paidthru.toLowerCase() ===
-                    "debt" ? (
+                      "debt" ? (
                       <IonButton
                         color="light"
                         onClick={() => handleReceivedPayment()}
@@ -1351,7 +1344,7 @@ const OrderInfoComponent: React.FC = () => {
       <IonModal
         isOpen={
           openSearchModal.modal !== "receipt" &&
-          openSearchModal.modal !== "process"
+            openSearchModal.modal !== "process"
             ? openSearchModal.isOpen
             : false
         }
@@ -1373,7 +1366,7 @@ const OrderInfoComponent: React.FC = () => {
         <IonContent className="ion-padding">
           <>
             {order_list_info?.order_info?.status?.toLowerCase() ===
-            "Delivered".toLowerCase() ? (
+              "Delivered".toLowerCase() ? (
               <div className="delivery-image-container">
                 <div className="delivered-info-container">
                   <IonText className="delivered-info-text">
@@ -1489,7 +1482,7 @@ const OrderInfoComponent: React.FC = () => {
               <div className="order-list-info-customer">Customer Name: </div>
 
               <div className="order-list-info-customer-info">
-                {order_list_info.order_info?.name}
+                {order_list_info.order_info.createdby === 'system_ai' ? "FB_CUSTOMER" : order_list_info.order_info?.name}
               </div>
             </div>
             <div className="order-list-info-customer-details">
@@ -1531,7 +1524,7 @@ const OrderInfoComponent: React.FC = () => {
             {/* <IonImg className="breakline" src={breakline} /> */}
             <div className="order-list-info-container">
               {Array.isArray(order_list_info.order_item) &&
-              order_list_info.order_item.length > 0 ? (
+                order_list_info.order_item.length > 0 ? (
                 order_list_info?.order_item?.map((items, index) => (
                   <IonItem
                     className="order-list-info-card-container"
@@ -1596,9 +1589,8 @@ const OrderInfoComponent: React.FC = () => {
                 Discount & Vouchers:{" "}
               </div>
 
-              <div className="order-list-info-footer-info">{`${
-                getDiscount > 0 ? getDiscount + "%" : 0
-              }`}</div>
+              <div className="order-list-info-footer-info">{`${getDiscount > 0 ? getDiscount + "%" : 0
+                }`}</div>
             </div>
             <hr />
             {/* <IonImg className="breakline" src={breakline} /> */}
@@ -1651,7 +1643,7 @@ const OrderInfoComponent: React.FC = () => {
         id="email-modal"
         isOpen={
           isOpenToast.type === "receipt-email" ||
-          isOpenToast.type === "quotation-email"
+            isOpenToast.type === "quotation-email"
             ? isOpenToast.isOpen
             : false
         }
@@ -1728,7 +1720,7 @@ const OrderInfoComponent: React.FC = () => {
       <IonLoading
         isOpen={
           isOpenToast?.type === "receipt-email" ||
-          isOpenToast?.type === "quotation-email"
+            isOpenToast?.type === "quotation-email"
             ? false
             : isOpenToast?.isOpen
         }

@@ -14,6 +14,12 @@ namespace RestieAPI.Services
         public void InstallServices(IServiceCollection services, IConfiguration configuration)
         {
             var jwtTokenConfig = configuration.GetSection("jwtTokenConfig").Get<JwtTokenConfig>();
+
+            if (jwtTokenConfig == null)
+            {
+                // This tells you EXACTLY what is wrong in the logs instead of a generic crash
+                throw new Exception("Critical Error: 'jwtTokenConfig' section not found in appsettings.json");
+            }
             services.AddSingleton(jwtTokenConfig);
             services.AddAuthentication(x =>
             {

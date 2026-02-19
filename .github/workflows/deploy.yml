@@ -19,10 +19,8 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish
-        run: |
-          rm -rf publish
-          dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -o publish -c Release --no-self-contained /p:UseAppHost=false
-          
+        run: dotnet publish RestieAPI/RestieAPI/RestieAPI.csproj -c Release -o ./publish
+
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
@@ -35,27 +33,20 @@ jobs:
         run: |
           if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
             TARGET="/var/www/myapi/"
-            SERVICE="restieapi"
+            SERVICE="restieapi.service"
           else
-            # This handles api-dev.siklabtech.org
             TARGET="/var/www/myapi-dev/"
-            SERVICE="restieapi-dev"
+            SERVICE="restieapi-dev.service"
           fi
 
-          # STOP -> SYNC -> START
-          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "sudo /usr/bin/systemctl stop $SERVICE"
+          # Stop service
+          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "systemctl stop $SERVICE"
 
-          rsync -az --delete -e "ssh -i ~/.ssh/id_ed25519" \
-            ./publish/ \
+          # Upload files
+          scp -i ~/.ssh/id_ed25519 -r ./publish/* \
             "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${TARGET}"
 
-          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "sudo /usr/bin/systemctl start $SERVICE"
-
-          # STOP -> SYNC -> START
-          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "sudo /usr/bin/systemctl stop $SERVICE"
-
-          rsync -az --delete -e "ssh -i ~/.ssh/id_ed25519" \
-            ./publish/ \
-            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${TARGET}"
-
-          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "sudo /usr/bin/systemctl start $SERVICE"
+          # Start service
+          ssh -i ~/.ssh/id_ed25519 "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "systemctl start $SERVICE"

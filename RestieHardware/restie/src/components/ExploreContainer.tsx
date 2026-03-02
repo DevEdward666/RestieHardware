@@ -1,13 +1,10 @@
 import {
   IonButton,
   IonCard,
-  IonCardContent,
   IonChip,
   IonContent,
   IonIcon,
-  IonItem,
   IonLabel,
-  IonList,
   IonLoading,
   IonRefresher,
   IonRefresherContent,
@@ -188,7 +185,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
         onhandqty: selectedItem.onhandqty,
         orderid: "",
         qty: 1,
-        image: selectedItem.image.length > 0 ? selectedItem.image : "",
+        image: selectedItem.image && selectedItem.image !== "0" && selectedItem.image.length > 0 ? selectedItem.image : "",
         price: selectedItem.price,
         createdAt: new Date().getTime(),
         status: "pending",
@@ -271,9 +268,10 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
     }, [hasPermission, payload]);
 
     return (
-      <div className="inventory-card-main-div">
-        <IonCard className="inventory-card-main">
-          <div className="inventory-card-add-item-img">
+      <div className="ec-card-wrapper">
+        <IonCard className="ec-card">
+          {/* Image area */}
+          <div className="ec-img-container" onClick={handleClickImage}>
             <input
               ref={fileInput}
               hidden
@@ -282,63 +280,57 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
               onChange={onSelectFile}
             />
             <img
-              className="inventory-card-image"
+              className="ec-img"
               alt={card?.item}
               src={payload.image}
-              onClick={handleClickImage}
             />
-          </div>
-          <div className="inventory-card-add-item-container">
-            <IonCardContent
-              onClick={() => handleSelectedItem(payload)}
-              className="inventory-card-main-content"
-            >
-              <div className="inventory-card-content">
-                <div className="inventory-card-title">{card?.item}</div>
-                <div className="inventory-card-price">
-                  <span>
-                    &#8369;
-                    {card?.price.toLocaleString("en-US", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                  <div className="inventory-qty">QTY: {card?.qty}</div>
-                </div>
+            {hasPermission && (
+              <div className="ec-upload-overlay">
+                <IonIcon icon={cloudUpload} className="ec-upload-icon" />
               </div>
-            </IonCardContent>
-          </div>
-          <div className="inventory-card-buttons-container">
-            <div className="inventory-card-button-container">
-              <IonButton
-                fill="clear"
-                className="inventory-card-addtocart-button"
-                disabled={card?.qty <= 0}
-                onClick={(event: any) => handleAddToCart(payload, event)}
+            )}
+            {hasPermission && (
+              <button
+                className="ec-admin-add-btn"
+                onClick={(event: any) => {
+                  event.stopPropagation();
+                  handleAddQty(payload, event);
+                }}
               >
-                <span className="addtocart-btn-text">
-                  {card?.qty > 0 ? "Add to cart" : "Sold Out"}
-                </span>
-                <IonIcon
-                  color="light"
-                  slot="icon-only"
-                  size="small"
-                  icon={cart}
-                />
-              </IonButton>
-            </div>
-            <div className="inventory-card-add-button-container">
-              {hasPermission ? (
-                <IonButton
-                  fill="clear"
-                  className="inventory-card-addtocart-button"
-                  onClick={(event: any) => handleAddQty(payload, event)}
-                >
-                  <IonIcon color="light" slot="icon-only" icon={add} />
-                </IonButton>
-              ) : null}
+                <IonIcon icon={add} />
+              </button>
+            )}
+          </div>
+
+          {/* Info area */}
+          <div className="ec-info" onClick={() => handleSelectedItem(payload)}>
+            <p className="ec-name">{card?.item}</p>
+            <div className="ec-price">
+              <span>
+                &#8369;{card?.price.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+              <p className="ec-qty">QTY: {card?.qty}</p>
             </div>
           </div>
+
+          {/* Add to cart / Sold out */}
+          <button
+            className={`ec-cart-btn ${card?.qty <= 0 ? "ec-cart-btn-soldout" : ""}`}
+            disabled={card?.qty <= 0}
+            onClick={(event: any) => handleAddToCart(payload, event)}
+          >
+            {card?.qty > 0 ? (
+              <>
+                <IonIcon icon={cart} className="ec-cart-icon" />
+                <span>Add to Cart</span>
+              </>
+            ) : (
+              <span>Sold Out</span>
+            )}
+          </button>
         </IonCard>
       </div>
     );
@@ -487,13 +479,11 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           }))
         }
       />{" "}
-      <IonList className="container" lines="none">
+      <div className="ec-grid">
         {items?.map((res: InventoryModel, index: number) => (
-          <IonItem className="Item-Card" key={index}>
-            <CardList card={res} />
-          </IonItem>
+          <CardList card={res} key={index} />
         ))}
-      </IonList>
+      </div>
       <IonButton expand="block" fill="clear" onClick={loadMoreItems}>
         Load More
       </IonButton>
@@ -508,7 +498,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ data, searchItem }) => {
           setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
         }
       ></IonToast> */}
-       <IonToast
+      <IonToast
         isOpen={isOpenMessageToast?.isOpen}
         message={isOpenMessageToast.toastMessage}
         position="middle"

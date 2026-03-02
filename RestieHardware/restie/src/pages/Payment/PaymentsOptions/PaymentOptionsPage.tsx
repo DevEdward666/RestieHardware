@@ -1,7 +1,6 @@
 import {
   getPlatforms,
   IonButtons,
-  IonContent,
   IonHeader,
   IonIcon,
   IonImg,
@@ -57,11 +56,7 @@ const PaymentOptionsPage = () => {
           </div>
         </IonToolbar> */}
       </IonHeader>
-      <IonContent>
-        <div>
-          <PaymentOptionsComponent />
-        </div>
-      </IonContent>
+      <PaymentOptionsComponent />
     </IonPage>
   );
 };

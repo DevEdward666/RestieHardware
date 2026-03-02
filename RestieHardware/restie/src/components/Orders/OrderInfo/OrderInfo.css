@@ -1,402 +1,502 @@
-.order-list-info-container{
-    padding-bottom: 20px;
-}
-.order-list-info-card-container{
-    display: flex;
-    flex-direction: column;
-    .order-list-info-card-add-item-container{
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-    }
-    .order-list-info-card-main-content{
-        flex: 1;
-        display: flex;
-        flex-direction: row;
-        webkit-padding-start: 0px;
-        padding-inline-start: 0px;
-        -webkit-padding-end: 0px;
-        padding-inline-end: 0px;
-        justify-content: space-between;
-        align-items: center;
-        &.all{
-            opacity: .5;
-        }
-        .order-list-info-card-content{
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            gap: 8px;
-          
-           
-            .order-list-info-card-title-details{
-                display: flex;
-                font-family: "Gotham-Medium";
-                font-size: 14px;
-                flex-direction: row;
-                gap: 5px;
-                .order-list-info-card-title{
-                    font-family: "Gotham-Medium";
-                    font-size: 14px;
-                }
-               
-            }
-            .order-list-info-card-title-details-returns{
-                display: flex;
-                background: grey;
-                color: white;
-                padding: 2px;
-                font-size: 12px;
-                flex-direction: row;
-                align-content: center;
-                align-items: center;
-             
-            }
-            .order-list-info-card-category-details{
-                display: flex;
-                font-family: "Gotham-Light";
-                font-size: 14px;
-                flex-direction: row;
-                gap: 5px;
-                .order-list-info-card-category{
-                    font-family: "Gotham-Light";
-                    font-size: 14px;
-                }
-            }
-            .order-list-info-card-price-details{
-                display: flex;
-                font-family: "Gotham-Light";
-                font-size: 16px;
-                flex-direction: row;
-                color: #f02b2b;
-                font-weight: bolder;
-                gap: 5px;
-                .order-list-info-card-price{
-                    font-family: "Gotham-Light";
-                    font-size: 14px;
-                }
-            }
-        }
-     
-    }
-
-}
-.order-list-info-footer-details{
-    display: flex;
-    font-size: 16px;
-    flex-direction: row;
-    font-weight: bolder;
-    gap: 5px;
-    justify-content: space-between;
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 5px;
-    .order-list-info-footer{
-        font-family: "Gotham-Medium";
-        font-size: 16px;
-    }
-    .order-list-info-footer-info{
-        font-family: "Gotham-Light";
-        color: #f02b2b;
-        font-size: 16px;
-    }
-}
-.order-list-info-footer-total-main{
-    display: flex;
-    flex-direction: column;
-
+/* OrderInfo Component */
+.oi-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 0 24px;
+  background: #f4f5f8;
+  min-height: 100%;
 }
 
-.order-list-info-footer-approved-details{
-    display: flex;
-    font-size: 24px;
-    flex-direction: row;
-    font-weight: bolder;
-    gap: 5px;
-    justify-content: space-between;
-    padding-right: 5px;
-    .order-list-info-footer-approved{
-        font-family: "Gotham-Medium";
-        font-size: 24px;
-    }
-}
-.order-list-info-card-qty{
-               
-    text-align: end;
-    font-family: "Gotham-Medium";
-    font-size: 24px;
-    color: #f02b2b;
+.oi-inner {
+  width: 100%;
+  max-width: 640px;
+  padding: 0 16px;
 }
 
-.order-list-info-customer-details{
-    display: flex;
-    font-size: 16px;
-    flex-direction: row;
-    font-weight: bolder;
-    gap: 5px;
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 5px;
-    .order-list-info-customer{
-        font-family: "Gotham-Medium";
-        font-size: 16px;
-    }
-    .order-list-info-customer-info{
-        font-family: "Gotham-Light";
-        color: #125B8C;
-        font-size: 16px;
-    }
-}
-.order-list-info-hardware-details{
-    display: flex;
-    font-size: 16px;
-    flex-direction: row;
-    gap: 5px;
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 5px;
-    text-align: center;
-    align-items: center;
-    justify-content: center;
-
-    .order-list-info-hardware{
-        font-family: "Gotham-Medium";
-        font-size: 24px;
-    }
-   
-    .order-list-info-hardware-info{
-        font-family: "Gotham-Light";
-        color: #125B8C;
-        font-size: 16px;
-    }
-}
-.order-list-info-hardware-details-address{
-    display: flex;
-    font-size: 16px;
-    flex-direction: column;
-    gap: 5px;
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 5px;
-    text-align: center;
-    align-items: center;
-    justify-content: center;
-.order-list-info-hardware-address{
-    font-family: "Gotham-Light";
-    font-size: 18px;
-}
-}
-.order-list-info-main-container{
-    padding-top: 5px;
-}
-.swiper-component{
-    height: 100%;
-    width: 100%;
-}
-.delivery-image-container{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 20px;
-    margin: 15px;
-    .delivery-image-text{
-        font-family: "Gotham-Medium";
-        font-size: 16px;
-        text-align: center;
-        width: 100%;
-        background: white;
-        color: #125B8C;
-        padding: 10px;
-    } 
+/* ── Top bar (process button) ── */
+.oi-top-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px 0;
+  width: 100%;
+  max-width: 640px;
 }
 
-.order-info-close{
-    width: 100%;
-    padding:10px ;
-    font-family: "Gotham-Medium";
-}
-.order-list-info-main-content{
-    font-family: "Gotham-Medium";
-}
-.delivered-info-container{
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding-top: 10px;
-    gap: 8px;
-    .delivered-info-text{
-        font-size: 16px;
-        font-family: "Gotham-Light";
-    }
-}
-.delivery-info-title{
-    font-size: 20px;
-    width: 100%;
-    font-family: "Gotham-Light";
-}
-.breakline{
-    padding: 15px;
-}
-.pending{
-    color:#ffa807
-}
-.approved{
-    color:#1bf01b
-}
-.cancelled{
-    color:#f02b2b
-}
-hr {
-    border: 1px dotted #ff0000;
-    border-style: none none dotted; 
-    color: #fff; 
-    background-color: #fff;
-}
-ion-modal#email-modal {
-    --width: fit-content;
-    --min-width: 250px;
-    --height: fit-content;
-    --border-radius: 6px;
-    --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
-  }
-  ion-modal#email-modal .wrapper {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding: 0 20px;
-  }
-
-.email-header{
-    font-size: 20px;
-    font-family: "Gotham-Medium";
-}
-.order-info-button-list-normal{
-    display: flex;
-    flex-direction: row;
-    background-color: white;
-    text-align: center;
-    font-family: Gotham-Book;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 24px;
-    align-items: center;
-    border-radius: 30px;
-    border-color: #125B8C;
-    border-style: solid;
-    border-width: 2px;
-    width: 100%;
-    .order-info-button-order{
-        font-family: Gotham-Book;
-        font-size: 14px;
-        --color:#125B8C;
-    }
-    .order-info-button-text{
-        padding-left: 10px;
-        color: #125B8C;
-    }
-}
-.order-info-button-list-close{
-    display: flex;
-    flex-direction: row;
-    background-color: white;
-    text-align: center;
-    font-family: Gotham-Book;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 24px;
-    align-items: center;
-    border-radius: 30px;
-    border-color: #125B8C;
-    border-style: solid;
-    border-width: 2px;
-    width: 100%;
-    background-color: #125B8C;
-    .order-info-button-order{
-        font-family: Gotham-Book;
-        font-size: 14px;
-        --color:white;
-    }
-    .order-info-button-text{
-        padding-left: 10px;
-        color: white;
-        
-    }
+.oi-process-btn {
+  background: #125B8C;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-family: "Gotham-Bold";
+  font-size: 14px;
+  padding: 10px 20px;
+  cursor: pointer;
 }
 
-.order-info-footer-button{
-    display: flex;
-    flex-direction: row;
-    padding: 20px 10px;
-    display: flex;
-    flex-direction: row;
-    padding: 20px 10px;
-    gap: 8px;
-    width: 100%;
+/* ── Info card ── */
+.oi-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  padding: 16px;
+  margin-bottom: 14px;
 }
-.order-list-info-footer-total-details-remarks{
-    display: flex;
-    font-size: 24px;
-    flex-direction: column;
-    font-weight: bolder;
-    gap: 5px;
-    justify-content: space-between;
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 5px;
-    .order-list-info-footer-remarks{
-        font-family: "Gotham-Medium";
-        font-size: 24px;
-    }
-    .order-list-info-footer-info-remarks{
-        font-family: "Gotham-Light";
-        color:black;
-        font-size: 16px;
-        padding-top: 10px;
-        padding-left: 10px;
-    }
-}  
-.order-list-info-footer-approved-info{
-    padding: 20px;
-    gap: 10px;
-    display: flex;
-    flex-direction: column;
+
+.oi-card-title {
+  font-family: "Gotham-Black";
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #125B8C;
+  margin: 0 0 12px;
 }
-.order-list-info-footer-total-details{
-    display: flex;
-    font-size: 24px;
-    flex-direction: row;
-    font-weight: bolder;
-    gap: 5px;
-    justify-content: space-between;
-    padding-left: 15px;
-    padding-right: 15px;
-    padding-top: 5px;
-    .order-list-info-footer-total{
-        font-family: "Gotham-Medium";
-        font-size: 24px;
-    }
-    .order-list-info-footer-total-info{
-        font-family: "Gotham-Black";
-        color: #f02b2b;
-        font-size: 24px;
-    }
+
+/* Row inside info card */
+.oi-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
 }
-.order-info-cash-input {
-    border: 1px solid #383737;
-    border-radius: 5px;
-    padding: 10px !important;
-    font-size: 16px;
-    width: 100%;
-    box-sizing: border-box;
+
+.oi-row:last-child {
+  border-bottom: none;
 }
-.order-info-cash-input-container{
-    padding: 10px;
+
+.oi-row-label {
+  font-family: "Gotham-Medium";
+  font-size: 13px;
+  color: #808289;
+  flex-shrink: 0;
 }
-.order-info-cash-input:focus {
-    outline: none;
-    border-color: #5c91f3; /* Example focus color */
+
+.oi-row-value {
+  font-family: "Gotham-Light";
+  font-size: 13px;
+  color: #051926;
+  text-align: right;
+  word-break: break-word;
+  max-width: 65%;
 }
-.order-list-price-with-discount{
-    text-decoration: line-through;
+
+.oi-copy-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  color: #808289;
+  flex-shrink: 0;
+}
+
+/* ── Items list ── */
+.oi-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.oi-item-row:last-child {
+  border-bottom: none;
+}
+
+.oi-item-left {
+  flex: 1;
+}
+
+.oi-item-name {
+  font-family: "Gotham-Medium";
+  font-size: 14px;
+  color: #051926;
+  margin: 0 0 3px;
+}
+
+.oi-item-meta {
+  font-family: "Gotham-Light";
+  font-size: 12px;
+  color: #808289;
+  margin: 0 0 3px;
+}
+
+.oi-item-price {
+  font-family: "Gotham-Light";
+  font-size: 13px;
+  color: #051926;
+  margin: 0;
+}
+
+.oi-price-original {
+  text-decoration: line-through;
+  color: #b0b3b8;
+  margin-right: 4px;
+}
+
+.oi-price-discounted {
+  color: #fe3434;
+  font-family: "Gotham-Bold";
+}
+
+.oi-item-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.oi-item-qty {
+  font-family: "Gotham-Black";
+  font-size: 16px;
+  color: #051926;
+}
+
+.oi-returns-badge {
+  font-family: "Gotham-Light";
+  font-size: 11px;
+  background: #ffeaea;
+  color: #b91c1c;
+  border-radius: 8px;
+  padding: 2px 7px;
+  margin-top: 4px;
+}
+
+/* ── Totals card ── */
+.oi-totals-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.oi-totals-row:last-child {
+  border-bottom: none;
+}
+
+.oi-totals-label {
+  font-family: "Gotham-Medium";
+  font-size: 14px;
+  color: #808289;
+}
+
+.oi-totals-value {
+  font-family: "Gotham-Light";
+  font-size: 14px;
+  color: #051926;
+}
+
+.oi-total-due-label {
+  font-family: "Gotham-Black";
+  font-size: 16px;
+  color: #051926;
+}
+
+.oi-total-due-value {
+  font-family: "Gotham-Black";
+  font-size: 20px;
+  color: #125B8C;
+}
+
+.oi-remarks-text {
+  font-family: "Gotham-Light";
+  font-size: 13px;
+  color: #051926;
+}
+
+/* ── Footer action buttons ── */
+.oi-action-bar {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-top: 1px solid #f0f0f0;
+  position: sticky;
+  bottom: 0;
+}
+
+.oi-action-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  font-family: "Gotham-Bold";
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity 0.15s;
+}
+
+.oi-action-btn:active {
+  opacity: 0.75;
+}
+
+.oi-btn-primary {
+  background: #125B8C;
+  color: #ffffff;
+}
+
+.oi-btn-outline {
+  background: transparent;
+  color: #125B8C;
+  border: 1.5px solid #125B8C;
+}
+
+.oi-btn-danger {
+  background: #ffeaea;
+  color: #b91c1c;
+  border: 1.5px solid #f02b2b;
+}
+
+.oi-btn-close {
+  background: #051926;
+  color: #ffffff;
+}
+
+/* ── Process modal ── */
+.oi-process-modal-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f4f5f8;
+}
+
+.oi-process-section-label {
+  font-family: "Gotham-Bold";
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #125B8C;
+  margin: 8px 0 4px 4px;
+}
+
+.oi-modal-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  background: #ffffff;
+  border: 1.5px solid #e8eaed;
+  border-radius: 14px;
+  font-family: "Gotham-Medium";
+  font-size: 15px;
+  color: #051926;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.oi-modal-btn:active {
+  background: #f0f4f8;
+  border-color: #125B8C;
+}
+
+.oi-modal-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  font-size: 18px;
+  background: #f0f2f5;
+  color: #051926;
+}
+
+.oi-modal-btn-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.oi-modal-btn-label {
+  font-family: "Gotham-Bold";
+  font-size: 14px;
+  color: #051926;
+}
+
+.oi-modal-btn-sub {
+  font-family: "Gotham-Book";
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ── Email modal ── */
+.oi-email-wrapper {
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.oi-email-header {
+  font-family: "Gotham-Bold";
+  font-size: 16px;
+  color: #051926;
+}
+
+.oi-email-input {
+  --background: #f4f5f8;
+  --border-radius: 10px;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  --color: #051926;
+  --placeholder-color: #b0b3b8;
+  font-family: "Gotham-Light";
+  font-size: 15px;
+  border-radius: 10px;
+}
+
+.oi-email-submit-btn {
+  padding: 13px;
+  background: #125B8C;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-family: "Gotham-Black";
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* ── Cash payment modal ── */
+.oi-cash-modal-body {
+  padding: 16px 20px;
+}
+
+.oi-cash-due-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f4f5f8;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+
+.oi-cash-due-label {
+  font-family: "Gotham-Medium";
+  font-size: 14px;
+  color: #808289;
+}
+
+.oi-cash-due-value {
+  font-family: "Gotham-Black";
+  font-size: 20px;
+  color: #051926;
+}
+
+.oi-cash-input {
+  --background: #f4f5f8;
+  --border-radius: 10px;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+  --color: #051926;
+  --placeholder-color: #b0b3b8;
+  font-family: "Gotham-Light";
+  font-size: 18px;
+  border-radius: 10px;
+}
+
+/* ── Delivery info modal ── */
+.oi-delivery-block {
+  background: #f4f5f8;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.oi-delivery-line {
+  font-family: "Gotham-Light";
+  font-size: 14px;
+  color: #051926;
+}
+
+.oi-delivery-image {
+  width: 100%;
+  border-radius: 12px;
+  margin-top: 8px;
+}
+
+/* ── Invoice modal ── */
+.oi-invoice-header-logo {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 8px;
+}
+
+.oi-invoice-header-logo img {
+  height: 56px;
+}
+
+.oi-invoice-store-name {
+  font-family: "Gotham-Black";
+  font-size: 18px;
+  color: #051926;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.oi-invoice-store-address {
+  font-family: "Gotham-Light";
+  font-size: 12px;
+  color: #808289;
+  text-align: center;
+  margin: 0;
+}
+
+.oi-invoice-divider {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 12px 0;
+}
+
+/* Delivery info (old class, keep for compat) */
+.delivery-image-container {
+  padding: 16px;
+}
+
+.delivered-info-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.delivered-info-text {
+  font-family: "Gotham-Light";
+  font-size: 14px;
+  color: #051926;
+}
+
+.delivery-image-text {
+  font-family: "Gotham-Medium";
+  font-size: 14px;
+  color: #051926;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.swiper-component {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.delivery-info-title {
+  font-family: "Gotham-Bold";
 }

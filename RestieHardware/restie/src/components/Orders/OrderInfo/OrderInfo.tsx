@@ -21,7 +21,7 @@ import {
 import "@ionic/react/css/ionic-swiper.css";
 import { format } from "date-fns";
 import EscPosEncoder from "esc-pos-encoder-ionic";
-import { cashOutline, close, copy, print } from "ionicons/icons";
+import { cashOutline, close, copy, print, refreshOutline, pencilOutline, checkmarkCircleOutline, closeCircleOutline, documentTextOutline, mailOutline, bicycleOutline, cardOutline } from "ionicons/icons";
 import html2PDF from "jspdf-html2canvas";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
@@ -809,545 +809,361 @@ const OrderInfoComponent: React.FC = () => {
     setOpenCashModal(false);
   }, [order_list_info, getTotalAmount, totalCash]);
   return (
-    <div className="order-list-info-main-container">
-      <div className="order-list-info-footer-approved-details">
-        <div className="order-list-info-footer-approved"> </div>
-        {getReturnsFromUrl === "false" ? (
-          <div>
-            <IonButton
-              size="small"
-              expand="block"
-              color="tertiary"
-              onClick={() => {
-                setOpenSearchModal({ isOpen: true, modal: "process" });
-                setCanDismiss(false);
-              }}
-            >
-              Process
-            </IonButton>
-          </div>
-        ) : null}
-      </div>
-      <div className="order-list-info-customer-details">
-        <div className="order-list-info-customer">Customer Name: </div>
-
-        <div className="order-list-info-customer-info">
-          {order_list_info.order_info.createdby === 'system_ai' ? "FB_CUSTOMER" : order_list_info.order_info?.name}
-        </div>
-      </div>
-      <div className="order-list-info-customer-details">
-        <div className="order-list-info-customer">Address: </div>
-
-        <div className="order-list-info-customer-info">
-          {order_list_info.order_info.createdby === 'system_ai' ? "N/A" : order_list_info.order_info?.address}
-        </div>
-      </div>
-      <div className="order-list-info-customer-details">
-        <div className="order-list-info-customer">Contact No: </div>
-
-        <div className="order-list-info-customer-info">
-          {order_list_info.order_info.createdby === 'system_ai' ? "N/A" : order_list_info.order_info?.contactno}
-        </div>
-      </div>
-      <div className="order-list-info-customer-details">
-        <div className="order-list-info-customer">Order Type: </div>
-
-        <div className="order-list-info-customer-info">
-          {order_list_info.order_info?.type}
-        </div>
-      </div>
-      <div className="order-list-info-customer-details">
-        <div className="order-list-info-customer">Order Created: </div>
-
-        <div className="order-list-info-customer-info">{getOrderDate}</div>
-      </div>
-      <div className="order-list-info-customer-details">
-        <div className="order-list-info-customer">Cashier: </div>
-
-        <div className="order-list-info-customer-info">
-          {order_list_info.order_info.createdby}
-        </div>
-      </div>
-      <div className="order-list-info-customer-details">
-        <div className="order-list-info-customer">Order ID: </div>
-
-        <div className="order-list-info-customer-info">
-          {order_list_info.order_info?.orderid}
-        </div>
-        <IonButton
-          color={"light"}
-          onClick={() => handleCopy(order_list_info.order_info?.orderid)}
-        >
-          <IonIcon src={copy}></IonIcon>
-        </IonButton>
-      </div>
-      {order_list_info.order_info?.transid?.length! > 0 ? (
-        <div className="order-list-info-customer-details">
-          <div className="order-list-info-customer">Transaction ID: </div>
-
-          <div className="order-list-info-customer-info">
-            {order_list_info.order_info?.transid}
-          </div>
-          <IonButton
-            color={"light"}
-            onClick={() => handleCopy(order_list_info.order_info?.transid!)}
+    <div className="oi-root">
+      {/* ── Top action bar ── */}
+      {getReturnsFromUrl === "false" && (
+        <div className="oi-top-bar">
+          <button
+            className="oi-process-btn"
+            onClick={() => {
+              setOpenSearchModal({ isOpen: true, modal: "process" });
+              setCanDismiss(false);
+            }}
           >
-            <IonIcon src={copy}></IonIcon>
-          </IonButton>
+            Process
+          </button>
         </div>
-      ) : null}
-
-      <IonImg className="breakline" src={breakline} />
-      <div className="order-list-info-container">
-        {getReturnsFromUrl === "true" ? (
-          <div>
-            {Array.isArray(order_list_info.order_item) &&
-              order_list_info.return_item.length > 0 ? (
-              order_list_info.return_item.map((items, index) => {
-                const returnItems = order_list_info.return_item.find(
-                  (returns) => returns.code === items.code
-                );
-
-                return (
-                  <IonItem
-                    className="order-list-info-card-container"
-                    key={index}
-                    onClick={() =>
-                      handleSelectOrder(
-                        order_list_info.order_info.orderid,
-                        order_list_info.order_info.cartid
-                      )
-                    }
-                  >
-                    <div className="order-list-info-card-add-item-container">
-                      <div className={`order-list-info-card-main-content`}>
-                        <div className="order-list-info-card-content">
-                          <div
-                            className={`order-list-info-card-title-details `}
-                          >
-                            {items.item}{" "}
-                            {returnItems && (
-                              <div className="order-list-info-card-title-details-returns">
-                                Return/Refund - {returnItems.qty}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="order-list-info-card-category-details">
-                            <div className="order-list-info-card-category">
-                              {/* Brand: {items.brand} | Category:{items.category} */}
-                            </div>
-                          </div>
-                          <div className="order-list-info-card-price-details">
-                            <span>&#8369;</span>
-                            {items.price.toFixed(2)}
-                          </div>
-                        </div>
-                        <div className="order-list-info-card-content">
-                          <div className="order-list-info-card-qty">
-                            {" "}
-                            {`X${items.qty}`}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </IonItem>
-                );
-              })
-            ) : (
-              <div>No items to display</div>
-            )}
-          </div>
-        ) : (
-          <div>
-            {Array.isArray(order_list_info.order_item) &&
-              order_list_info.order_item.length > 0 ? (
-              order_list_info.order_item.map((items, index) => {
-                const correspondingReturn = order_list_info.return_item.find(
-                  (returns) =>
-                    returns.code === items.code && returns.qty === items.qty
-                );
-                const returnItems = order_list_info.return_item.find(
-                  (returns) => returns.code === items.code
-                );
-
-                return (
-                  <IonItem
-                    className="order-list-info-card-container"
-                    key={index}
-                    onClick={() =>
-                      handleSelectOrder(
-                        order_list_info.order_info.orderid,
-                        order_list_info.order_info.cartid
-                      )
-                    }
-                  >
-                    <div className="order-list-info-card-add-item-container">
-                      <div
-                        className={`order-list-info-card-main-content ${correspondingReturn ? "all" : ""
-                          }`}
-                      >
-                        <div className="order-list-info-card-content">
-                          <div
-                            className={`order-list-info-card-title-details `}
-                          >
-                            {items.item}{" "}
-                            {returnItems && (
-                              <div className="order-list-info-card-title-details-returns">
-                                Return/Refund - {returnItems.qty}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="order-list-info-card-category-details">
-                            <div className="order-list-info-card-category">
-                              Brand: {items.brand} | Category:{items.category}
-                            </div>
-                          </div>
-                          <div className="order-list-info-card-price-details">
-                            <span>&#8369;</span>
-                            <span
-                              className={`${items.discount_price > 0
-                                ? "order-list-price-with-discount"
-                                : null
-                                }`}
-                            >
-                              {items.price.toFixed(2)}
-                            </span>
-
-                            {items.discount_price > 0 ? (
-                              <span>
-                                &#8369;
-                                {(items.price - items.discount_price).toFixed(
-                                  2
-                                )}
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-                        <div className="order-list-info-card-content">
-                          <div className="order-list-info-card-qty">
-                            {" "}
-                            {`X${items.qty}`}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </IonItem>
-                );
-              })
-            ) : (
-              <div>No items to display</div>
-            )}
-          </div>
-        )}
-      </div>
-      {getReturnsFromUrl === "true" ? (
-        <>
-          <div className="order-list-info-footer-details">
-            <div className="order-list-info-footer">Payment Method: </div>
-            <div className="order-list-info-footer-info">
-              {" "}
-              {order_list_info.order_info?.paidthru?.toLocaleUpperCase()}
-            </div>
-          </div>
-          <div className="order-list-info-footer-details">
-            <div className="order-list-info-footer">Sub-Total: </div>
-            <div className="order-list-info-footer-info">
-              {" "}
-              <span>&#8369;</span>
-              {order_list_info.order_info?.total?.toFixed(2)}
-            </div>
-          </div>
-          <div className="order-list-info-footer-details">
-            <div className="order-list-info-footer">Discount & Vouchers: </div>
-
-            <div className="order-list-info-footer-info">
-              {" "}
-              <span>&#8369;</span>
-              {`${getDiscount > 0 ? getDiscount.toFixed(2) : 0}`}
-            </div>
-          </div>
-          <IonImg className="breakline" src={breakline} />
-          <div className="order-list-info-footer-total-main">
-            <div className="order-list-info-footer-total-details">
-              <div className="order-list-info-footer-total">
-                Amount Return:{" "}
-              </div>
-
-              <div className="order-list-info-footer-total-info">
-                <span>&#8369;</span>
-                {getTotalAmount?.toFixed(2)}
-              </div>
-            </div>
-          </div>
-          <div className="order-list-info-footer-total-main">
-            <div className="order-list-info-footer-total-details-remarks">
-              <div className="order-list-info-footer-remarks">Remarks: </div>
-
-              <div className="order-list-info-footer-info-remarks">
-                <IonText>{order_list_info.return_item[0]?.remarks}</IonText>
-              </div>
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="order-list-info-footer-details">
-            <div className="order-list-info-footer">Payment Method: </div>
-            <div className="order-list-info-footer-info">
-              {" "}
-              {order_list_info.order_info?.paidthru?.toLocaleUpperCase()}
-            </div>
-          </div>
-          <div className="order-list-info-footer-details">
-            <div className="order-list-info-footer">Sub-Total: </div>
-            <div className="order-list-info-footer-info">
-              {" "}
-              <span>&#8369;</span>
-              {order_list_info.order_info?.total?.toFixed(2)}
-            </div>
-          </div>
-          <div className="order-list-info-footer-details">
-            <div className="order-list-info-footer">Total Discounts: </div>
-
-            <div className="order-list-info-footer-info">
-              {" "}
-              <span>&#8369;</span>
-              {`${getDiscount > 0 ? getDiscount.toFixed(2) : 0}`}
-            </div>
-          </div>
-          <IonImg className="breakline" src={breakline} />
-          <div className="order-list-info-footer-total-main">
-            <div className="order-list-info-footer-total-details">
-              <div className="order-list-info-footer-total">Amount Due: </div>
-
-              <div className="order-list-info-footer-total-info">
-                <span>&#8369;</span>
-                {getTotalAmount?.toFixed(2)}
-              </div>
-            </div>
-            {order_list_info.order_info?.paidcash > 0 ||
-              order_list_info.order_info?.paidthru === "Cash" ? (
-              <>
-                <div className="order-list-info-footer-total-details">
-                  <div className="order-list-info-footer-total">Cash: </div>
-
-                  <div className="order-list-info-footer-total-info">
-                    <span>&#8369;</span>
-                    {(order_list_info.order_info?.paidcash).toFixed(2)}
-                  </div>
-                </div>
-                <div className="order-list-info-footer-total-details">
-                  <div className="order-list-info-footer-total">Change: </div>
-
-                  <div className="order-list-info-footer-total-info">
-                    <span>&#8369;</span>
-                    {order_list_info.order_info?.paidcash - getTotalAmount > 0
-                      ? (
-                        order_list_info.order_info?.paidcash - getTotalAmount
-                      ).toFixed(2)
-                      : (0).toFixed(2)}
-                  </div>
-                </div>
-              </>
-            ) : null}
-          </div>
-        </>
       )}
 
-      <div className="order-info-footer-button">
-        {order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" ? (
-          <>
-            <div
-              className="order-info-button-list-normal"
-              onClick={() =>
-                setIsOpenToast({
-                  isOpen: true,
-                  type: "quotation-email",
-                  toastMessage: "Sending Email",
-                })
-              }
-            >
-              <IonButton fill="clear" className="profile-button-order">
-                <IonIcon color="medium" icon={print}></IonIcon>
-                <IonText className="order-info-button-text">
-                  Print Quotation
-                </IonText>
-              </IonButton>
-            </div>
-          </>
-        ) : null}
-        {order_list_info.order_info?.paidthru?.toLowerCase() === "cash" &&
-          order_list_info?.return_item.length === 0 ? (
-          <div
-            className="order-info-button-list-normal"
-            onClick={() => handleRefund()}
-          >
-            <IonButton fill="clear" className="profile-button-order">
-              <IonIcon color="medium" icon={cashOutline}></IonIcon>
-              <IonText className="order-info-button-text">
-                Return/Refund
-              </IonText>
-            </IonButton>
+      <div className="oi-inner">
+        {/* ── Customer info card ── */}
+        <div className="oi-card">
+          <p className="oi-card-title">Customer</p>
+          <div className="oi-row">
+            <span className="oi-row-label">Name</span>
+            <span className="oi-row-value">
+              {order_list_info.order_info.createdby === "system_ai"
+                ? "FB_CUSTOMER"
+                : order_list_info.order_info?.name}
+            </span>
           </div>
-        ) : null}
-        <div
-          className="order-info-button-list-close"
-          onClick={() => handleClose()}
-        >
-          <IonButton fill="clear" className="profile-button-order">
-            <IonIcon color="light" icon={close}></IonIcon>
-            <IonText className="order-info-button-text">Close</IonText>
-          </IonButton>
+          <div className="oi-row">
+            <span className="oi-row-label">Address</span>
+            <span className="oi-row-value">
+              {order_list_info.order_info.createdby === "system_ai"
+                ? "N/A"
+                : order_list_info.order_info?.address}
+            </span>
+          </div>
+          <div className="oi-row">
+            <span className="oi-row-label">Contact</span>
+            <span className="oi-row-value">
+              {order_list_info.order_info.createdby === "system_ai"
+                ? "N/A"
+                : order_list_info.order_info?.contactno}
+            </span>
+          </div>
+          <div className="oi-row">
+            <span className="oi-row-label">Order Type</span>
+            <span className="oi-row-value">{order_list_info.order_info?.type}</span>
+          </div>
+          <div className="oi-row">
+            <span className="oi-row-label">Date</span>
+            <span className="oi-row-value">{getOrderDate}</span>
+          </div>
+          <div className="oi-row">
+            <span className="oi-row-label">Cashier</span>
+            <span className="oi-row-value">{order_list_info.order_info.createdby}</span>
+          </div>
+          <div className="oi-row">
+            <span className="oi-row-label">Order ID</span>
+            <span className="oi-row-value">{order_list_info.order_info?.orderid}</span>
+            <button className="oi-copy-btn" onClick={() => handleCopy(order_list_info.order_info?.orderid)}>
+              <IonIcon icon={copy} />
+            </button>
+          </div>
+          {order_list_info.order_info?.transid?.length! > 0 && (
+            <div className="oi-row">
+              <span className="oi-row-label">Transaction ID</span>
+              <span className="oi-row-value">{order_list_info.order_info?.transid}</span>
+              <button className="oi-copy-btn" onClick={() => handleCopy(order_list_info.order_info?.transid!)}>
+                <IonIcon icon={copy} />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Items card ── */}
+        <div className="oi-card">
+          <p className="oi-card-title">{getReturnsFromUrl === "true" ? "Return Items" : "Order Items"}</p>
+          {getReturnsFromUrl === "true" ? (
+            Array.isArray(order_list_info.return_item) && order_list_info.return_item.length > 0 ? (
+              order_list_info.return_item.map((items, index) => (
+                <div key={index} className="oi-item-row">
+                  <div className="oi-item-left">
+                    <p className="oi-item-name">{items.item}</p>
+                    <p className="oi-item-price">&#8369;{items.price.toFixed(2)}</p>
+                    <span className="oi-returns-badge">Return/Refund — {items.qty}</span>
+                  </div>
+                  <div className="oi-item-right">
+                    <span className="oi-item-qty">×{items.qty}</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p style={{ color: "#808289", fontFamily: "Gotham-Light", fontSize: 14 }}>No items to display</p>
+            )
+          ) : (
+            Array.isArray(order_list_info.order_item) && order_list_info.order_item.length > 0 ? (
+              order_list_info.order_item.map((items, index) => {
+                const returnItems = order_list_info.return_item.find(r => r.code === items.code);
+                return (
+                  <div key={index} className="oi-item-row">
+                    <div className="oi-item-left">
+                      <p className="oi-item-name">{items.item}</p>
+                      <p className="oi-item-meta">{items.brand} · {items.category}</p>
+                      <p className="oi-item-price">
+                        {items.discount_price > 0 ? (
+                          <>
+                            <span className="oi-price-original">&#8369;{items.price.toFixed(2)}</span>
+                            <span className="oi-price-discounted">
+                              &#8369;{(items.price - items.discount_price).toFixed(2)}
+                            </span>
+                          </>
+                        ) : (
+                          <>&#8369;{items.price.toFixed(2)}</>
+                        )}
+                      </p>
+                      {returnItems && (
+                        <span className="oi-returns-badge">Return/Refund — {returnItems.qty}</span>
+                      )}
+                    </div>
+                    <div className="oi-item-right">
+                      <span className="oi-item-qty">×{items.qty}</span>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p style={{ color: "#808289", fontFamily: "Gotham-Light", fontSize: 14 }}>No items to display</p>
+            )
+          )}
+        </div>
+
+        {/* ── Totals card ── */}
+        <div className="oi-card">
+          <p className="oi-card-title">{getReturnsFromUrl === "true" ? "Refund Summary" : "Payment Summary"}</p>
+          <div className="oi-totals-row">
+            <span className="oi-totals-label">Payment Method</span>
+            <span className="oi-totals-value">{order_list_info.order_info?.paidthru?.toLocaleUpperCase()}</span>
+          </div>
+          <div className="oi-totals-row">
+            <span className="oi-totals-label">Sub-Total</span>
+            <span className="oi-totals-value">&#8369;{order_list_info.order_info?.total?.toFixed(2)}</span>
+          </div>
+          <div className="oi-totals-row">
+            <span className="oi-totals-label">Discount & Vouchers</span>
+            <span className="oi-totals-value">&#8369;{getDiscount > 0 ? getDiscount.toFixed(2) : "0.00"}</span>
+          </div>
+          <div className="oi-totals-row">
+            <span className="oi-total-due-label">
+              {getReturnsFromUrl === "true" ? "Amount Return" : "Amount Due"}
+            </span>
+            <span className="oi-total-due-value">&#8369;{getTotalAmount?.toFixed(2)}</span>
+          </div>
+          {getReturnsFromUrl !== "true" && (
+            (order_list_info.order_info?.paidcash > 0 || order_list_info.order_info?.paidthru === "Cash") ? (
+              <>
+                <div className="oi-totals-row">
+                  <span className="oi-totals-label">Cash</span>
+                  <span className="oi-totals-value">&#8369;{order_list_info.order_info?.paidcash?.toFixed(2)}</span>
+                </div>
+                <div className="oi-totals-row">
+                  <span className="oi-totals-label">Change</span>
+                  <span className="oi-totals-value">
+                    &#8369;{(order_list_info.order_info?.paidcash - getTotalAmount > 0
+                      ? order_list_info.order_info?.paidcash - getTotalAmount
+                      : 0
+                    ).toFixed(2)}
+                  </span>
+                </div>
+              </>
+            ) : null
+          )}
+          {getReturnsFromUrl === "true" && order_list_info.return_item[0]?.remarks && (
+            <div className="oi-totals-row" style={{ flexDirection: "column", alignItems: "flex-start" }}>
+              <span className="oi-totals-label">Remarks</span>
+              <span className="oi-remarks-text">{order_list_info.return_item[0]?.remarks}</span>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ── Bottom action bar ── */}
+      <div className="oi-action-bar">
+        {order_list_info.order_info?.paidthru?.toLowerCase() === "quotation" && (
+          <button
+            className="oi-action-btn oi-btn-outline"
+            onClick={() =>
+              setIsOpenToast({ isOpen: true, type: "quotation-email", toastMessage: "Sending Email" })
+            }
+          >
+            <IonIcon icon={print} />
+            Quotation
+          </button>
+        )}
+        {order_list_info.order_info?.paidthru?.toLowerCase() === "cash" &&
+          order_list_info?.return_item.length === 0 && (
+            <button className="oi-action-btn oi-btn-danger" onClick={handleRefund}>
+              <IonIcon icon={cashOutline} />
+              Refund
+            </button>
+          )}
+        <button className="oi-action-btn oi-btn-close" onClick={handleClose}>
+          <IonIcon icon={close} />
+          Close
+        </button>
+      </div>
+
+      {/* ── Process modal ── */}
       <IonModal
-        isOpen={
-          openSearchModal.modal === "process" ? openSearchModal.isOpen : false
-        }
-        initialBreakpoint={0.5}
-        breakpoints={[0, 1]}
+        isOpen={openSearchModal.modal === "process" ? openSearchModal.isOpen : false}
+        initialBreakpoint={0.75}
+        breakpoints={[0, 0.75, 1]}
         canDismiss={modalDismiss}
       >
         <IonHeader>
-          <IonToolbar>
+          <IonToolbar color="tertiary">
             <IonButtons slot="start">
-              <IonButton
-                onClick={() => {
-                  setOpenSearchModal({ isOpen: false, modal: "process" });
-                  setCanDismiss(true);
-                }}
-              >
+              <IonButton onClick={() => { setOpenSearchModal({ isOpen: false, modal: "process" }); setCanDismiss(true); }}>
                 Close
               </IonButton>
             </IonButtons>
-            <IonTitle className="delivery-info-title"> Process</IonTitle>
+            <IonTitle className="delivery-info-title">Actions</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent>
-          {getReturnsFromUrl === "false" ? (
-            <div className="list-of-process-button">
-              {order_list_info.order_info?.paidthru?.toLowerCase() ===
-                "cancel" ? (
-                <div className="order-list-info-footer-approved-info">
-                  <>
-                    <IonButton color="light" onClick={() => handleEdit(true)}>
-                      Reorder
-                    </IonButton>
-                  </>
-                </div>
-              ) : null}
+          {getReturnsFromUrl === "false" && (
+            <div className="oi-process-modal-body">
 
-              {order_list_info.order_info?.paidthru?.toLowerCase() ===
-                "pending" ||
-                order_list_info.order_info?.paidthru?.toLowerCase() ===
-                "quotation" ? (
-                <div className="order-list-info-footer-approved-info">
+              {/* ─ Cancelled order ─ */}
+              {order_list_info.order_info?.paidthru?.toLowerCase() === "cancel" && (
+                <>
+                  <p className="oi-process-section-label">Order Actions</p>
+                  <button className="oi-modal-btn" onClick={() => handleEdit(true)}>
+                    <span className="oi-modal-btn-icon"><IonIcon icon={refreshOutline} /></span>
+                    <span className="oi-modal-btn-text">
+                      <span className="oi-modal-btn-label">Reorder</span>
+                      <span className="oi-modal-btn-sub">Recreate this cancelled order</span>
+                    </span>
+                  </button>
+                </>
+              )}
+
+              {/* ─ Pending / Quotation ─ */}
+              {(order_list_info.order_info?.paidthru?.toLowerCase() === "pending" ||
+                order_list_info.order_info?.paidthru?.toLowerCase() === "quotation") && (
                   <>
-                    {order_list_info.order_info?.paidthru?.toLowerCase() ===
-                      "pending" ? (
-                      <IonButton color="light" onClick={() => handleCancel()}>
-                        Cancel Order
-                      </IonButton>
-                    ) : null}
-                    <IonButton color="light" onClick={() => handleEdit(false)}>
-                      Edit Order
-                    </IonButton>
-                    <IonButton color="light" onClick={() => handleApprove()}>
-                      Process Order
-                    </IonButton>
+                    <p className="oi-process-section-label">Order Actions</p>
+                    <button className="oi-modal-btn" onClick={() => handleEdit(false)}>
+                      <span className="oi-modal-btn-icon"><IonIcon icon={pencilOutline} /></span>
+                      <span className="oi-modal-btn-text">
+                        <span className="oi-modal-btn-label">Edit Order</span>
+                        <span className="oi-modal-btn-sub">Modify items or details</span>
+                      </span>
+                    </button>
+                    <button className="oi-modal-btn" onClick={handleApprove}>
+                      <span className="oi-modal-btn-icon"><IonIcon icon={checkmarkCircleOutline} /></span>
+                      <span className="oi-modal-btn-text">
+                        <span className="oi-modal-btn-label">Process Order</span>
+                        <span className="oi-modal-btn-sub">Approve and move to processing</span>
+                      </span>
+                    </button>
+                    {order_list_info.order_info?.paidthru?.toLowerCase() === "pending" && (
+                      <button className="oi-modal-btn" onClick={handleCancel}>
+                        <span className="oi-modal-btn-icon"><IonIcon icon={closeCircleOutline} /></span>
+                        <span className="oi-modal-btn-text">
+                          <span className="oi-modal-btn-label">Cancel Order</span>
+                          <span className="oi-modal-btn-sub">Void this order</span>
+                        </span>
+                      </button>
+                    )}
                   </>
-                </div>
-              ) : null}
-              {order_list_info.order_info?.status?.toLowerCase() ===
-                "delivered" ? (
-                <div className="order-list-info-footer-approved-info">
-                  <>
-                    <IonButton
-                      color="light"
-                      onClick={() => handlePrintInvoice()}
-                    >
-                      Print Invoice
-                    </IonButton>
-                    <IonButton
-                      color="light"
-                      onClick={() =>
-                        setOpenSearchModal({ isOpen: true, modal: "receipt" })
-                      }
-                    >
-                      Invoice as PDF
-                    </IonButton>
-                    <IonButton
-                      color="light"
-                      onClick={() =>
-                        setOpenSearchModal({ isOpen: true, modal: "" })
-                      }
-                    >
-                      Open Delivery Info
-                    </IonButton>
-                    {order_list_info.order_info?.paidthru.toLowerCase() ===
-                      "debt" ? (
-                      <IonButton
-                        color="light"
-                        onClick={() => handleReceivedPayment()}
-                      >
-                        Receive Payment
-                      </IonButton>
-                    ) : null}
-                  </>
-                </div>
-              ) : null}
-              {order_list_info.order_info?.status === "approved" ? (
-                <div className="order-list-info-footer-approved-info">
-                  <>
-                    <IonButton
-                      color="light"
-                      onClick={() => handlePrintInvoice()}
-                    >
-                      Print Invoice
-                    </IonButton>
-                    <IonButton
-                      color="light"
-                      onClick={() =>
-                        setOpenSearchModal({ isOpen: true, modal: "receipt" })
-                      }
-                    >
-                      Invoice as PDF
-                    </IonButton>
-                    <IonButton
-                      color="light"
-                      onClick={() =>
-                        router.push(
-                          `/deliveryInfo?orderid=${order_list_info.order_info.orderid}&transid=${order_list_info.order_info.transid}&cartid=${order_list_info.order_info.cartid}`
-                        )
-                      }
-                    >
-                      Process Item Delivered
-                    </IonButton>
-                    {order_list_info.order_info?.paidthru.toLowerCase() ===
-                      "debt" ? (
-                      <IonButton
-                        color="light"
-                        onClick={() => handleReceivedPayment()}
-                      >
-                        Receive Payment
-                      </IonButton>
-                    ) : null}
-                  </>
-                </div>
-              ) : null}
+                )}
+
+              {/* ─ Delivered ─ */}
+              {order_list_info.order_info?.status?.toLowerCase() === "delivered" && (
+                <>
+                  <p className="oi-process-section-label">Documents</p>
+                  <button className="oi-modal-btn" onClick={handlePrintInvoice}>
+                    <span className="oi-modal-btn-icon"><IonIcon icon={print} /></span>
+                    <span className="oi-modal-btn-text">
+                      <span className="oi-modal-btn-label">Print Invoice</span>
+                      <span className="oi-modal-btn-sub">Send to connected printer</span>
+                    </span>
+                  </button>
+                  <button className="oi-modal-btn" onClick={() => setOpenSearchModal({ isOpen: true, modal: "receipt" })}>
+                    <span className="oi-modal-btn-icon"><IonIcon icon={documentTextOutline} /></span>
+                    <span className="oi-modal-btn-text">
+                      <span className="oi-modal-btn-label">Invoice as PDF</span>
+                      <span className="oi-modal-btn-sub">View or share PDF invoice</span>
+                    </span>
+                  </button>
+                  <button className="oi-modal-btn" onClick={() => setOpenSearchModal({ isOpen: true, modal: "" })}>
+                    <span className="oi-modal-btn-icon"><IonIcon icon={bicycleOutline} /></span>
+                    <span className="oi-modal-btn-text">
+                      <span className="oi-modal-btn-label">Open Delivery Info</span>
+                      <span className="oi-modal-btn-sub">View delivery details</span>
+                    </span>
+                  </button>
+                  {order_list_info.order_info?.paidthru?.toLowerCase() === "debt" && (
+                    <button className="oi-modal-btn" onClick={handleReceivedPayment}>
+                      <span className="oi-modal-btn-icon"><IonIcon icon={cashOutline} /></span>
+                      <span className="oi-modal-btn-text">
+                        <span className="oi-modal-btn-label">Receive Payment</span>
+                        <span className="oi-modal-btn-sub">Mark outstanding balance as paid</span>
+                      </span>
+                    </button>
+                  )}
+                </>
+              )}
+
+              {/* ─ Approved ─ */}
+              {order_list_info.order_info?.status === "approved" && (
+                <>
+                  <p className="oi-process-section-label">Documents</p>
+                  <button className="oi-modal-btn" onClick={handlePrintInvoice}>
+                    <span className="oi-modal-btn-icon"><IonIcon icon={print} /></span>
+                    <span className="oi-modal-btn-text">
+                      <span className="oi-modal-btn-label">Print Invoice</span>
+                      <span className="oi-modal-btn-sub">Send to connected printer</span>
+                    </span>
+                  </button>
+                  <button className="oi-modal-btn" onClick={() => setOpenSearchModal({ isOpen: true, modal: "receipt" })}>
+                    <span className="oi-modal-btn-icon"><IonIcon icon={documentTextOutline} /></span>
+                    <span className="oi-modal-btn-text">
+                      <span className="oi-modal-btn-label">Invoice as PDF</span>
+                      <span className="oi-modal-btn-sub">View or share PDF invoice</span>
+                    </span>
+                  </button>
+                  <p className="oi-process-section-label">Fulfillment</p>
+                  <button className="oi-modal-btn" onClick={() => router.push(`/deliveryInfo?orderid=${order_list_info.order_info.orderid}&transid=${order_list_info.order_info.transid}&cartid=${order_list_info.order_info.cartid}`)}>
+                    <span className="oi-modal-btn-icon"><IonIcon icon={bicycleOutline} /></span>
+                    <span className="oi-modal-btn-text">
+                      <span className="oi-modal-btn-label">Process Item Delivered</span>
+                      <span className="oi-modal-btn-sub">Confirm delivery & upload proof</span>
+                    </span>
+                  </button>
+                  {order_list_info.order_info?.paidthru?.toLowerCase() === "debt" && (
+                    <button className="oi-modal-btn" onClick={handleReceivedPayment}>
+                      <span className="oi-modal-btn-icon"><IonIcon icon={cashOutline} /></span>
+                      <span className="oi-modal-btn-text">
+                        <span className="oi-modal-btn-label">Receive Payment</span>
+                        <span className="oi-modal-btn-sub">Mark outstanding balance as paid</span>
+                      </span>
+                    </button>
+                  )}
+                </>
+              )}
+
             </div>
-          ) : null}
+          )}
         </IonContent>
       </IonModal>
+
+      {/* ── Delivery info modal ── */}
       <IonModal
-        isOpen={
-          openSearchModal.modal !== "receipt" &&
-            openSearchModal.modal !== "process"
-            ? openSearchModal.isOpen
-            : false
-        }
+        isOpen={openSearchModal.modal !== "receipt" && openSearchModal.modal !== "process" ? openSearchModal.isOpen : false}
         onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
         initialBreakpoint={1}
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
@@ -1355,59 +1171,37 @@ const OrderInfoComponent: React.FC = () => {
         <IonHeader>
           <IonToolbar>
             <IonButtons slot="start">
-              <IonButton onClick={() => handleCloseModal()}>Close</IonButton>
+              <IonButton onClick={handleCloseModal}>Close</IonButton>
             </IonButtons>
-            <IonTitle className="delivery-info-title">
-              {" "}
-              Delivery Information
-            </IonTitle>
+            <IonTitle className="delivery-info-title">Delivery Information</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          <>
-            {order_list_info?.order_info?.status?.toLowerCase() ===
-              "Delivered".toLowerCase() ? (
-              <div className="delivery-image-container">
-                <div className="delivered-info-container">
-                  <IonText className="delivered-info-text">
-                    Delivered by:{"  "}
-                    {getGetDeliveryInfo.deliveredby}
-                  </IonText>
-                  <IonText className="delivered-info-text">
-                    Delivered at:{"  "}
-                    {format(
-                      new Date(getGetDeliveryInfo.deliverydate).toISOString(),
-                      "MMMM dd, yyyy hh:mm a"
-                    )}
-                  </IonText>
-
-                  <IonText className="delivered-info-text">
-                    Time Elapsed: {elapsedTime.hour} hours {elapsedTime.minute}{" "}
-                    minutes
-                  </IonText>
-                </div>
-                {getFile &&
-                  getFile.contentType &&
-                  getFile.contentType.startsWith("image/") && (
-                    <>
-                      <IonText className="delivery-image-text">
-                        Delivery Image
-                      </IonText>
-                      <IonImg
-                        className="swiper-component"
-                        src={"data:image/png;base64," + getFile.fileContents}
-                      ></IonImg>
-                    </>
-                  )}
+          {order_list_info?.order_info?.status?.toLowerCase() === "delivered" && (
+            <div className="delivery-image-container">
+              <div className="oi-delivery-block">
+                <span className="oi-delivery-line">Delivered by: {getGetDeliveryInfo.deliveredby}</span>
+                <span className="oi-delivery-line">
+                  Delivered at: {format(new Date(getGetDeliveryInfo.deliverydate).toISOString(), "MMMM dd, yyyy hh:mm a")}
+                </span>
+                <span className="oi-delivery-line">
+                  Time Elapsed: {elapsedTime.hour}h {elapsedTime.minute}m
+                </span>
               </div>
-            ) : null}
-          </>
+              {getFile?.contentType?.startsWith("image/") && (
+                <>
+                  <p className="delivery-image-text">Delivery Image</p>
+                  <IonImg className="oi-delivery-image" src={"data:image/png;base64," + getFile.fileContents} />
+                </>
+              )}
+            </div>
+          )}
         </IonContent>
       </IonModal>
+
+      {/* ── Invoice PDF modal ── */}
       <IonModal
-        isOpen={
-          openSearchModal.modal === "receipt" ? openSearchModal.isOpen : false
-        }
+        isOpen={openSearchModal.modal === "receipt" ? openSearchModal.isOpen : false}
         onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
         initialBreakpoint={1}
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
@@ -1415,25 +1209,11 @@ const OrderInfoComponent: React.FC = () => {
         <IonHeader>
           <IonToolbar>
             <IonButtons slot="start">
-              <IonButton
-                onClick={() =>
-                  setOpenSearchModal({ isOpen: false, modal: "receipt" })
-                }
-              >
-                Close
-              </IonButton>
+              <IonButton onClick={() => setOpenSearchModal({ isOpen: false, modal: "receipt" })}>Close</IonButton>
             </IonButtons>
-            <IonTitle className="delivery-info-title"> Invoice</IonTitle>
+            <IonTitle className="delivery-info-title">Invoice</IonTitle>
             <IonButtons slot="end">
-              <IonButton
-                onClick={() =>
-                  setIsOpenToast({
-                    isOpen: true,
-                    type: "receipt-email",
-                    toastMessage: "",
-                  })
-                }
-              >
+              <IonButton onClick={() => setIsOpenToast({ isOpen: true, type: "receipt-email", toastMessage: "" })}>
                 Save
               </IonButton>
             </IonButtons>
@@ -1441,244 +1221,117 @@ const OrderInfoComponent: React.FC = () => {
         </IonHeader>
         <IonContent className="ion-padding">
           <div ref={invoiceRef} id="receipt">
-            <div className="order-list-info-hardware-details">
-              <div className="order-list-info-hardware">
-                <img src={logo} />
-              </div>
+            <div className="oi-invoice-header-logo"><img src={logo} alt="logo" /></div>
+            <p className="oi-invoice-store-name">Restie Hardware</p>
+            <p className="oi-invoice-store-address">SIR Bucana 76-A, Sandawa Matina Davao City</p>
+            <p className="oi-invoice-store-address">Contact No.: (082) 224 1362</p>
+            <hr className="oi-invoice-divider" />
+            <div className="oi-card" style={{ boxShadow: "none", padding: "0", marginBottom: 8 }}>
+              {[
+                ["Invoice #", order_list_info.order_info?.transid?.split("-")[0]],
+                ["Customer", order_list_info.order_info.createdby === "system_ai" ? "FB_CUSTOMER" : order_list_info.order_info?.name],
+                ["Address", order_list_info.order_info?.address],
+                ["Contact", order_list_info.order_info?.contactno],
+                ["Order Type", order_list_info.order_info?.type],
+                ["Date", getOrderDate],
+                ["Cashier", order_list_info.order_info.createdby],
+              ].map(([label, value], i) => (
+                <div key={i} className="oi-row">
+                  <span className="oi-row-label">{label}</span>
+                  <span className="oi-row-value">{value}</span>
+                </div>
+              ))}
             </div>
-            <div className="order-list-info-hardware-details">
-              <div className="order-list-info-hardware">Restie Hardware</div>
-
-              {/* <div className="order-list-info-hardware-info">
-                {order_list_info.order_info?.name}
-              </div> */}
-            </div>
-            <div className="order-list-info-hardware-details-address">
-              <div className="order-list-info-hardware-address">
-                Address: SIR Bucana 76-A
-              </div>
-              <div className="order-list-info-hardware-address">
-                Sandawa Matina Davao City
-              </div>
-              <div className="order-list-info-hardware-address">
-                Davao City, Philippines
-              </div>
-              <div className="order-list-info-hardware-address">
-                Contact No.: (082) 224 1362
-              </div>
-              <hr />
-              {/* <div className="order-list-info-hardware-info">
-                {order_list_info.order_info?.name}
-              </div> */}
-            </div>
-            <div className="order-list-info-customer-details">
-              <div className="order-list-info-customer">Invoice #: </div>
-
-              <div className="order-list-info-customer-info">
-                {order_list_info.order_info?.transid?.split("-")[0]}
-              </div>
-            </div>
-            <div className="order-list-info-customer-details">
-              <div className="order-list-info-customer">Customer Name: </div>
-
-              <div className="order-list-info-customer-info">
-                {order_list_info.order_info.createdby === 'system_ai' ? "FB_CUSTOMER" : order_list_info.order_info?.name}
-              </div>
-            </div>
-            <div className="order-list-info-customer-details">
-              <div className="order-list-info-customer">Address: </div>
-
-              <div className="order-list-info-customer-info">
-                {order_list_info.order_info?.address}
-              </div>
-            </div>
-            <div className="order-list-info-customer-details">
-              <div className="order-list-info-customer">Contact No: </div>
-
-              <div className="order-list-info-customer-info">
-                {order_list_info.order_info?.contactno}
-              </div>
-            </div>
-            <div className="order-list-info-customer-details">
-              <div className="order-list-info-customer">Order Type: </div>
-
-              <div className="order-list-info-customer-info">
-                {order_list_info.order_info?.type}
-              </div>
-            </div>
-            <div className="order-list-info-customer-details">
-              <div className="order-list-info-customer">Order Created: </div>
-
-              <div className="order-list-info-customer-info">
-                {getOrderDate}
-              </div>
-            </div>
-            <div className="order-list-info-customer-details">
-              <div className="order-list-info-customer">Cashier: </div>
-
-              <div className="order-list-info-customer-info">
-                {order_list_info.order_info.createdby}
-              </div>
-            </div>
-            <hr />
-            {/* <IonImg className="breakline" src={breakline} /> */}
-            <div className="order-list-info-container">
-              {Array.isArray(order_list_info.order_item) &&
-                order_list_info.order_item.length > 0 ? (
-                order_list_info?.order_item?.map((items, index) => (
-                  <IonItem
-                    className="order-list-info-card-container"
-                    key={index}
-                    onClick={() =>
-                      handleSelectOrder(
-                        order_list_info.order_info.orderid,
-                        order_list_info.order_info.cartid
-                      )
-                    }
-                  >
-                    <div className="order-list-info-card-add-item-container">
-                      <div className="order-list-info-card-main-content">
-                        <div className="order-list-info-card-content">
-                          <div className="order-list-info-card-title-details">
-                            {items.item}
-                          </div>
-
-                          <div className="order-list-info-card-category-details">
-                            <div className="order-list-info-card-category">
-                              Brand: {items.brand} | Category:{items.category}
-                            </div>
-                          </div>
-                          <div className="order-list-info-card-price-details">
-                            <span>&#8369;</span>
-                            {items.price.toFixed(2)}
-                            <span>&#8369;</span>
-                            {items.discount_price.toFixed(2)}
-                          </div>
-                        </div>
-                        <div className="order-list-info-card-content">
-                          <div className="order-list-info-card-qty">
-                            {" "}
-                            X{items.qty}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </IonItem>
-                ))
-              ) : (
-                <p>No order info found.</p>
-              )}
-            </div>
-            <div className="order-list-info-footer-details">
-              <div className="order-list-info-footer">Payment Method: </div>
-              <div className="order-list-info-footer-info">
-                {" "}
-                {order_list_info.order_info.paidthru.toLocaleUpperCase()}
-              </div>
-            </div>
-            <div className="order-list-info-footer-details">
-              <div className="order-list-info-footer">Sub-Total: </div>
-              <div className="order-list-info-footer-info">
-                {" "}
-                <span>&#8369;</span>
-                {order_list_info.order_info.total.toFixed(2)}
-              </div>
-            </div>
-            <div className="order-list-info-footer-details">
-              <div className="order-list-info-footer">
-                Discount & Vouchers:{" "}
-              </div>
-
-              <div className="order-list-info-footer-info">{`${getDiscount > 0 ? getDiscount + "%" : 0
-                }`}</div>
-            </div>
-            <hr />
-            {/* <IonImg className="breakline" src={breakline} /> */}
-            <div className="order-list-info-footer-total-main">
-              <div className="order-list-info-footer-total-details">
-                <div className="order-list-info-footer-total">Amount Due: </div>
-
-                <div className="order-list-info-footer-total-info">
-                  <span>&#8369;</span>
-                  {getTotalAmount.toFixed(2)}
+            <hr className="oi-invoice-divider" />
+            {Array.isArray(order_list_info.order_item) && order_list_info.order_item.map((items, index) => (
+              <div key={index} className="oi-item-row">
+                <div className="oi-item-left">
+                  <p className="oi-item-name">{items.item}</p>
+                  <p className="oi-item-meta">{items.brand} · {items.category}</p>
+                  <p className="oi-item-price">
+                    &#8369;{items.price.toFixed(2)}
+                    {items.discount_price > 0 && <> — disc. &#8369;{items.discount_price.toFixed(2)}</>}
+                  </p>
+                </div>
+                <div className="oi-item-right">
+                  <span className="oi-item-qty">×{items.qty}</span>
                 </div>
               </div>
-              {order_list_info.order_info?.paidcash > 0 ? (
-                <>
-                  <div className="order-list-info-footer-total-details">
-                    <div className="order-list-info-footer-total">Cash: </div>
-
-                    <div className="order-list-info-footer-total-info">
-                      <span>&#8369;</span>
-                      {order_list_info.order_info.paidcash.toFixed(2)}
-                    </div>
-                  </div>
-                  <div className="order-list-info-footer-total-details">
-                    <div className="order-list-info-footer-total">Change: </div>
-
-                    <div className="order-list-info-footer-total-info">
-                      <span>&#8369;</span>
-                      {(
-                        order_list_info.order_info.paidcash - getTotalAmount
-                      ).toFixed(2)}
-                    </div>
-                  </div>
-                </>
-              ) : null}
+            ))}
+            <hr className="oi-invoice-divider" />
+            <div className="oi-totals-row">
+              <span className="oi-totals-label">Payment</span>
+              <span className="oi-totals-value">{order_list_info.order_info.paidthru.toLocaleUpperCase()}</span>
             </div>
+            <div className="oi-totals-row">
+              <span className="oi-totals-label">Sub-Total</span>
+              <span className="oi-totals-value">&#8369;{order_list_info.order_info.total.toFixed(2)}</span>
+            </div>
+            <div className="oi-totals-row">
+              <span className="oi-totals-label">Discount</span>
+              <span className="oi-totals-value">{getDiscount > 0 ? `${getDiscount}%` : "—"}</span>
+            </div>
+            <div className="oi-totals-row">
+              <span className="oi-total-due-label">Amount Due</span>
+              <span className="oi-total-due-value">&#8369;{getTotalAmount.toFixed(2)}</span>
+            </div>
+            {order_list_info.order_info?.paidcash > 0 && (
+              <>
+                <div className="oi-totals-row">
+                  <span className="oi-totals-label">Cash</span>
+                  <span className="oi-totals-value">&#8369;{order_list_info.order_info.paidcash.toFixed(2)}</span>
+                </div>
+                <div className="oi-totals-row">
+                  <span className="oi-totals-label">Change</span>
+                  <span className="oi-totals-value">&#8369;{(order_list_info.order_info.paidcash - getTotalAmount).toFixed(2)}</span>
+                </div>
+              </>
+            )}
           </div>
         </IonContent>
       </IonModal>
+
+      {/* ── Email modal ── */}
       <IonModal
-        onDidDismiss={() =>
-          setIsOpenToast({
-            isOpen: false,
-            type:
-              isOpenToast.type === "quotation-email"
-                ? "quotation-email"
-                : "receipt-email",
-            toastMessage: "",
-          })
-        }
         id="email-modal"
         isOpen={
-          isOpenToast.type === "receipt-email" ||
-            isOpenToast.type === "quotation-email"
+          (isOpenToast.type === "receipt-email" || isOpenToast.type === "quotation-email")
             ? isOpenToast.isOpen
             : false
         }
+        onDidDismiss={() =>
+          setIsOpenToast({ isOpen: false, type: isOpenToast.type === "quotation-email" ? "quotation-email" : "receipt-email", toastMessage: "" })
+        }
       >
-        <div className="wrapper">
-          <IonText className="email-header">
+        <div className="oi-email-wrapper">
+          <p className="oi-email-header">
             {isOpenToast.type === "quotation-email"
-              ? "Send quotation to customers email"
-              : "Send receipt to customers email"}
-          </IonText>
-          <IonItem>
-            <IonInput
-              label="Customers Email"
-              labelPlacement="floating"
-              type="email"
-              value={getEmail}
-              placeholder="email@gmail.com"
-              onIonInput={(e) => handleSetEmail(e)}
-            ></IonInput>
-          </IonItem>
-          <IonButton
-            expand="block"
-            color={"medium"}
+              ? "Send quotation to customer's email"
+              : "Send receipt to customer's email"}
+          </p>
+          <IonInput
+            className="oi-email-input"
+            type="email"
+            value={getEmail}
+            placeholder="email@gmail.com"
+            label="Customer's Email"
+            labelPlacement="floating"
+            onIonInput={(e) => handleSetEmail(e)}
+          />
+          <button
+            className="oi-email-submit-btn"
             onClick={() =>
-              isOpenToast.type === "quotation-email"
-                ? handlePrintQuotation()
-                : downloadPDF()
+              isOpenToast.type === "quotation-email" ? handlePrintQuotation() : downloadPDF()
             }
           >
             Submit
-          </IonButton>
+          </button>
         </div>
       </IonModal>
+
+      {/* ── Cash payment modal ── */}
       <IonModal
-        isOpen={openCashModal ? openCashModal : false}
+        isOpen={openCashModal}
         onDidDismiss={() => setOpenCashModal(false)}
         initialBreakpoint={0.5}
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
@@ -1686,9 +1339,7 @@ const OrderInfoComponent: React.FC = () => {
         <IonHeader>
           <IonToolbar>
             <IonButtons slot="start">
-              <IonButton onClick={() => setOpenCashModal(false)}>
-                Close
-              </IonButton>
+              <IonButton onClick={() => setOpenCashModal(false)}>Close</IonButton>
             </IonButtons>
             <IonButtons slot="end">
               <IonButton onClick={handleSubmitPayment}>Pay</IonButton>
@@ -1696,53 +1347,42 @@ const OrderInfoComponent: React.FC = () => {
             <IonTitle className="delivery-info-title">Cash</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent className="ion-padding">
-          <div className="order-list-info-footer-total-details">
-            <div className="order-list-info-footer-total">Amount Due: </div>
-
-            <div className="order-list-info-footer-total-info">
-              <span>&#8369;</span>
-              {getTotalAmount?.toFixed(2)}
+        <IonContent>
+          <div className="oi-cash-modal-body">
+            <div className="oi-cash-due-row">
+              <span className="oi-cash-due-label">Amount Due</span>
+              <span className="oi-cash-due-value">&#8369;{getTotalAmount?.toFixed(2)}</span>
             </div>
-          </div>
-          <div className="order-info-cash-input-container">
             <IonInput
-              className="order-info-cash-input"
+              className="oi-cash-input"
               label="Cash"
               type="number"
               value={totalCash}
               placeholder="0.00"
               onIonInput={(e) => handleCash(e)}
-            ></IonInput>
+            />
           </div>
         </IonContent>
       </IonModal>
+
       <IonLoading
         isOpen={
-          isOpenToast?.type === "receipt-email" ||
-            isOpenToast?.type === "quotation-email"
+          isOpenToast?.type === "receipt-email" || isOpenToast?.type === "quotation-email"
             ? false
             : isOpenToast?.isOpen
         }
         message={isOpenToast?.toastMessage}
         spinner="circles"
-        onDidDismiss={() =>
-          setIsOpenToast((prev) => ({
-            ...prev,
-            isOpen: false,
-          }))
-        }
+        onDidDismiss={() => setIsOpenToast((prev) => ({ ...prev, isOpen: false }))}
       />
       <IonToast
         isOpen={isOpenMessageToast?.isOpen}
         message={isOpenMessageToast.toastMessage}
         position="middle"
-        color={"medium"}
+        color="medium"
         duration={3000}
-        onDidDismiss={() =>
-          setMessageToast({ toastMessage: "", isOpen: false })
-        }
-      ></IonToast>
+        onDidDismiss={() => setMessageToast({ toastMessage: "", isOpen: false })}
+      />
     </div>
   );
 };

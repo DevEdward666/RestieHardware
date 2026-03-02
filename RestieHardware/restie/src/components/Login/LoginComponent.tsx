@@ -1,16 +1,13 @@
 import {
   IonButton,
-  IonCard,
-  IonCardContent,
   IonContent,
   IonIcon,
   IonImg,
   IonInput,
-  IonItem,
   IonLoading,
   useIonRouter,
 } from "@ionic/react";
-import { eyeOffOutline, eyeOutline, lockClosed, mail } from "ionicons/icons";
+import { eyeOffOutline, eyeOutline, lockClosedOutline, mailOutline } from "ionicons/icons";
 import React, { useCallback, useEffect, useState } from "react";
 import { PostLogin } from "../../Models/Request/Login/LoginModel";
 import { GetLoginUser, Login } from "../../Service/Actions/Login/LoginActions";
@@ -73,130 +70,79 @@ const LoginComponent = () => {
     checkUserLoggedin();
   }, [dispatch]);
   return (
-    <IonContent className="login-main-container">
+    <IonContent className="lgn-content">
       <IonLoading
         isOpen={isOpenToast?.isOpen}
-        message="Loading"
+        message="Logging in..."
         spinner="circles"
-        onDidDismiss={() =>
-          setIsOpenToast((prev) => ({
-            ...prev,
-            isOpen: false,
-          }))
-        }
+        onDidDismiss={() => setIsOpenToast((prev) => ({ ...prev, isOpen: false }))}
       />
-      <div className="login-main">
-        <IonCard className="login-card-container">
-          <IonCardContent className="login-card-content">
-            <div className="login-card-input-content">
-              <div className="login-card-input-logo-container">
-                <IonImg src={restie} className="login-card-logo"></IonImg>
-              </div>
-              <div className="login-card-input-main-container">
-                {" "}
-                <div className="input-3">
-                  <input
-                    name="username"
-                    type="text"
-                    placeholder="Username"
-                    onInput={(e: any) => handleInfoChange(e)}
-                    required
-                  />
-                  <span className="material-symbols-outlined">
-                    {" "}
-                    <IonIcon
-                      slot="start"
-                      icon={mail}
-                      aria-hidden="true"
-                    ></IonIcon>{" "}
-                  </span>
-                </div>
-                <div className="input-1">
-                  <input
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Password"
-                    required
-                    onInput={(e: any) => handleInfoChange(e)}
-                  />
-                  <span className="material-symbols-outlined">
-                    <IonIcon
-                      slot="start"
-                      icon={lockClosed}
-                      aria-hidden="true"
-                    ></IonIcon>
-                    <IonIcon
-                      onClick={() => handleShowPassword()}
-                      className="show-hide-icon"
-                      slot="start"
-                      aria-hidden="true"
-                      icon={showPassword ? eyeOutline : eyeOffOutline}
-                    ></IonIcon>
-                  </span>
-                </div>
-                {/* <IonInput
-                    labelPlacement="stacked"
-                    label="Username"
-                    name="username"
-                    placeholder="Username"
-                    type="text"
-                    onIonInput={(e: any) => handleInfoChange(e)}
-                    // class="login-input"
-                  >
-                    <IonIcon
-                      slot="start"
-                      icon={mail}
-                      aria-hidden="true"
-                    ></IonIcon>
-                    <IonButton
-                      fill="clear"
-                      slot="end"
-                      aria-label="Show/hide"
-                    ></IonButton>
-                  </IonInput> */}
-                {/* <IonInput
-                    labelPlacement="stacked"
-                    label="Password"
-                    // class="login-input"
-                    placeholder="Password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    onIonInput={(e: any) => handleInfoChange(e)}
-                  >
-                    <IonIcon
-                      slot="start"
-                      icon={lockClosed}
-                      aria-hidden="true"
-                    ></IonIcon>
-                    <IonButton
-                      fill="clear"
-                      slot="end"
-                      aria-label="Show/hide"
-                      onClick={() => handleShowPassword()}
-                    >
-                      <IonIcon
-                        icon={showPassword ? eyeOutline : eyeOffOutline}
-                      ></IonIcon>
-                    </IonButton>
-                  </IonInput> */}
-                <IonButton
-                  color="medium"
-                  className="login-button"
-                  onClick={() => handleLogin()}
-                >
-                  <span className="login-button-text">Login</span>
-                </IonButton>
-                <IonButton
-                  expand="block"
-                  fill="clear"
-                  onClick={() => router.push("/home/main")}
-                >
-                  Explore Products
-                </IonButton>
+
+      <div className="lgn-wrapper">
+        <div className="lgn-card">
+
+          {/* Logo */}
+          <IonImg src={restie} className="lgn-logo" />
+
+          <p className="lgn-heading">Welcome back</p>
+          <p className="lgn-sub">Sign in to your account</p>
+
+          {/* Fields */}
+          <div className="lgn-fields">
+            <div className="lgn-field">
+              <span className="lgn-label">Username</span>
+              <div className="lgn-input-row">
+                <IonIcon className="lgn-input-icon" icon={mailOutline} />
+                <IonInput
+                  className="lgn-input"
+                  name="username"
+                  type="text"
+                  placeholder="Enter username"
+                  value={customerInformation.username}
+                  onIonInput={(e: any) => handleInfoChange(e)}
+                />
               </div>
             </div>
-          </IonCardContent>
-        </IonCard>
+
+            <div className="lgn-field">
+              <span className="lgn-label">Password</span>
+              <div className="lgn-input-row">
+                <IonIcon className="lgn-input-icon" icon={lockClosedOutline} />
+                <IonInput
+                  className="lgn-input"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter password"
+                  value={customerInformation.password}
+                  onIonInput={(e: any) => handleInfoChange(e)}
+                />
+                <button
+                  type="button"
+                  className="lgn-eye-btn"
+                  onClick={() => handleShowPassword()}
+                >
+                  <IonIcon icon={showPassword ? eyeOutline : eyeOffOutline} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="lgn-actions">
+            <IonButton className="lgn-submit-btn" onClick={() => handleLogin()}>
+              Login
+            </IonButton>
+            <IonButton
+              className="lgn-explore-btn"
+              fill="clear"
+              expand="block"
+              onClick={() => router.push("/home/main")}
+            >
+              Explore Products
+            </IonButton>
+          </div>
+
+        </div>
       </div>
     </IonContent>
   );

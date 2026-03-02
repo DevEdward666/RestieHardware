@@ -1,7 +1,10 @@
 import {
   IonAlert,
+  IonBadge,
   IonButton,
   IonButtons,
+  IonCard,
+  IonCardContent,
   IonContent,
   IonHeader,
   IonIcon,
@@ -10,18 +13,16 @@ import {
   IonLabel,
   IonList,
   IonModal,
-  IonPopover,
   IonRadio,
   IonRadioGroup,
   IonSearchbar,
-  IonSelect,
-  IonSelectOption,
+  IonText,
   IonTitle,
   IonToolbar,
   RadioGroupChangeEventDetail,
   useIonRouter,
 } from "@ionic/react";
-import { addCircle, closeCircle, cropSharp, saveOutline } from "ionicons/icons";
+import { addCircleOutline, closeCircle, cubeOutline, saveOutline, storefrontOutline, trashOutline } from "ionicons/icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import {
@@ -134,14 +135,14 @@ const ManageProductComponent = () => {
     type: "products",
   });
 
-  const handleQuantityChange = (index: number,event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleQuantityChange = (index: number, event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     const newProducts = [...products];
-  
+
 
     if (name === "qty") {
       let qtyValue = parseInt(value);
-      if (qtyValue<= 0 || isNaN(qtyValue)) {
+      if (qtyValue <= 0 || isNaN(qtyValue)) {
         newProducts[index].addedqty = 1;
         setShowAlert({
           isOpen: true,
@@ -515,60 +516,55 @@ const ManageProductComponent = () => {
   }, [previousProducts]);
   return (
     <IonContent>
-      <IonList>
+      {/* ── Mode Selector ─────────────────────────────── */}
+      <div className="mp-mode-selector">
         <IonRadioGroup
           value={getdrType}
           onIonChange={(ev) => handleRadioChange(ev)}
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-around",
-          }}
+          className="mp-radio-group"
         >
           {DRtype.map((val) => (
-            <IonItem
+            <IonRadio
               key={val.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                padding: "0 10px",
-              }}
+              mode="ios"
+              value={val.type}
+              className={`mp-radio-option ${getdrType === val.type ? "mp-radio-active" : ""}`}
             >
-              <IonRadio mode="ios" value={val.type} />
-              <IonLabel>{val.name}</IonLabel>
-            </IonItem>
+              {val.name}
+            </IonRadio>
           ))}
         </IonRadioGroup>
-      </IonList>
+      </div>
+
+      {/* ══════════════════════════════════════════════════
+          SINGLE / UPDATE MODE
+      ══════════════════════════════════════════════════ */}
       {getdrType === "single" ? (
-        <div>
-          {" "}
+        <div className="mp-section">
           <IonSearchbar
-            onClick={() =>
-              setOpenSearchModal({ isOpen: true, modal: "products" })
-            }
+            onClick={() => setOpenSearchModal({ isOpen: true, modal: "products" })}
             placeholder="Search Product"
             autocapitalize={"words"}
-          ></IonSearchbar>
+            className="mp-searchbar"
+          />
+
+          {/* Search modal (products + supplier) */}
           <IonModal
             isOpen={openSearchModal.isOpen}
-            onDidDismiss={() =>
-              setOpenSearchModal({ isOpen: false, modal: "" })
-            }
+            onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
             initialBreakpoint={1}
             breakpoints={[0, 0.25, 0.5, 0.75, 1]}
           >
             <IonHeader>
               <IonToolbar>
                 <IonButtons slot="start">
-                  <IonButton
-                    onClick={() =>
-                      setOpenSearchModal({ isOpen: false, modal: "" })
-                    }
-                  >
+                  <IonButton onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}>
                     Cancel
                   </IonButton>
                 </IonButtons>
+                <IonTitle>
+                  {openSearchModal.modal === "products" ? "Select Product" : "Select Supplier"}
+                </IonTitle>
               </IonToolbar>
             </IonHeader>
             <IonContent className="ion-padding">
@@ -579,19 +575,24 @@ const ManageProductComponent = () => {
                     onIonInput={(e) => handleSearch(e)}
                     autocapitalize={"words"}
                     debounce={500}
-                  ></IonSearchbar>
+                  />
                   <IonList>
                     {admin_list_of_items.map((val, index) => (
-                      <IonItem
-                        onClick={() => handleSelectedProduct(val)}
-                        key={index}
-                      >
-                        {/* <IonAvatar slot="start">
-                  <IonImg src="https://i.pravatar.cc/300?u=b" />
-                </IonAvatar> */}
+                      <IonItem button onClick={() => handleSelectedProduct(val)} key={index} lines="full" className="mp-list-item">
+                        <div slot="start" className="mp-list-icon-wrap">
+                          <IonIcon icon={cubeOutline} className="mp-list-icon" />
+                        </div>
                         <IonLabel>
-                          <h2>{val.item}</h2>
-                          <p>QTY {val.qty}</p>
+                          <h2 className="mp-list-item-name">{val.item}</h2>
+                          <p className="mp-list-item-meta">
+                            {[val.category, val.brand].filter(Boolean).join(" · ")}
+                          </p>
+                          <p className="mp-list-item-sub">
+                            <span className={`mp-stock-badge ${val.qty <= 0 ? "mp-stock-out" : val.qty <= val.reorderqty ? "mp-stock-low" : "mp-stock-ok"}`}>
+                              {val.qty <= 0 ? "Out of stock" : `Stock: ${val.qty}`}
+                            </span>
+                            <span className="mp-list-price">₱{Number(val.price).toLocaleString()}</span>
+                          </p>
                         </IonLabel>
                       </IonItem>
                     ))}
@@ -604,13 +605,11 @@ const ManageProductComponent = () => {
                     onIonInput={(e) => handleSearch(e)}
                     autocapitalize={"words"}
                     debounce={1500}
-                  ></IonSearchbar>
+                  />
                   <IonList>
                     {admin_list_of_supplier.map((val, index) => (
-                      <IonItem
-                        onClick={() => handleSelectedSupplier(val)}
-                        key={index}
-                      >
+                      <IonItem button onClick={() => handleSelectedSupplier(val)} key={index} lines="inset">
+                        <IonIcon icon={storefrontOutline} slot="start" color="medium" />
                         <IonLabel>
                           <h2>{val.company}</h2>
                           <p>{val.address}</p>
@@ -622,280 +621,346 @@ const ManageProductComponent = () => {
               )}
             </IonContent>
           </IonModal>
-          <div className="manage-product-input-container">
-            <IonInput
-              labelPlacement="floating"
-              label="Product Name"
-              name="name"
-              type="text"
-              onIonInput={(e: any) => handleInfoChange(e)}
-              class="product-input"
-              value={productInfo.item}
-            ></IonInput>
-            <IonInput
-              labelPlacement="floating"
-              label="Category"
-              name="category"
-              type="text"
-              onIonInput={(e: any) => handleInfoChange(e)}
-              class="product-input"
-              value={productInfo.category}
-            ></IonInput>
-            <IonInput
-              labelPlacement="floating"
-              label="Brand"
-              name="brand"
-              type="text"
-              onIonInput={(e: any) => handleInfoChange(e)}
-              class="product-input"
-              value={productInfo.brand}
-            ></IonInput>
-            <IonInput
-              required
-              onClick={() =>
-                setOpenSearchModal({ isOpen: true, modal: "supplier" })
-              }
-              labelPlacement="floating"
-              label="Supplier"
-              name="supplier"
-              type="text"
-              class="product-input"
-              value={productInfo.supplierName}
-            ></IonInput>
-            <IonInput
-              readonly
-              labelPlacement="floating"
-              label="Quantity"
-              name="qty"
-              type="number"
-              onIonInput={(e: any) => handleInfoChange(e)}
-              class="product-input"
-              value={productInfo.onhandqty}
-            ></IonInput>
-            <IonInput
-              labelPlacement="floating"
-              label="Add Quantity"
-              name="addedqty"
-              debounce={500}
-              type="number"
-              onIonInput={(e: any) => handleInfoChange(e)}
-              class="product-input"
-              value={productInfo.addedqty}
-            ></IonInput>
-            <IonInput
-              labelPlacement="floating"
-              label="Cost"
-              name="cost"
-              type="number"
-              onIonInput={(e: any) => handleInfoChange(e)}
-              class="product-input"
-              value={productInfo.cost}
-            ></IonInput>
-            <IonInput
-              labelPlacement="floating"
-              label="Price"
-              name="price"
-              type="number"
-              onIonInput={(e: any) => handleInfoChange(e)}
-              class="product-input"
-              value={productInfo.price}
-            ></IonInput>
-            <IonButton
-              color="medium"
-              expand="block"
-              onClick={() => handleSaveProduct()}
-            >
-              <IonIcon slot="start" icon={saveOutline}></IonIcon>
-              Update Product
-            </IonButton>
-          </div>
+
+          {/* Product detail card */}
+          {productInfo.code ? (
+            <IonCard className="mp-detail-card">
+              <IonCardContent>
+                <div className="mp-field-grid">
+                  <div className="mp-field-full">
+                    <IonInput
+                      labelPlacement="floating"
+                      label="Product Name"
+                      name="name"
+                      type="text"
+                      onIonInput={(e: any) => handleInfoChange(e)}
+                      className="mp-input"
+                      value={productInfo.item}
+                    />
+                  </div>
+                  <IonInput
+                    labelPlacement="floating"
+                    label="Category"
+                    name="category"
+                    type="text"
+                    onIonInput={(e: any) => handleInfoChange(e)}
+                    className="mp-input"
+                    value={productInfo.category}
+                  />
+                  <IonInput
+                    labelPlacement="floating"
+                    label="Brand"
+                    name="brand"
+                    type="text"
+                    onIonInput={(e: any) => handleInfoChange(e)}
+                    className="mp-input"
+                    value={productInfo.brand}
+                  />
+                  <IonInput
+                    required
+                    onClick={() => setOpenSearchModal({ isOpen: true, modal: "supplier" })}
+                    labelPlacement="floating"
+                    label="Supplier"
+                    name="supplier"
+                    type="text"
+                    className="mp-input mp-input-tap"
+                    value={productInfo.supplierName}
+                    placeholder="Tap to select"
+                  />
+                  <IonInput
+                    readonly
+                    labelPlacement="floating"
+                    label="On-Hand Qty"
+                    name="qty"
+                    type="number"
+                    className="mp-input"
+                    value={productInfo.onhandqty}
+                  />
+                  <IonInput
+                    labelPlacement="floating"
+                    label="Add Quantity"
+                    name="addedqty"
+                    debounce={500}
+                    type="number"
+                    onIonInput={(e: any) => handleInfoChange(e)}
+                    className="mp-input"
+                    value={productInfo.addedqty}
+                  />
+                  <IonInput
+                    labelPlacement="floating"
+                    label="Cost (₱)"
+                    name="cost"
+                    type="number"
+                    onIonInput={(e: any) => handleInfoChange(e)}
+                    className="mp-input"
+                    value={productInfo.cost}
+                  />
+                  <IonInput
+                    labelPlacement="floating"
+                    label="Price (₱)"
+                    name="price"
+                    type="number"
+                    onIonInput={(e: any) => handleInfoChange(e)}
+                    className="mp-input"
+                    value={productInfo.price}
+                  />
+                </div>
+                <IonButton
+                  expand="block"
+                  className="mp-save-btn"
+                  onClick={() => handleSaveProduct()}
+                >
+                  <IonIcon slot="start" icon={saveOutline} />
+                  Save Changes
+                </IonButton>
+              </IonCardContent>
+            </IonCard>
+          ) : (
+            <div className="mp-empty-state">
+              <IonIcon icon={cubeOutline} className="mp-empty-icon" />
+              <IonText color="medium">
+                <p>Search and select a product above to update it.</p>
+              </IonText>
+            </div>
+          )}
         </div>
+
       ) : (
-        <div>
-          <div>
-            <IonInput
-              required
-              onClick={() => setShowModal({ isOpen: true, type: "supplier" })}
-              labelPlacement="floating"
-              label="Supplier"
-              name="supplier"
-              type="text"
-              class="product-input"
-              value={productInfo.supplierName}
-            ></IonInput>
-            <IonButton
-              color="medium"
-              expand="block"
-              onClick={() => addNewProduct(false)}
-            >
-              Select Product
-            </IonButton>
-            <div>
-              {loading ? (
-                <div>Loading...</div>
-              ) : products.length > 0 ? (
-                <>
-                  {/* <div className="product-list-item-header">
-                    <label>Product</label>
-                    <label>Cost</label>
-                    <label>Price</label>
-                    <label>QTY</label>
-                  </div> */}
-                  {products.map((product, index) => (
-                    <IonItem key={index}>
-                      <div className="product-list-item">
-                        <IonIcon
-                          size="large"
-                          className="product-add-icon"
-                          onClick={() => {
-                            setSelectedProductIndex(index);
-                            setShowModal({ isOpen: true, type: "product" });
-                          }}
-                          icon={addCircle}
-                        ></IonIcon>
-                        <div className="product-input-container product-item-text">
-                        <label className="product-input-label">Product</label>
-                        <IonInput
-                          type="text"
-                          name="product"
-                          className="product-name-selected"
-                          value={product.item || "No item selected"}
-                          readonly
-                        />
+        /* ══════════════════════════════════════════════════
+            MULTIPLE / RECEIVED MODE
+        ══════════════════════════════════════════════════ */
+        <div className="mp-section">
+
+          {/* Supplier selector */}
+          <IonCard className="mp-supplier-card">
+            <IonCardContent>
+              <IonItem
+                button
+                lines="none"
+                onClick={() => setShowModal({ isOpen: true, type: "supplier" })}
+                className="mp-supplier-item"
+              >
+                <IonIcon icon={storefrontOutline} slot="start" color="primary" />
+                <IonLabel>
+                  <p className="mp-supplier-hint">Supplier</p>
+                  <h2 className={productInfo.supplierName ? "mp-supplier-name" : "mp-supplier-placeholder"}>
+                    {productInfo.supplierName || "Tap to select supplier"}
+                  </h2>
+                </IonLabel>
+              </IonItem>
+            </IonCardContent>
+          </IonCard>
+
+          {/* Product list */}
+          {loading ? (
+            <div className="mp-empty-state">
+              <IonText color="medium"><p>Loading...</p></IonText>
+            </div>
+          ) : products.length > 0 ? (
+            <div className="mp-product-list">
+              {products.map((product, index) => (
+                <IonCard key={index} className="mp-product-card">
+                  <IonCardContent>
+                    {/* Card header row */}
+                    <div className="mp-card-header">
+                      <div
+                        className="mp-product-name-row"
+                        onClick={() => {
+                          setSelectedProductIndex(index);
+                          setShowModal({ isOpen: true, type: "product" });
+                        }}
+                      >
+                        <IonIcon icon={cubeOutline} className="mp-product-icon" />
+                        <div>
+                          <p className="mp-product-label">Product</p>
+                          <h3 className="mp-product-name">
+                            {product.item || <span className="mp-tap-hint">Tap to select</span>}
+                          </h3>
                         </div>
-                        <div className="product-input-container">
-                          <label className="product-input-label">Cost</label>
+                      </div>
+                      <IonIcon
+                        icon={trashOutline}
+                        className="mp-delete-icon"
+                        onClick={() => removeProduct(index)}
+                      />
+                    </div>
+
+                    {/* On-hand badge */}
+                    {product.item ? (
+                      <div className="mp-onhand-row">
+                        <IonBadge color="light" className="mp-onhand-badge">
+                          On-hand: {product.onhandqty}
+                        </IonBadge>
+                      </div>
+                    ) : null}
+
+                    {/* Numeric fields */}
+                    <div className="mp-num-grid">
+                      <div className="mp-num-field">
+                        <label className="mp-num-label">Cost (₱)</label>
                         <IonInput
                           type="number"
                           name="cost"
-                          className="product-input-qty"
+                          className="mp-num-input"
                           value={product.cost || ""}
-                          placeholder="Cost"
+                          placeholder="0"
                           debounce={500}
-                          onIonInput={(e: any) => handleQuantityChange(index,e)}
+                          onIonInput={(e: any) => handleQuantityChange(index, e)}
                         />
-                        </div>
-                        <div className="product-input-container">
-                        <label className="product-input-label">Price</label>
+                      </div>
+                      <div className="mp-num-field">
+                        <label className="mp-num-label">Price (₱)</label>
                         <IonInput
                           type="number"
                           name="price"
-                          className="product-input-qty"
+                          className="mp-num-input"
                           value={product.price || ""}
-                          placeholder="Price"
+                          placeholder="0"
                           debounce={500}
-                          onIonInput={(e: any) => handleQuantityChange(index,e)}
+                          onIonInput={(e: any) => handleQuantityChange(index, e)}
                         />
-                        </div>
-                        <div className="product-input-container">
-                          <label className="product-input-label">Qty</label>
-                          <IonInput
-                            type="number"
-                            name="qty"
-                            className="product-input-qty"
-                            value={product.addedqty || 1}
-                            placeholder="Qty"
-                            debounce={500}
-                            onIonInput={(e: any) => handleQuantityChange(index,e)}
-                          />
-                        </div>
-                        <IonIcon
-                          className="product-remove-icon"
-                          icon={closeCircle}
-                          size="large"
-                          onClick={() => removeProduct(index)}
-                          color="danger"
-                        >
-                          Remove
-                        </IonIcon>
                       </div>
-                    </IonItem>
-                  ))}
+                      <div className="mp-num-field">
+                        <label className="mp-num-label">Qty</label>
+                        <IonInput
+                          type="number"
+                          name="qty"
+                          className="mp-num-input"
+                          value={product.addedqty || 1}
+                          placeholder="1"
+                          debounce={500}
+                          onIonInput={(e: any) => handleQuantityChange(index, e)}
+                        />
+                      </div>
+                    </div>
+                  </IonCardContent>
+                </IonCard>
+              ))}
+            </div>
+          ) : (
+            <div className="mp-empty-state">
+              <IonIcon icon={cubeOutline} className="mp-empty-icon" />
+              <IonText color="medium">
+                <p>No items yet. Tap "Add Product" to begin.</p>
+              </IonText>
+            </div>
+          )}
+
+          {/* Action bar */}
+          <div className="mp-action-bar">
+            <IonButton
+              expand="block"
+              fill="outline"
+              className="mp-add-btn"
+              onClick={() => addNewProduct(false)}
+            >
+              <IonIcon slot="start" icon={addCircleOutline} />
+              Add Product
+            </IonButton>
+            {products.length > 0 && (
+              <IonButton
+                expand="block"
+                className="mp-submit-btn"
+                onClick={handleSubmit}
+              >
+                <IonIcon slot="start" icon={saveOutline} />
+                Submit {products.length} {products.length === 1 ? "Item" : "Items"}
+              </IonButton>
+            )}
+          </div>
+
+          <IonAlert
+            isOpen={showAlert.isOpen}
+            onDidDismiss={() => setShowAlert({ isOpen: false, message: "" })}
+            header={"Notice"}
+            message={showAlert.message}
+            buttons={["OK"]}
+          />
+
+          {/* Product / Supplier picker modal */}
+          <IonModal
+            isOpen={showModal.isOpen}
+            onDidDismiss={() => setShowModal({ isOpen: false, type: "product" })}
+            initialBreakpoint={0.75}
+            breakpoints={[0, 0.5, 0.75, 1]}
+          >
+            <IonHeader>
+              <IonToolbar>
+                <IonTitle>
+                  {showModal.type === "product" ? "Select Product" : "Select Supplier"}
+                </IonTitle>
+                <IonButtons slot="end">
+                  <IonButton onClick={() => handleCloseListOfItemsModal()}>
+                    <IonIcon icon={closeCircle} />
+                  </IonButton>
+                </IonButtons>
+              </IonToolbar>
+            </IonHeader>
+            <IonContent>
+              {showModal.type === "product" ? (
+                <>
+                  <IonSearchbar
+                    placeholder="Search Product"
+                    onIonInput={(e) => handleSearch(e)}
+                    autocapitalize={"words"}
+                    debounce={500}
+                  />
+                  <IonList>
+                    {admin_list_of_items.map((item, index) => (
+                      <IonItem
+                        button
+                        key={index}
+                        onClick={() => handleSelectProduct(item, selectedProductIndex!)}
+                        lines="full"
+                        className="mp-list-item"
+                      >
+                        <div slot="start" className="mp-list-icon-wrap">
+                          <IonIcon icon={cubeOutline} className="mp-list-icon" />
+                        </div>
+                        <IonLabel>
+                          <h2 className="mp-list-item-name">{item.item}</h2>
+                          <p className="mp-list-item-meta">
+                            {[item.category, item.brand].filter(Boolean).join(" · ")}
+                          </p>
+                          <p className="mp-list-item-sub">
+                            <span className={`mp-stock-badge ${item.qty <= 0 ? "mp-stock-out" : item.qty <= item.reorderqty ? "mp-stock-low" : "mp-stock-ok"}`}>
+                              {item.qty <= 0 ? "Out of stock" : `Stock: ${item.qty}`}
+                            </span>
+                            <span className="mp-list-price">₱{Number(item.price).toLocaleString()}</span>
+                          </p>
+                        </IonLabel>
+                      </IonItem>
+                    ))}
+                  </IonList>
                 </>
               ) : (
-                <span className="not-yet-span">No item yet</span>
+                <>
+                  <IonSearchbar
+                    placeholder="Search Supplier"
+                    onIonInput={(e) => handleSearch(e)}
+                    autocapitalize={"words"}
+                    debounce={1500}
+                  />
+                  <IonList>
+                    {admin_list_of_supplier.map((val, index) => (
+                      <IonItem
+                        button
+                        onClick={() => handleSelectedSupplierMultiple(val)}
+                        key={index}
+                        lines="inset"
+                      >
+                        <IonIcon icon={storefrontOutline} slot="start" color="medium" />
+                        <IonLabel>
+                          <h2>{val.company}</h2>
+                          <p>{val.address}</p>
+                        </IonLabel>
+                      </IonItem>
+                    ))}
+                  </IonList>
+                </>
               )}
-            </div>
-
-            <IonButton color="medium" expand="block" onClick={handleSubmit}>
-              Submit Products
-            </IonButton>
-
-            <IonAlert
-              isOpen={showAlert.isOpen}
-              onDidDismiss={() => setShowAlert({ isOpen: false, message: "" })}
-              header={"Alert"}
-              message={showAlert.message}
-              buttons={["OK"]}
-            />
-
-            <IonModal
-              isOpen={showModal.isOpen}
-              onDidDismiss={() =>
-                setShowModal({ isOpen: false, type: "product" })
-              }
-            >
-              <IonHeader>
-                <IonToolbar>
-                  <IonTitle>Select Item</IonTitle>
-
-                  <IonIcon
-                    slot="end"
-                    color="medium"
-                    size="large"
-                    onClick={() => handleCloseListOfItemsModal()}
-                    icon={closeCircle}
-                  ></IonIcon>
-                </IonToolbar>
-              </IonHeader>
-              <IonContent>
-                {showModal.type === "product" ? (
-                  <>
-                    <IonSearchbar
-                      placeholder="Search Product"
-                      onIonInput={(e) => handleSearch(e)}
-                      autocapitalize={"words"}
-                      debounce={500}
-                    ></IonSearchbar>
-                    <IonList>
-                      {admin_list_of_items.map((item, index) => (
-                        <IonItem
-                          key={index}
-                          onClick={() =>
-                            handleSelectProduct(item, selectedProductIndex!)
-                          }
-                        >
-                          <IonLabel>{item.item}</IonLabel>
-                        </IonItem>
-                      ))}
-                    </IonList>{" "}
-                  </>
-                ) : (
-                  <>
-                    <IonSearchbar
-                      placeholder="Search Supplier"
-                      onIonInput={(e) => handleSearch(e)}
-                      autocapitalize={"words"}
-                      debounce={1500}
-                    ></IonSearchbar>
-                    <IonList>
-                      {admin_list_of_supplier.map((val, index) => (
-                        <IonItem
-                          onClick={() => handleSelectedSupplierMultiple(val)}
-                          key={index}
-                        >
-                          <IonLabel>
-                            <h2>{val.company}</h2>
-                            <p>{val.address}</p>
-                          </IonLabel>
-                        </IonItem>
-                      ))}
-                    </IonList>
-                  </>
-                )}
-              </IonContent>
-            </IonModal>
-          </div>
+            </IonContent>
+          </IonModal>
         </div>
       )}
     </IonContent>
@@ -903,3 +968,4 @@ const ManageProductComponent = () => {
 };
 
 export default ManageProductComponent;
+

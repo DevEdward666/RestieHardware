@@ -1,9 +1,6 @@
 import {
   useIonRouter,
-  IonCard,
-  IonCardContent,
   IonSpinner,
-  getPlatforms,
 } from "@ionic/react";
 import { useSelector } from "react-redux";
 import {
@@ -26,7 +23,6 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
   );
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
-  const platform = getPlatforms();
   const [isLoading, setisLoading] = useState<boolean>(false);
   const formatDate = (datetime: number) => {
     const timestamp = datetime;
@@ -103,83 +99,94 @@ const OrderListComponent: React.FC<OrderListFilter> = (filter) => {
     },
     [dispatch]
   );
-  return (
-    <div
-      className={`order-list-main-content ${
-        platform.includes("mobileweb") && !platform.includes("tablet")
-          ? "mobile"
-          : "desktop"
-      }`}
-    >
-      {isLoading ? (
-        <IonSpinner className="loader" name="lines-sharp"></IonSpinner>
-      ) : null}
+  const getStatusKey = (orders: any): string => {
+    if (filter.filter.status.toLowerCase() === "returns") return "returns";
+    if (orders?.paidthru?.toLowerCase() === "debt") return "debt";
+    return orders?.status?.trim().toLowerCase() ?? "";
+  };
 
-      {Array.isArray(order_list) && order_list.length > 0 ? (
-        order_list?.map((orders, index) => (
-          <IonCard
-            className="order-list-card-container"
-            key={index}
-            onClick={() =>
-              handleSelectOrder(
-                orders.orderid,
-                orders.status,
-                orders.cartid,
-                filter.filter.status
-              )
-            }
-          >
-            <div className="order-list-card-add-item-container">
-              <IonCardContent className="order-list-card-main-content">
-                <div className="order-list-card-content">
-                  <div className="order-list-card-title-details">
-                    <div className="order-list-card-title">Order Id: </div>
-                    {orders.orderid}
-                  </div>
-                  <div className="order-list-card-title-details">
-                    <div className="order-list-card-title">Order Date: </div>
-                    {formatDate(orders.createdat)}
-                  </div>
-                  <div className="order-list-card-price-details">
-                    <div className="order-list-card-price">Total Cost: </div>
-                    <span>&#8369;</span>
-                    {(orders.total - (orders.totaldiscount??0)).toFixed(2)}
-                  </div>
-                  <div className="order-list-card-price-details">
-                    <div className="order-list-card-price">Total Discount: </div>
-                    <span>&#8369;</span>
-                    {orders.totaldiscount?.toFixed(2)??0}
-                  </div>
-                  <div className="order-list-card-price-details">
-                    <div className="order-list-card-price">Total Pay: </div>
-                    <span>&#8369;</span>
-                    {orders.paidcash.toFixed(2)}
-                  </div>
-                  <div
-                    className={`order-list-card-qty ${
-                      filter.filter.status.toLowerCase() === "returns"
-                        ? "returns"
-                        : orders?.paidthru.toLowerCase() === "debt"
-                        ? orders?.paidthru.toLowerCase()
-                        : orders?.status.trim().toLowerCase()
-                    }`}
-                  >
-                    Status:{" "}
-                    {filter.filter.status.toLowerCase() === "returns"
-                      ? "Return/Refund".toUpperCase()
-                      : orders?.status.toLowerCase() === "approved"
-                      ? orders?.paidthru.toLowerCase() === "debt"
-                        ? "Receivable".toUpperCase()
-                        : "Completed".toUpperCase()
-                      : orders?.status.toUpperCase()}
+  const getStatusLabel = (orders: any): string => {
+    if (filter.filter.status.toLowerCase() === "returns") return "Return/Refund";
+    if (orders?.status?.toLowerCase() === "approved") {
+      return orders?.paidthru?.toLowerCase() === "debt" ? "Receivable" : "Completed";
+    }
+    return orders?.status ?? "";
+  };
+
+  const badgeClass = (key: string) => {
+    switch (key) {
+      case "pending": return "badge-pending";
+      case "approved":
+      case "completed": return "badge-completed";
+      case "cancelled": return "badge-cancelled";
+      case "returns": return "badge-returns";
+      case "debt": return "badge-debt";
+      case "quotation": return "badge-quotation";
+      default: return "badge-pending";
+    }
+  };
+
+  return (
+    <div className="ol-wrapper">
+      {isLoading ? (
+        <div className="ol-loader">
+          <IonSpinner name="lines-sharp" />
+        </div>
+      ) : (
+        <div className="ol-inner">
+          {Array.isArray(order_list) && order_list.length > 0 ? (
+            order_list.map((orders, index) => {
+              const statusKey = getStatusKey(orders);
+              const statusLabel = getStatusLabel(orders);
+              return (
+                <div
+                  key={index}
+                  className={`ol-card status-${statusKey}`}
+                  onClick={() =>
+                    handleSelectOrder(
+                      orders.orderid,
+                      orders.status,
+                      orders.cartid,
+                      filter.filter.status
+                    )
+                  }
+                >
+                  <div className="ol-card-body">
+                    <div className="ol-card-top">
+                      <span className="ol-order-id">#{orders.orderid}</span>
+                      <span className={`ol-status-badge ${badgeClass(statusKey)}`}>
+                        {statusLabel.toUpperCase()}
+                      </span>
+                    </div>
+                    <p className="ol-date">{formatDate(orders.createdat)}</p>
+                    <div className="ol-amounts">
+                      <div className="ol-amount-block">
+                        <p className="ol-amount-label">Total</p>
+                        <p className="ol-amount-value">
+                          &#8369;{(orders.total - (orders.totaldiscount ?? 0)).toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="ol-amount-block">
+                        <p className="ol-amount-label">Discount</p>
+                        <p className="ol-amount-value discount">
+                          &#8369;{(orders.totaldiscount ?? 0).toFixed(2)}
+                        </p>
+                      </div>
+                      <div className="ol-amount-block">
+                        <p className="ol-amount-label">Paid</p>
+                        <p className="ol-amount-value">
+                          &#8369;{orders.paidcash.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </IonCardContent>
-            </div>
-          </IonCard>
-        ))
-      ) : (
-        <p>No orders found.</p>
+              );
+            })
+          ) : (
+            <p className="ol-empty">No orders found.</p>
+          )}
+        </div>
       )}
     </div>
   );

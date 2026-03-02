@@ -25,10 +25,12 @@ namespace RestieAPI.Controllers.Inventory
     public class Inventory : ControllerBase
     {
         public IConfiguration configuration;
+        private readonly IWebHostEnvironment _env;
         InventoryRepo _inventoryRepo;
-        public Inventory(IConfiguration configuration)
+        public Inventory(IConfiguration configuration, IWebHostEnvironment env)
         {
             this.configuration = configuration;
+            _env = env;
             _inventoryRepo = new InventoryRepo(configuration);
         }
 
@@ -42,7 +44,7 @@ namespace RestieAPI.Controllers.Inventory
             getAllInventory.limit = itemsPerPage;
             return Ok(_inventoryRepo.fetchInventory(getAllInventory));
         }
-        
+
         [HttpGet("getAllInventory")]
         public ActionResult<InventoryItemModel> GetAllInventory(
             [FromQuery] int limit = 1000,
@@ -61,25 +63,25 @@ namespace RestieAPI.Controllers.Inventory
                 offset = offset,
                 limit = limit
             };
-            
+
             return Ok(_inventoryRepo.fetchInventory(getAllInventory));
         }
-        
+
         [HttpPost("selectedItem/{itemCode}")]
         public ActionResult<InventoryItemModel> SelectedItem(string itemCode)
         {
             return Ok(_inventoryRepo.selectedItem(itemCode));
         }
         [HttpPost("fetchBrands")]
-        public ActionResult<BrandResponseModel> FetchBrand( [FromBody] GetBrand getBrand)
+        public ActionResult<BrandResponseModel> FetchBrand([FromBody] GetBrand getBrand)
         {
-     
+
             return Ok(_inventoryRepo.getBrands(getBrand));
         }
         [HttpPost("fetchCategory")]
-        public ActionResult<CategoryResponseModel> FetchCategory( [FromBody] GetBrand getBrand)
+        public ActionResult<CategoryResponseModel> FetchCategory([FromBody] GetBrand getBrand)
         {
-     
+
             return Ok(_inventoryRepo.getCategory(getBrand));
         }
         [HttpPost("searchInventory/{pageNumber}")]
@@ -92,7 +94,7 @@ namespace RestieAPI.Controllers.Inventory
             getAllInventory.limit = itemsPerPage;
             return Ok(_inventoryRepo.searchInventory(getAllInventory));
         }
-     
+
         [Authorize]
         [HttpPost("AddToCart")]
         public ActionResult<PostResponse> AddtoCart(AddToCart[] addToCart)
@@ -115,7 +117,12 @@ namespace RestieAPI.Controllers.Inventory
         [HttpPost("AddOrdern8n")]
         public ActionResult<PostResponse> AddOrdern8n(AddToCart[] addToCart)
         {
-            return Ok(_inventoryRepo.SavetoCartandUpdateInventoryn8n(addToCart));
+            return Ok(_inventoryRepo.AddToCartn8n(addToCart));
+        }
+        [HttpPost("updateCartn8n")]
+        public ActionResult<PostResponse> UpdateOrdern8n(AddToCart[] addToCart)
+        {
+            return Ok(_inventoryRepo.updateCartn8n(addToCart));
         }
         [Authorize]
         [HttpPost("UpdatedOrderAndCart")]
@@ -128,7 +135,7 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<PostResponse> ApprovedOrderAndpay(AddToCart[] addToCart)
         {
             return Ok(_inventoryRepo.ApprovedOrderAndpay(addToCart));
-        }   
+        }
         [Authorize]
         [HttpPost("CancelOrder")]
         public ActionResult<PostResponse> CancelOrder(AddToCart[] addToCart)
@@ -147,7 +154,7 @@ namespace RestieAPI.Controllers.Inventory
         {
             return Ok(_inventoryRepo.getOrder(getUserOrder));
         }
-        
+
         [HttpPost("userOrderInfo")]
         public ActionResult<PostResponse> GetOrderInfo(GetSelectedOrder getUserOrder)
         {
@@ -200,13 +207,13 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<PostResponse> getDelivery(GetDelivery getDelivery)
         {
             return Ok(_inventoryRepo.getDelivery(getDelivery));
-        }    
+        }
         [Authorize]
         [HttpPost("GetVoucher")]
         public ActionResult<PostResponse> GetVouchers(GetVoucher getVoucher)
         {
             return Ok(_inventoryRepo.getVouchers(getVoucher));
-        } 
+        }
         [Authorize]
         [HttpPost("ListOfVouchers")]
         public ActionResult<PostResponse> ListOfVouchers(GetVoucherType getVoucher)
@@ -219,15 +226,15 @@ namespace RestieAPI.Controllers.Inventory
         {
 
             return Ok(_inventoryRepo.getByDaySales(getSales));
-           
-        }   
+
+        }
         [Authorize]
         [HttpPost("GenerateSalesReturn")]
         public ActionResult<PostSalesResponse> GenerateSalesReturn(GetSales getSales)
         {
 
             return Ok(_inventoryRepo.GenerateSalesReturn(getSales));
-           
+
         }
         [Authorize]
         [HttpPost("GenerateInventoryLogs")]
@@ -235,7 +242,7 @@ namespace RestieAPI.Controllers.Inventory
         {
             return Ok(_inventoryRepo.GenerateInventoryLogs(getInventoryLogs));
         }
-        
+
         [Authorize]
         [HttpPost("GetQuotationOrderInfo")]
         public ActionResult<PostSalesResponse> GetQuotationOrderInfo(GetSelectedOrder getSelectedOrder)
@@ -247,13 +254,13 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<PostSalesResponse> GetByDaySales()
         {
             return Ok(_inventoryRepo.getInventoryQty());
-        }   
+        }
         [Authorize]
         [HttpPost("GetItemsToRefund")]
         public ActionResult<RequestRefundResponseModel> getItemtoRefund(RequestRefundRequest requestRefundRequest)
         {
             return Ok(_inventoryRepo.getItemtoRefund(requestRefundRequest));
-        }   
+        }
         [Authorize]
         [HttpPost("PostReturnItems")]
         public ActionResult<PostResponse> PostReturnItems(ReturnItems[] returnItems)
@@ -265,7 +272,7 @@ namespace RestieAPI.Controllers.Inventory
         public ActionResult<AgedReceivableResponseModel> GetAllAgedReceivable()
         {
             return Ok(_inventoryRepo.GetAllAgedReceivable());
-        }     
+        }
         [Authorize]
         [HttpPost("UpdateInventoryImage")]
         public ActionResult<PostResponse> UpdateInventoryImage(PutInventoryImage putInventoryImage)
@@ -278,25 +285,28 @@ namespace RestieAPI.Controllers.Inventory
         {
             try
             {
-                string path = Path.Combine("/mnt/images", file.FolderName);
+                // Use ContentRootPath so it works both locally and on Fly.io
+                string basePath = Path.Combine(_env.ContentRootPath, "Resources", "Images", file.FolderName);
 
-                Console.WriteLine($"Trying to access path: {path}");
-                if (!Directory.Exists(path))
+                if (!Directory.Exists(basePath))
                 {
-                    Directory.CreateDirectory(path);
+                    Directory.CreateDirectory(basePath);
                 }
 
-                string filepath = Path.Combine(path, file.FileName);
+                string filepath = Path.Combine(basePath, file.FileName);
                 using (Stream stream = new FileStream(filepath, FileMode.Create))
                 {
                     await file.FormFile.CopyToAsync(stream);
                 }
 
+                // Store a relative path consistent with UploadFileMultiple and Getimage
+                string relativePath = Path.Combine("Resources", "Images", file.FolderName, file.FileName);
+
                 return new PostImageResponse
                 {
                     result = new SaveImageResponse
                     {
-                        imagePath = Path.Combine("/mnt/images", file.FolderName, file.FileName)
+                        imagePath = relativePath
                     },
                     status = StatusCodes.Status201Created,
                     message = "Image Uploaded Successfully"
@@ -307,7 +317,7 @@ namespace RestieAPI.Controllers.Inventory
                 Console.WriteLine($"Error: {e.Message}");
                 return StatusCode(StatusCodes.Status500InternalServerError, new PostImageResponse
                 {
-                    result = null,
+                    result = new SaveImageResponse { imagePath = "" },
                     status = StatusCodes.Status500InternalServerError,
                     message = e.Message
                 });
@@ -357,9 +367,9 @@ namespace RestieAPI.Controllers.Inventory
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new PostImageResponse
+                return StatusCode(StatusCodes.Status500InternalServerError, new PostMultipleImageResponse
                 {
-                    result = null,
+                    result = new SaveMultipleImageResponse { imagePaths = new List<string>() },
                     status = StatusCodes.Status500InternalServerError,
                     message = e.Message
                 });
@@ -496,122 +506,123 @@ namespace RestieAPI.Controllers.Inventory
             var limit = Math.Clamp(request.Limit <= 0 ? 10 : request.Limit, 1, 25);
             var offset = Math.Max(0, request.Offset);
             var sort = (request.Sort ?? "").Trim();
+            var location = (request.Location ?? "").Trim();
 
             try
             {
                 if (string.IsNullOrWhiteSpace(intent)) intent = "search";
+                //
+                // if (intent == "details")
+                // {
+                //     if (string.IsNullOrWhiteSpace(code))
+                //     {
+                //         return BadRequest(new InventoryChatQueryResponse
+                //         {
+                //             success = false,
+                //             statusCode = StatusCodes.Status400BadRequest,
+                //             message = "code is required for intent=details",
+                //             intent = intent,
+                //             query = request
+                //         });
+                //     }
+                //
+                //     // Keep compatibility: details uses the existing full endpoint (may include base64 image).
+                //     var result = _inventoryRepo.selectedItem(code);
+                //     return Ok(new InventoryChatQueryResponse
+                //     {
+                //         success = true,
+                //         statusCode = StatusCodes.Status200OK,
+                //         intent = intent,
+                //         query = request,
+                //         data = new { item = result.result?.FirstOrDefault() }
+                //     });
+                // }
+                //
+                // if (intent == "list_brands")
+                // {
+                //     var brands = _inventoryRepo.getBrands(new InventoryRequestModel.GetBrand { category = category ?? "" });
+                //     return Ok(new InventoryChatQueryResponse
+                //     {
+                //         success = true,
+                //         statusCode = StatusCodes.Status200OK,
+                //         intent = intent,
+                //         query = request,
+                //         data = new { category, brands = brands.result.Select(b => b.brand).ToList() }
+                //     });
+                // }
 
-                if (intent == "details")
-                {
-                    if (string.IsNullOrWhiteSpace(code))
-                    {
-                        return BadRequest(new InventoryChatQueryResponse
-                        {
-                            success = false,
-                            statusCode = StatusCodes.Status400BadRequest,
-                            message = "code is required for intent=details",
-                            intent = intent,
-                            query = request
-                        });
-                    }
+                // if (intent == "cheapest")
+                // {
+                //     var cheapest = _inventoryRepo.GetCheapestLite(q, category, brand);
+                //     return Ok(new InventoryChatQueryResponse
+                //     {
+                //         success = true,
+                //         statusCode = StatusCodes.Status200OK,
+                //         intent = intent,
+                //         query = request,
+                //         data = new { currency = "PHP", item = cheapest }
+                //     });
+                // }
 
-                    // Keep compatibility: details uses the existing full endpoint (may include base64 image).
-                    var result = _inventoryRepo.selectedItem(code);
-                    return Ok(new InventoryChatQueryResponse
-                    {
-                        success = true,
-                        statusCode = StatusCodes.Status200OK,
-                        intent = intent,
-                        query = request,
-                        data = new { item = result.result?.FirstOrDefault() }
-                    });
-                }
+                // if (intent == "price")
+                // {
+                //     var key = !string.IsNullOrWhiteSpace(code) ? code : q;
+                //     if (string.IsNullOrWhiteSpace(key))
+                //     {
+                //         return BadRequest(new InventoryChatQueryResponse
+                //         {
+                //             success = false,
+                //             statusCode = StatusCodes.Status400BadRequest,
+                //             message = "q or code is required for intent=price",
+                //             intent = intent,
+                //             query = request
+                //         });
+                //     }
+                //
+                //     var matches = _inventoryRepo.SearchInventoryLite(key, category, brand, sort: "asc", limit: 5,location);
+                //     var best = matches.OrderBy(m => m.price).FirstOrDefault();
+                //
+                //     return Ok(new InventoryChatQueryResponse
+                //     {
+                //         success = true,
+                //         statusCode = StatusCodes.Status200OK,
+                //         intent = intent,
+                //         query = request,
+                //         data = new { currency = "PHP", found = best != null, item = best, matches }
+                //     });
+                // }
 
-                if (intent == "list_brands")
-                {
-                    var brands = _inventoryRepo.getBrands(new InventoryRequestModel.GetBrand { category = category ?? "" });
-                    return Ok(new InventoryChatQueryResponse
-                    {
-                        success = true,
-                        statusCode = StatusCodes.Status200OK,
-                        intent = intent,
-                        query = request,
-                        data = new { category, brands = brands.result.Select(b => b.brand).ToList() }
-                    });
-                }
-
-                if (intent == "cheapest")
-                {
-                    var cheapest = _inventoryRepo.GetCheapestLite(q, category, brand);
-                    return Ok(new InventoryChatQueryResponse
-                    {
-                        success = true,
-                        statusCode = StatusCodes.Status200OK,
-                        intent = intent,
-                        query = request,
-                        data = new { currency = "PHP", item = cheapest }
-                    });
-                }
-
-                if (intent == "price")
-                {
-                    var key = !string.IsNullOrWhiteSpace(code) ? code : q;
-                    if (string.IsNullOrWhiteSpace(key))
-                    {
-                        return BadRequest(new InventoryChatQueryResponse
-                        {
-                            success = false,
-                            statusCode = StatusCodes.Status400BadRequest,
-                            message = "q or code is required for intent=price",
-                            intent = intent,
-                            query = request
-                        });
-                    }
-
-                    var matches = _inventoryRepo.SearchInventoryLite(key, category, brand, sort: "asc", limit: 5);
-                    var best = matches.OrderBy(m => m.price).FirstOrDefault();
-
-                    return Ok(new InventoryChatQueryResponse
-                    {
-                        success = true,
-                        statusCode = StatusCodes.Status200OK,
-                        intent = intent,
-                        query = request,
-                        data = new { currency = "PHP", found = best != null, item = best, matches }
-                    });
-                }
-
-                if (intent == "exists")
-                {
-                    var key = !string.IsNullOrWhiteSpace(code) ? code : q;
-                    if (string.IsNullOrWhiteSpace(key))
-                    {
-                        return BadRequest(new InventoryChatQueryResponse
-                        {
-                            success = false,
-                            statusCode = StatusCodes.Status400BadRequest,
-                            message = "q or code is required for intent=exists",
-                            intent = intent,
-                            query = request
-                        });
-                    }
-
-                    var (exists, topMatches) = _inventoryRepo.ExistsLite(key, category, brand, top: 5);
-
-                    return Ok(new InventoryChatQueryResponse
-                    {
-                        success = true,
-                        statusCode = StatusCodes.Status200OK,
-                        intent = intent,
-                        query = request,
-                        data = new { exists, matches = topMatches }
-                    });
-                }
+                // if (intent == "exists")
+                // {
+                //     var key = !string.IsNullOrWhiteSpace(code) ? code : q;
+                //     if (string.IsNullOrWhiteSpace(key))
+                //     {
+                //         return BadRequest(new InventoryChatQueryResponse
+                //         {
+                //             success = false,
+                //             statusCode = StatusCodes.Status400BadRequest,
+                //             message = "q or code is required for intent=exists",
+                //             intent = intent,
+                //             query = request
+                //         });
+                //     }
+                //
+                //     var (exists, topMatches) = _inventoryRepo.ExistsLite(key, category, brand, top: 5);
+                //
+                //     return Ok(new InventoryChatQueryResponse
+                //     {
+                //         success = true,
+                //         statusCode = StatusCodes.Status200OK,
+                //         intent = intent,
+                //         query = request,
+                //         data = new { exists, matches = topMatches }
+                //     });
+                // }
 
                 // Default: search
                 var items = _inventoryRepo.SearchInventoryLite(q, category, brand,
                     sort: string.Equals(sort, "desc", StringComparison.OrdinalIgnoreCase) ? "desc" : "asc",
-                    limit: limit);
+                    limit: limit, location);
 
                 return Ok(new InventoryChatQueryResponse
                 {

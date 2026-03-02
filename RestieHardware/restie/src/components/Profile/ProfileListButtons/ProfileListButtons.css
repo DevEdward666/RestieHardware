@@ -1,86 +1,193 @@
-.profile-list-button-main-content{
+/* ── Profile page layout ── */
+.pf-content {
+    --background: #f4f5f8;
+}
+
+.pf-scroll {
     display: flex;
     flex-direction: column;
-    width: 100%;
     align-items: center;
-
-
-    .profile-list-button-list-container{
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-   
-        .profile-list-button-list{
-            display: flex;
-            flex-direction: row;
-            background-color: #125B8C;
-            text-align: center;
-            /* Body - 16/Regular */
-            font-family: Gotham-Book;
-            font-size: 16px;
-            font-style: normal;
-            font-weight: 400;
-            line-height: 24px; /* 150% */
-            align-items: center;
-            justify-content: space-between;
-            border-radius: 40px;
-            .profile-button-order{
-                font-family: Gotham-Book;
-                font-size: 16px;
-                --color:white;
-            }
-            .profile-button-text{
-                padding-left: 10px;
-                color: white;
-            }
-        }
-   
-    }
+    padding: 20px 16px 40px;
+    min-height: 100%;
+    box-sizing: border-box;
 }
-.profile-list-button-list-logout-container{
+
+.pf-inner {
+    width: 100%;
+    max-width: 560px;
     display: flex;
-    bottom: 0;
-    position: absolute;
-    gap: 8px;
     flex-direction: column;
+    gap: 14px;
+}
 
-    .profile-list-button-list-logout{
-        display: flex;
-        flex-direction: row;
-        background-color: white;
-        text-align: center;
-        /* Body - 16/Regular */
-        font-family: Gotham-Book;
-        font-size: 16px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 24px; /* 150% */
-        align-items: center;
-        justify-content: space-between;
-        border-radius: 40px;
-        border-color: #125B8C;    
-        border-style: solid;
-        border-width: 2px;
-        .profile-button-order{
-            font-family: Gotham-Book;
-            font-size: 16px;
-            --color:#125B8C;
-        }
-        .profile-button-text{
-            padding-left: 10px;
-            color: #125B8C;
-        }
-    }
+/* ── Avatar / user header card ── */
+.pf-hero {
+    background: #051926;
+    border-radius: 20px;
+    padding: 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
-.profile-list-desktop{
-    width: 50%;
+
+.pf-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #125B8C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Gotham-Black";
+    font-size: 22px;
+    color: #ffffff;
+    flex-shrink: 0;
+    text-transform: uppercase;
 }
-.profile-list-mobile{
+
+.pf-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+}
+
+.pf-hero-name {
+    font-family: "Gotham-Bold";
+    font-size: 18px;
+    color: #ffffff;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pf-hero-role {
+    font-family: "Gotham-Book";
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    text-transform: capitalize;
+}
+
+/* ── Section label ── */
+.pf-section-label {
+    font-family: "Gotham-Bold";
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #125B8C;
+    margin: 6px 0 2px 4px;
+}
+
+/* ── Menu card ── */
+.pf-card {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1.5px solid #e8eaed;
+}
+
+.pf-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    background: transparent;
     width: 100%;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    text-align: left;
+    transition: background 0.15s;
 }
-.profile-logout-mobile{
+
+.pf-row:last-child {
+    border-bottom: none;
+}
+
+.pf-row:active {
+    background: #f4f5f8;
+}
+
+.pf-row-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    flex-shrink: 0;
+    background: #f0f2f5;
+    color: #051926;
+}
+
+.pf-row-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pf-row-label {
+    font-family: "Gotham-Bold";
+    font-size: 14px;
+    color: #051926;
+}
+
+.pf-row-sub {
+    font-family: "Gotham-Book";
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.pf-row-chevron {
+    color: #c0c8d0;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* ── Logout button ── */
+.pf-logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     width: 100%;
+    padding: 15px;
+    background: #ffffff;
+    border: 1.5px solid #f02b2b;
+    border-radius: 16px;
+    font-family: "Gotham-Bold";
+    font-size: 15px;
+    color: #b91c1c;
+    cursor: pointer;
+    transition: background 0.15s;
 }
-.profile-logout-desktop{
-    width: 50%;
+
+.pf-logout-btn:active {
+    background: #ffeaea;
+}
+
+.pf-logout-btn ion-icon {
+    font-size: 19px;
+}
+
+/* ── Login card (unauthenticated) ── */
+.pf-login-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1.5px solid #e8eaed;
+    overflow: hidden;
+}
+
+/* legacy compat – keep old class names pointing to nothing harmful */
+.profile-list-desktop,
+.profile-list-mobile,
+.profile-logout-mobile,
+.profile-logout-desktop {
+    width: 100%;
 }

@@ -1,95 +1,136 @@
-.order-list-card-container {
+/* Order List Component */
+.ol-wrapper {
   display: flex;
   flex-direction: column;
-  .order-list-card-add-item-container {
-    display: flex;
-    flex-direction: column;
-  }
-  .order-list-card-main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    webkit-padding-start: 0px;
-    padding-inline-start: 0px;
-    -webkit-padding-end: 0px;
-    padding-inline-end: 0px;
-    .order-list-card-content {
-      display: flex;
-      flex-direction: column;
-      padding: 10px;
-      gap: 8px;
-
-      .order-list-card-title-details {
-        display: flex;
-        font-family: "Gotham-Light";
-        font-size: 14px;
-        flex-direction: row;
-        gap: 5px;
-        .order-list-card-title {
-          font-family: "Gotham-Medium";
-          font-size: 14px;
-        }
-      }
-      .order-list-card-price-details {
-        display: flex;
-        font-family: "Gotham-Light";
-        font-size: 14px;
-        flex-direction: row;
-        gap: 5px;
-        .order-list-card-price {
-          font-family: "Gotham-Medium";
-          font-size: 14px;
-        }
-      }
-      .order-list-card-qty {
-        text-align: end;
-        font-family: "Gotham-Medium";
-        font-size: 16px;
-        text-shadow: -1px 0 #c2c0c0, 0 1px #c2c0c0, 1px 0 #c2c0c0,
-          0 -1px #c2c0c0;
-      }
-    }
-  }
-}
-.inventory-card-add-button-container {
-  display: block;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-.order-list-main-content {
-  .desktop {
-    width: 50%;
-  }
-  .mobile {
-    width: 100%;
-  }
-}
-.loader {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
+  align-items: center;
+  padding: 12px 0 24px;
   width: 100%;
 }
-.pending {
-  color: #ffa807;
+
+.ol-inner {
+  width: 100%;
+  max-width: 640px;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-.approved {
-  color: #1bf01b;
+
+/* Loader */
+.ol-loader {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
 }
-.cancel {
-  color: #f02b2b;
+
+/* Empty state */
+.ol-empty {
+  text-align: center;
+  padding: 48px 16px;
+  font-family: "Gotham-Light";
+  font-size: 14px;
+  color: #808289;
 }
-.delivered {
-  color: #4781ec;
+
+/* ── Order card ── */
+.ol-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.12s, box-shadow 0.12s;
+  border-left: 4px solid #e8e8e8;
 }
-.quotation {
-  color: #00f8cf;
+
+.ol-card:active {
+  transform: scale(0.985);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
 }
-.returns {
-  color: #f02b2b;
+
+/* Status border colors */
+.ol-card.status-pending    { border-left-color: #ffa807; }
+.ol-card.status-approved   { border-left-color: #22c55e; }
+.ol-card.status-completed  { border-left-color: #22c55e; }
+.ol-card.status-cancelled  { border-left-color: #f02b2b; }
+.ol-card.status-returns    { border-left-color: #f02b2b; }
+.ol-card.status-debt       { border-left-color: #21beee; }
+.ol-card.status-quotation  { border-left-color: #00c8a0; }
+
+.ol-card-body {
+  padding: 14px 16px;
 }
-.debt {
-  color: #21beee;
+
+/* Top row: order id + status badge */
+.ol-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
+
+.ol-order-id {
+  font-family: "Gotham-Bold";
+  font-size: 13px;
+  color: #051926;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.ol-status-badge {
+  font-family: "Gotham-Bold";
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.badge-pending   { background: #fff5e0; color: #b06000; }
+.badge-approved,
+.badge-completed { background: #e6faf0; color: #166534; }
+.badge-cancelled,
+.badge-returns   { background: #ffeaea; color: #b91c1c; }
+.badge-debt      { background: #e0f5ff; color: #0369a1; }
+.badge-quotation { background: #e0fff9; color: #047857; }
+
+/* Date row */
+.ol-date {
+  font-family: "Gotham-Light";
+  font-size: 12px;
+  color: #808289;
+  margin-bottom: 12px;
+}
+
+/* Amounts divider */
+.ol-amounts {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.ol-amount-block {
+  flex: 1;
+  background: #f4f5f8;
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.ol-amount-label {
+  font-family: "Gotham-Light";
+  font-size: 11px;
+  color: #808289;
+  margin: 0 0 3px;
+}
+
+.ol-amount-value {
+  font-family: "Gotham-Bold";
+  font-size: 14px;
+  color: #051926;
+  margin: 0;
+}
+
+.ol-amount-value.discount { color: #fe3434; }

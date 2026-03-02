@@ -132,7 +132,7 @@ const CartComponent: React.FC = () => {
     isAdd?: boolean,
     qtyAdded?: number,
     onhand?: number,
-    input?:boolean
+    input?: boolean
   ) => {
     setOnhand(onhand!);
     let change = 0;
@@ -227,16 +227,15 @@ const CartComponent: React.FC = () => {
           <div className="main-cart-item-container">
             <IonItem className="main-cart-item-card">
               <IonCard
-                className={`main-cart-card-container ${
-                  platform.includes("mobileweb") && !platform.includes("tablet")
+                className={`main-cart-card-container ${platform.includes("mobileweb") && !platform.includes("tablet")
                     ? "cart-mobile"
                     : "cart-desktop"
-                }`}
+                  }`}
               >
                 <div className="main-cart-card-add-item-img">
                   <img
                     alt={card.item}
-                    src={card.image.length <= 0 ? stock : `${card?.image}`}
+                    src={!card.image || card.image.length <= 0 || card.image === "0" ? stock : `${card?.image}`}
                   />
                 </div>
                 <div className="main-cart-card-add-item-container">
@@ -254,7 +253,7 @@ const CartComponent: React.FC = () => {
                         size="large"
                         fill="clear"
                         onClick={() =>
-                          handleQty(card, false, undefined, card?.onhandqty,false)
+                          handleQty(card, false, undefined, card?.onhandqty, false)
                         }
                       >
                         <IonIcon
@@ -285,7 +284,7 @@ const CartComponent: React.FC = () => {
                         size="large"
                         fill="clear"
                         onClick={() =>
-                          handleQty(card, true, undefined, card?.onhandqty,false)
+                          handleQty(card, true, undefined, card?.onhandqty, false)
                         }
                       >
                         <IonIcon
@@ -341,7 +340,7 @@ const CartComponent: React.FC = () => {
     <>
       <IonContent>
         {Array.isArray(selectedItemselector) &&
-        selectedItemselector.length > 0 ? (
+          selectedItemselector.length > 0 ? (
           selectedItemselector?.map((card) => (
             <CardList
               key={card.code}

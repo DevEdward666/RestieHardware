@@ -1,7 +1,6 @@
 import {
   useIonRouter,
   IonContent,
-  IonText,
   IonButton,
   IonIcon,
   IonInput,
@@ -19,9 +18,8 @@ import {
   IonHeader,
   IonTitle,
   IonToolbar,
-  getPlatforms,
 } from "@ionic/react";
-import { chevronForwardOutline } from "ionicons/icons";
+import { chevronForwardOutline, personOutline } from "ionicons/icons";
 import { RootStore, useTypedDispatch } from "../../../Service/Store";
 import "./CustomerInformationComponents.css";
 import {
@@ -50,7 +48,6 @@ const CustomerInformationComponent: React.FC = () => {
     toastMessage: "",
     isOpen: false,
   });
-  const platform = getPlatforms();
   const [customers, setCustomers] = useState(getcustomers);
   const [fetchList, setFetchList] = useState<SearchInventoryModel>({
     page: 1,
@@ -211,149 +208,154 @@ const CustomerInformationComponent: React.FC = () => {
     initialize();
   }, [getcustomers]);
   return (
-    <IonContent className="customer-information-content">
-      <div className="customer-information-main">
-        <div
-          className={`customer-information-main-content ${
-            platform.includes("mobileweb") && !platform.includes("tablet")
-              ? "mobile"
-              : "desktop"
-          }`}
-        >
-          <div className="customer-information-list-container">
-            <div className="customer-information-list">
-              <IonItem className="customer-info-item">
-                <IonCheckbox
-                  labelPlacement="start"
-                  checked={isNewCustomer}
-                  onIonChange={(e) => handleNewCustomer(e)}
-                >
-                  New Customer?
-                </IonCheckbox>
-              </IonItem>
-              <IonItem className="customer-info-item">
-                <IonText className="info-text">Name: </IonText>
+    <IonContent className="cust-content">
+      <div className="cust-pg-container">
+        <div className="cust-inner">
 
+          {/* Customer type toggle */}
+          <div className="cust-card">
+            <p className="cust-section-title">Customer</p>
+            <IonCheckbox
+              className="cust-checkbox"
+              labelPlacement="start"
+              checked={isNewCustomer}
+              onIonChange={(e) => handleNewCustomer(e)}
+            >
+              New Customer
+            </IonCheckbox>
+
+            {/* Name — tap to search existing, or type for new */}
+            <div className="cust-field">
+              <span className="cust-label">Name</span>
+              {!isNewCustomer ? (
+                <div
+                  className="cust-picker-row"
+                  onClick={() => setOpenSearchModal({ isOpen: true, modal: "" })}
+                >
+                  {customerInformation.name ? (
+                    <span className="cust-picker-value">{customerInformation.name}</span>
+                  ) : (
+                    <span className="cust-picker-placeholder">Search existing customer…</span>
+                  )}
+                  <IonIcon icon={personOutline} className="cust-picker-icon" />
+                </div>
+              ) : (
                 <IonInput
-                  onClick={() =>
-                    !isNewCustomer
-                      ? setOpenSearchModal({ isOpen: true, modal: "" })
-                      : null
-                  }
-                  readonly={!isNewCustomer ? true : false}
                   name="name"
                   type="text"
                   onIonInput={(e: any) => handleInfoChange(e)}
-                  className="info-input"
-                  label="Customer Name"
-                  labelPlacement="floating"
-                  placeholder="Enter Name"
+                  className="cust-input"
+                  placeholder="Enter customer name"
                   value={customerInformation.name}
-                ></IonInput>
-              </IonItem>
+                />
+              )}
+            </div>
 
-              <IonItem className="customer-info-item">
-                <IonText className="info-text">Address: </IonText>
-                <IonInput
-                  disabled={!isNewCustomer}
-                  name="address"
-                  onIonInput={(e: any) => handleInfoChange(e)}
-                  className="info-input"
-                  label="Customer Address"
-                  labelPlacement="floating"
-                  value={customerInformation.address}
-                  placeholder="Enter Address"
-                ></IonInput>
-              </IonItem>
-              <IonItem className="customer-info-item">
-                <IonText className="info-text">Contact No: </IonText>
-                <IonInput
-                  disabled={!isNewCustomer}
-                  name="contactno"
-                  onIonInput={(e: any) => handleInfoChange(e)}
-                  className="info-input"
-                  label="Contact No"
-                  labelPlacement="floating"
-                  value={customerInformation.contactno}
-                  type="number"
-                  placeholder="Enter No"
-                ></IonInput>
-              </IonItem>
-              <IonItem className="customer-info-item">
-                <IonText className="info-text">Order Type: </IonText>
-                <IonSelect
-                  name="ordertype"
-                  onIonChange={(e: any) => handleInfoChange(e)}
-                  aria-label="Order Type"
-                  value={
-                    customerInformation?.ordertype !== ""
-                      ? customerInformation.ordertype
-                      : "none"
-                  }
-                  className="info-input"
-                >
-                  <IonSelectOption value="none">Select</IonSelectOption>
-                  <IonSelectOption value="deliver">Deliver</IonSelectOption>
-                  <IonSelectOption value="pickup">Pick-up</IonSelectOption>
-                </IonSelect>
-              </IonItem>
+            {/* Address */}
+            <div className="cust-field">
+              <span className="cust-label">Address</span>
+              <IonInput
+                disabled={!isNewCustomer}
+                name="address"
+                onIonInput={(e: any) => handleInfoChange(e)}
+                className="cust-input"
+                placeholder="Enter address"
+                value={customerInformation.address}
+              />
+            </div>
+
+            {/* Contact No */}
+            <div className="cust-field">
+              <span className="cust-label">Contact No</span>
+              <IonInput
+                disabled={!isNewCustomer}
+                name="contactno"
+                type="number"
+                onIonInput={(e: any) => handleInfoChange(e)}
+                className="cust-input"
+                placeholder="Enter contact number"
+                value={customerInformation.contactno}
+              />
+            </div>
+
+            {/* Order Type */}
+            <div className="cust-field">
+              <span className="cust-label">Order Type</span>
+              <IonSelect
+                name="ordertype"
+                onIonChange={(e: any) => handleInfoChange(e)}
+                aria-label="Order Type"
+                className="cust-select"
+                value={customerInformation.ordertype || "none"}
+                placeholder="Select order type"
+              >
+                <IonSelectOption value="none">Select</IonSelectOption>
+                <IonSelectOption value="deliver">Deliver</IonSelectOption>
+                <IonSelectOption value="pickup">Pick-up</IonSelectOption>
+              </IonSelect>
             </div>
           </div>
-          <IonButton color="medium" onClick={() => handleSaveCustomerInfo()}>
-            Proceed
-          </IonButton>
+
         </div>
       </div>
+
+      {/* Sticky proceed bar */}
+      <div className="cust-action-bar">
+        <button className="cust-proceed-btn" onClick={() => handleSaveCustomerInfo()}>
+          <IonIcon icon={chevronForwardOutline} />
+          Proceed to Payment
+        </button>
+      </div>
+
+      {/* Customer search modal */}
       <IonModal
         isOpen={openSearchModal.isOpen}
         onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
-        initialBreakpoint={1}
-        breakpoints={[0, 0.25, 0.5, 0.75, 1]}
+        initialBreakpoint={0.75}
+        breakpoints={[0, 0.5, 0.75, 1]}
       >
         <IonHeader>
-          <IonToolbar>
-            <IonButtons slot="start">
-              <IonButton
-                onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}
-              >
-                Cancel
+          <IonToolbar color="tertiary">
+            <IonTitle>Select Customer</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}>
+                Close
               </IonButton>
             </IonButtons>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          <>
-            <IonSearchbar
-              placeholder="Search Customer"
-              onIonInput={(e) => handleSearch(e)}
-              autocapitalize={"words"}
-              debounce={500}
-            ></IonSearchbar>
-            <IonList>
-              {customers.map((val, index) => (
-                <IonItem
-                  onClick={() => handleSelectedUser(val.customerid)}
-                  key={index}
-                >
-                  {/* <IonAvatar slot="start">
-                  <IonImg src="https://i.pravatar.cc/300?u=b" />
-                </IonAvatar> */}
-                  <IonLabel>
-                    <h2>{val.name}</h2>
-                    <p>{val.contactno}</p>
-                  </IonLabel>
-                </IonItem>
-              ))}
-            </IonList>
-          </>
+          <IonSearchbar
+            placeholder="Search customer…"
+            onIonInput={(e) => handleSearch(e)}
+            autocapitalize="words"
+            debounce={500}
+          />
+          <IonList lines="full">
+            {customers.map((val, index) => (
+              <IonItem
+                key={index}
+                button
+                onClick={() => handleSelectedUser(val.customerid)}
+              >
+                <IonLabel>
+                  <h2>{val.name}</h2>
+                  <p>{val.contactno}</p>
+                </IonLabel>
+              </IonItem>
+            ))}
+          </IonList>
         </IonContent>
       </IonModal>
+
       <IonToast
         isOpen={isOpenToast?.isOpen}
         message={isOpenToast.toastMessage}
+        color="danger"
+        position="middle"
         duration={3000}
         onDidDismiss={() => setIsOpenToast({ toastMessage: "", isOpen: false })}
-      ></IonToast>
+      />
     </IonContent>
   );
 };

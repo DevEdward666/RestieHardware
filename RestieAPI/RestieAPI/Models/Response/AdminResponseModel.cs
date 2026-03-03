@@ -37,8 +37,8 @@
             public string name { get; set; }
             public string description { get; set; }
             public string voucher_for { get; set; }
-            public string type  { get; set; }
-            public float discount{ get; set; }
+            public string type { get; set; }
+            public float discount { get; set; }
             public string createdby { get; set; }
             public long createdat { get; set; }
             public long maxredemption { get; set; }
@@ -49,6 +49,39 @@
             public string name { get; set; }
             public string username { get; set; }
             public string role { get; set; }
+        }
+        public class BulkUpsertInventoryResponse
+        {
+            public int inserted { get; set; }
+            public int updated { get; set; }
+            public int skipped { get; set; }
+            public bool success { get; set; }
+            public int statusCode { get; set; }
+            public string? message { get; set; }
+            public List<string>? errors { get; set; }
+        }
+        public class BulkProgressEvent
+        {
+            public string type { get; set; } = "progress"; // "progress" | "done" | "error"
+            public int processed { get; set; }
+            public int total { get; set; }
+            public int inserted { get; set; }
+            public int updated { get; set; }
+            public int skipped { get; set; }
+            public int pct { get; set; }
+            public string? message { get; set; }
+            public bool success { get; set; }
+            public List<string>? errors { get; set; }
+        }
+        public class POSImportResult
+        {
+            public bool success { get; set; }
+            public string? message { get; set; }
+            public int ordersInserted { get; set; }
+            public int itemsProcessed { get; set; }
+            public int inventoryUpdated { get; set; }
+            public int skipped { get; set; }
+            public List<string>? errors { get; set; }
         }
     }
 }

@@ -40,6 +40,17 @@ namespace RestieAPI.Services
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.FromDays(360)
                 };
+                // Allow Bearer token via query string for SSE endpoints (EventSource can't set headers)
+                x.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = ctx =>
+                    {
+                        var token = ctx.Request.Query["token"].ToString();
+                        if (!string.IsNullOrEmpty(token))
+                            ctx.Token = token;
+                        return System.Threading.Tasks.Task.CompletedTask;
+                    }
+                };
             });
             services.AddSingleton<IJwtAuthManager, JwtAuthManager>();
             services.AddHostedService<JwtRefreshTokenCache>();

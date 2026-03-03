@@ -9,7 +9,9 @@ import {
   bagOutline,
   barcodeOutline,
   chevronForwardOutline,
+  cloudUploadOutline,
   createOutline,
+  receiptOutline,
   storefrontOutline,
 } from "ionicons/icons";
 import { useSelector } from "react-redux";
@@ -49,6 +51,24 @@ const MainProductComponent: React.FC = () => {
               <span className="mpc-row-body">
                 <span className="mpc-row-label">Update Product</span>
                 <span className="mpc-row-sub">Edit existing product details</span>
+              </span>
+              <IonIcon className="mpc-row-chevron" icon={chevronForwardOutline} />
+            </button>
+
+            <button className="mpc-row" onClick={() => router.push("/admin/bulk-update-inventory")}>
+              <span className="mpc-row-icon"><IonIcon icon={cloudUploadOutline} /></span>
+              <span className="mpc-row-body">
+                <span className="mpc-row-label">Bulk Update Inventory</span>
+                <span className="mpc-row-sub">Import items from Excel (.xlsx)</span>
+              </span>
+              <IonIcon className="mpc-row-chevron" icon={chevronForwardOutline} />
+            </button>
+
+            <button className="mpc-row" onClick={() => router.push("/admin/import-pos-log")}>
+              <span className="mpc-row-icon"><IonIcon icon={receiptOutline} /></span>
+              <span className="mpc-row-body">
+                <span className="mpc-row-label">Import POS Log</span>
+                <span className="mpc-row-sub">Sync sales from external POS system</span>
               </span>
               <IonIcon className="mpc-row-chevron" icon={chevronForwardOutline} />
             </button>

@@ -12,7 +12,6 @@ import {
   IonSearchbar,
   IonSelect,
   IonSelectOption,
-  IonText,
   IonToast,
   IonToolbar,
   useIonRouter,
@@ -203,12 +202,8 @@ const AddUpdateVoucherComponent = () => {
   };
 
   return (
-    <IonContent>
-      <IonSearchbar
-        onClick={() => setOpenSearchModal({ isOpen: true, modal: "supplier" })}
-        placeholder="Search voucher"
-        autocapitalize={"words"}
-      ></IonSearchbar>
+    <IonContent className="ani-content">
+      {/* ── Voucher search modal ── */}
       <IonModal
         isOpen={openSearchModal.isOpen}
         onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
@@ -216,138 +211,105 @@ const AddUpdateVoucherComponent = () => {
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
       >
         <IonHeader>
-          <IonToolbar>
+          <IonToolbar color="tertiary">
             <IonButtons slot="start">
-              <IonButton
-                onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}
-              >
-                Cancel
-              </IonButton>
+              <IonButton onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}>Close</IonButton>
             </IonButtons>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          {openSearchModal.modal === "supplier" ? (
-            <>
-              <IonSearchbar
-                placeholder="Search Supplier"
-                onIonInput={(e) => handleSearch(e)}
-                autocapitalize={"words"}
-                debounce={1500}
-              ></IonSearchbar>
-              <IonList>
-                {admin_list_of_voucher.map((val, index) => (
-                  <IonItem
-                    onClick={() => handleSelectedVoucher(val)}
-                    key={index}
-                  >
-                    {/* <IonAvatar slot="start">
-                     <IonImg src="https://i.pravatar.cc/300?u=b" />
-                   </IonAvatar> */}
-                    <IonLabel>
-                      <h2>{val.vouchercode}</h2>
-                      <p>{val.description}</p>
-                    </IonLabel>
-                  </IonItem>
-                ))}
-              </IonList>
-            </>
-          ) : null}
+          <IonSearchbar
+            placeholder="Search voucher"
+            onIonInput={(e) => handleSearch(e)}
+            autocapitalize="words"
+            debounce={1500}
+          />
+          <IonList>
+            {admin_list_of_voucher.map((val, index) => (
+              <IonItem button onClick={() => handleSelectedVoucher(val)} key={index}>
+                <IonLabel>
+                  <h2>{val.vouchercode}</h2>
+                  <p>{val.description}</p>
+                </IonLabel>
+              </IonItem>
+            ))}
+          </IonList>
         </IonContent>
       </IonModal>
-      <div className="add-new-product-container">
-        <IonInput
-          labelPlacement="floating"
-          label="Voucher Code"
-          name="vouchercode"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={voucherInfo.vouchercode}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Voucher name"
-          name="name"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={voucherInfo.name}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Voucher Description"
-          name="description"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={voucherInfo.description}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Voucher Discount"
-          name="discount"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={voucherInfo.discount}
-        ></IonInput>
-        <IonItem className="info-item">
-          <IonText className="info-text">Voucher Type: </IonText>
-          <IonSelect
-            name="type"
-            onIonChange={(e: any) => handleInfoChange(e)}
-            aria-label="Voucher Type"
-            className="info-input"
-            value={voucherInfo.type}
-          >
-            <IonSelectOption value="percentage">Percentage</IonSelectOption>
-            <IonSelectOption value="pesos">Pesos</IonSelectOption>
-          </IonSelect>
-        </IonItem>
-        <IonItem className="info-item">
-          <IonText className="info-text">Voucher to be used for: </IonText>
-          <IonSelect
-            name="voucher_for"
-            onIonChange={(e: any) => handleInfoChange(e)}
-            aria-label="Voucher to be used for"
-            className="info-input"
-            value={voucherInfo.voucher_for}
-          >
-            <IonSelectOption className="select-option" value="all">
-              All
-            </IonSelectOption>
-            <IonSelectOption className="select-option" value="single">
-              Single Items
-            </IonSelectOption>
-          </IonSelect>
-        </IonItem>
-        {voucherInfo.voucher_seq > 0 ? (
-          <IonButton
-            color="medium"
-            expand="block"
-            onClick={() => handleSaveVoucher(true)}
-          >
-            <IonIcon slot="start" icon={saveOutline}></IonIcon>
-            Update Voucher
-          </IonButton>
-        ) : (
-          <IonButton
-            color="medium"
-            expand="block"
-            onClick={() => handleSaveVoucher(false)}
-          >
-            <IonIcon slot="start" icon={saveOutline}></IonIcon>
-            Add Voucher
-          </IonButton>
-        )}
+
+      <div className="ani-container">
+        <div className="ani-inner">
+          <div className="ani-card">
+            <p className="ani-card-title">
+              {voucherInfo.voucher_seq > 0 ? "Update Voucher" : "Add Voucher"}
+            </p>
+
+            {/* Search existing */}
+            <div className="ani-field">
+              <IonSearchbar
+                onClick={() => setOpenSearchModal({ isOpen: true, modal: "supplier" })}
+                placeholder="Search existing voucher…"
+                autocapitalize="words"
+                style={{ "--background": "#f4f5f8", "--border-radius": "10px", padding: 0 }}
+              />
+            </div>
+
+            <div className="ani-field">
+              <span className="ani-label">Voucher Code</span>
+              <IonInput className="ani-input" name="vouchercode" type="text" placeholder="e.g. SAVE10"
+                onIonInput={(e: any) => handleInfoChange(e)} value={voucherInfo.vouchercode} />
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Voucher Name</span>
+              <IonInput className="ani-input" name="name" type="text" placeholder="Voucher name"
+                onIonInput={(e: any) => handleInfoChange(e)} value={voucherInfo.name} />
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Description</span>
+              <IonInput className="ani-input" name="description" type="text" placeholder="Short description"
+                onIonInput={(e: any) => handleInfoChange(e)} value={voucherInfo.description} />
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Discount Value</span>
+              <IonInput className="ani-input" name="discount" type="number" placeholder="0"
+                onIonInput={(e: any) => handleInfoChange(e)} value={voucherInfo.discount} />
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Voucher Type</span>
+              <IonSelect className="ani-select" name="type" aria-label="Voucher Type"
+                placeholder="Select type" onIonChange={(e: any) => handleInfoChange(e)} value={voucherInfo.type}>
+                <IonSelectOption value="percentage">Percentage</IonSelectOption>
+                <IonSelectOption value="pesos">Pesos</IonSelectOption>
+              </IonSelect>
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Applicable To</span>
+              <IonSelect className="ani-select" name="voucher_for" aria-label="Voucher for"
+                placeholder="Select usage" onIonChange={(e: any) => handleInfoChange(e)} value={voucherInfo.voucher_for}>
+                <IonSelectOption value="all">All</IonSelectOption>
+                <IonSelectOption value="single">Single Items</IonSelectOption>
+              </IonSelect>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* ── Sticky action bar ── */}
+      <div className="ani-action-bar">
+        <button className="ani-submit-btn" onClick={() => handleSaveVoucher(voucherInfo.voucher_seq > 0)}>
+          <IonIcon icon={saveOutline} />
+          {voucherInfo.voucher_seq > 0 ? "Update Voucher" : "Add Voucher"}
+        </button>
+      </div>
+
       <IonToast
         isOpen={isOpenToast?.isOpen}
         message={isOpenToast.toastMessage}
         duration={3000}
+        color="medium"
+        position="middle"
         onDidDismiss={() => setIsOpenToast({ toastMessage: "", isOpen: false })}
-      ></IonToast>
+      />
     </IonContent>
   );
 };

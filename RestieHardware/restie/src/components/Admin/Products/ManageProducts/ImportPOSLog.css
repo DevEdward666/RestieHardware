@@ -1,0 +1,383 @@
+/* ImportPOSLog.css — POS Transaction Log import page */
+
+/* ── Toolbar ── */
+.ipl-toolbar {
+    --background: #051926;
+    --color: #ffffff;
+}
+
+.ipl-toolbar-title {
+    font-family: "Gotham Bold", sans-serif;
+    font-size: 1.05rem;
+    color: #ffffff;
+}
+
+.ipl-back-btn {
+    --color: #ffffff;
+    --padding-start: 8px;
+}
+
+/* ── Scroll / inner layout ── */
+.ipl-content {
+    --background: #f4f5f8;
+}
+
+.ipl-scroll {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.ipl-inner {
+    padding: 16px 16px 40px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* ── Section labels ── */
+.ipl-section-label {
+    font-family: "Gotham Bold", sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #125b8c;
+    margin: 20px 0 8px;
+}
+
+/* ── Upload card ── */
+.ipl-upload-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 24px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(5, 25, 38, 0.07);
+}
+
+.ipl-upload-icon-wrap {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: #e8f4fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.ipl-upload-icon {
+    font-size: 26px;
+    color: #125b8c;
+}
+
+.ipl-upload-title {
+    font-family: "Gotham Bold", sans-serif;
+    font-size: 1rem;
+    color: #051926;
+    margin: 0 0 6px;
+}
+
+.ipl-upload-sub {
+    font-size: 0.78rem;
+    color: #7a8fa6;
+    line-height: 1.5;
+    margin: 0 0 16px;
+    white-space: pre-line;
+}
+
+.ipl-choose-btn {
+    --background: #125b8c;
+    --background-activated: #0d4368;
+    --border-radius: 10px;
+    --color: #fff;
+    font-family: "Gotham Bold", sans-serif;
+    font-size: 0.85rem;
+    height: 40px;
+    width: 160px;
+}
+
+.ipl-file-name {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.78rem;
+    color: #125b8c;
+    word-break: break-all;
+}
+
+/* ── Format hint ── */
+.ipl-hint-card {
+    background: #e8f4fb;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.78rem;
+    color: #125b8c;
+    line-height: 1.6;
+}
+
+.ipl-hint-card strong {
+    font-family: "Gotham Bold", sans-serif;
+}
+
+.ipl-hint-cols {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 10px;
+    margin-top: 6px;
+}
+
+.ipl-hint-col-letter {
+    font-family: "Gotham Bold", sans-serif;
+    color: #051926;
+}
+
+/* ── Preview / file-ready card ── */
+.ipl-preview-card {
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(5, 25, 38, 0.07);
+}
+
+/* ── PDF file-ready card ── */
+.ipl-file-ready-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 28px 20px;
+    text-align: center;
+}
+
+.ipl-file-ready-icon {
+    font-size: 2.8rem;
+    color: #c0392b;
+}
+
+.ipl-file-ready-name {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #051926;
+    word-break: break-all;
+}
+
+.ipl-file-ready-sub {
+    font-size: 0.8rem;
+    color: #6b7f8e;
+}
+
+.ipl-table-wrap {
+    overflow-x: auto;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.ipl-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.ipl-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #051926;
+    color: #ffffff;
+}
+
+.ipl-table thead th {
+    padding: 8px 10px;
+    font-family: "Gotham Bold", sans-serif;
+    font-weight: normal;
+    text-align: left;
+}
+
+.ipl-table tbody tr:nth-child(even) {
+    background: #f4f5f8;
+}
+
+.ipl-table tbody td {
+    padding: 6px 10px;
+    color: #051926;
+    border-bottom: 1px solid #e8ecef;
+}
+
+.ipl-row--skip td {
+    color: #aab4bf;
+}
+
+.ipl-badge-skip {
+    background: #e8ecef;
+    color: #7a8fa6;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-family: "Gotham Bold", sans-serif;
+}
+
+.ipl-badge-sale {
+    background: #e0f7ea;
+    color: #1a7a4a;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-family: "Gotham Bold", sans-serif;
+}
+
+.ipl-table-count {
+    padding: 8px 12px;
+    font-size: 0.72rem;
+    color: #7a8fa6;
+    border-top: 1px solid #e8ecef;
+}
+
+/* ── Progress card ── */
+.ipl-progress-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 18px 16px 20px;
+    box-shadow: 0 2px 8px rgba(5, 25, 38, 0.07);
+}
+
+.ipl-progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: #7a8fa6;
+    margin-bottom: 8px;
+}
+
+.ipl-progress-track {
+    height: 8px;
+    background: #e8ecef;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.ipl-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #125b8c, #1a85cc);
+    border-radius: 99px;
+    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Submit button ── */
+.ipl-submit-btn {
+    --background: #125b8c;
+    --background-activated: #0d4368;
+    --border-radius: 12px;
+    --color: #fff;
+    font-family: "Gotham Bold", sans-serif;
+    font-size: 0.9rem;
+    height: 48px;
+}
+
+/* ── Result card ── */
+.ipl-result-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 20px 16px;
+    box-shadow: 0 2px 8px rgba(5, 25, 38, 0.07);
+}
+
+.ipl-result-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: "Gotham Bold", sans-serif;
+    font-size: 1rem;
+    margin: 12px 0;
+}
+
+.ipl-result-title--success {
+    color: #1a7a4a;
+}
+
+.ipl-result-title--success ion-icon {
+    font-size: 1.3rem;
+}
+
+.ipl-result-title--error {
+    color: #c0392b;
+}
+
+.ipl-result-title--error ion-icon {
+    font-size: 1.3rem;
+}
+
+.ipl-result-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 14px 0;
+}
+
+.ipl-result-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.ipl-result-stat__num {
+    font-family: "Gotham Bold", sans-serif;
+    font-size: 1.4rem;
+}
+
+.ipl-result-stat__num--orders {
+    color: #125b8c;
+}
+
+.ipl-result-stat__num--items {
+    color: #1a85cc;
+}
+
+.ipl-result-stat__num--inv {
+    color: #1a7a4a;
+}
+
+.ipl-result-stat__num--skip {
+    color: #aab4bf;
+}
+
+.ipl-result-stat__label {
+    font-size: 0.68rem;
+    color: #7a8fa6;
+    text-align: center;
+}
+
+.ipl-result-message {
+    font-size: 0.8rem;
+    color: #7a8fa6;
+    margin-top: 8px;
+}
+
+.ipl-result-errors {
+    margin-top: 10px;
+    padding-left: 18px;
+    font-size: 0.75rem;
+    color: #c0392b;
+}
+
+.ipl-reset-btn {
+    --border-radius: 12px;
+    --color: #125b8c;
+    --border-color: #125b8c;
+    font-family: "Gotham Bold", sans-serif;
+    font-size: 0.85rem;
+    height: 44px;
+}
+
+/* ── Alert buttons ── */
+.ipl-alert-btn-stay {
+    color: #125b8c !important;
+    font-family: "Gotham Bold", sans-serif !important;
+}
+
+.ipl-alert-btn-leave {
+    color: #c0392b !important;
+    font-family: "Gotham Bold", sans-serif !important;
+}

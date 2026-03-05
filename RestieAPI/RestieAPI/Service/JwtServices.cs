@@ -14,6 +14,12 @@ namespace RestieAPI.Services
         public void InstallServices(IServiceCollection services, IConfiguration configuration)
         {
             var jwtTokenConfig = configuration.GetSection("jwtTokenConfig").Get<JwtTokenConfig>();
+
+            if (jwtTokenConfig == null)
+            {
+                // This tells you EXACTLY what is wrong in the logs instead of a generic crash
+                throw new Exception("Critical Error: 'jwtTokenConfig' section not found in appsettings.json");
+            }
             services.AddSingleton(jwtTokenConfig);
             services.AddAuthentication(x =>
             {
@@ -33,6 +39,17 @@ namespace RestieAPI.Services
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.FromDays(360)
+                };
+                // Allow Bearer token via query string for SSE endpoints (EventSource can't set headers)
+                x.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = ctx =>
+                    {
+                        var token = ctx.Request.Query["token"].ToString();
+                        if (!string.IsNullOrEmpty(token))
+                            ctx.Token = token;
+                        return System.Threading.Tasks.Task.CompletedTask;
+                    }
                 };
             });
             services.AddSingleton<IJwtAuthManager, JwtAuthManager>();

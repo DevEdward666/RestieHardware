@@ -5,14 +5,7 @@ import {
   IonHeader,
   IonIcon,
   IonImg,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonMenuButton,
   IonModal,
-  IonSearchbar,
-  IonText,
   IonTitle,
   IonToast,
   IonToolbar,
@@ -102,15 +95,17 @@ const SelectedItemContainer: React.FC = () => {
     setIsZoomed((prevState) => !prevState); // Toggle the zoom state
   };
   const fetchImages = async () => {
+    if (!getSelectedItem?.code) return;
     try {
-      const response = await GetMultipleimage(`${getSelectedItem.image}`);
+      const folderPath = `Resources/Images/${getSelectedItem.code}`;
+      const response = await GetMultipleimage(folderPath);
       if (response.status === 200) {
         setImageData(response.result.images.$values);
       }
     } catch (error) {
       console.warn(error)
     }
-    
+
   };
   useEffect(() => {
     fetchImages();
@@ -146,8 +141,9 @@ const SelectedItemContainer: React.FC = () => {
     const qtyAdded = SelectedItemselector.filter(
       (e) => e.code === getSelectedItem.code
     );
-
-    if (qtyAdded && qtyAdded[0]?.qty >= addedQty) {
+    const alreadyInCart = qtyAdded[0]?.qty ?? 0;
+    const availableStock = getSelectedItem.onhandqty ?? getSelectedItem.qty ?? 0;
+    if (alreadyInCart + addedQty > availableStock) {
       setIsOpenToast({
         toastMessage: "Not Enough Stocks",
         isOpen: true,
@@ -247,7 +243,7 @@ const SelectedItemContainer: React.FC = () => {
     initalize();
   }, [addedQty, getSelectedItem, isLoading]);
   const handleOpenImage = (selected_image: string) => {
-    setselectedImage(selected_image!==null? selected_image : stock);
+    setselectedImage(selected_image !== null ? selected_image : stock);
     setOpenModal(true);
   };
   const handleDismiss = () => {
@@ -308,170 +304,179 @@ const SelectedItemContainer: React.FC = () => {
   const handleTakePhoto = async () => {
     await takePhoto();
   };
+  const isSoldOut = (getSelectedItem?.qty ?? 0) <= 0;
+
   return (
-    <IonContent className="selected-item-main-content">
+    <IonContent className="si-content">
       <IonToast
         isOpen={isOpenToast?.isOpen}
         message={isOpenToast.toastMessage}
         position={isOpenToast?.type === "warning" ? "middle" : "top"}
         duration={3000}
-        color={"medium"}
+        color={isOpenToast?.type === "warning" ? "danger" : "success"}
         className="warning-toast"
         onDidDismiss={() =>
           setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
         }
-      ></IonToast>
-      <IonHeader className="home-page-header">
-        <IonToolbar mode={"md"} color="tertiary">
-          <IonButtons slot="start" onClick={() => router.goBack()}>
-            <IonIcon slot="icon-only" icon={arrowBack}></IonIcon>
+      />
+
+      {/* Header */}
+      <IonHeader className="si-header">
+        <IonToolbar mode="md" color="tertiary">
+          <IonButtons slot="start">
+            <IonButton fill="clear" onClick={() => router.goBack()}>
+              <IonIcon slot="icon-only" icon={arrowBack} />
+            </IonButton>
           </IonButtons>
-          <IonTitle>{getSelectedItem.item}</IonTitle>
+          <IonTitle className="si-header-title">{getSelectedItem.item}</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <div className="selected-item-container">
-        <div className="swiper-container">
-          <Swiper
-            className="swiper-component"
-            autoplay={true}
-            keyboard={true}
-            pagination={true}
-            scrollbar={false}
-            zoom={true}
-          >
-            {imageData.length > 0 && imageData !== null? (
-              imageData?.map((val, index) => {
-                return (
-                  <SwiperSlide key={index}>
-                    <IonImg
-                      onClick={() =>
-                        handleOpenImage(
-                          `data:${val.contentType};base64,${val?.fileContents}`
-                        )
-                      }
-                      className="selected-item-img"
-                      src={`data:${val.contentType};base64,${val?.fileContents}`}
-                    />
-                  </SwiperSlide>
-                );
-              })
-            ) : (
-              <SwiperSlide>
-                <IonImg
-                  onClick={() => handleOpenImage(getSelectedItem.image)}
-                  className="selected-item-img"
-                  src={getSelectedItem.image!==null? getSelectedItem.image : stock}
-                />
-              </SwiperSlide>
-            )}
-          </Swiper>
-          {user_login_information?.role.trim().toLowerCase() === "admin" ? (
-            <>
-              <div className="capture-images-buttons">
-                <>
-                  <input
-                    ref={fileInput}
-                    hidden
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => onSelectFile(e)}
-                  />
 
-                  <div
-                    className="offline-delivery-attachment-button"
-                    onClick={() => {
-                      // @ts-ignore
-                      fileInput?.current?.click();
-                      // setBackgroundOption(BackgroundOptionType.Gradient);
-                    }}
-                  >
-                    <IonIcon
-                      className="offline-delivery-attachment-button-icon"
-                      icon={attachmentIcon}
-                    ></IonIcon>
-                    Add More Product Images
-                  </div>
-                </>
+      {/* Image swiper */}
+      <div className="si-swiper-wrap">
+        <Swiper
+          className="si-swiper"
+          autoplay={true}
+          keyboard={true}
+          pagination={true}
+          scrollbar={false}
+          zoom={true}
+        >
+          {imageData.length > 0 ? (
+            imageData.map((val, index) => (
+              <SwiperSlide key={index}>
+                <div className="si-slide">
+                  <IonImg
+                    className="si-img"
+                    src={`data:${val.contentType};base64,${val.fileContents}`}
+                    onClick={() =>
+                      handleOpenImage(
+                        `data:${val.contentType};base64,${val.fileContents}`
+                      )
+                    }
+                  />
+                </div>
+              </SwiperSlide>
+            ))
+          ) : (
+            <SwiperSlide>
+              <div className="si-slide">
+                <IonImg
+                  className="si-img"
+                  src={getSelectedItem.image ?? stock}
+                  onClick={() => handleOpenImage(getSelectedItem.image ?? stock)}
+                />
               </div>
-            </>
-          ) : null}
-          <div className="selected-item-information-container">
-            <div className="selected-item-price-qty-container">
-              <IonText className="selected-item-current-price">
-                <span>&#8369;</span>
-                {getSelectedItem?.price?.toFixed(2)}
-              </IonText>
-              <IonText className="selected-item-current-qty">
-                {getSelectedItem?.qty} pcs left
-              </IonText>
-            </div>
-            <div className="selected-item-added-qty-container">
-              <IonButton
-                disabled={addedQty <= 1 ? true : false}
-                fill="clear"
+            </SwiperSlide>
+          )}
+        </Swiper>
+
+        {/* Admin upload button */}
+        {user_login_information?.role.trim().toLowerCase() === "admin" && (
+          <div className="si-upload-row">
+            <input
+              ref={fileInput}
+              hidden
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={onSelectFile}
+            />
+            <button
+              className="si-upload-btn"
+              onClick={() => (fileInput as any)?.current?.click()}
+            >
+              <IonIcon icon={attachmentIcon} className="si-upload-icon" />
+              Add Product Images
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Product info card */}
+      <div className="si-info-card">
+        {/* Name */}
+        <h2 className="si-product-name">{getSelectedItem.item}</h2>
+
+        {/* Category & Brand chips */}
+        <div className="si-meta-row">
+          {getSelectedItem.brand && (
+            <span className="si-meta-chip">{getSelectedItem.brand}</span>
+          )}
+          {getSelectedItem.category && (
+            <span className="si-meta-chip">{getSelectedItem.category}</span>
+          )}
+        </div>
+
+        <div className="si-divider" />
+
+        {/* Price & stock row */}
+        <div className="si-price-row">
+          <div>
+            <p className="si-price-label">Price</p>
+            <p className="si-price">
+              &#8369;
+              {getSelectedItem?.price?.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </p>
+          </div>
+          <div className="si-stock-wrap">
+            <span className={`si-stock-badge ${isSoldOut ? "si-stock-out" : "si-stock-ok"}`}>
+              {isSoldOut ? "Out of Stock" : `${getSelectedItem?.qty} pcs left`}
+            </span>
+          </div>
+        </div>
+
+        <div className="si-divider" />
+
+        {/* Quantity selector */}
+        {!isSoldOut && (
+          <div className="si-qty-row">
+            <p className="si-qty-label">Quantity</p>
+            <div className="si-qty-control">
+              <button
+                className="si-qty-btn"
+                disabled={addedQty <= 1}
                 onClick={() => handleQty(false)}
               >
-                <IonIcon
-                  color="danger"
-                  slot="icon-only"
-                  icon={removeCircle}
-                ></IonIcon>
-              </IonButton>
-
-              <IonInput
-                class="qty"
-                type="number"
-                value={addedQty}
-                onIonInput={(ev) => handleQty(true)}
-              ></IonInput>
-              <IonButton
-                disabled={addedQty >= getSelectedItem.qty! ? true : false}
-                fill="clear"
+                <IonIcon icon={removeCircle} />
+              </button>
+              <span className="si-qty-value">{addedQty}</span>
+              <button
+                className="si-qty-btn"
+                disabled={addedQty >= (getSelectedItem.qty ?? 0)}
                 onClick={() => handleQty(true)}
               >
-                <IonIcon
-                  color="secondary"
-                  slot="icon-only"
-                  icon={addCircle}
-                ></IonIcon>
-              </IonButton>
+                <IonIcon icon={addCircle} />
+              </button>
             </div>
           </div>
-        </div>
-        <div className="selected-item-information-details-content">
-          <IonText className="selected-item-name">
-            {getSelectedItem.item}
-          </IonText>
-          <div className="selected-item-information-details-content-category-brand">
-            <IonText className="selected-item-name-brand">
-              Brand: {getSelectedItem.brand}
-            </IonText>{" "}
-            |
-            <IonText className="selected-item-name-category">
-              Category: {getSelectedItem.category}
-            </IonText>
-          </div>
-          <IonItem className="selected-item-break-line"></IonItem>
-        </div>
+        )}
       </div>
-      <div className="button-container">
-        <IonButton
-          disabled={getSelectedItem?.qty! > 0 ? false : true}
-          color="medium"
+
+      {/* Sticky add-to-cart bar */}
+      <div className="si-action-bar">
+        <button
+          className={`si-cart-btn ${isSoldOut ? "si-cart-btn-disabled" : ""}`}
+          disabled={isSoldOut}
           onClick={() => handleAddToCart()}
         >
-          {getSelectedItem.qty! > 0 ? "Add to Cart" : "Sold out"}
-        </IonButton>
+          <IonIcon icon={card} className="si-cart-icon" />
+          {isSoldOut ? "Sold Out" : "Add to Cart"}
+        </button>
       </div>
+
+      {/* Zoom modal */}
       <IonModal
         id="example-modal"
-        onDidDismiss={() => handleDismiss()}
         isOpen={openModal}
+        onDidDismiss={handleDismiss}
       >
         <div className="modal-content">
           <TransformWrapper initialScale={1}>
-            {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+            {({ zoomIn, zoomOut, resetTransform }) => (
               <>
                 <Controls />
                 <div className="image-content">

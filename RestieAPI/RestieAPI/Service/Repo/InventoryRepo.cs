@@ -4232,47 +4232,96 @@ namespace RestieAPI.Service.Repo
         //    }
 
         //}
-        public PostResponse SavetoCartandUpdateInventoryn8n(InventoryRequestModel.AddToCart[] addToCartItems)
-        {
-            var checkOrderSql = @"SELECT 1 FROM orders WHERE orderid = @orderid LIMIT 1;";
+       public PostResponse updateCartn8n(InventoryRequestModel.AddToCart[] items)
+       {
+            if (items == null || items.Length == 0) 
+                return new PostResponse { status = 400, Message = "No items provided" };
 
+            using var connection = new NpgsqlConnection(_connectionString);
+            connection.Open();
+
+            using var tran = connection.BeginTransaction();
+
+            try
+            {
+                double total = 0;
+
+                foreach (var item in items)
+                {
+                    using var cmd = new NpgsqlCommand(
+                        @"INSERT INTO cart (cartid, code, item, qty,price, total, status,createdat)
+                              VALUES (@cartid, @code,@item, @qty,@price, @total, @status,@createdat)
+                              ON CONFLICT (cartid, code)
+                              DO UPDATE SET
+                                  qty = EXCLUDED.qty,
+                                  total = EXCLUDED.total,
+                                  status = EXCLUDED.status;",
+                        connection, tran);
+
+                    var computedTotal = item.qty * item.price;
+
+                    cmd.Parameters.AddWithValue("cartid", item.cartid);
+                    cmd.Parameters.AddWithValue("item", item.item);
+                    cmd.Parameters.AddWithValue("price", item.price);
+                    cmd.Parameters.AddWithValue("code", item.code);
+                    cmd.Parameters.AddWithValue("createdat", DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+                    cmd.Parameters.AddWithValue("qty", item.qty);
+                    cmd.Parameters.AddWithValue("total", computedTotal);
+                    cmd.Parameters.AddWithValue("status", item.status);
+
+                    cmd.ExecuteNonQuery();
+
+                    total += computedTotal;
+                }
+
+
+                var first = items[0];
+
+                using var orderCmd = new NpgsqlCommand(
+                @"update orders 
+                  set total=@total,
+                      paidthru=@paidthru,
+                      paidcash=@paidcash
+                  where orderid=@orderid",
+                connection, tran);
+
+                orderCmd.Parameters.AddWithValue("orderid", first.orderid);
+                orderCmd.Parameters.AddWithValue("total", total);
+                orderCmd.Parameters.AddWithValue("paidthru", first.paidthru);
+                orderCmd.Parameters.AddWithValue("paidcash", first.paidcash);
+
+                orderCmd.ExecuteNonQuery();
+
+                tran.Commit();
+
+                return new PostResponse { status = 200, Message = "Success" };
+            }
+            catch (Exception ex)
+            {
+                tran.Rollback();
+                return new PostResponse { status = 500, Message = ex.ToString() };
+            }
+        }
+
+       
+        public PostResponse AddToCartn8n(InventoryRequestModel.AddToCart[] addToCartItems)
+        {
             var sql = @"insert into cart (cartid,code,item,qty,price,total,createdat,status,voucher_id,discount_price,total_discount) 
                 values(@cartid,@code,@item,@qty,@price,@total,@createdat,@status,@voucher_id,@discount,@total_discount)";
-            var insertOrder = @"insert into orders (orderid,cartid,total,paidthru,paidcash,createdby,createdat,status,userid,type,totaldiscount,voucher) 
-                        values(@orderid,@cartid,@total,@paidthru,@paidcash,@createdby,@createdat,@status,@userid,@type,@totaldiscount,@order_voucher)";
-            var updatesql = @"update  inventory set qty=@onhandqty where code=@code";
-            var InsertTransaction = @"insert into transaction (transid,orderid,customer,cashier,status,createdat) 
-                                    values(@transid,@orderid,@customer,@cashier,@status,@createdat)";
-            
-            var orderid = !string.IsNullOrEmpty(addToCartItems[0].orderid) 
-                ? addToCartItems[0].orderid 
-                : Guid.NewGuid().ToString();
-
+            var insertOrder = @"insert into orders (orderid,cartid,total,paidthru,paidcash,createdby,createdat,status,userid,type,totaldiscount) 
+                        values(@orderid,@cartid,@total,@paidthru,@paidcash,@createdby,@createdat,@status,@userid,@type,@totaldiscount)";
             using (var connection = new NpgsqlConnection(_connectionString))
             {
                 connection.Open();
                 var total = 0.0;
-                var overAllTotalDiscount = 0.0;
-                var transid = Guid.NewGuid().ToString();
                 using (var tran = connection.BeginTransaction())
                 {
-                    
                     try
                     {
-                        using (var checkCmd = new NpgsqlCommand(checkOrderSql, connection, tran))
-                        {
-                            checkCmd.Parameters.AddWithValue("@orderid", orderid);
-
-                            var exists = checkCmd.ExecuteScalar();
-                            if (exists != null)
-                            {
-                                throw new Exception("Order ID already exists.");
-                            }
-                        }
+                        
                         foreach (var addToCart in addToCartItems)
                         {
-                          
-                            var parameters = new Dictionary<string, object>
+                            var parameters = new Dictionary<string, object> 
                             {
                                 { "@cartid", addToCart.cartid },
                                 { "@code", addToCart.code },
@@ -4283,9 +4332,11 @@ namespace RestieAPI.Service.Repo
                                 { "@createdat", addToCart.createdat },
                                 { "@status", addToCart.status },
                                 { "@voucher_id", addToCart.voucher_id ?? (object)DBNull.Value },
-                                { "@discount", addToCart.discount },
-                                { "@total_discount", addToCart.total_discount },
+                                { "@discount", addToCart.discount?? (object)DBNull.Value},
+                                { "@total_discount", addToCart.total_discount ?? (object)DBNull.Value },
                             };
+                            
+                          
 
                             // Execute the insertion command for each item
                             using (var cmd = new NpgsqlCommand(sql, connection))
@@ -4297,93 +4348,46 @@ namespace RestieAPI.Service.Repo
                                 cmd.ExecuteNonQuery();
                             }
                             total = total + addToCart.qty * addToCart.price;
-                            overAllTotalDiscount = overAllTotalDiscount+ (addToCart.discount ?? 0.0f) * addToCart.qty;
                         }
-                          
-                            // Execute the insertOrder command for each item
-                            using (var cmd = new NpgsqlCommand(insertOrder, connection))
-                            {
-                                var insertOrderParams = new Dictionary<string, object>
+
+                        // Execute the insertOrder command for each item
+                        using (var cmd = new NpgsqlCommand(insertOrder, connection))
+                        {
+                            var insertOrderParams = new Dictionary<string, object>
                                 {
-                                    { "@orderid", orderid },
+
+                                    { "@orderid",  addToCartItems[0].orderid},
                                     { "@cartid", addToCartItems[0].cartid },
                                     { "@total",  total},
-                                    { "@totaldiscount",  addToCartItems[0].total_discount  + overAllTotalDiscount},
-                                    { "@order_voucher",  addToCartItems[0].order_voucher ?? (object)DBNull.Value },
+                                    { "@totaldiscount",  addToCartItems[0].total_discount},
                                     { "@paidthru", addToCartItems[0].paidthru },
                                     { "@paidcash", addToCartItems[0].paidcash },
                                     { "@createdby", addToCartItems[0].createdby },
+                                    { "@createdat", addToCartItems[0].createdat },
+                                    { "@status", addToCartItems[0].status },
                                     { "@userid", addToCartItems[0].userid },
                                     { "@type", addToCartItems[0].type },
-                                    { "@createdat", addToCartItems[0].createdat },
-                                    { "@status", addToCartItems[0].status },
                                 };
-                                foreach (var param in insertOrderParams)
-                                {
-                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
-                                }
-                                cmd.ExecuteNonQuery();
-                            }
-                        foreach (var addToCart in addToCartItems)
-                        {
-                            // Execute the updatesql command for each item
-                            using (var cmd = new NpgsqlCommand(updatesql, connection))
+                            
+                          
+                            foreach (var param in insertOrderParams)
                             {
-                                var updateparameters = new Dictionary<string, object>
-                                {
-                                    { "@onhandqty", addToCart.onhandqty - addToCart.qty },
-                                    { "@code", addToCart.code },
-                                };
-                                foreach (var param in updateparameters)
-                                {
-                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
-                                }
-                                 cmd.ExecuteNonQuery();
+                                cmd.Parameters.AddWithValue(param.Key, param.Value);
                             }
+                            cmd.ExecuteNonQuery();
                         }
-                            using (var cmd = new NpgsqlCommand(InsertTransaction, connection))
-                            {
-                                var insertOrderParams = new Dictionary<string, object>
-                                {
-                                    { "@orderid", orderid },
-                                    { "@transid", transid},
-                                    { "@customer", addToCartItems[0].customer ?? (object)DBNull.Value},
-                                    { "@cashier", addToCartItems[0].cashier ?? (object)DBNull.Value},
-                                    { "@createdat", addToCartItems[0].createdat },
-                                    { "@status", addToCartItems[0].status },
-                                };
-                                foreach (var param in insertOrderParams)
-                                {
-                                    cmd.Parameters.AddWithValue(param.Key, param.Value);
-                                }
-                                 cmd.ExecuteNonQuery();
-                            }
-                        
-
                         // Commit the transaction after all items have been processed
                         tran.Commit();
-                        if (orderid.ToString() != null && addToCartItems != null && addToCartItems.Length > 0)
+                        return new PostResponse
                         {
-                            return new PostResponse
+                            result = new SaveOrderResponse
                             {
-                                result = new SaveOrderResponse
-                                {
-                                    orderid = orderid.ToString(),
-                                    cartid = addToCartItems[0].cartid
-                                },
-                                status = 200,
-                                Message = "Order successfully saved"
-                            };
-                        }
-                        else
-                        {
-                            return new PostResponse
-                            {
-                                result = null,
-                                status = 400,
-                                Message = "Error occurred while saving the order"
-                            };
-                        }
+                                orderid = addToCartItems[0].orderid.Length > 0? addToCartItems[0].orderid: addToCartItems[0].orderid,
+                                cartid = addToCartItems[0].cartid
+                            },
+                            status = 200,
+                            Message = "Order successfully saved"
+                        };
                     }
                     catch (Exception ex)
                     {
@@ -4398,6 +4402,5 @@ namespace RestieAPI.Service.Repo
                 }
             }
         }
-   
     }
 }

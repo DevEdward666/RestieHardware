@@ -1,14 +1,12 @@
 import {
   getPlatforms,
-  IonAccordion,
-  IonAccordionGroup,
   IonBadge,
   IonButton,
   IonButtons,
+  IonChip,
   IonContent,
   IonHeader,
   IonIcon,
-  IonImg,
   IonItem,
   IonLabel,
   IonList,
@@ -25,11 +23,17 @@ import {
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import { notifications } from "ionicons/icons";
+import {
+  notifications,
+  close,
+  pricetagOutline,
+  layersOutline,
+  funnelOutline,
+  storefrontOutline,
+} from "ionicons/icons";
 import { useCallback, useEffect, useState } from "react";
 import { QueryClient } from "react-query";
 import { useSelector } from "react-redux";
-import categoryIcon from "../../assets/images/icons/category.png";
 import ExploreContainer from "../../components/ExploreContainer";
 import { GetBrandsModel } from "../../Models/Request/Inventory/InventoryModel";
 import { SearchInventoryModel } from "../../Models/Request/searchInventory";
@@ -172,290 +176,246 @@ const Tab1: React.FC = () => {
   const handleClickNotification = () => {
     router.push("/notifications");
   };
+  const handleMenuWillOpen = () => {
+    (document.activeElement as HTMLElement)?.blur();
+  };
   return (
     <>
-      <IonMenu type={"push"} contentId="main-content">
+      {/* ── Side Menu ───────────────────────────────── */}
+      <IonMenu type="push" contentId="main-content" onIonWillOpen={handleMenuWillOpen} className="home-menu">
         <IonHeader>
-          <IonToolbar>
-            <IonTitle>Menu</IonTitle>
+          <IonToolbar color="tertiary">
+            <IonTitle>Filters</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent className="ion-padding">
-          <IonAccordionGroup>
-            <IonAccordion value="category">
-              <IonItem slot="header" color="light">
-                <div className="category-card-content">
-                  <div className="category-card-title-details">
-                    <IonImg
-                      color="danger"
-                      slot="start"
-                      className="category-icon-img"
-                      src={categoryIcon}
-                    ></IonImg>
-                    <IonLabel>Categories</IonLabel>
-                  </div>
-                </div>
-              </IonItem>
-              <div className="brand-content" slot="content">
-              <IonSearchbar
-                onClick={() => setOpenSearchModal({ isOpen: true, modal: "category" })}
-                placeholder="Search Category"
-                autocapitalize={"words"}
-              ></IonSearchbar>
-                {/* {fetch_category.map((val, index) => (
-                  <div
-                    key={index}
-                    className="brands-container"
-                    onClick={() => handleCategory(val.category)}
-                  >
-                    <div className="brands-brand">
-                      <IonText className="brand-text">{val.category}</IonText>
-                    </div>
-                  </div>
-                ))} */}
+        <IonContent className="home-menu-content">
+
+          {/* Active filter chips */}
+          {(get_category_and_brand.category || get_category_and_brand.brand) && (
+            <div className="home-active-filters">
+              <p className="home-filter-label">Active filters</p>
+              <div className="home-filter-chips">
+                {get_category_and_brand.category && (
+                  <IonChip color="tertiary" className="home-filter-chip">
+                    <IonIcon icon={layersOutline} />
+                    <IonLabel>{get_category_and_brand.category}</IonLabel>
+                    <IonIcon icon={close} onClick={() => setCategoryAndBrand(p => ({ ...p, category: "" }))} />
+                  </IonChip>
+                )}
+                {get_category_and_brand.brand && (
+                  <IonChip color="tertiary" className="home-filter-chip">
+                    <IonIcon icon={storefrontOutline} />
+                    <IonLabel>{get_category_and_brand.brand}</IonLabel>
+                    <IonIcon icon={close} onClick={() => setCategoryAndBrand(p => ({ ...p, brand: "" }))} />
+                  </IonChip>
+                )}
               </div>
-              {/* <div slot="content">
-                <div
-                  className="categories-container"
-                  onClick={() => handleCategory("Electrical")}
-                >
-                  <div className="categories-category">
-                    <IonText className="category-text">Electrical</IonText>
-                    <IonImg src={electrical} className="category-img"></IonImg>
-                  </div>
-                </div>
-                <div
-                  className="categories-container"
-                  onClick={() => handleCategory("Plumbing")}
-                >
-                  <div className="categories-category">
-                    <IonText className="category-text">Plumbing</IonText>
-                    <IonImg src={plumbing} className="category-img"></IonImg>
-                  </div>
-                </div>
-                <div
-                  className="categories-container"
-                  onClick={() => handleCategory("Paints")}
-                >
-                  <div className="categories-category">
-                    <IonText className="category-text">Paints</IonText>
-                    <IonImg src={paint} className="category-img"></IonImg>
-                  </div>
-                </div>
-                <div
-                  className="categories-container"
-                  onClick={() => handleCategory("Lumber")}
-                >
-                  <div className="categories-category">
-                    <IonText className="category-text">
-                      Lumber & Building Materials
-                    </IonText>
-                    <IonImg src={lumber} className="category-img"></IonImg>
-                  </div>
-                </div>
-              </div> */}
-            </IonAccordion>
-            <IonAccordion value="brand">
-              <IonItem slot="header" color="light">
-                <div className="category-card-content">
-                  <div className="category-card-title-details">
-                    <IonImg
-                      color="danger"
-                      slot="start"
-                      className="category-icon-img"
-                      src={categoryIcon}
-                    ></IonImg>
-                    <IonLabel>Brands</IonLabel>
-                  </div>
-                </div>
-              </IonItem>
-              <div className="brand-content" slot="content">
-              <IonSearchbar
-                onClick={() => setOpenSearchModal({ isOpen: true, modal: "brands" })}
-                placeholder="Search Brands"
-                autocapitalize={"words"}
-              ></IonSearchbar>
-              </div>
-              {/* <div className="brand-content" slot="content">
-                {fetch_brands.map((val, index) => (
-                  <div
-                    key={index}
-                    className="brands-container"
-                    onClick={() => handleBrand(val.brand)}
-                  >
-                    <div className="brands-brand">
-                      <IonText className="brand-text">{val.brand}</IonText>
-                    </div>
-                  </div>
-                ))}
-              </div> */}
-            </IonAccordion>
-          </IonAccordionGroup>
-          <IonItem className="filter">
-            <IonLabel>Filter By</IonLabel>
+            </div>
+          )}
+
+          {/* Category section */}
+          <div className="home-menu-section">
+            <div className="home-menu-section-header">
+              <IonIcon icon={layersOutline} className="home-menu-section-icon" />
+              <span className="home-menu-section-title">Category</span>
+            </div>
+            <IonButton
+              fill="outline"
+              expand="block"
+              className="home-menu-picker-btn"
+              onClick={() => setOpenSearchModal({ isOpen: true, modal: "category" })}
+            >
+              {get_category_and_brand.category || "Select Category"}
+            </IonButton>
+          </div>
+
+          {/* Brand section */}
+          <div className="home-menu-section">
+            <div className="home-menu-section-header">
+              <IonIcon icon={storefrontOutline} className="home-menu-section-icon" />
+              <span className="home-menu-section-title">Brand</span>
+            </div>
+            <IonButton
+              fill="outline"
+              expand="block"
+              className="home-menu-picker-btn"
+              onClick={() => setOpenSearchModal({ isOpen: true, modal: "brands" })}
+            >
+              {get_category_and_brand.brand || "Select Brand"}
+            </IonButton>
+          </div>
+
+          {/* Sort section */}
+          <div className="home-menu-section">
+            <div className="home-menu-section-header">
+              <IonIcon icon={funnelOutline} className="home-menu-section-icon" />
+              <span className="home-menu-section-title">Sort By</span>
+            </div>
             <IonSelect
               name="filterby"
               onIonChange={(e: any) => handleFilter(e)}
-              aria-label="Filter By"
-              // value={
-              //   customerInformation?.ordertype !== ""
-              //     ? customerInformation.ordertype
-              //     : "none"
-              // }
-              className="info-input"
-              placeholder="Select Value"
+              aria-label="Sort By"
+              className="home-menu-select"
+              placeholder="Default"
+              interface="popover"
             >
-              <IonSelectOption value="lowhigh">
-                Price Low to High
-              </IonSelectOption>
-              <IonSelectOption value="highlow">
-                Price High to Low
-              </IonSelectOption>
-              <IonSelectOption value="alphaAZ">
-                Alphabetical A-Z
-              </IonSelectOption>
-              <IonSelectOption value="alphaZA">
-                Alphabetical Z-A
-              </IonSelectOption>
+              <IonSelectOption value="lowhigh">Price: Low → High</IonSelectOption>
+              <IonSelectOption value="highlow">Price: High → Low</IonSelectOption>
+              <IonSelectOption value="alphaAZ">A → Z</IonSelectOption>
+              <IonSelectOption value="alphaZA">Z → A</IonSelectOption>
             </IonSelect>
-          </IonItem>
-          {/* <IonItem
-            className="onboarding"
-            onClick={() => router.push("/Onboarding")}
-          >
-            Onboarding
-          </IonItem> */}
+          </div>
+
+          {/* Reset */}
+          {(get_category_and_brand.category || get_category_and_brand.brand || get_category_and_brand.filter) && (
+            <IonButton
+              expand="block"
+              fill="clear"
+              color="danger"
+              className="home-reset-btn"
+              onClick={() => setCategoryAndBrand({ category: "", brand: "", filter: "" })}
+            >
+              Reset All Filters
+            </IonButton>
+          )}
+
         </IonContent>
       </IonMenu>
+
+      {/* ── Main Page ───────────────────────────────── */}
       <IonPage className="home-page-container" id="main-content">
-        <IonHeader className={`home-page-header `}>
+        <IonHeader className="home-page-header">
           <IonToolbar mode="ios" color="tertiary">
             <IonButtons slot="start">
-              <IonMenuButton></IonMenuButton>
+              <IonMenuButton />
             </IonButtons>
-            <IonTitle>Home</IonTitle>
-            <IonButtons
-              className="notification-button"
-              slot="end"
-              onClick={() => handleClickNotification()}
-            >
-              <IonIcon
-                className="notification-icon"
-                icon={notifications}
-                size="large"
-              ></IonIcon>
-              <IonBadge className="notification-badge" color="danger">
-                {totalNotifs}
-              </IonBadge>
-              {/* <IonIcon size="large" aria-hidden="true" icon={notifications}>
-                <IonBadge color="danger">1000</IonBadge>
-              </IonIcon> */}
+            <IonTitle className="home-title">
+
+              Restie Hardware
+            </IonTitle>
+            <IonButtons slot="end" className="home-notif-btn" onClick={handleClickNotification}>
+              <IonIcon icon={notifications} className="home-notif-icon" />
+              {totalNotifs > 0 && (
+                <IonBadge color="danger" className="home-notif-badge">
+                  {totalNotifs > 99 ? "99+" : totalNotifs}
+                </IonBadge>
+              )}
             </IonButtons>
           </IonToolbar>
-          {/* <IonToolbar
-            mode="ios"
-            color="tertiary"
-            className="home-toolbar-logo-container"
-          >
-            <div
-              className={` ${
-                platform.includes("mobileweb") && !platform.includes("tablet")
-                  ? ""
-                  : "web"
-              }`}
-            >
-              <IonImg src={restielogo} className="home-toolbar-logo"></IonImg>
-            </div>
-          </IonToolbar> */}
-          <IonToolbar mode="ios" color="tertiary">
-            <div
-              className={`home-search-container ${platform.includes("mobileweb") && !platform.includes("tablet")
-                  ? "mobile-container"
-                  : "desktop-container"
-                }`}
-            >
+
+          <IonToolbar mode="ios" color="tertiary" className="home-search-toolbar">
+            <div className={`home-search-container ${platform.includes("mobileweb") && !platform.includes("tablet") ? "mobile-container" : "desktop-container"}`}>
               <IonSearchbar
-                className={`home-search ${platform.includes("mobileweb") && !platform.includes("tablet")
-                    ? "mobile"
-                    : "desktop"
-                  }`}
+                className={`home-search ${platform.includes("mobileweb") && !platform.includes("tablet") ? "mobile" : "desktop"}`}
                 debounce={2000}
                 onIonInput={(e) => handleSearch(e)}
                 mode="ios"
-                autocapitalize={"words"}
+                autocapitalize="words"
+                placeholder="Search products…"
                 color="light"
-              ></IonSearchbar>
+              />
             </div>
           </IonToolbar>
+
+          {/* Active filter chips strip */}
+          {(get_category_and_brand.category || get_category_and_brand.brand || get_category_and_brand.filter) && (
+            <div className="home-chips-strip">
+              {get_category_and_brand.category && (
+                <IonChip className="home-chip" onClick={() => setCategoryAndBrand(p => ({ ...p, category: "" }))}>
+                  <IonIcon icon={layersOutline} />
+                  <IonLabel>{get_category_and_brand.category}</IonLabel>
+                  <IonIcon icon={close} />
+                </IonChip>
+              )}
+              {get_category_and_brand.brand && (
+                <IonChip className="home-chip" onClick={() => setCategoryAndBrand(p => ({ ...p, brand: "" }))}>
+                  <IonIcon icon={storefrontOutline} />
+                  <IonLabel>{get_category_and_brand.brand}</IonLabel>
+                  <IonIcon icon={close} />
+                </IonChip>
+              )}
+              {get_category_and_brand.filter && (
+                <IonChip className="home-chip" onClick={() => setCategoryAndBrand(p => ({ ...p, filter: "" }))}>
+                  <IonIcon icon={funnelOutline} />
+                  <IonLabel>
+                    {{ lowhigh: "Price ↑", highlow: "Price ↓", alphaAZ: "A→Z", alphaZA: "Z→A" }[get_category_and_brand.filter] ?? get_category_and_brand.filter}
+                  </IonLabel>
+                  <IonIcon icon={close} />
+                </IonChip>
+              )}
+            </div>
+          )}
         </IonHeader>
 
-        <IonContent fullscreen className={`home-page-content `}>
-          <div className="home-spinner">
-            {isFetching && <IonSpinner color="light" name="lines"></IonSpinner>}
-          </div>
+        <IonContent fullscreen className="home-page-content">
+          {isFetching && (
+            <div className="home-spinner">
+              <IonSpinner color="medium" name="crescent" />
+            </div>
+          )}
           <ExploreContainer data={list_of_items} searchItem={fetchList} />
+
+          {/* Category / Brand picker modal */}
           <IonModal
             isOpen={openSearchModal.isOpen}
             onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
-            initialBreakpoint={1}
-            breakpoints={[0, 0.25, 0.5, 0.75, 1]}
+            initialBreakpoint={0.75}
+            breakpoints={[0, 0.5, 0.75, 1]}
           >
             <IonHeader>
               <IonToolbar>
-                <IonButtons slot="start">
-                  <IonButton
-                    onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}
-                  >
-                    Cancel
+                <IonTitle>
+                  {openSearchModal.modal === "category" ? "Select Category" : "Select Brand"}
+                </IonTitle>
+                <IonButtons slot="end">
+                  <IonButton onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}>
+                    <IonIcon icon={close} />
                   </IonButton>
                 </IonButtons>
               </IonToolbar>
             </IonHeader>
             <IonContent className="ion-padding">
-            {openSearchModal.modal === "category" ? (
+              {openSearchModal.modal === "category" ? (
                 <>
                   <IonSearchbar
                     placeholder="Search Category"
                     onIonInput={(e) => handleSearch(e)}
-                    autocapitalize={"words"}
+                    autocapitalize="words"
                     debounce={1500}
-                  ></IonSearchbar>
+                  />
                   <IonList>
                     {fetch_category.map((val, index) => (
-                      <IonItem
-                      onClick={() => handleCategory(val.category)}
-                        key={index}
-                      >
-                        <IonLabel>
-                          <h2>{val.category}</h2>
-                        </IonLabel>
+                      <IonItem button key={index} lines="inset" onClick={() => handleCategory(val.category)}>
+                        <IonIcon icon={layersOutline} slot="start" color="medium" />
+                        <IonLabel>{val.category}</IonLabel>
+                        {get_category_and_brand.category === val.category && (
+                          <IonBadge slot="end" color="tertiary">✓</IonBadge>
+                        )}
                       </IonItem>
                     ))}
                   </IonList>
                 </>
-              ) : null}
-              {openSearchModal.modal === "brands" ? (
+              ) : (
                 <>
                   <IonSearchbar
-                    placeholder="Search Brands"
+                    placeholder="Search Brand"
                     onIonInput={(e) => handleSearch(e)}
-                    autocapitalize={"words"}
+                    autocapitalize="words"
                     debounce={1500}
-                  ></IonSearchbar>
+                  />
                   <IonList>
                     {fetch_brands.map((val, index) => (
-                      <IonItem
-                      onClick={() => handleBrand(val.brand)}
-                        key={index}
-                      >
-                        <IonLabel>
-                          <h2>{val.brand}</h2>
-                        </IonLabel>
+                      <IonItem button key={index} lines="inset" onClick={() => handleBrand(val.brand)}>
+                        <IonIcon icon={storefrontOutline} slot="start" color="medium" />
+                        <IonLabel>{val.brand}</IonLabel>
+                        {get_category_and_brand.brand === val.brand && (
+                          <IonBadge slot="end" color="tertiary">✓</IonBadge>
+                        )}
                       </IonItem>
                     ))}
                   </IonList>
                 </>
-              ) : null}
+              )}
             </IonContent>
           </IonModal>
         </IonContent>
@@ -465,3 +425,4 @@ const Tab1: React.FC = () => {
 };
 
 export default Tab1;
+

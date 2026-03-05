@@ -43,16 +43,19 @@ http://ionicframework.com/docs/theming/ */
   font-family: "Gotham-XLight";
   src: url("../assets/fonts/Gotham-XLight.otf");
 }
+
 ion-toolbar {
- /* --backround:#051926; */
- --backround:white;
+  /* --backround:#051926; */
+  --backround: white;
 
 }
-ion-content{
+
+ion-content {
   /* --background: linear-gradient(180deg, #0F0526, #125B8C); */
   --background: linear-gradient(180deg, white, white);
 
 }
+
 :root {
   --ion-mode: 'ios';
   --ion-font-family: "Gotham-Light";
@@ -144,7 +147,7 @@ ion-content{
     --ion-color-primary-contrast-rgb: 255, 255, 255;
     --ion-color-primary-shade: #1e2023;
     --ion-color-primary-tint: #383a3e;
-  
+
     /** secondary **/
     --ion-color-secondary: #3dc2ff;
     --ion-color-secondary-rgb: 61, 194, 255;
@@ -152,7 +155,7 @@ ion-content{
     --ion-color-secondary-contrast-rgb: 255, 255, 255;
     --ion-color-secondary-shade: #36abe0;
     --ion-color-secondary-tint: #50c8ff;
-  
+
     /** tertiary **/
     --ion-color-tertiary: #051926;
     --ion-color-tertiary-rgb: 82, 96, 255;
@@ -160,7 +163,7 @@ ion-content{
     --ion-color-tertiary-contrast-rgb: 255, 255, 255;
     --ion-color-tertiary-shade: #4854e0;
     --ion-color-tertiary-tint: #6370ff;
-  
+
     /** success **/
     --ion-color-success: #2dd36f;
     --ion-color-success-rgb: 45, 211, 111;
@@ -168,7 +171,7 @@ ion-content{
     --ion-color-success-contrast-rgb: 255, 255, 255;
     --ion-color-success-shade: #28ba62;
     --ion-color-success-tint: #42d77d;
-  
+
     /** warning **/
     --ion-color-warning: #ffc409;
     --ion-color-warning-rgb: 255, 196, 9;
@@ -176,7 +179,7 @@ ion-content{
     --ion-color-warning-contrast-rgb: 0, 0, 0;
     --ion-color-warning-shade: #e0ac08;
     --ion-color-warning-tint: #ffca22;
-  
+
     /** danger **/
     --ion-color-danger: #eb445a;
     --ion-color-danger-rgb: 235, 68, 90;
@@ -184,7 +187,7 @@ ion-content{
     --ion-color-danger-contrast-rgb: 255, 255, 255;
     --ion-color-danger-shade: #cf3c4f;
     --ion-color-danger-tint: #ed576b;
-  
+
     /** dark **/
     --ion-color-dark: #222428;
     --ion-color-dark-rgb: 34, 36, 40;
@@ -192,7 +195,7 @@ ion-content{
     --ion-color-dark-contrast-rgb: 255, 255, 255;
     --ion-color-dark-shade: #1e2023;
     --ion-color-dark-tint: #383a3e;
-  
+
     /** medium **/
     --ion-color-medium: #125B8C;
     --ion-color-medium-rgb: 146, 148, 156;
@@ -200,7 +203,7 @@ ion-content{
     --ion-color-medium-contrast-rgb: 255, 255, 255;
     --ion-color-medium-shade: #808289;
     --ion-color-medium-tint: #9d9fa6;
-  
+
     /** light **/
     --ion-color-light: #f4f5f8;
     --ion-color-light-rgb: 244, 245, 248;
@@ -303,4 +306,19 @@ html {
   /* For more information on dynamic font scaling, visit the documentation: 
   https://ionicframework.com/docs/layout/dynamic-font-scaling */
   --ion-dynamic-font: var(--ion-default-dynamic-font);
+}
+
+/*
+ * Fix: "Blocked aria-hidden on an element because its descendant retained focus"
+ * ion-backdrop receives focus via tabindex="0" in Ionic 7 which triggers the warning
+ * when aria-hidden is applied to it during overlay teardown. This removes it from
+ * the tab order so it never holds focus.
+ */
+ion-backdrop {
+  pointer-events: none;
+  user-select: none;
+}
+
+ion-backdrop[tappable] {
+  pointer-events: auto;
 }

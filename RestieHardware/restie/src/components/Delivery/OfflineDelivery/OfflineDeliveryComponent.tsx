@@ -1,11 +1,8 @@
 import {
   IonButton,
-  IonCard,
-  IonCardContent,
   IonContent,
   IonIcon,
   IonInput,
-  IonText,
   IonToast,
 } from "@ionic/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -21,10 +18,7 @@ import {
   SavedDeliveryInfo,
   UpdateDelivered,
 } from "../../../Service/API/Inventory/InventoryApi";
-import { set_toast } from "../../../Service/Actions/Commons/CommonsActions";
 import { useTypedDispatch } from "../../../Service/Store";
-import attachmentDeleteIcon from "../../../assets//images/icons/cross_screenshot_button.svg";
-import attachmentIcon from "../../../assets//images/icons/attchment-icon.svg";
 import {
   createItem,
   deleteItem,
@@ -32,7 +26,13 @@ import {
   queryItems,
 } from "../../../Service/OfflineDatabase/Database";
 import "./OfflineDeliveryComponent.css";
-import { cloud, cloudUpload, save, sync } from "ionicons/icons";
+import {
+  cameraOutline,
+  cloudUploadOutline,
+  attachOutline,
+  trashOutline,
+  saveOutline,
+} from "ionicons/icons";
 import { getOrderInfo } from "../../../Service/Actions/Inventory/InventoryActions";
 import { Network } from "@capacitor/network";
 import { base64toFile } from "../../Admin/Products/ManageProducts/ProductComponentsService";
@@ -213,104 +213,94 @@ const OfflineDeliveryComponent = () => {
     }
   };
   return (
-    <IonContent>
-      <div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmitEmail(e);
-          }}
-        >
-          <div className="attchment-container">
-            <IonInput
-              labelPlacement="floating"
-              label="Order ID"
-              name="name"
-              type="text"
-              class="product-input"
-              value={DeliveryInfo.orderid}
-              onIonInput={(e) =>
-                setDeliveryInfo((prev) => ({
-                  ...prev,
-                  orderid: e.detail.value!,
-                }))
-              }
-            ></IonInput>
-            <IonInput
-              labelPlacement="floating"
-              label="Delivered By"
-              name="name"
-              type="text"
-              class="product-input"
-              value={DeliveryInfo.name}
-              onIonInput={(e) =>
-                setDeliveryInfo((prev) => ({
-                  ...prev,
-                  name: e.detail.value!,
-                }))
-              }
-            ></IonInput>
-            {getFile !== undefined ? (
-              getFile && (
-                <div className="selected-files-list">
-                  <div className="selected-file">
-                    <div className="file-thumbnail">
-                      {/* You can render a thumbnail of the file here */}
-                      {getFile &&
-                        getFile.type &&
-                        getFile.type.startsWith("image/") && (
-                          <img
-                            className="support-image"
-                            src={URL.createObjectURL(getFile)}
-                            alt={`Thumbnail ${getFile.name}`}
-                          />
-                        )}
-                    </div>
-                    {getFile &&
-                      getFile.name !== undefined &&
-                      getFile.size !== undefined && (
-                        <div className="file-details">
-                          <IonText className="file-name">
-                            {getFile!.name}
-                          </IonText>
-                          <IonText className="file-size">
-                            {getFile!.size} bytes
-                          </IonText>
-                        </div>
-                      )}
-                    {getFile && (
-                      <div
-                        className="file-delete"
-                        onClick={() => deleteAttachment(getFile!)}
-                      >
-                        <IonIcon
-                          className="file-delete-icon"
-                          icon={attachmentDeleteIcon}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            ) : (
-              <IonText className="file-info-text">
-                To select image choose attach image. If you want to capture
-                image choose open camera
-              </IonText>
-            )}
-          </div>
-          <div className="capture-images-buttons">
-            <div
-              className="offline-delivery-attachment-button"
-              onClick={() => handleTakePhoto()}
+    <IonContent className="od-content">
+      <div className="od-scroll">
+        <div className="od-inner">
+
+          {/* ── Form ── */}
+          <p className="od-section-label">Delivery Info</p>
+          <div className="od-card">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmitEmail(e);
+              }}
             >
-              <IonIcon
-                className="offline-delivery-attachment-button-icon"
-                icon={attachmentIcon}
-              ></IonIcon>
-              Open Camera
-            </div>
-            <>
+              <div className="od-field">
+                <span className="od-label">Order ID</span>
+                <IonInput
+                  className="od-input"
+                  name="orderid"
+                  type="text"
+                  value={DeliveryInfo.orderid}
+                  onIonInput={(e) =>
+                    setDeliveryInfo((prev) => ({ ...prev, orderid: e.detail.value! }))
+                  }
+                  placeholder="Enter order ID"
+                />
+              </div>
+
+              <div className="od-field" style={{ marginTop: 12 }}>
+                <span className="od-label">Delivered By</span>
+                <IonInput
+                  className="od-input"
+                  name="name"
+                  type="text"
+                  value={DeliveryInfo.name}
+                  onIonInput={(e) =>
+                    setDeliveryInfo((prev) => ({ ...prev, name: e.detail.value! }))
+                  }
+                  placeholder="Enter courier name"
+                />
+              </div>
+
+              {/* Image preview */}
+              {getFile !== undefined ? (
+                <div className="od-image-preview" style={{ marginTop: 14 }}>
+                  {getFile.type.startsWith("image/") && (
+                    <img
+                      className="od-image-thumb"
+                      src={URL.createObjectURL(getFile)}
+                      alt={getFile.name}
+                    />
+                  )}
+                  <div className="od-image-meta">
+                    <span className="od-image-name">{getFile.name}</span>
+                    <span className="od-image-size">{getFile.size} bytes</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="od-image-delete"
+                    onClick={() => setFile(undefined)}
+                  >
+                    <IonIcon icon={trashOutline} />
+                  </button>
+                </div>
+              ) : (
+                <p className="od-image-placeholder" style={{ marginTop: 14 }}>
+                  No image selected. Use Camera or Attach to add a delivery photo.
+                </p>
+              )}
+
+              {/* Action buttons */}
+              <div className="od-image-buttons" style={{ marginTop: 14 }}>
+                <button type="button" className="od-image-btn" onClick={() => handleTakePhoto()}>
+                  <IonIcon icon={cameraOutline} />
+                  Camera
+                </button>
+                <button
+                  type="button"
+                  className="od-image-btn"
+                  onClick={() => {
+                    // @ts-ignore
+                    fileInput?.current?.click();
+                  }}
+                >
+                  <IonIcon icon={attachOutline} />
+                  Attach
+                </button>
+              </div>
+
               <input
                 ref={fileInput}
                 hidden
@@ -319,58 +309,49 @@ const OfflineDeliveryComponent = () => {
                 onChange={(e) => onSelectFile(e)}
               />
 
-              <div
-                className="offline-delivery-attachment-button"
-                onClick={() => {
-                  // @ts-ignore
-                  fileInput?.current?.click();
-                  // setBackgroundOption(BackgroundOptionType.Gradient);
-                }}
-              >
-                <IonIcon
-                  className="offline-delivery-attachment-button-icon"
-                  icon={attachmentIcon}
-                ></IonIcon>
-                Attach Image
-              </div>
-            </>
+              <IonButton className="od-submit-btn" type="submit" style={{ marginTop: 16 }}>
+                <IonIcon slot="start" icon={saveOutline} />
+                Save Delivery
+              </IonButton>
+            </form>
           </div>
-          <IonButton className="offline-delivery-send-button" type="submit">
-            Save
-          </IonButton>
-        </form>
-      </div>
-      <div className="offline-delivery-text-sync-container">
-        <IonText className="offline-delivery-text-sync">
-          Sync to Cloud delivery details
-        </IonText>
-        {displayDeliveryInfo?.map((val) => (
-          <IonCard key={val.orderid}>
-            <IonCardContent className="offline-delivery-main-card-content">
-              <div className="offline-delivery-card-content">
-                <div className="offline-delivery-card-container">
-                  <IonText>Order ID: {val.orderid}</IonText>
-                  <IonText>Delivered By: {val.deliveredby}</IonText>
-                  <IonText>Delivery Date: {val.deliverydate}</IonText>
+
+          {/* ── Sync section ── */}
+          <p className="od-section-label">Pending Sync</p>
+          {displayDeliveryInfo && displayDeliveryInfo.length > 0 ? (
+            displayDeliveryInfo.map((val) => (
+              <div key={val.orderid} className="od-sync-card od-sync-gap">
+                <div className="od-sync-info">
+                  <span className="od-sync-order">Order # {val.orderid}</span>
+                  <span className="od-sync-meta">By: {val.deliveredby}</span>
+                  <span className="od-sync-meta">
+                    Date: {new Date(val.deliverydate).toLocaleDateString()}
+                  </span>
                 </div>
-                <IonButton color="light" onClick={() => handleSaveToCloud(val)}>
-                  <IonIcon src={cloudUpload}></IonIcon>
+                <IonButton
+                  className="od-cloud-btn"
+                  fill="clear"
+                  onClick={() => handleSaveToCloud(val)}
+                >
+                  <IonIcon icon={cloudUploadOutline} />
                 </IonButton>
               </div>
-            </IonCardContent>
-          </IonCard>
-        ))}
+            ))
+          ) : (
+            <p className="od-empty">No pending deliveries to sync.</p>
+          )}
+
+        </div>
       </div>
+
       <IonToast
         isOpen={isOpenToast?.isOpen}
         message={isOpenToast.toastMessage}
         position="middle"
-        color={"medium"}
+        color="medium"
         duration={3000}
-        onDidDismiss={() =>
-          setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
-        }
-      ></IonToast>
+        onDidDismiss={() => setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })}
+      />
     </IonContent>
   );
 };

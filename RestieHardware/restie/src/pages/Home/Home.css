@@ -1,186 +1,214 @@
+/* ──────────────────────────────────────────────────
+   Home Page Shell
+────────────────────────────────────────────────── */
 .home-page-container {
-  .home-page-header {
-    display: flex;
-    flex-direction: column;
-  }
-  .home-page-content {
-    /* --background: linear-gradient(180deg, #0F0526, #125B8C); */
-    .home-spinner {
-      text-align: center;
-      color: white;
-    }
-   
-  }
-  .home-toolbar-logo-container {
-    display: flex;
-    flex-direction: row;
-    justify-self: center;
-    align-items: center;
-    text-align: center;
-    .home-toolbar-logo {
-      height: 100px;
-      margin: 10px;
-      display: block;
-      height: 100%;
-      -o-object-fit: inherit;
-      object-fit: fill;
-      -o-object-position: inherit;
-      object-position: inherit;
-    
-    }
-    .web{
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      height: 120px;
-      padding-bottom: 20px;
-    }
-  }
-}
-.categories-container {
-  display: flex;
-  flex-direction: column;
-  padding-top: 10px;
-
-  .categories-category {
-    /* background-color: #850D0D; */
-    background-color: #125B8C;
-    color: white;
-    border-radius: 15px;
-    .category-text {
-      font-family: "Gotham-Light";
-      font-size: 14px;
-      padding-left: 15px;
-    }
-    .category-img {
-      border-radius: 15px;
-    }
-  }
-}
-.brand-content{
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    max-width: calc(130px* 2);
-    .brands-container {
-        display: flex;
-        flex-direction: column;
-        padding-top: 10px;
-        padding-left: 10px;
-        .brands-brand {
-          background-color: #125B8C;
-          height: 50px;
-          color: white;
-          border-radius: 10px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          .brand-text {
-            font-family: "Gotham-Light";
-            font-size: 16px;
-            padding-left: 15px;
-            width: 100px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-          }
-          .brand-img {
-            border-radius: 15px;
-          }
-        }
-      }
+  --ion-background-color: #f4f5f8;
 }
 
-.category-card-content {
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  gap: 8px;
-  margin-top: 14px;
-  margin-bottom: 0px;
-
-  .category-card-title-details {
-    display: flex;
-    font-family: "Gotham-Black";
-    font-size: 14px;
-    flex-direction: row;
-    gap: 5px;
-    align-items: center;
-    .category-card-title {
-      font-family: "Gotham-Black";
-      font-size: 14px;
-    }
-    .category-icon-img {
-      width: 50px;
-      height: 50px;
-    }
-  }
-  .category-card-category-details {
-    display: flex;
-    font-family: "Gotham-Light";
-    font-size: 14px;
-    flex-direction: row;
-    gap: 5px;
-    .category-card-category {
-      font-family: "Gotham-Light";
-      font-size: 14px;
-    }
-  }
-  .category-card-price-details {
-    display: flex;
-    font-family: "Gotham-Light";
-    font-size: 16px;
-    flex-direction: row;
-    color: #f02b2b;
-    font-weight: bolder;
-    gap: 5px;
-    .category-card-price {
-      font-family: "Gotham-Light";
-      font-size: 14px;
-    }
-  }
+.home-page-content {
+  --background: #f4f5f8;
 }
-.filter{
-  padding-top:20px ;
+
+/* ──────────────────────────────────────────────────
+   Header
+────────────────────────────────────────────────── */
+.home-page-header ion-toolbar {
+  --background: #051926;
+  --border-color: transparent;
+}
+
+.home-title {
+  font-family: "Gotham-Black";
+  font-size: 17px;
+  letter-spacing: 0.3px;
   display: flex;
-  flex-direction: row;
-  font-size: 14px;
-  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
+  gap: 6px;
 }
-.onboarding{
+
+.home-title-icon {
+  font-size: 18px;
+  vertical-align: middle;
+  margin-right: 4px;
+  opacity: 0.85;
+}
+
+/* Notification button */
+.home-notif-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 6px;
+  cursor: pointer;
+}
+
+.home-notif-icon {
+  font-size: 24px;
+  color: #ffffff;
+}
+
+.home-notif-badge {
   position: absolute;
-  padding-bottom: 10px;
-  bottom: 0;
-  font-size: 14px;
-  justify-content: space-between;
+  top: 2px;
+  right: 2px;
+  font-size: 10px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  justify-content: center;
 }
-.mobile{
-  width: 100%!important;
+
+/* Search toolbar */
+.home-search-toolbar {
+  --padding-top: 4px;
+  --padding-bottom: 8px;
 }
-.desktop{
-  width: 50%!important;
+
+.home-search-container {
+  width: 100%;
 }
-.mobile-container{
+
+.home-search {
+  --border-radius: 12px;
+  --background: rgba(255, 255, 255, 0.15);
+  --color: #ffffff;
+  --placeholder-color: rgba(255, 255, 255, 0.6);
+  --icon-color: rgba(255, 255, 255, 0.7);
+  --clear-button-color: rgba(255, 255, 255, 0.7);
+  --box-shadow: none;
+  font-size: 14px;
+}
+
+.mobile {
+  width: 100% !important;
+}
+
+.desktop {
+  width: 50% !important;
+  margin: 0 auto;
+}
+
+.mobile-container {
   display: flex;
   flex-direction: row;
 }
-.desktop-container{
+
+.desktop-container {
   display: flex;
   flex-direction: row;
   justify-content: center;
 }
-.notification-icon{
-  position: relative;
-  right: 15px;
 
+/* Active filter chips strip below header */
+.home-chips-strip {
+  background: #051926;
+  padding: 4px 12px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.notification-badge {
-  position: absolute;
-  top: 3px;
-  right: -1px;
+.home-chip {
+  --background: rgba(255, 255, 255, 0.15);
+  --color: #ffffff;
+  font-size: 12px;
+  height: 28px;
+  border-radius: 14px;
+}
+
+/* Spinner */
+.home-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+/* ──────────────────────────────────────────────────
+   Side Menu
+────────────────────────────────────────────────── */
+.home-menu-content {
+  --background: #f4f5f8;
+}
+
+.home-menu-section {
+  padding: 16px 16px 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.home-menu-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.home-menu-section-icon {
+  font-size: 18px;
+  color: #125B8C;
+}
+
+.home-menu-section-title {
+  font-family: "Gotham-Medium";
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #051926;
+}
+
+.home-menu-picker-btn {
+  --border-radius: 10px;
+  --border-color: #125B8C;
+  --color: #125B8C;
+  font-size: 14px;
+  height: 42px;
+  text-transform: none;
+  font-family: "Gotham-Light";
+}
+
+.home-menu-select {
+  width: 100%;
+  border: 1.5px solid #125B8C;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: "Gotham-Light";
+  color: #051926;
+  background: #fff;
+}
+
+.home-reset-btn {
+  margin: 12px 16px;
+  --border-radius: 10px;
+  font-size: 14px;
+}
+
+/* Active filters section at top of menu */
+.home-active-filters {
+  padding: 14px 16px 10px;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.home-filter-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #808289;
+  margin: 0 0 6px;
+  font-family: "Gotham-Medium";
+}
+
+.home-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.home-filter-chip {
+  font-size: 12px;
+  height: 28px;
 }

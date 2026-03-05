@@ -1,18 +1,12 @@
 import {
   IonButton,
-  IonButtons,
   IonContent,
   IonFooter,
   IonHeader,
-  IonImg,
-  IonLoading,
-  IonMenuButton,
   IonPage,
-  IonText,
   IonTitle,
   IonToast,
   IonToolbar,
-  getPlatforms,
   useIonRouter,
 } from "@ionic/react";
 import { useCallback, useEffect, useState } from "react";
@@ -50,7 +44,6 @@ const Tab2: React.FC = () => {
     isOpen: false,
     type: "",
   });
-  const platform = getPlatforms();
   useEffect(() => {
     const getTotal = () => {
       let totalPrice = 0; // Initialize total price
@@ -200,34 +193,26 @@ const Tab2: React.FC = () => {
       <IonToast
         isOpen={isOpenToast.type === "toast" ? isOpenToast?.isOpen : false}
         message={isOpenToast.toastMessage}
-        color={"medium"}
+        color="medium"
         position="middle"
         duration={3000}
-        onDidDismiss={() =>
-          setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })
-        }
-      ></IonToast>
+        onDidDismiss={() => setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })}
+      />
       <IonContent fullscreen className="tab-cart-content">
         <CartComponent />
       </IonContent>
       <IonFooter>
-        <IonToolbar>
-          <div
-            className={`tab-cart-footer ${
-              platform.includes("mobileweb") && !platform.includes("tablet")
-                ? "tab-cart-mobile"
-                : "tab-cart-desktop"
-            }`}
-          >
-            <IonText className="tab-cart-total">
-              Total - <span>&#8369;</span>
-              {formattedNumber(getTotal)}
-            </IonText>
-            {selectedItemselector.length > 0 ? (
-              <IonButton color="medium" onClick={() => handleSaveOrder()}>
+        <IonToolbar className="t2-footer-toolbar">
+          <div className="t2-footer-bar">
+            <div className="t2-total-block">
+              <span className="t2-total-label">Total</span>
+              <span className="t2-total-amount">₱{formattedNumber(getTotal)}</span>
+            </div>
+            {selectedItemselector.length > 0 && (
+              <IonButton className="t2-proceed-btn" onClick={() => handleSaveOrder()}>
                 Proceed
               </IonButton>
-            ) : null}
+            )}
           </div>
         </IonToolbar>
       </IonFooter>

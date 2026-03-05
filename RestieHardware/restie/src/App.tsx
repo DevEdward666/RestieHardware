@@ -40,6 +40,8 @@ import AddNewItemPage from "./pages/Products/ManageProducts/AddNewItemPage";
 import MainProductPage from "./pages/Products/ManageProducts/MainProductPage";
 import AddNewSupplierPage from "./pages/Products/ManageProducts/AddNewSupplierPage";
 import AddUpdateVoucherPage from "./pages/Products/ManageProducts/AddUpdateVoucher";
+import BulkUpdateInventoryPage from "./pages/Products/ManageProducts/BulkUpdateInventoryPage";
+import ImportPOSLogPage from "./pages/Products/ManageProducts/ImportPOSLogPage";
 import AddUserPage from "./pages/Users/AddUserPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicy/PrivacyPolicyPage";
 import TermsOfServicePage from "./pages/TermsOfService/TermsOfServicePage";
@@ -144,6 +146,14 @@ const App: React.FC = () => {
         render={() => <AddUpdateVoucherPage />}
       />
       <Route path="/admin/add-new-user" render={() => <AddUserPage />} />
+      <Route
+        path="/admin/bulk-update-inventory"
+        render={() => <BulkUpdateInventoryPage />}
+      />
+      <Route
+        path="/admin/import-pos-log"
+        render={() => <ImportPOSLogPage />}
+      />
 
       <Route path="/admin/sales" render={() => <SalesPage />} />
 

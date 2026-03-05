@@ -223,3 +223,60 @@ export const UploadSales = async (payload: UploadSalesReportFile) => {
   );
   return response;
 };
+export const BulkUpsertInventoryFromExcel = async (file: File) => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) {
+    throw new Error("Token not found");
+  }
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await post(
+    `${baseUrl}api/admin/BulkUpsertInventoryFromExcel`,
+    {
+      "Content-Type": "application/form-data",
+      Authorization: `Bearer ${getToken}`,
+    },
+    formData
+  );
+  return response;
+};
+
+// Step 1: upload file, receive jobId
+export const BulkUpsertUploadFile = async (file: File): Promise<string> => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) throw new Error("Token not found");
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await post(
+    `${baseUrl}api/admin/BulkUpsertUploadFile`,
+    {
+      "Content-Type": "application/form-data",
+      Authorization: `Bearer ${getToken}`,
+    },
+    formData
+  );
+  const data = response?.data ?? response;
+  return data.jobId as string;
+};
+
+// Step 2: returns the SSE URL for a given jobId (caller opens EventSource)
+export const getBulkUpsertStreamUrl = (jobId: string): string => {
+  const getToken = localStorage.getItem("bearer");
+  return `${baseUrl}api/admin/BulkUpsertInventoryStream/${jobId}?token=${encodeURIComponent(getToken ?? "")}`;
+};
+
+// Import POS Transaction Log from another POS system
+export const ImportPOSLog = async (file: File): Promise<any> => {
+  const getToken = localStorage.getItem("bearer");
+  if (!getToken) throw new Error("Token not found");
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await post(
+    `${baseUrl}api/admin/ImportPOSLog`,
+    {
+      Authorization: `Bearer ${getToken}`,
+    },
+    formData
+  );
+  return response?.data ?? response;
+};

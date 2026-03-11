@@ -1,17 +1,12 @@
 import {
-  IonCard,
-  IonCardContent,
   IonContent,
   IonIcon,
-  IonPage,
   useIonRouter,
 } from "@ionic/react";
 import React from "react";
-import OnboardingComponent from "../../components/Onboarding/OnboardingComponent";
 import { useSelector } from "react-redux";
 import { RootStore } from "../../Service/Store";
-import { formatDate } from "date-fns";
-import { alertCircleSharp, filter } from "ionicons/icons";
+import { alertCircleSharp } from "ionicons/icons";
 import "./NotificationComponent.css";
 import { PostAgedReceivable } from "../../Models/Request/Inventory/InventoryModel";
 const NotificationComponent: React.FC = () => {
@@ -40,70 +35,52 @@ const NotificationComponent: React.FC = () => {
     );
   };
   return (
-    <IonContent>
-      <div>
-        {Array.isArray(receivable_list) && receivable_list.length > 0 ? (
-          receivable_list?.map((value, index) => (
-            <IonCard
-              className="notification-list-card-container"
-              key={index}
-              onClick={() => handleReceivable(value)}
-            >
-              <div className="notification-list-card-add-item-container">
-                <IonCardContent className="notification-list-card-main-content">
-                  <div className="notification-list-card-icon">
-                    <IonIcon
-                      color="danger"
-                      size="large"
-                      icon={alertCircleSharp}
-                    ></IonIcon>
-                    <div className="notification-list-card-content">
-                      <div className="notification-list-card-price-details">
-                        <div className="notification-list-card-price">
-                          Customer:{" "}
-                        </div>
-                        {value.customer}
-                      </div>
-                      <div className="notification-list-card-price-details">
-                        <div className="notification-list-card-price">
-                          Contact No.:{" "}
-                        </div>
-                        {value.contactno}
-                      </div>
-                      <div className="notification-list-card-price-details">
-                        <div className="notification-list-card-price">
-                          Customer Email:{" "}
-                        </div>
-                        {value.customer_email}
-                      </div>
-                      <div className="notification-list-card-title-details">
-                        <div className="notification-list-card-title">
-                          Order Date:{" "}
-                        </div>
-                        {formatDate(value.createdat)}
-                      </div>
-                      <div className="notification-list-card-price-details">
-                        <div className="notification-list-card-price">
-                          Total Debt:{" "}
-                        </div>
-                        <span>&#8369;</span>
-                        {value.total.toFixed(2)}
-                      </div>
-                      <div className="notification-list-card-price-details">
-                        <div className="notification-list-card-price">
-                          Total Days Unpaid:{" "}
-                        </div>
-                        {value.total_days}
-                      </div>
-                    </div>
-                  </div>
-                </IonCardContent>
+    <IonContent className="notif-content">
+      <div className="notif-scroll">
+        <div className="notif-inner">
+          {Array.isArray(receivable_list) && receivable_list.length > 0 ? (
+            receivable_list.map((value, index) => (
+              <div
+                key={index}
+                className="notif-card"
+                onClick={() => handleReceivable(value)}
+              >
+                {/* Header: name + days badge */}
+                <div className="notif-header">
+                  <span className="notif-customer-name">{value.customer}</span>
+                  <span className="notif-days-badge">
+                    {value.total_days} day{value.total_days !== 1 ? "s" : ""} unpaid
+                  </span>
+                </div>
+
+                {/* Debt amount */}
+                <span className="notif-debt">
+                  ₱{value.total.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+
+                <div className="notif-divider" />
+
+                <div className="notif-row">
+                  <span className="notif-row-label">Contact No.</span>
+                  <span className="notif-row-value">{value.contactno}</span>
+                </div>
+                <div className="notif-row">
+                  <span className="notif-row-label">Email</span>
+                  <span className="notif-row-value">{value.customer_email}</span>
+                </div>
+                <div className="notif-row">
+                  <span className="notif-row-label">Order Date</span>
+                  <span className="notif-row-value">{formatDate(value.createdat)}</span>
+                </div>
               </div>
-            </IonCard>
-          ))
-        ) : (
-          <p>No orders found.</p>
-        )}
+            ))
+          ) : (
+            <div className="notif-empty">
+              <IonIcon className="notif-empty-icon" icon={alertCircleSharp} />
+              <p className="notif-empty-text">No overdue receivables found.</p>
+            </div>
+          )}
+        </div>
       </div>
     </IonContent>
   );

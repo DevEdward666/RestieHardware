@@ -36,7 +36,9 @@ public class InventoryChatQueryRequest
 
     [JsonPropertyName("limit")]
     public int Limit { get; set; } = 10;
-
+    [JsonPropertyName("location")]
+    public string? Location { get; set; }
+    
     [JsonPropertyName("offset")]
     public int Offset { get; set; } = 0;
 

@@ -2,3 +2,30 @@
 
 # dependencies
 .vs
+
+# macOS / OS files
+.DS_Store
+
+# IDE / editor
+.idea/
+*.user
+*.suo
+*.swp
+*.tmp
+
+# .NET build outputs
+**/bin/
+**/obj/
+**/publish/
+TestResults/
+
+# Logs
+*.log
+
+# Local env / secrets
+.env
+.env.*
+appsettings.local.json
+RestieAPI/appsettings.Development.json
+RestieAPI/appsettings.Production.json
+RestieAPI/appsettings.*.local.json

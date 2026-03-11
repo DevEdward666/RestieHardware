@@ -1,98 +1,146 @@
-.notification-list-card-container{
+/* NotificationComponent.css */
+.notif-content {
+    --background: #f4f5f8;
+}
+
+.notif-scroll {
     display: flex;
     flex-direction: column;
-    .notification-list-card-add-item-container{
-        display: flex;
-        flex-direction: column;
-    }
-    .notification-list-card-main-content{
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        webkit-padding-start: 0px; 
-        padding-inline-start: 0px;
-        -webkit-padding-end: 0px;
-        padding-inline-end: 0px;
-        .notification-list-card-content{
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            gap: 8px;
-          
-           
-            .notification-list-card-title-details{
-                display: flex;
-                font-family: "Gotham-Light";
-                font-size: 14px;
-                flex-direction: row;
-                gap: 5px;
-                .notification-list-card-title{
-                    font-family: "Gotham-Medium";
-                    font-size: 14px;
-                }
-            }
-            .notification-list-card-price-details{
-                display: flex;
-                font-family: "Gotham-Light";
-                font-size: 14px;
-                flex-direction: row;
-                gap: 5px;
-                .notification-list-card-price{
-                    font-family: "Gotham-Medium";
-                    font-size: 14px;
-                }
-            }
-            .notification-list-card-qty{
-               
-                text-align: end;
-                font-family: "Gotham-Medium";
-                font-size: 16px;
-                text-shadow: -1px 0 #c2c0c0, 0 1px #c2c0c0, 1px 0 #c2c0c0, 0 -1px #c2c0c0;
-            }
-        }
-     
-    }
-
-}
-.notification-list-card-icon{
-    display: flex;
-    flex-direction: row;
     align-items: center;
-    padding-left: 20px;
-    gap: 16px;
+    padding: 16px 16px 40px;
+    min-height: 100%;
 }
-.notification-list-main-content {
-    .desktop{
-        width: 50%;
-    }
-    .mobile{
-        width: 100%;
-    }
-}
-.loader{
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
+
+.notif-inner {
     width: 100%;
+    max-width: 560px;
 }
-.pending{
-    color:#ffa807
+
+/* ── Card ────────────────────────────────────────────── */
+.notif-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1.5px solid #e8eaed;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(5, 25, 38, 0.06);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: background 0.14s ease;
+    -webkit-tap-highlight-color: transparent;
 }
-.approved{
-    color:#1bf01b
+
+.notif-card:active {
+    background: #f8f9fa;
 }
-.cancel{
-    color:#f02b2b
+
+/* ── Header row: customer + days badge ───────────────── */
+.notif-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
 }
-.delivered{
-    color:#4781ec
+
+.notif-customer-name {
+    font-family: "Gotham-Bold";
+    font-size: 15px;
+    color: #051926;
+    flex: 1;
 }
-.quotation{
-    color:#00f8cf
+
+.notif-days-badge {
+    background: #fef2f2;
+    color: #fe3434;
+    font-family: "Gotham-Bold";
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
-.returns{
-    color:#f02b2b
+
+/* ── Debt amount ─────────────────────────────────────── */
+.notif-debt {
+    font-family: "Gotham-Black";
+    font-size: 22px;
+    color: #fe3434;
+    letter-spacing: -0.5px;
 }
-.debt{
-    color:#21beee
+
+/* ── Info rows ───────────────────────────────────────── */
+.notif-divider {
+    height: 1px;
+    background: #f0f2f5;
+    margin: 2px 0;
+}
+
+.notif-row {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+}
+
+.notif-row-label {
+    font-family: "Gotham-Bold";
+    font-size: 12px;
+    color: #6b7280;
+    min-width: 90px;
+    flex-shrink: 0;
+}
+
+.notif-row-value {
+    font-family: "Gotham-Book";
+    font-size: 12px;
+    color: #051926;
+    word-break: break-word;
+}
+
+/* ── Empty state ─────────────────────────────────────── */
+.notif-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 60px 16px;
+    text-align: center;
+}
+
+.notif-empty-icon {
+    font-size: 48px;
+    color: #d1d5db;
+}
+
+.notif-empty-text {
+    font-family: "Gotham-Book";
+    font-size: 14px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+.approved {
+    color: #1bf01b
+}
+
+.cancel {
+    color: #f02b2b
+}
+
+.delivered {
+    color: #4781ec
+}
+
+.quotation {
+    color: #00f8cf
+}
+
+.returns {
+    color: #f02b2b
+}
+
+.debt {
+    color: #21beee
 }

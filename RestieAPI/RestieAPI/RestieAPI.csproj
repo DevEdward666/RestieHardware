@@ -13,6 +13,7 @@
   <ItemGroup>
     <PackageReference Include="ConfigurationPlaceholders" Version="2.0.0" />
     <PackageReference Include="EPPlus" Version="7.2.1" />
+    <PackageReference Include="itext7" Version="8.0.5" />
     <PackageReference Include="iTextSharp" Version="5.5.13.3" />
     <PackageReference Include="MailKit" Version="4.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
@@ -27,6 +28,13 @@
     <Folder Include="Helpers\" />
     <Folder Include="Resources\Images\" />
     <Folder Include="Resources\Assets\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Copy tessdata language files to the output directory on build -->
+    <Content Include="tessdata\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

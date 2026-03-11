@@ -12,7 +12,6 @@ import {
   IonSearchbar,
   IonSelect,
   IonSelectOption,
-  IonText,
   IonToolbar,
 } from "@ionic/react";
 import { close, saveOutline } from "ionicons/icons";
@@ -226,12 +225,8 @@ const AddUserComponent = () => {
     });
   };
   return (
-    <IonContent>
-      <IonSearchbar
-        onClick={() => handleOpenSearch()}
-        placeholder="Search User"
-        autocapitalize={"words"}
-      ></IonSearchbar>
+    <IonContent className="ani-content">
+      {/* ── User search modal ── */}
       <IonModal
         isOpen={openSearchModal.isOpen}
         onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
@@ -239,178 +234,126 @@ const AddUserComponent = () => {
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
       >
         <IonHeader>
-          <IonToolbar>
+          <IonToolbar color="tertiary">
             <IonButtons slot="start">
-              <IonButton
-                onClick={() => {
-                  setFetchList({
-                    page: 1,
-                    offset: 0,
-                    limit: 50,
-                    searchTerm: "",
-                  });
-                  setOpenSearchModal({ isOpen: false, modal: "" });
-                }}
-              >
-                Cancel
+              <IonButton onClick={() => { setFetchList({ page: 1, offset: 0, limit: 50, searchTerm: "" }); setOpenSearchModal({ isOpen: false, modal: "" }); }}>
+                Close
               </IonButton>
             </IonButtons>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          {openSearchModal.modal === "supplier" ? (
-            <>
-              <IonSearchbar
-                placeholder="Search Supplier"
-                onIonInput={(e) => handleSearch(e)}
-                autocapitalize={"words"}
-                debounce={1500}
-              ></IonSearchbar>
-              <IonList>
-                {admin_list_of_users.map((val, index) => (
-                  <IonItem onClick={() => handleSelectedUser(val)} key={index}>
-                    {/* <IonAvatar slot="start">
-                   <IonImg src="https://i.pravatar.cc/300?u=b" />
-                 </IonAvatar> */}
-                    <IonLabel>
-                      <h2>{val.name}</h2>
-                      <p>{val.role}</p>
-                    </IonLabel>
-                  </IonItem>
-                ))}
-              </IonList>
-            </>
-          ) : null}
+          <IonSearchbar
+            placeholder="Search user"
+            onIonInput={(e) => handleSearch(e)}
+            autocapitalize="words"
+            debounce={1500}
+          />
+          <IonList>
+            {admin_list_of_users.map((val, index) => (
+              <IonItem button onClick={() => handleSelectedUser(val)} key={index}>
+                <IonLabel>
+                  <h2>{val.name}</h2>
+                  <p>{val.role}</p>
+                </IonLabel>
+              </IonItem>
+            ))}
+          </IonList>
         </IonContent>
       </IonModal>
-      <div className="add-new-product-container">
-        <IonInput
-          labelPlacement="floating"
-          label="Name"
-          name="name"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={userInfo.name}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Username"
-          name="username"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={userInfo.username}
-        ></IonInput>
-        {isUsernameTaken && (
-          <IonText color="danger" className="username-taken-message">
-            Username is already taken. Please choose another one.
-          </IonText>
-        )}
-        <div className="password-strength-container">
-          <IonInput
-            labelPlacement="floating"
-            label="Password"
-            name="password"
-            type="password"
-            debounce={500}
-            onIonInput={(e: any) => handleInfoChange(e)}
-            class="product-input"
-            value={userInfo.password}
-          ></IonInput>
-          {!passwordStrength.isStrong && userInfo.password !== "" && (
-            <IonText color="danger">
-              Password must be at least 8 characters long and include numbers,
-              uppercase letters, and special characters.
-            </IonText>
-          )}
-          <div
-            className="password-strength-bar"
-            style={{
-              width: `${
-                passwordStrength.strength_score > 0
-                  ? (passwordStrength.strength_score / 4) * 100
-                  : 10
-              }%`,
 
-              backgroundColor:
-                passwordStrength.strength_score === 0
-                  ? "red"
-                  : passwordStrength.strength_score < 2
-                  ? "red"
-                  : passwordStrength.strength_score < 3
-                  ? "orange"
-                  : "green",
-              height: "5px",
-              transition: "width 0.3s",
-            }}
-          />
-        </div>
-        <div className="password-strength-container">
-          <IonInput
-            labelPlacement="floating"
-            label="Confirm Password"
-            name="confirm_password"
-            type="password"
-            onIonInput={(e: any) => handleInfoChange(e)}
-            class="product-input"
-            value={userInfo.confirm_password}
-          ></IonInput>
-          {userInfo.password !== userInfo.confirm_password && (
-            <IonText color="danger">Password mismatch</IonText>
-          )}
-        </div>
-        <IonItem className="info-item">
-          <IonText className="info-text">Role </IonText>
-          <IonSelect
-            name="role"
-            onIonChange={(e: any) => handleInfoChange(e)}
-            aria-label="Role"
-            className="info-input"
-            value={userInfo.role}
-          >
-            <IonSelectOption className="select-option" value="Super Admin">
-              Super Admin
-            </IonSelectOption>
-            <IonSelectOption className="select-option" value="Admin">
-              Admin
-            </IonSelectOption>
-            <IonSelectOption className="select-option" value="User">
-              Staff
-            </IonSelectOption>
-          </IonSelect>
-        </IonItem>
-        {userInfo?.id?.length > 0 ? (
-          <div className="add-user-button-container">
-            <IonButton
-              className="add-user-button"
-              color="medium"
-              expand="block"
-              onClick={() => handleCancel()}
-            >
-              <IonIcon slot="start" icon={close}></IonIcon>
-              Cancel
-            </IonButton>
-            <IonButton
-              className="add-user-button"
-              color="medium"
-              expand="block"
-              onClick={() => handleSaveUser(true)}
-            >
-              <IonIcon slot="start" icon={saveOutline}></IonIcon>
-              Update User
-            </IonButton>
+      <div className="ani-container">
+        <div className="ani-inner">
+          <div className="ani-card">
+            <p className="ani-card-title">
+              {userInfo.id ? "Update User" : "Add User"}
+            </p>
+
+            {/* Search existing */}
+            <div className="ani-field">
+              <IonSearchbar
+                onClick={handleOpenSearch}
+                placeholder="Search existing user…"
+                autocapitalize="words"
+                style={{ "--background": "#f4f5f8", "--border-radius": "10px", padding: 0 }}
+              />
+            </div>
+
+            <div className="ani-field">
+              <span className="ani-label">Full Name</span>
+              <IonInput className="ani-input" name="name" type="text" placeholder="Full name"
+                onIonInput={(e: any) => handleInfoChange(e)} value={userInfo.name} />
+            </div>
+
+            <div className="ani-field">
+              <span className="ani-label">Username</span>
+              <IonInput className="ani-input" name="username" type="text" placeholder="Username"
+                onIonInput={(e: any) => handleInfoChange(e)} value={userInfo.username} />
+              {isUsernameTaken && (
+                <span className="ani-error-text">Username is already taken. Please choose another one.</span>
+              )}
+            </div>
+
+            <div className="ani-field">
+              <span className="ani-label">Password</span>
+              <IonInput className="ani-input" name="password" type="password" placeholder="Password"
+                debounce={500} onIonInput={(e: any) => handleInfoChange(e)} value={userInfo.password} />
+              {userInfo.password !== "" && (
+                <>
+                  <div className="ani-strength-bar-wrap">
+                    <div
+                      className="ani-strength-bar"
+                      style={{
+                        width: `${passwordStrength.strength_score > 0 ? (passwordStrength.strength_score / 4) * 100 : 10}%`,
+                        backgroundColor:
+                          passwordStrength.strength_score < 2 ? "#fe3434"
+                            : passwordStrength.strength_score < 3 ? "#ffa807"
+                              : "#22c55e",
+                      }}
+                    />
+                  </div>
+                  {!passwordStrength.isStrong && (
+                    <span className="ani-error-text">
+                      Min 8 chars with numbers, uppercase & special characters.
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="ani-field">
+              <span className="ani-label">Confirm Password</span>
+              <IonInput className="ani-input" name="confirm_password" type="password" placeholder="Re-enter password"
+                onIonInput={(e: any) => handleInfoChange(e)} value={userInfo.confirm_password} />
+              {userInfo.confirm_password !== "" && userInfo.password !== userInfo.confirm_password && (
+                <span className="ani-error-text">Passwords do not match</span>
+              )}
+            </div>
+
+            <div className="ani-field">
+              <span className="ani-label">Role</span>
+              <IonSelect className="ani-select" name="role" aria-label="Role"
+                placeholder="Select role" onIonChange={(e: any) => handleInfoChange(e)} value={userInfo.role}>
+                <IonSelectOption value="Super Admin">Super Admin</IonSelectOption>
+                <IonSelectOption value="Admin">Admin</IonSelectOption>
+                <IonSelectOption value="User">Staff</IonSelectOption>
+              </IonSelect>
+            </div>
           </div>
-        ) : (
-          <IonButton
-            color="medium"
-            expand="block"
-            onClick={() => handleSaveUser(false)}
-          >
-            <IonIcon slot="start" icon={saveOutline}></IonIcon>
-            Add User
-          </IonButton>
+        </div>
+      </div>
+
+      {/* ── Sticky action bar ── */}
+      <div className="ani-action-bar">
+        {userInfo.id && (
+          <button className="ani-cancel-btn" onClick={handleCancel}>
+            <IonIcon icon={close} /> Cancel
+          </button>
         )}
+        <button className="ani-submit-btn" onClick={() => handleSaveUser(!!userInfo.id)}>
+          <IonIcon icon={saveOutline} />
+          {userInfo.id ? "Update User" : "Add User"}
+        </button>
       </div>
     </IonContent>
   );

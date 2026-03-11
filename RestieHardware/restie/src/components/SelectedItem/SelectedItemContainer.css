@@ -1,160 +1,302 @@
-.selected-item-main-content {
-  --background: white !important;
-  .selected-item-container {
-    display: flex;
-    flex-direction: column;
-    height: 70%;
-    .swiper-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      height: 100%;
-      .swiper-component {
-        height: 100%;
-        width: 100%;
-      }
-    }
-  }
-  .selected-item-information-container {
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
-    justify-content: space-between;
-    align-items: center;
-    .selected-item-price-qty-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-    .selected-item-current-price {
-      font-family: "Gotham-Black";
-      color: #ff3737;
-      font-size: 24px;
-    }
-    .selected-item-current-qty {
-      font-family: "Gotham-Medium";
-      color: #ff3737;
-      font-size: 16px;
-    }
-    .selected-item-added-qty-container {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      .selected-item-added-qty-input {
-        color: black;
-        display: flex;
-        text-align: center;
-        flex-direction: column;
-        justify-content: center;
-        width: 30px;
-      }
-    }
-  }
+/* ──────────────────────────────────────────────────
+   Page shell
+────────────────────────────────────────────────── */
+.si-content {
+  --background: #f4f5f8;
 }
-.selected-item-information-details-content {
-  padding: 10px;
-  .selected-item-information-details-content-category-brand {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    .selected-item-name-brand {
-      font-family: "Gotham-Light";
-      font-size: 16px;
-    }
-    .selected-item-name-category {
-      font-family: "Gotham-Light";
-      font-size: 16px;
-    }
-  }
-  .selected-item-name {
-    font-family: "Gotham-Medium";
-    font-size: 16px;
-  }
-  .selected-item-break-line {
-    --min-height: 24px;
-    --padding-start: 1px;
-  }
-}
-.button-container {
-  position: absolute;
-  bottom: 0;
-  padding: 10px;
-  right: 0;
-}
-ion-input.qty {
-  width: 50px;
-  text-align: center;
-  --background: #fff;
-  --color: #888c90;
-  --placeholder-color: #888c90;
-  --placeholder-opacity: 0.5;
 
-  --padding-bottom: 0;
-  --padding-end: 10px;
-  --padding-start: 10px;
-  --padding-top: 0;
-  min-height: 48px !important;
-  border: 2px solid #9fa3a6 !important;
-  border-radius: 10px;
-  --border-radius: 10px;
-  --border-color: black;
-  --border-style: solid;
-  --border-width: 5px;
+/* ──────────────────────────────────────────────────
+   Header
+────────────────────────────────────────────────── */
+.si-header ion-toolbar {
+  --background: #051926;
+  --border-color: transparent;
 }
+
+.si-header-title {
+  font-family: "Gotham-Medium";
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ──────────────────────────────────────────────────
+   Image swiper
+────────────────────────────────────────────────── */
+.si-swiper-wrap {
+  background: #ffffff;
+  padding-bottom: 8px;
+}
+
+.si-swiper {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #f8f8f8;
+}
+
+.si-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 12px;
+}
+
+.si-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+/* Admin upload button */
+.si-upload-row {
+  display: flex;
+  justify-content: center;
+  padding: 8px 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.si-upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: 1.5px dashed #125B8C;
+  border-radius: 10px;
+  background: transparent;
+  color: #125B8C;
+  font-family: "Gotham-Medium";
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.si-upload-icon {
+  font-size: 18px;
+}
+
+/* ──────────────────────────────────────────────────
+   Info card
+────────────────────────────────────────────────── */
+.si-info-card {
+  background: #ffffff;
+  margin: 12px;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  margin-bottom: 80px;
+}
+
+.si-product-name {
+  font-family: "Gotham-Black";
+  font-size: 18px;
+  color: #051926;
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+/* Category / Brand chips */
+.si-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.si-meta-chip {
+  background: #e8f0f7;
+  color: #125B8C;
+  font-family: "Gotham-Medium";
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.si-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 12px 0;
+}
+
+/* Price & stock row */
+.si-price-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.si-price-label {
+  font-family: "Gotham-Light";
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #808289;
+  margin: 0 0 2px;
+}
+
+.si-price {
+  font-family: "Gotham-Black";
+  font-size: 28px;
+  color: #fe3434;
+  margin: 0;
+}
+
+.si-stock-wrap {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 4px;
+}
+
+.si-stock-badge {
+  font-family: "Gotham-Medium";
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.si-stock-ok {
+  background: #e6f4ea;
+  color: #2e7d32;
+}
+
+.si-stock-out {
+  background: #fce4ec;
+  color: #c62828;
+}
+
+/* Quantity selector */
+.si-qty-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.si-qty-label {
+  font-family: "Gotham-Medium";
+  font-size: 14px;
+  color: #051926;
+  margin: 0;
+}
+
+.si-qty-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f4f5f8;
+  border-radius: 30px;
+  padding: 4px 8px;
+}
+
+.si-qty-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 28px;
+  color: #125B8C;
+  padding: 0 2px;
+}
+
+.si-qty-btn:disabled {
+  color: #ccc;
+  cursor: default;
+}
+
+.si-qty-value {
+  font-family: "Gotham-Black";
+  font-size: 18px;
+  color: #051926;
+  min-width: 36px;
+  text-align: center;
+}
+
+/* ──────────────────────────────────────────────────
+   Sticky action bar
+────────────────────────────────────────────────── */
+.si-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-top: 1px solid #e8e8e8;
+  z-index: 100;
+}
+
+.si-cart-btn {
+  width: 100%;
+  padding: 14px;
+  background: #125B8C;
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  font-family: "Gotham-Black";
+  font-size: 15px;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+
+.si-cart-btn:active {
+  background: #051926;
+}
+
+.si-cart-btn-disabled {
+  background: #9e9e9e;
+  pointer-events: none;
+}
+
+.si-cart-icon {
+  font-size: 20px;
+}
+
+/* ──────────────────────────────────────────────────
+   Zoom modal
+────────────────────────────────────────────────── */
 .warning-toast {
   font-size: 14px;
-  font-family: "Gotham-black";
+  font-family: "Gotham-Medium";
 }
 
-.selected-item-img {
-  max-width: 500px;
-  object-fit: contain;
-}
-.modal-image {
-  max-width: 100%;
-  height: 100%;
-  transition: transform 0.3s ease;
-}
-.modal-image.zoomed {
-  transform: scale(2); /* Zoom in */
-  cursor: zoom-out; /* Change cursor to show zoom-out on double-click */
-}
 .tools {
   display: flex;
   flex-direction: row;
   justify-content: center;
+  padding: 8px;
+  gap: 6px;
 }
+
 .image-content {
   display: flex;
   flex-direction: column;
   height: 500px;
   justify-content: center;
+  align-items: center;
 }
+
+.modal-image {
+  max-width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease;
+  object-fit: contain;
+}
+
+.modal-image.zoomed {
+  transform: scale(2);
+  cursor: zoom-out;
+}
+
 ion-modal#example-modal {
   --width: fit-content;
   --min-width: 250px;
   --height: fit-content;
-  --border-radius: 6px;
+  --border-radius: 16px;
   --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
-}
-
-ion-modal#example-modal h1 {
-  margin: 20px 20px 10px 20px;
-}
-
-ion-modal#example-modal ion-icon {
-  margin-right: 6px;
-
-  width: 48px;
-  height: 48px;
-
-  padding: 4px 0;
-
-  color: #aaaaaa;
-}
-
-ion-modal#example-modal .wrapper {
-  margin-bottom: 10px;
 }

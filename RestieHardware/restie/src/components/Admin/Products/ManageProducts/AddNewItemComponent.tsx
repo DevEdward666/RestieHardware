@@ -1,6 +1,6 @@
 import {
-  IonButton,
   IonButtons,
+  IonButton,
   IonContent,
   IonHeader,
   IonIcon,
@@ -10,11 +10,10 @@ import {
   IonList,
   IonModal,
   IonSearchbar,
-  IonText,
   IonToolbar,
   useIonRouter,
 } from "@ionic/react";
-import { saveOutline } from "ionicons/icons";
+import { chevronForwardOutline, saveOutline } from "ionicons/icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import attachmentDeleteIcon from "../../../../assets//images/icons/cross_screenshot_button.svg";
@@ -254,7 +253,8 @@ const AddNewItemComponent = () => {
   };
 
   return (
-    <IonContent>
+    <IonContent className="ani-content">
+      {/* ── Supplier picker modal ── */}
       <IonModal
         isOpen={openSearchModal.isOpen}
         onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
@@ -262,206 +262,141 @@ const AddNewItemComponent = () => {
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
       >
         <IonHeader>
-          <IonToolbar>
+          <IonToolbar color="tertiary">
             <IonButtons slot="start">
-              <IonButton
-                onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}
-              >
-                Cancel
-              </IonButton>
+              <IonButton onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}>Close</IonButton>
             </IonButtons>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          {openSearchModal.modal === "supplier" ? (
-            <>
-              <IonSearchbar
-                placeholder="Search Supplier"
-                onIonInput={(e) => handleSearch(e)}
-                autocapitalize={"words"}
-                debounce={1500}
-              ></IonSearchbar>
-              <IonList>
-                {admin_list_of_supplier.map((val, index) => (
-                  <IonItem
-                    onClick={() => handleSelectedSupplier(val)}
-                    key={index}
-                  >
-                    {/* <IonAvatar slot="start">
-                <IonImg src="https://i.pravatar.cc/300?u=b" />
-              </IonAvatar> */}
-                    <IonLabel>
-                      <h2>{val.company}</h2>
-                      <p>{val.address}</p>
-                    </IonLabel>
-                  </IonItem>
-                ))}
-              </IonList>
-            </>
-          ) : null}
+          <IonSearchbar
+            placeholder="Search supplier"
+            onIonInput={(e) => handleSearch(e)}
+            autocapitalize="words"
+            debounce={1500}
+          />
+          <IonList>
+            {admin_list_of_supplier.map((val, index) => (
+              <IonItem button onClick={() => handleSelectedSupplier(val)} key={index}>
+                <IonLabel>
+                  <h2>{val.company}</h2>
+                  <p>{val.address}</p>
+                </IonLabel>
+              </IonItem>
+            ))}
+          </IonList>
         </IonContent>
       </IonModal>
-      <div className="add-new-product-input-container">
-        {getFile !== undefined ? (
-          getFile && (
-            <div className="selected-files-list">
-              <div className="selected-file">
-                {getFile && (
-                  <div
-                    className="file-delete"
-                    onClick={() => deleteAttachment(getFile!)}
-                  >
-                    <IonIcon
-                      size="large"
-                      className="file-delete-icon"
-                      icon={attachmentDeleteIcon}
-                    />
-                  </div>
+
+      <div className="ani-container">
+        <div className="ani-inner">
+
+          {/* ── Image card ── */}
+          <div className="ani-image-card">
+            <p className="ani-card-title">Product Image</p>
+            {getFile ? (
+              <div style={{ position: "relative" }}>
+                <img
+                  className="ani-image-preview"
+                  src={URL.createObjectURL(getFile)}
+                  alt="Product"
+                />
+                <button
+                  onClick={() => deleteAttachment(getFile)}
+                  style={{
+                    position: "absolute", top: 8, right: 8,
+                    background: "rgba(0,0,0,0.5)", color: "#fff",
+                    border: "none", borderRadius: "50%", width: 28, height: 28,
+                    cursor: "pointer", fontSize: 14
+                  }}
+                >✕</button>
+              </div>
+            ) : (
+              <div className="ani-image-placeholder">
+                <span className="ani-image-placeholder-text">
+                  Select an image from your library or take a photo
+                </span>
+              </div>
+            )}
+            <div className="ani-image-buttons">
+              <button className="ani-image-btn" onClick={handleTakePhoto}>
+                <IonIcon icon={attachmentIcon} /> Camera
+              </button>
+              <button className="ani-image-btn" onClick={() => (fileInput as any)?.current?.click()}>
+                <IonIcon icon={attachmentIcon} /> Attach Image
+              </button>
+            </div>
+            <input ref={fileInput} hidden type="file" accept="image/*" onChange={(e) => onSelectFile(e)} />
+          </div>
+
+          {/* ── Product info card ── */}
+          <div className="ani-card">
+            <p className="ani-card-title">Product Info</p>
+            <div className="ani-field">
+              <span className="ani-label">Product Code</span>
+              <IonInput className="ani-input" name="code" type="text" placeholder="e.g. PRD-001"
+                onIonInput={(e: any) => handleInfoChange(e)} value={productInfo.code} />
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Product Name</span>
+              <IonInput className="ani-input" name="item" type="text" placeholder="Product name"
+                onIonInput={(e: any) => handleInfoChange(e)} value={productInfo.item} />
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Category</span>
+              <IonInput className="ani-input" name="category" type="text" placeholder="e.g. Plumbing"
+                onIonInput={(e: any) => handleInfoChange(e)} value={productInfo.category} />
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Brand</span>
+              <IonInput className="ani-input" name="brand" type="text" placeholder="e.g. Unipipe"
+                onIonInput={(e: any) => handleInfoChange(e)} value={productInfo.brand} />
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Supplier</span>
+              <div
+                className="ani-picker-row"
+                onClick={() => setOpenSearchModal({ isOpen: true, modal: "supplier" })}
+              >
+                {productInfo.supplierName ? (
+                  <span className="ani-picker-value">{productInfo.supplierName}</span>
+                ) : (
+                  <span className="ani-picker-placeholder">Tap to select supplier</span>
                 )}
-                <div className="file-thumbnail">
-                  {/* You can render a thumbnail of the file here */}
-                  {getFile &&
-                    getFile.type &&
-                    getFile.type.startsWith("image/") && (
-                      <div className="image-container">
-                        <img
-                          className="support-image"
-                          src={URL.createObjectURL(getFile)}
-                          alt={`Thumbnail ${getFile.name}`}
-                        />
-                      </div>
-                    )}
-                </div>
+                <IonIcon icon={chevronForwardOutline} className="ani-picker-icon" />
               </div>
             </div>
-          )
-        ) : (
-          <IonText className="file-info-text">
-            To select image choose attach image. If you want to capture image
-            choose open camera
-          </IonText>
-        )}
-        <div className="capture-images-buttons">
-          <div
-            className="offline-delivery-attachment-button"
-            onClick={() => handleTakePhoto()}
-          >
-            <IonIcon
-              className="offline-delivery-attachment-button-icon"
-              icon={attachmentIcon}
-            ></IonIcon>
-            Open Camera
           </div>
-          <>
-            <input
-              ref={fileInput}
-              hidden
-              type="file"
-              accept="image/*"
-              onChange={(e) => onSelectFile(e)}
-            />
 
-            <div
-              className="offline-delivery-attachment-button"
-              onClick={() => {
-                // @ts-ignore
-                fileInput?.current?.click();
-                // setBackgroundOption(BackgroundOptionType.Gradient);
-              }}
-            >
-              <IonIcon
-                className="offline-delivery-attachment-button-icon"
-                icon={attachmentIcon}
-              ></IonIcon>
-              Attach Image
+          {/* ── Stock & pricing card ── */}
+          <div className="ani-card">
+            <p className="ani-card-title">Stock & Pricing</p>
+            <div className="ani-field">
+              <span className="ani-label">On-Hand Qty</span>
+              <IonInput className="ani-input" name="onhandqty" type="number" placeholder="0"
+                onIonInput={(e: any) => handleInfoChange(e)} value={productInfo.onhandqty} />
             </div>
-          </>
+            <div className="ani-field">
+              <span className="ani-label">Cost (₱)</span>
+              <IonInput className="ani-input" name="cost" type="number" placeholder="0.00"
+                onIonInput={(e: any) => handleInfoChange(e)} value={productInfo.cost} />
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Price (₱)</span>
+              <IonInput className="ani-input" name="price" type="number" placeholder="0.00"
+                onIonInput={(e: any) => handleInfoChange(e)} value={productInfo.price} />
+            </div>
+          </div>
+
         </div>
       </div>
-      <div className="add-new-product-container">
-        <IonInput
-          labelPlacement="floating"
-          label="Product code"
-          name="code"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.code}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Product Name"
-          name="item"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.item}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Category"
-          name="category"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.category}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Brand"
-          name="brand"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.brand}
-        ></IonInput>
-        <IonInput
-          required
-          onClick={() =>
-            setOpenSearchModal({ isOpen: true, modal: "supplier" })
-          }
-          labelPlacement="floating"
-          label="Supplier"
-          name="supplier"
-          type="text"
-          class="product-input"
-          value={productInfo.supplierName}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Quantity"
-          name="onhandqty"
-          type="number"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.onhandqty}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Cost"
-          name="cost"
-          type="number"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.cost}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Price"
-          name="price"
-          type="number"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={productInfo.price}
-        ></IonInput>
-        <IonButton
-          color="medium"
-          expand="block"
-          onClick={() => handleSaveProduct()}
-        >
-          <IonIcon slot="start" icon={saveOutline}></IonIcon>
+
+      {/* ── Sticky submit bar ── */}
+      <div className="ani-action-bar">
+        <button className="ani-submit-btn" onClick={handleSaveProduct}>
+          <IonIcon icon={saveOutline} />
           Add Product
-        </IonButton>
+        </button>
       </div>
     </IonContent>
   );

@@ -153,12 +153,8 @@ const AddNewSupplierComponent = () => {
     });
   };
   return (
-    <IonContent>
-      <IonSearchbar
-        onClick={() => setOpenSearchModal({ isOpen: true, modal: "supplier" })}
-        placeholder="Search supplier"
-        autocapitalize={"words"}
-      ></IonSearchbar>
+    <IonContent className="ani-content">
+      {/* ── Supplier search modal ── */}
       <IonModal
         isOpen={openSearchModal.isOpen}
         onDidDismiss={() => setOpenSearchModal({ isOpen: false, modal: "" })}
@@ -166,93 +162,74 @@ const AddNewSupplierComponent = () => {
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
       >
         <IonHeader>
-          <IonToolbar>
+          <IonToolbar color="tertiary">
             <IonButtons slot="start">
-              <IonButton
-                onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}
-              >
-                Cancel
-              </IonButton>
+              <IonButton onClick={() => setOpenSearchModal({ isOpen: false, modal: "" })}>Close</IonButton>
             </IonButtons>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          {openSearchModal.modal === "supplier" ? (
-            <>
-              <IonSearchbar
-                placeholder="Search Supplier"
-                onIonInput={(e) => handleSearch(e)}
-                autocapitalize={"words"}
-                debounce={1500}
-              ></IonSearchbar>
-              <IonList>
-                {admin_list_of_supplier.map((val, index) => (
-                  <IonItem
-                    onClick={() => handleSelectedSupplier(val)}
-                    key={index}
-                  >
-                    {/* <IonAvatar slot="start">
-                   <IonImg src="https://i.pravatar.cc/300?u=b" />
-                 </IonAvatar> */}
-                    <IonLabel>
-                      <h2>{val.company}</h2>
-                      <p>{val.address}</p>
-                    </IonLabel>
-                  </IonItem>
-                ))}
-              </IonList>
-            </>
-          ) : null}
+          <IonSearchbar
+            placeholder="Search supplier"
+            onIonInput={(e) => handleSearch(e)}
+            autocapitalize="words"
+            debounce={1500}
+          />
+          <IonList>
+            {admin_list_of_supplier.map((val, index) => (
+              <IonItem button onClick={() => handleSelectedSupplier(val)} key={index}>
+                <IonLabel>
+                  <h2>{val.company}</h2>
+                  <p>{val.address}</p>
+                </IonLabel>
+              </IonItem>
+            ))}
+          </IonList>
         </IonContent>
       </IonModal>
-      <div className="add-new-product-container">
-        <IonInput
-          labelPlacement="floating"
-          label="Company Name"
-          name="company"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={supplierInfo.company}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Contact No."
-          name="contactno"
-          type="number"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={supplierInfo.contactno}
-        ></IonInput>
-        <IonInput
-          labelPlacement="floating"
-          label="Address"
-          name="address"
-          type="text"
-          onIonInput={(e: any) => handleInfoChange(e)}
-          class="product-input"
-          value={supplierInfo.address}
-        ></IonInput>
 
-        {supplierInfo.supplierid?.length! > 0 ? (
-          <IonButton
-            color="medium"
-            expand="block"
-            onClick={() => handleSaveSupplier(true)}
-          >
-            <IonIcon slot="start" icon={saveOutline}></IonIcon>
-            Update Supplier
-          </IonButton>
-        ) : (
-          <IonButton
-            color="medium"
-            expand="block"
-            onClick={() => handleSaveSupplier(false)}
-          >
-            <IonIcon slot="start" icon={saveOutline}></IonIcon>
-            Add Supplier
-          </IonButton>
-        )}
+      <div className="ani-container">
+        <div className="ani-inner">
+          <div className="ani-card">
+            <p className="ani-card-title">
+              {supplierInfo.supplierid ? "Update Supplier" : "Add Supplier"}
+            </p>
+
+            {/* Search existing */}
+            <div className="ani-field">
+              <IonSearchbar
+                onClick={() => setOpenSearchModal({ isOpen: true, modal: "supplier" })}
+                placeholder="Search existing supplier…"
+                autocapitalize="words"
+                style={{ "--background": "#f4f5f8", "--border-radius": "10px", padding: 0 }}
+              />
+            </div>
+
+            <div className="ani-field">
+              <span className="ani-label">Company Name</span>
+              <IonInput className="ani-input" name="company" type="text" placeholder="Company name"
+                onIonInput={(e: any) => handleInfoChange(e)} value={supplierInfo.company} />
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Contact No.</span>
+              <IonInput className="ani-input" name="contactno" type="number" placeholder="Phone number"
+                onIonInput={(e: any) => handleInfoChange(e)} value={supplierInfo.contactno} />
+            </div>
+            <div className="ani-field">
+              <span className="ani-label">Address</span>
+              <IonInput className="ani-input" name="address" type="text" placeholder="Full address"
+                onIonInput={(e: any) => handleInfoChange(e)} value={supplierInfo.address} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Sticky action bar ── */}
+      <div className="ani-action-bar">
+        <button className="ani-submit-btn" onClick={() => handleSaveSupplier(!!supplierInfo.supplierid)}>
+          <IonIcon icon={saveOutline} />
+          {supplierInfo.supplierid ? "Update Supplier" : "Add Supplier"}
+        </button>
       </div>
     </IonContent>
   );

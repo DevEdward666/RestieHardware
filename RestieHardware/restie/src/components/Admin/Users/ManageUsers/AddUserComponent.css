@@ -1,22 +1,267 @@
-.add-user-button-container{
-    display:flex;
-    flex-direction: row;
-}
-.add-user-button{
-    width: 100%;
-}
-.info-input{
-    width: 100%;
+/* Shared Admin Form Styles (AddNewItem + AddNewSupplier) */
+.ani-content {
+  --background: #f4f5f8;
 }
 
-.password-strength-container {
-    width: 100%;
-    background-color: #ffffff; /* Background color for the strength bar */
-    border-radius: 5px;
-    margin-top: 5px;
-  }
-  
-  .password-strength-bar {
-    height: 5px;
-    border-radius: 5px;
-  }
+.ani-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0 100px;
+}
+
+.ani-inner {
+  width: 100%;
+  max-width: 600px;
+  padding: 0 16px;
+}
+
+/* Form card */
+.ani-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.ani-card-title {
+  font-family: "Gotham-Black";
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #125B8C;
+  margin: 0 0 14px;
+}
+
+/* Field */
+.ani-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.ani-field:last-child {
+  margin-bottom: 0;
+}
+
+.ani-label {
+  font-family: "Gotham-Medium";
+  font-size: 12px;
+  color: #808289;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.ani-input {
+  --background: #f4f5f8;
+  --border-radius: 10px;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  --color: #051926;
+  --placeholder-color: #b0b3b8;
+  --highlight-color-focused: #125B8C;
+  font-family: "Gotham-Light";
+  font-size: 15px;
+  border-radius: 10px;
+}
+
+.ani-select {
+  --background: #f4f5f8;
+  --border-radius: 10px;
+  --padding-start: 14px;
+  --padding-end: 14px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  --color: #051926;
+  --highlight-color-focused: #125B8C;
+  font-family: "Gotham-Light";
+  font-size: 15px;
+  border-radius: 10px;
+}
+
+/* Supplier / search picker row */
+.ani-picker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f4f5f8;
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.ani-picker-value {
+  font-family: "Gotham-Light";
+  font-size: 15px;
+  color: #051926;
+}
+
+.ani-picker-placeholder {
+  font-family: "Gotham-Light";
+  font-size: 15px;
+  color: #b0b3b8;
+}
+
+.ani-picker-icon {
+  font-size: 18px;
+  color: #808289;
+}
+
+/* Image section */
+.ani-image-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.ani-image-preview {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.ani-image-placeholder {
+  width: 100%;
+  height: 120px;
+  background: #f4f5f8;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.ani-image-placeholder-text {
+  font-family: "Gotham-Light";
+  font-size: 13px;
+  color: #b0b3b8;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.ani-image-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.ani-image-btn {
+  flex: 1;
+  padding: 11px;
+  background: transparent;
+  border: 1.5px solid #125B8C;
+  border-radius: 10px;
+  color: #125B8C;
+  font-family: "Gotham-Medium";
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Sticky action bar */
+.ani-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #f0f0f0;
+  padding: 12px 16px;
+  display: flex;
+  gap: 10px;
+  z-index: 100;
+}
+
+.ani-submit-btn {
+  flex: 1;
+  padding: 14px;
+  background: #125B8C;
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  font-family: "Gotham-Black";
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ani-submit-btn:active { background: #051926; }
+
+.ani-cancel-btn {
+  flex: 1;
+  padding: 14px;
+  background: transparent;
+  border: 1.5px solid #125B8C;
+  color: #125B8C;
+  border-radius: 14px;
+  font-family: "Gotham-Bold";
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* Password strength */
+.ani-strength-bar-wrap {
+  height: 4px;
+  background: #e8e8e8;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.ani-strength-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s, background 0.3s;
+}
+
+.ani-error-text {
+  font-family: "Gotham-Light";
+  font-size: 12px;
+  color: #fe3434;
+  margin-top: 4px;
+}
+
+.ani-success-text {
+  font-family: "Gotham-Light";
+  font-size: 12px;
+  color: #22c55e;
+  margin-top: 4px;
+}
+
+/* Modal search list */
+.ani-modal-item {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.ani-modal-item:active { background: #f4f5f8; }
+
+.ani-modal-item-name {
+  font-family: "Gotham-Medium";
+  font-size: 15px;
+  color: #051926;
+  margin: 0 0 3px;
+}
+
+.ani-modal-item-sub {
+  font-family: "Gotham-Light";
+  font-size: 13px;
+  color: #808289;
+  margin: 0;
+}

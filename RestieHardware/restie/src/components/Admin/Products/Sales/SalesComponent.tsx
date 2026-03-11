@@ -2,17 +2,14 @@ import {
   IonButton,
   IonButtons,
   IonContent,
-  IonDatetime,
   IonHeader,
   IonIcon,
-  IonImg,
   IonItem,
   IonLabel,
   IonLoading,
   IonModal,
   IonSelect,
   IonSelectOption,
-  IonText,
   IonTitle,
   IonToast,
   IonToolbar,
@@ -33,7 +30,15 @@ import { format } from "date-fns";
 import { FileResponse } from "../../../../Models/Response/Inventory/GetInventoryModel";
 import MyCalendar from "../../../../Hooks/MyCalendar";
 import { UploadSales } from "../../../../Service/API/Admin/AdminApi";
-import { card, cloudUploadOutline } from "ionicons/icons";
+import {
+  cloudUploadOutline,
+  documentTextOutline,
+  chevronForwardOutline,
+  arrowUndoOutline,
+  cubeOutline,
+  listOutline,
+  cloudUpload,
+} from "ionicons/icons";
 import { useSelector } from "react-redux";
 import { RootStore } from "../../../../Service/Store";
 interface ISelectedDates {
@@ -95,7 +100,7 @@ const SalesComponent = () => {
       fromDate: formatDate(lowestDate),
       toDate: formatDate(highestDate),
       filter: selectedFilter,
-      report_type:selectedFilterType
+      report_type: selectedFilterType
     };
     const inventory_logs_payload: PostInventoryLogsModel = {
       fromDate: formatDate(lowestDate),
@@ -123,8 +128,8 @@ const SalesComponent = () => {
       openPDFModal.type === "sales"
         ? await GetSalesByDay(payload)
         : openPDFModal.type === "inventory_logs"
-        ? await GenerateInventoryLogs(inventory_logs_payload)
-        : await GenerateSalesReturn(payload);
+          ? await GenerateInventoryLogs(inventory_logs_payload)
+          : await GenerateSalesReturn(payload);
     if (res.result === null || res.result === undefined) {
       setIsOpenToast({
         toastMessage: "No reports available",
@@ -155,7 +160,7 @@ const SalesComponent = () => {
     });
     // setopenPDFModal({ isOpen: true, modal: "pdf" });
     setFile(res);
-  }, [openPDFModal, selectedDates, selectedSupplier, selectedFilter,selectedFilterType]);
+  }, [openPDFModal, selectedDates, selectedSupplier, selectedFilter, selectedFilterType]);
   const handleGenerateInventory = async () => {
     setIsOpenToast({
       toastMessage: "Generating PDF",
@@ -279,114 +284,125 @@ const SalesComponent = () => {
     setSelectedFilterType(value);
   };
   return (
-    <IonContent className="generate-sales-main-content">
-      <IonText className="generate-sales-title">Generate PDF</IonText>
-      <div className="generate-sales-main">
-        <IonButton
-          color={"medium"}
-          expand="block"
-          onClick={() =>
-            setopenPDFModal({ isOpen: true, modal: "", type: "sales" })
-          }
-        >
-          Generate Sales Report
-        </IonButton>
-        <IonButton
-          color={"medium"}
-          expand="block"
-          onClick={() =>
-            setopenPDFModal({ isOpen: true, modal: "", type: "returns" })
-          }
-        >
-          Generate Sales Return/Refund Report
-        </IonButton>
-        <IonButton
-          color={"medium"}
-          expand="block"
-          onClick={() => handleGenerateInventory()}
-        >
-          Generate Inventory Report
-        </IonButton>
-        <IonButton
-          color={"medium"}
-          expand="block"
-          onClick={() =>
-            setopenPDFModal({ isOpen: true, modal: "", type: "inventory_logs" })
-          }
-        >
-          Generate Inventory Logs
-        </IonButton>
-        <div>
-          <IonButton
-            color={"medium"}
-            expand="block"
-            onClick={() => setOpenUploadModal(true)}
-          >
-            Upload Sales Report
-          </IonButton>
+    <IonContent className="sc-content">
+      <div className="sc-scroll">
+        <div className="sc-inner">
+
+          <p className="sc-section-label">Sales Reports</p>
+          <div className="sc-card">
+            <button
+              className="sc-row"
+              onClick={() => setopenPDFModal({ isOpen: true, modal: "", type: "sales" })}
+            >
+              <span className="sc-row-icon"><IonIcon icon={documentTextOutline} /></span>
+              <span className="sc-row-body">
+                <span className="sc-row-label">Generate Sales Report</span>
+                <span className="sc-row-sub">PDF for a selected date range</span>
+              </span>
+              <IonIcon className="sc-row-chevron" icon={chevronForwardOutline} />
+            </button>
+
+            <button
+              className="sc-row"
+              onClick={() => setopenPDFModal({ isOpen: true, modal: "", type: "returns" })}
+            >
+              <span className="sc-row-icon"><IonIcon icon={arrowUndoOutline} /></span>
+              <span className="sc-row-body">
+                <span className="sc-row-label">Sales Return / Refund Report</span>
+                <span className="sc-row-sub">Returns and refunds for a date range</span>
+              </span>
+              <IonIcon className="sc-row-chevron" icon={chevronForwardOutline} />
+            </button>
+          </div>
+
+          <p className="sc-section-label">Inventory Reports</p>
+          <div className="sc-card">
+            <button
+              className="sc-row"
+              onClick={() => handleGenerateInventory()}
+            >
+              <span className="sc-row-icon"><IonIcon icon={cubeOutline} /></span>
+              <span className="sc-row-body">
+                <span className="sc-row-label">Generate Inventory Report</span>
+                <span className="sc-row-sub">Current stock snapshot</span>
+              </span>
+              <IonIcon className="sc-row-chevron" icon={chevronForwardOutline} />
+            </button>
+
+            <button
+              className="sc-row"
+              onClick={() => setopenPDFModal({ isOpen: true, modal: "", type: "inventory_logs" })}
+            >
+              <span className="sc-row-icon"><IonIcon icon={listOutline} /></span>
+              <span className="sc-row-body">
+                <span className="sc-row-label">Generate Inventory Logs</span>
+                <span className="sc-row-sub">Movement logs for a date range</span>
+              </span>
+              <IonIcon className="sc-row-chevron" icon={chevronForwardOutline} />
+            </button>
+          </div>
+
+          <p className="sc-section-label">Upload</p>
+          <div className="sc-card">
+            <button
+              className="sc-row"
+              onClick={() => setOpenUploadModal(true)}
+            >
+              <span className="sc-row-icon"><IonIcon icon={cloudUploadOutline} /></span>
+              <span className="sc-row-body">
+                <span className="sc-row-label">Upload Sales Report</span>
+                <span className="sc-row-sub">Import an .xlsx or .xls file</span>
+              </span>
+              <IonIcon className="sc-row-chevron" icon={chevronForwardOutline} />
+            </button>
+          </div>
+
         </div>
       </div>
+
       <IonLoading
         isOpen={isOpenToast?.isOpen}
         message={isOpenToast?.toastMessage}
         spinner="circles"
-        onDidDismiss={() =>
-          setIsOpenToast((prev) => ({
-            ...prev,
-            isOpen: false,
-          }))
-        }
+        onDidDismiss={() => setIsOpenToast((prev) => ({ ...prev, isOpen: false }))}
       />
+
+      {/* ── Date range / filter modal ── */}
       <IonModal
         isOpen={openPDFModal.modal !== "receipt" ? openPDFModal.isOpen : false}
-        onDidDismiss={() =>
-          setopenPDFModal({
-            isOpen: false,
-            modal: "",
-            type: openPDFModal?.type,
-          })
-        }
+        onDidDismiss={() => setopenPDFModal({ isOpen: false, modal: "", type: openPDFModal?.type })}
         initialBreakpoint={0.5}
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
       >
         <IonHeader>
-          <IonToolbar>
+          <IonToolbar className="sc-modal-toolbar">
             <IonButtons slot="start">
-              <IonButton
-                onClick={() =>
-                  setopenPDFModal({ isOpen: false, modal: "pdf", type: "" })
-                }
-              >
+              <IonButton className="sc-modal-btn" onClick={() => setopenPDFModal({ isOpen: false, modal: "pdf", type: "" })}>
                 Close
               </IonButton>
             </IonButtons>
             <IonButtons slot="end">
-              <IonButton onClick={handleDownloaPdf}>Generate</IonButton>
+              <IonButton className="sc-modal-btn" onClick={handleDownloaPdf}>Generate</IonButton>
             </IonButtons>
-            <IonTitle className="delivery-info-title"> Choose Dates</IonTitle>
+            <IonTitle className="sc-modal-title">Choose Dates</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
           {openPDFModal.type === "inventory_logs" ? (
-            <>
-              <IonItem>
-                <IonLabel>Supplier</IonLabel>
-                <IonSelect
-                  name="Supplier"
-                  onIonChange={(e: any) => handleSelectedSupplier(e)}
-                  aria-label="Supplier"
-                  className="info-input"
-                  placeholder="Select Supplier"
-                  value={selectedSupplier}
-                >
-                  {admin_list_of_supplier?.map((val, index) => (
-                    <IonSelectOption key={index} value={val.supplierid}>
-                      {val.company}
-                    </IonSelectOption>
-                  ))}
-                </IonSelect>
-              </IonItem>
-            </>
+            <IonItem>
+              <IonLabel>Supplier</IonLabel>
+              <IonSelect
+                name="Supplier"
+                onIonChange={(e: any) => handleSelectedSupplier(e)}
+                aria-label="Supplier"
+                placeholder="Select Supplier"
+                value={selectedSupplier}
+              >
+                {admin_list_of_supplier?.map((val, index) => (
+                  <IonSelectOption key={index} value={val.supplierid}>{val.company}</IonSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
           ) : openPDFModal.type === "sales" ? (
             <>
               <IonItem>
@@ -395,44 +411,35 @@ const SalesComponent = () => {
                   name="Filter Report"
                   onIonChange={(e: any) => handleSelectedFilter(e)}
                   aria-label="Filter Report"
-                  className="info-input"
                   placeholder="Filter Report"
                   value={selectedFilter}
                 >
                   {filterForSales?.map((val, index) => (
-                    <IonSelectOption key={index} value={val.value}>
-                      {val.name}
-                    </IonSelectOption>
+                    <IonSelectOption key={index} value={val.value}>{val.name}</IonSelectOption>
                   ))}
                 </IonSelect>
               </IonItem>
               <IonItem>
                 <IonLabel>Type</IonLabel>
                 <IonSelect
-                  name="Filter Report"
+                  name="Report Type"
                   onIonChange={(e: any) => handleSelectedFilterType(e)}
-                  aria-label="Filter Report"
-                  className="info-input"
-                  placeholder="Filter Report"
+                  aria-label="Report Type"
+                  placeholder="Report Type"
                   value={selectedFilterType}
                 >
                   {filterType?.map((val, index) => (
-                    <IonSelectOption key={index} value={val.value}>
-                      {val.name}
-                    </IonSelectOption>
+                    <IonSelectOption key={index} value={val.value}>{val.name}</IonSelectOption>
                   ))}
                 </IonSelect>
               </IonItem>
             </>
           ) : null}
-
-          <MyCalendar
-            onDateRangeSelected={(start, end) =>
-              handleDateRangeSelected(start, end)
-            }
-          />
+          <MyCalendar onDateRangeSelected={(start, end) => handleDateRangeSelected(start, end)} />
         </IonContent>
       </IonModal>
+
+      {/* ── Upload modal ── */}
       <IonModal
         isOpen={openUploadModal ? openUploadModal : false}
         onDidDismiss={() => setOpenUploadModal(false)}
@@ -440,50 +447,39 @@ const SalesComponent = () => {
         breakpoints={[0, 0.25, 0.5, 0.75, 1]}
       >
         <IonHeader>
-          <IonToolbar>
+          <IonToolbar className="sc-modal-toolbar">
             <IonButtons slot="start">
-              <IonButton onClick={() => setOpenUploadModal(false)}>
-                Close
-              </IonButton>
+              <IonButton className="sc-modal-btn" onClick={() => setOpenUploadModal(false)}>Close</IonButton>
             </IonButtons>
             <IonButtons slot="end">
-              <IonButton onClick={handleUploadFile}>Upload</IonButton>
+              <IonButton className="sc-modal-btn" onClick={handleUploadFile}>Upload</IonButton>
             </IonButtons>
-            <IonTitle className="delivery-info-title">
-              Upload Sales File
-            </IonTitle>
+            <IonTitle className="sc-modal-title">Upload Sales File</IonTitle>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          <div className="file-upload-container">
-            <label htmlFor="file-upload" className="file-upload-label">
-              {salesFile && (
-                <p className="file-name">Selected file: {salesFile.name}</p>
-              )}{" "}
-            </label>
+          <div className="sc-upload-area">
+            {salesFile && (
+              <p className="sc-file-name">Selected: {salesFile.name}</p>
+            )}
             <input
               type="file"
               accept=".xlsx,.xls"
               onChange={handleFileChange}
-              className="file-input"
+              className="sc-file-input"
             />
-            <IonButton color="medium" expand="block">
-              <IonIcon icon={cloudUploadOutline} slot="start" />
-              Choose File (.xlsx, .xls)
-            </IonButton>
           </div>
         </IonContent>
       </IonModal>
+
       <IonToast
         isOpen={isOpenMessageToast?.isOpen}
         message={isOpenMessageToast.toastMessage}
         position="middle"
-        color={"medium"}
+        color="medium"
         duration={3000}
-        onDidDismiss={() =>
-          setMessageToast({ toastMessage: "", isOpen: false })
-        }
-      ></IonToast>
+        onDidDismiss={() => setMessageToast({ toastMessage: "", isOpen: false })}
+      />
     </IonContent>
   );
 };

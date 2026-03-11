@@ -1,1 +1,1 @@
-export const prodBaseUrl = "https://restieapi.fly.dev/";
+export const prodBaseUrl = "https://api.siklabtech.org/";

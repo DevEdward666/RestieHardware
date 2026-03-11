@@ -41,9 +41,7 @@ const OrderInfoPage = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen className="order-info-content">
-        <div className={`order-info-container`}>
-          <OrderInfoComponent />
-        </div>
+        <OrderInfoComponent />
       </IonContent>
     </IonPage>
   );

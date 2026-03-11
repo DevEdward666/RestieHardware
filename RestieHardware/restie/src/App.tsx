@@ -45,6 +45,7 @@ import ImportPOSLogPage from "./pages/Products/ManageProducts/ImportPOSLogPage";
 import AddUserPage from "./pages/Users/AddUserPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicy/PrivacyPolicyPage";
 import TermsOfServicePage from "./pages/TermsOfService/TermsOfServicePage";
+import ScanMaterialsPage from "./pages/ScanMaterials/ScanMaterialsPage";
 
 setupIonicReact({ mode: "ios" });
 
@@ -167,6 +168,8 @@ const App: React.FC = () => {
       <Route path="/DeliverOffline" render={() => <OfflineDeliveryPage />} />
       {/* Onboarding */}
       <Route path="/Onboarding" render={() => <OnboardingPage />} />
+      {/* Scan Materials */}
+      <Route path="/scan-materials" render={() => <ScanMaterialsPage />} />
     </IonApp>
   );
 };

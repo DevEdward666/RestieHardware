@@ -30,6 +30,7 @@ import {
   layersOutline,
   funnelOutline,
   storefrontOutline,
+  cameraOutline,
 } from "ionicons/icons";
 import { useCallback, useEffect, useState } from "react";
 import { QueryClient } from "react-query";
@@ -293,6 +294,11 @@ const Tab1: React.FC = () => {
 
               Restie Hardware
             </IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={() => router.push("/scan-materials")} aria-label="Scan Materials List">
+                <IonIcon icon={cameraOutline} />
+              </IonButton>
+            </IonButtons>
             <IonButtons slot="end" className="home-notif-btn" onClick={handleClickNotification}>
               <IonIcon icon={notifications} className="home-notif-icon" />
               {totalNotifs > 0 && (

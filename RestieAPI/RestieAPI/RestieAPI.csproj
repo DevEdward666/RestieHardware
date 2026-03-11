@@ -30,4 +30,11 @@
     <Folder Include="Resources\Assets\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Copy tessdata language files to the output directory on build -->
+    <Content Include="tessdata\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

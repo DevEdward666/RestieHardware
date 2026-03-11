@@ -335,7 +335,7 @@ namespace RestieAPI.Controllers.Inventory
                 }
 
                 var imagePaths = new List<string>();
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "Images", file.FolderName);
+                string path = Path.Combine(_env.ContentRootPath, "Resources", "Images", file.FolderName);
                 if (!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);
@@ -380,7 +380,7 @@ namespace RestieAPI.Controllers.Inventory
         {
             string originalPath = getDeliveryImage.imagePath;
             string formattedPath = originalPath.Replace("\\", "\\\\");
-            string path = Path.Combine(Directory.GetCurrentDirectory(), formattedPath);
+            string path = Path.Combine(_env.ContentRootPath, formattedPath);
 
             if (!System.IO.File.Exists(path))
             {
@@ -412,11 +412,10 @@ namespace RestieAPI.Controllers.Inventory
             var images = new List<FileContentResult>();
 
             // Assuming the folder path is provided in the request
-            string folderPath = getMultipleImages.folderPath;  // Folder path where images are stored
+            string folderPath = getMultipleImages.folderPath;
 
-            // Format the path to avoid issues with backslashes
             string formattedPath = folderPath.Replace("\\", "////");
-            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), getMultipleImages.folderPath);
+            string directoryPath = Path.Combine(_env.ContentRootPath, getMultipleImages.folderPath);
             Console.WriteLine($"Directory path: {directoryPath}");
             // Check if the directory exists
             if (!Directory.Exists(directoryPath))

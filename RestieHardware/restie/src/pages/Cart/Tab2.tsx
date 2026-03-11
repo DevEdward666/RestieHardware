@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   PostOrder,
+  addToCartAction,
   getOrderInfo,
   saveOrder,
 } from "../../Service/Actions/Inventory/InventoryActions";
@@ -20,19 +21,25 @@ import { GetLoginUser } from "../../Service/Actions/Login/LoginActions";
 import { RootStore, useTypedDispatch } from "../../Service/Store";
 import restielogo from "../../assets/images/Icon@3.png";
 import CartComponent from "../../components/Cart/CartComponent";
+import ImageToInventoryText from "../../components/ImageToInventoryText";
 import "./Tab2.css";
-import { PostSelectedOrder } from "../../Models/Request/Inventory/InventoryModel";
+import { Addtocart, PostSelectedOrder } from "../../Models/Request/Inventory/InventoryModel";
 import { ResponseModel } from "../../Models/Response/Commons/Commons";
 import { AddCustomerInformation } from "../../Service/Actions/Customer/CustomerActions";
+import { ParsedInventoryRow } from "../../utils/inventoryTextParser";
+import { v4 as uuidv4 } from "uuid";
 
 const Tab2: React.FC = () => {
   const dispatch = useTypedDispatch();
   const router = useIonRouter();
   const selectedItemselector =
     useSelector((store: RootStore) => store.InventoryReducer.add_to_cart) || [];
+  const inventoryList =
+    useSelector((store: RootStore) => store.InventoryReducer.list_of_items) || [];
   const [getTotal, setTotal] = useState<number>(0);
   const [getTotalDiscount, setTotalDiscount] = useState<number>(0);
   const [existingOrder, setExistingOrder] = useState<boolean>(false);
+  const [showScanner, setShowScanner] = useState<boolean>(false);
   const customer_information = useSelector(
     (store: RootStore) => store.CustomerReducer.customer_information
   );
@@ -86,6 +93,75 @@ const Tab2: React.FC = () => {
       maximumFractionDigits: 2,
     });
   };
+
+  // ---------------------------------------------------------------------------
+  // OCR import → cart wiring
+  // Maps ParsedInventoryRow (matched_code) → Addtocart and merges into cart state.
+  // No DB insertion occurs here — rows are staged locally for checkout.
+  // ---------------------------------------------------------------------------
+  const handleImportReady = useCallback(
+    (importedRows: ParsedInventoryRow[]) => {
+      const validRows = importedRows.filter(
+        (r) => r.matched_code && r.qty !== null && r.qty > 0
+      );
+      if (!validRows.length) return;
+
+      const cartId =
+        selectedItemselector.length > 0
+          ? selectedItemselector[0].cartid
+          : uuidv4();
+
+      const existingOrderId =
+        selectedItemselector.length > 0
+          ? selectedItemselector[0].orderid ?? ""
+          : "";
+
+      const updatedCart: Addtocart[] = [...selectedItemselector];
+
+      for (const row of validRows) {
+        const inventoryMatch = inventoryList.find(
+          (inv) => inv.code === row.matched_code
+        );
+        const existingIdx = updatedCart.findIndex(
+          (c) => c.code === row.matched_code
+        );
+
+        if (existingIdx !== -1) {
+          // Increment qty of existing cart entry
+          updatedCart[existingIdx] = {
+            ...updatedCart[existingIdx],
+            qty: updatedCart[existingIdx].qty + Math.max(1, row.qty ?? 1),
+          };
+        } else {
+          // Append new cart entry
+          const newEntry: Addtocart = {
+            cartid: cartId,
+            code: row.matched_code!,
+            item: inventoryMatch?.item ?? row.description,
+            qty: Math.max(1, row.qty ?? 1),
+            price: inventoryMatch?.price ?? 0,
+            onhandqty: inventoryMatch?.qty ?? undefined,
+            image: inventoryMatch?.image ?? "",
+            createdAt: new Date().getTime(),
+            status: "pending",
+            orderid: existingOrderId,
+            discount: 0,
+          };
+          updatedCart.push(newEntry);
+        }
+      }
+
+      dispatch(addToCartAction(updatedCart));
+      setShowScanner(false);
+      setIsOpenToast({
+        toastMessage: `${validRows.length} item(s) added to cart from scanned list.`,
+        isOpen: true,
+        type: "toast",
+      });
+    },
+    [dispatch, selectedItemselector, inventoryList]
+  );
+
   const handleSaveOrder = useCallback(async () => {
     try {
       const res = await dispatch(GetLoginUser());
@@ -199,6 +275,30 @@ const Tab2: React.FC = () => {
         onDidDismiss={() => setIsOpenToast({ toastMessage: "", isOpen: false, type: "" })}
       />
       <IonContent fullscreen className="tab-cart-content">
+        <IonButton
+          expand="block"
+          fill="outline"
+          color="tertiary"
+          style={{ margin: "8px 12px 0" }}
+          onClick={() => setShowScanner((v) => !v)}
+        >
+          {showScanner ? "Hide Scanner" : "📷 Scan Materials List"}
+        </IonButton>
+
+        {showScanner && (
+          <div style={{ padding: "0 8px" }}>
+            <ImageToInventoryText
+              inventoryItems={inventoryList.map((inv) => ({
+                code: inv.code,
+                item: inv.item,
+                category: inv.category,
+                brand: inv.brand,
+              }))}
+              onImportReady={handleImportReady}
+            />
+          </div>
+        )}
+
         <CartComponent />
       </IonContent>
       <IonFooter>

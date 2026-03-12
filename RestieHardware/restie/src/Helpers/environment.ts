@@ -1,17 +1,13 @@
 import { devBaseUrl } from "./environment.dev";
 import { prodBaseUrl } from "./environment.prod";
-// environment.ts
 
-let baseUrl = "";
+const envBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
 
-if (process.env.NODE_ENV === "production") {
-  if (import.meta.env.VITE_LOCAL === "true") {
-    baseUrl = devBaseUrl;
-  } else {
-    baseUrl = prodBaseUrl;
-  }
-} else {
-  baseUrl = devBaseUrl;
-}
+const fallbackBaseUrl =
+  import.meta.env.PROD && import.meta.env.VITE_LOCAL !== "true"
+    ? prodBaseUrl
+    : devBaseUrl;
+
+const baseUrl = envBaseUrl || fallbackBaseUrl;
 
 export default baseUrl;

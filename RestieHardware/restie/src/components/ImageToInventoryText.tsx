@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState } from "react";
 import {
     IonBadge,
     IonButton,
+    IonCheckbox,
     IonCard,
     IonCardContent,
     IonCardHeader,
@@ -19,7 +20,6 @@ import {
     IonRow,
     IonSpinner,
     IonText,
-    IonTextarea,
     IonToast,
 } from "@ionic/react";
 import {
@@ -60,17 +60,20 @@ const ImageToInventoryText: React.FC<ImageToInventoryTextProps> = ({
     const [isExtracting, setIsExtracting] = useState(false);
     const [progress, setProgress] = useState(0);
     const [rows, setRows] = useState<ParsedInventoryRow[]>([]);
-    const [warnings, setWarnings] = useState<string[]>([]);
     const [extractedText, setExtractedText] = useState<string>("");
     const [ocrSource, setOcrSource] = useState<"live" | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const [selectedRowIndexes, setSelectedRowIndexes] = useState<number[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const typedInventoryItems = useMemo<InventoryItem[]>(() => inventoryItems ?? [], [inventoryItems]);
 
-    const readyCount = rows.filter((r) => !r.needs_review).length;
+    const matchedRows = rows.filter((r) => !r.needs_review && Boolean(r.matched_code));
+    const readyRows = matchedRows;
+    const readyCount = readyRows.length;
     const reviewCount = rows.filter((r) => r.needs_review).length;
+    const selectedReadyCount = selectedRowIndexes.filter((index) => !rows[index]?.needs_review).length;
 
     // ---------------------------------------------------------------------------
     // Image selection
@@ -80,10 +83,10 @@ const ImageToInventoryText: React.FC<ImageToInventoryTextProps> = ({
         setImageSource(source);
         setPreviewUrl(URL.createObjectURL(file));
         setRows([]);
-        setWarnings([]);
         setError(null);
         setExtractedText("");
         setOcrSource(null);
+        setSelectedRowIndexes([]);
     };
 
     const handleTakePhoto = async () => {
@@ -151,8 +154,12 @@ const ImageToInventoryText: React.FC<ImageToInventoryTextProps> = ({
 
             setExtractedText(result.extractedText);
             setRows(result.rows);
-            setWarnings(result.warnings);
             setOcrSource(result.ocrSource ?? "live");
+            setSelectedRowIndexes(
+                result.rows
+                    .map((row, index) => (!row.needs_review && row.matched_code ? index : -1))
+                    .filter((index) => index >= 0)
+            );
 
             if (result.rows.length === 0) {
                 setError("No valid inventory rows were parsed from the image.");
@@ -193,15 +200,36 @@ const ImageToInventoryText: React.FC<ImageToInventoryTextProps> = ({
     // Import to cart
     // ---------------------------------------------------------------------------
     const handleSendToImport = () => {
-        if (!readyCount) {
+        if (!selectedReadyCount) {
             setToastMessage("No import-ready rows available.");
             return;
         }
-        const importRows = rows.filter((r) => !r.needs_review);
+        const importRows = selectedRowIndexes
+            .map((index) => rows[index])
+            .filter((row): row is ParsedInventoryRow => Boolean(row && !row.needs_review));
         onImportReady?.(importRows);
         setToastMessage(
-            `Added ${importRows.length} item(s) to cart. ${reviewCount} row(s) skipped (needs review).`
+            `Added ${importRows.length} matched item(s) to cart.${reviewCount ? ` ${reviewCount} row(s) still need review.` : ""}`
         );
+    };
+
+    const toggleRowSelection = (index: number, checked: boolean) => {
+        setSelectedRowIndexes((prev) => {
+            if (checked) {
+                return prev.includes(index) ? prev : [...prev, index].sort((a, b) => a - b);
+            }
+            return prev.filter((value) => value !== index);
+        });
+    };
+
+    const handleSelectAllReady = () => {
+        setSelectedRowIndexes(rows
+            .map((row, index) => (!row.needs_review && row.matched_code ? index : -1))
+            .filter((index) => index >= 0));
+    };
+
+    const handleClearSelection = () => {
+        setSelectedRowIndexes([]);
     };
 
     // ---------------------------------------------------------------------------
@@ -312,7 +340,7 @@ const ImageToInventoryText: React.FC<ImageToInventoryTextProps> = ({
                 {ocrSource && (
                     <div style={{ marginBottom: 8, display: "flex", gap: 8, alignItems: "center" }}>
                         <IonChip color="success" outline>
-                            <IonLabel>🟢 Live OCR</IonLabel>
+                            <IonLabel>🟢</IonLabel>
                         </IonChip>
                     </div>
                 )}
@@ -322,7 +350,7 @@ const ImageToInventoryText: React.FC<ImageToInventoryTextProps> = ({
                     <IonItem lines="none">
                         <IonLabel>
                             <IonSpinner name="dots" style={{ marginRight: 8 }} />
-                            Processing OCR and matching items...
+                            Processing and matching items...
                         </IonLabel>
                         <IonProgressBar value={progress} />
                     </IonItem>
@@ -335,36 +363,18 @@ const ImageToInventoryText: React.FC<ImageToInventoryTextProps> = ({
                     </IonText>
                 )}
 
-                {/* Warnings */}
-                {!!warnings.length && (
-                    <IonCard color="warning" style={{ marginTop: 8 }}>
-                        <IonCardHeader>
-                            <IonCardTitle style={{ fontSize: "0.95rem" }}>
-                                ⚠ Warnings ({warnings.length})
-                            </IonCardTitle>
-                        </IonCardHeader>
-                        <IonCardContent>
-                            <ul style={{ margin: 0, paddingLeft: "1rem" }}>
-                                {warnings.map((w, i) => (
-                                    <li key={i}>{w}</li>
-                                ))}
-                            </ul>
-                        </IonCardContent>
-                    </IonCard>
-                )}
-
                 {/* Summary chips */}
                 {!!rows.length && (
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "12px 0" }}>
-                        <IonChip color="medium">
+                        {/* <IonChip color="medium">
                             <IonLabel>Total: {rows.length}</IonLabel>
                         </IonChip>
                         <IonChip color="success">
                             <IonLabel>✅ Ready: {readyCount}</IonLabel>
-                        </IonChip>
-                        <IonChip color="warning">
+                        </IonChip> */}
+                        {/* <IonChip color="warning">
                             <IonLabel>⚠ Review: {reviewCount}</IonLabel>
-                        </IonChip>
+                        </IonChip> */}
                     </div>
                 )}
 
@@ -387,85 +397,108 @@ const ImageToInventoryText: React.FC<ImageToInventoryTextProps> = ({
                                 expand="block"
                                 color="success"
                                 onClick={handleSendToImport}
-                                disabled={readyCount === 0}
+                                disabled={selectedReadyCount === 0}
                             >
                                 <IonIcon icon={sendOutline} slot="start" />
-                                Add to Cart ({readyCount})
+                                Add to Cart ({selectedReadyCount})
                             </IonButton>
                         </IonCol>
                     </IonRow>
                 </IonGrid>
 
-                {/* Raw text audit */}
-                {!!extractedText && (
-                    <IonCard style={{ marginTop: 8 }}>
-                        <IonCardHeader>
-                            <IonCardTitle style={{ fontSize: "0.95rem" }}>Extracted Raw Text (Audit)</IonCardTitle>
-                        </IonCardHeader>
-                        <IonCardContent>
-                            <IonTextarea readonly value={extractedText} autoGrow />
-                        </IonCardContent>
-                    </IonCard>
+                {/* Selection toolbar */}
+                {!!readyRows.length && (
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12, marginBottom: 8 }}>
+                        <IonButton size="small" fill="outline" onClick={handleSelectAllReady} disabled={!readyCount}>
+                            Select All Ready
+                        </IonButton>
+                        <IonButton size="small" fill="clear" onClick={handleClearSelection} disabled={!selectedRowIndexes.length}>
+                            Clear Selection
+                        </IonButton>
+                    </div>
                 )}
 
-                {/* Results table */}
-                {!!rows.length && (
-                    <div style={{ overflowX: "auto", marginTop: 12 }}>
-                        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 820 }}>
-                            <thead>
-                                <tr style={{ background: "var(--ion-color-light)" }}>
-                                    {[
-                                        "qty",
-                                        "uom",
-                                        "description",
-                                        "specification",
-                                        "normalized_item",
-                                        "confidence",
-                                        "matched_code",
-                                        "needs_review",
-                                    ].map((h) => (
-                                        <th
-                                            key={h}
-                                            style={{
-                                                borderBottom: "2px solid var(--ion-color-medium)",
-                                                textAlign: "left",
-                                                padding: "8px 10px",
-                                                fontSize: "0.8rem",
-                                            }}
-                                        >
-                                            {h}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rows.map((row, i) => (
-                                    <tr
-                                        key={i}
-                                        style={{ background: row.needs_review ? "#fff8e1" : "transparent" }}
-                                    >
-                                        <td style={{ padding: "6px 10px", borderBottom: "1px solid #eee" }}>{row.qty ?? "—"}</td>
-                                        <td style={{ padding: "6px 10px", borderBottom: "1px solid #eee" }}>{row.uom ?? "—"}</td>
-                                        <td style={{ padding: "6px 10px", borderBottom: "1px solid #eee" }}>{row.description}</td>
-                                        <td style={{ padding: "6px 10px", borderBottom: "1px solid #eee" }}>{row.specification ?? "—"}</td>
-                                        <td style={{ padding: "6px 10px", borderBottom: "1px solid #eee" }}>{row.normalized_item}</td>
-                                        <td style={{ padding: "6px 10px", borderBottom: "1px solid #eee" }}>{row.confidence.toFixed(3)}</td>
-                                        <td style={{ padding: "6px 10px", borderBottom: "1px solid #eee", fontWeight: row.matched_code ? 600 : 400 }}>
-                                            {row.matched_code ?? "—"}
-                                        </td>
-                                        <td style={{ padding: "6px 10px", borderBottom: "1px solid #eee" }}>
-                                            <IonChip
-                                                color={row.needs_review ? "warning" : "success"}
-                                                style={{ fontSize: "0.75rem" }}
-                                            >
-                                                <IonLabel>{row.needs_review ? "⚠ Review" : "✅ OK"}</IonLabel>
-                                            </IonChip>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                {/* Results cards */}
+                {!!readyRows.length && (
+                    <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
+                        {rows.map((row, i) => {
+                            if (row.needs_review || !row.matched_code) {
+                                return null;
+                            }
+
+                            const selectable = !row.needs_review && Boolean(row.matched_code);
+                            const isSelected = selectedRowIndexes.includes(i);
+
+                            return (
+                                <IonCard
+                                    key={i}
+                                    style={{
+                                        margin: 0,
+                                        border: isSelected ? "2px solid var(--ion-color-success)" : "1px solid rgba(0,0,0,0.08)",
+                                        boxShadow: isSelected ? "0 0 0 4px rgba(var(--ion-color-success-rgb), 0.12)" : undefined,
+                                        background: row.needs_review ? "#fff8e1" : "#ffffff",
+                                        borderRadius: 14,
+                                    }}
+                                >
+                                    <IonCardContent>
+                                        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                                                    <IonChip color={row.needs_review ? "warning" : "success"}>
+                                                        <IonLabel>{row.needs_review ? "⚠ Needs Review" : "✅ Matched"}</IonLabel>
+                                                    </IonChip>
+                                                    {row.matched_code && (
+                                                        <IonChip color="tertiary" outline>
+                                                            <IonLabel>{row.matched_code}</IonLabel>
+                                                        </IonChip>
+                                                    )}
+                                                </div>
+
+                                                <div style={{ fontWeight: 700, fontSize: "1rem", marginBottom: 6, wordBreak: "break-word" }}>
+                                                    {row.description}
+                                                </div>
+
+                                                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8, fontSize: "0.9rem" }}>
+                                                    <div><strong>Qty:</strong> {row.qty ?? "—"}</div>
+                                                    <div><strong>UOM:</strong> {row.uom ?? "—"}</div>
+                                                    <div><strong>Confidence:</strong> {row.confidence.toFixed(3)}</div>
+                                                </div>
+
+                                                {row.specification && (
+                                                    <div style={{ marginTop: 8, fontSize: "0.9rem" }}>
+                                                        <strong>Specification:</strong> {row.specification}
+                                                    </div>
+                                                )}
+
+                                                <div style={{ marginTop: 8, fontSize: "0.85rem", color: "var(--ion-color-medium-shade)", wordBreak: "break-word" }}>
+                                                    <strong>Normalized:</strong> {row.normalized_item}
+                                                </div>
+                                            </div>
+
+                                            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minWidth: 40 }}>
+                                                <IonCheckbox
+                                                    checked={isSelected}
+                                                    disabled={!selectable}
+                                                    onIonChange={(e) => toggleRowSelection(i, Boolean(e.detail.checked))}
+                                                    aria-label={`Select ${row.description}`}
+                                                />
+                                            </div>
+                                        </div>
+                                    </IonCardContent>
+                                </IonCard>
+                            );
+                        })}
                     </div>
+                )}
+
+                {!readyRows.length && !!rows.length && (
+                    <IonCard style={{ marginTop: 12 }}>
+                        <IonCardContent>
+                            <IonText color="medium">
+                                No matched items are ready to show yet. Try a clearer photo or review the extracted content again.
+                            </IonText>
+                        </IonCardContent>
+                    </IonCard>
                 )}
 
                 <IonItem lines="none" style={{ marginTop: 8 }}>

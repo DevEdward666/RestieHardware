@@ -22,6 +22,12 @@ export type ParseLineResult = {
     warning?: string;
 };
 
+type InventoryMatchResult = {
+    matched_code: string | null;
+    confidence: number;
+    needs_review: boolean;
+};
+
 export type ExtractionResult = {
     extractedText: string;
     rows: ParsedInventoryRow[];
@@ -243,6 +249,76 @@ const SPEC_PATTERNS: RegExp[] = [
     /\b\d+(?:\.\d+)?\s*(?:M|FT)\b/gi,
 ];
 
+const NON_ITEM_PATTERNS: RegExp[] = [
+    /^QTY\b/i,
+    /^QUANTITY\b/i,
+    /^ITEM\b/i,
+    /^DESCRIPTION\b/i,
+    /^SPEC(?:IFICATION)?\b/i,
+    /^UNIT\b/i,
+    /^PRICE\b/i,
+    /^AMOUNT\b/i,
+    /^TOTAL\b/i,
+    /^SUB-?TOTAL\b/i,
+    /^GRAND\s+TOTAL\b/i,
+    /^COMPANY\b/i,
+    /^ADDRESS\b/i,
+    /^TEL(?:EPHONE)?\b/i,
+    /^PHONE\b/i,
+    /^EMAIL\b/i,
+    /^TIN\b/i,
+    /^VAT\b/i,
+    /^DATE\b/i,
+    /^PROJECT\b/i,
+    /^CLIENT\b/i,
+    /^CUSTOMER\b/i,
+    /^ATTN\b/i,
+    /^ATTENTION\b/i,
+    /^DELIVER\s+TO\b/i,
+    /^BILL\s+TO\b/i,
+    /^SHIP\s+TO\b/i,
+    /^PURCHASE\s+ORDER\b/i,
+    /^PO\s*#?\b/i,
+    /^REQUISITION\b/i,
+    /^INVOICE\b/i,
+    /^RECEIPT\b/i,
+    /^QUOTATION\b/i,
+    /^ESTIMATE\b/i,
+    /^MATERIALS?\b/i,
+    /^ELECTRICAL\s+MATERIALS?\b/i,
+    /^PLEASE\b/i,
+    /^THANK\s*YOU\b/i,
+    /^TERMS\b/i,
+    /^NOTE\b/i,
+    /^NOTED\b/i,
+];
+
+const INVENTORY_HINT_PATTERNS: RegExp[] = [
+    /\bPIPE\b/i,
+    /\bCONDUIT\b/i,
+    /\bELBOW\b/i,
+    /\bCOUPL(?:ING)?\b/i,
+    /\bWIRE\b/i,
+    /\bBREAKER\b/i,
+    /\bOUTLET\b/i,
+    /\bSWITCH\b/i,
+    /\bBOX\b/i,
+    /\bTAPE\b/i,
+    /\bCLAMP\b/i,
+    /\bBUSHING\b/i,
+    /\bCONNECTOR\b/i,
+    /\bROD\b/i,
+    /\bBULB\b/i,
+    /\bCORD\b/i,
+    /\bFAN\b/i,
+    /\bGANG\b/i,
+    /\bRECEPTACLE\b/i,
+    /\bPANEL\b/i,
+    /\bFUSE\b/i,
+    /\bCAP\b/i,
+    /\bMETER\s+BASE\b/i,
+];
+
 export function normalizeText(input: string): string {
     return input
         .replace(/[|]/g, " ")
@@ -377,6 +453,12 @@ function tokenize(text: string): Set<string> {
     );
 }
 
+function tokenizeArray(text: string): string[] {
+    return normalizeText(text)
+        .split(/[^A-Z0-9]+/)
+        .filter(Boolean);
+}
+
 function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
     if (!a.size && !b.size) return 1;
     const intersection = new Set([...a].filter((token) => b.has(token))).size;
@@ -384,29 +466,118 @@ function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
     return union === 0 ? 0 : intersection / union;
 }
 
+function diceSimilarity(a: string[], b: string[]): number {
+    if (!a.length && !b.length) return 1;
+    if (!a.length || !b.length) return 0;
+
+    const bCounts = new Map<string, number>();
+    for (const token of b) {
+        bCounts.set(token, (bCounts.get(token) ?? 0) + 1);
+    }
+
+    let overlap = 0;
+    for (const token of a) {
+        const count = bCounts.get(token) ?? 0;
+        if (count > 0) {
+            overlap += 1;
+            bCounts.set(token, count - 1);
+        }
+    }
+
+    return (2 * overlap) / (a.length + b.length);
+}
+
+function longestCommonSubstringLength(a: string, b: string): number {
+    if (!a || !b) return 0;
+
+    const table = Array.from({ length: a.length + 1 }, () => Array<number>(b.length + 1).fill(0));
+    let longest = 0;
+
+    for (let i = 1; i <= a.length; i += 1) {
+        for (let j = 1; j <= b.length; j += 1) {
+            if (a[i - 1] === b[j - 1]) {
+                table[i][j] = table[i - 1][j - 1] + 1;
+                longest = Math.max(longest, table[i][j]);
+            }
+        }
+    }
+
+    return longest;
+}
+
+function computeInventorySimilarity(query: string, candidate: string): number {
+    const queryTokens = tokenizeArray(query);
+    const candidateTokens = tokenizeArray(candidate);
+    const querySet = new Set(queryTokens);
+    const candidateSet = new Set(candidateTokens);
+
+    const jaccard = jaccardSimilarity(querySet, candidateSet);
+    const dice = diceSimilarity(queryTokens, candidateTokens);
+
+    const normalizedQuery = normalizeText(query);
+    const normalizedCandidate = normalizeText(candidate);
+    const containsBoost =
+        normalizedCandidate.includes(normalizedQuery) || normalizedQuery.includes(normalizedCandidate)
+            ? 1
+            : 0;
+    const commonSubstring = longestCommonSubstringLength(normalizedQuery, normalizedCandidate);
+    const substringScore = commonSubstring / Math.max(normalizedQuery.length, normalizedCandidate.length, 1);
+
+    return Number((jaccard * 0.4 + dice * 0.35 + containsBoost * 0.15 + substringScore * 0.1).toFixed(4));
+}
+
+function looksLikeNonItemText(normalizedLine: string, inventoryItems: InventoryItem[]): boolean {
+    if (!normalizedLine) return true;
+
+    const compact = normalizedLine.replace(/\s+/g, " ").trim();
+    const withoutLeadingQty = compact.replace(/^\d+(?:\.\d+)?\s+/, "");
+
+    if (NON_ITEM_PATTERNS.some((pattern) => pattern.test(compact) || pattern.test(withoutLeadingQty))) {
+        return true;
+    }
+
+    if (/^[A-Z0-9 .,&()\-/#]+:?$/.test(compact) && !/^\d/.test(compact)) {
+        const hasInventoryHint = INVENTORY_HINT_PATTERNS.some((pattern) => pattern.test(compact));
+        const hasStrongInventoryMatch = inventoryItems.some((item) => computeInventorySimilarity(compact, item.item) >= 0.82);
+        if (!hasInventoryHint && !hasStrongInventoryMatch) {
+            return true;
+        }
+    }
+
+    if (!/^\d/.test(compact)) {
+        const hasInventoryHint = INVENTORY_HINT_PATTERNS.some((pattern) => pattern.test(compact));
+        const looksLikeAddressOrMeta = /\b(STREET|ST\.?|BRGY|BARANGAY|CITY|BLDG|BUILDING|FLOOR|ROOM|CONTACT|MOBILE|ZIP)\b/i.test(compact);
+        if (looksLikeAddressOrMeta && !hasInventoryHint) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function matchInventoryItem(
     normalizedItem: string,
     inventoryItems: InventoryItem[]
-): { matched_code: string | null; confidence: number; needs_review: boolean } {
+): InventoryMatchResult {
     if (!inventoryItems.length || !normalizedItem) {
         return { matched_code: null, confidence: 0, needs_review: true };
     }
 
-    const targetTokens = tokenize(normalizedItem);
+    const normalizedQuery = normalizeText(normalizedItem);
     let best: { code: string; score: number } | null = null;
 
     for (const item of inventoryItems) {
-        const score = jaccardSimilarity(targetTokens, tokenize(item.item));
+        const score = computeInventorySimilarity(normalizedQuery, item.item);
         if (!best || score > best.score) {
             best = { code: item.code, score };
         }
     }
 
-    if (!best || best.score < 0.7) {
+    if (!best || best.score < 0.58) {
         return { matched_code: null, confidence: best?.score ?? 0, needs_review: true };
     }
 
-    return { matched_code: best.code, confidence: best.score, needs_review: false };
+    return { matched_code: best.code, confidence: best.score, needs_review: best.score < 0.7 };
 }
 
 export function parseInventoryLine(
@@ -418,6 +589,10 @@ export function parseInventoryLine(
 
     if (!normalizedLine) {
         return { row: null, warning: "Skipped blank line." };
+    }
+
+    if (looksLikeNonItemText(normalizedLine, inventoryItems)) {
+        return { row: null, warning: `Skipped non-item text: "${raw_text}"` };
     }
 
     const qtyMatch = normalizedLine.match(/^\s*(\d+(?:\.\d+)?)/);
@@ -559,10 +734,16 @@ function buildRowFromMatchedLine(line: OcrMatchedLine): ParsedInventoryRow | nul
     if (!rawText) return null;
 
     const parsed = parseInventoryLine(rawText, []);
+    if (!parsed.row) {
+        return null;
+    }
+
     const baseQty = parsed.row?.qty ?? null;
     const baseUom = parsed.row?.uom ?? null;
     const baseSpec = parsed.row?.specification ?? null;
-    const backendMatches = toArray(line.matches);
+    const backendMatches = toArray(line.matches)
+        .slice()
+        .sort((a, b) => computeInventorySimilarity(line.search_term || rawText, b.item) - computeInventorySimilarity(line.search_term || rawText, a.item));
     const topMatch = backendMatches[0];
 
     return {
